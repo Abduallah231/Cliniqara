@@ -1,98 +1,170 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from "expo-router";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+import AppTopBar from "@/components/common/AppTopBar";
+import DashboardActionCard from "@/components/dashboard/DashboardActionCard";
+import StatCard from "@/components/dashboard/StatCard";
+import WelcomeCard from "@/components/dashboard/WelcomeCard";
+import { currentDoctor } from "@/data/user";
+
+import {
+  COLORS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/theme";
+
+export default function DashboardScreen() {
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <SafeAreaView style={styles.container}>
+      <AppTopBar
+        onRightPress={() => router.push("/settings")}
+      />
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <WelcomeCard
+    doctorName={`Dr. ${currentDoctor.name}`}
+    clinicName={currentDoctor.clinicName}
+/>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
+        <View style={styles.statsRow}>
+          <StatCard
+            title="Today's Patients"
+            value={24}
+            subtitle="12% more than yesterday"
+            icon="people-outline"
+            style={styles.flex}
           />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+          <StatCard
+            title="Waiting"
+            value={5}
+            subtitle="Average 15 min"
+            icon="time-outline"
+            color="#16A34A"
+            style={styles.flex}
+          />
+        </View>
+
+        <Text style={styles.sectionTitle}>
+          Quick Actions
+        </Text>
+
+        <DashboardActionCard
+          title="New Patient"
+          subtitle="Register a new patient"
+          icon="person-add-outline"
+          variant="primary"
+          fullWidth
+          onPress={() => router.push("/new-patient")}
+        />
+
+        <View style={{ height: SPACING.md }} />
+
+        <DashboardActionCard
+          title="Waiting List"
+          subtitle="Manage today's waiting patients"
+          icon="time-outline"
+          variant="success"
+          fullWidth
+          onPress={() => router.push("/waiting-list")}
+        />
+
+        <View style={styles.actionsRow}>
+          <DashboardActionCard
+          
+            title="Existing Patients"
+            subtitle="Browse patient records"
+            icon="people-outline"
+            style={styles.flex}
+            variant="purple"
+            onPress={() =>
+              router.push("/existing-patients")
+            }
+          />
+
+          <DashboardActionCard
+            title="Rx"
+            subtitle="Temps"
+            icon="document-text-outline"
+            style={styles.flex}
+             variant="orange"
+            onPress={() =>
+              router.push("/prescriptions")
+            }
+          />
+        </View>
+
+        <View style={styles.actionsRow}>
+          <DashboardActionCard
+            title="Statistics"
+            subtitle="Clinic analytics"
+            icon="bar-chart-outline"
+            style={styles.flex}
+            variant="cyan"
+
+            onPress={() =>
+              router.push("/statistics")
+            }
+          />
+
+          <DashboardActionCard
+            title="Clinic"
+            subtitle="Management"
+            icon="business-outline"
+            style={styles.flex}
+            variant="red"
+            onPress={() =>
+              router.push("/clinic-management")
+            }
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: COLORS.background,
   },
-  safeArea: {
+
+  content: {
+    padding: SPACING.lg,
+    paddingBottom: SPACING.xl,
+  },
+
+  statsRow: {
+    flexDirection: "row",
+    gap: SPACING.md,
+    marginBottom: SPACING.xl,
+  },
+
+  actionsRow: {
+    flexDirection: "row",
+    gap: SPACING.sm,
+    marginTop: SPACING.md,
+    justifyContent: "space-between",
+  },
+
+  sectionTitle: {
+    fontSize: TYPOGRAPHY.heading,
+    fontWeight: "700",
+    color: COLORS.text,
+    marginBottom: SPACING.lg,
+  },
+
+  flex: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
   },
 });
