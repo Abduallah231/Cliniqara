@@ -60,7 +60,6 @@ export default function AgeField({
 const styles = StyleSheet.create({
   container: {
     gap: SPACING.sm,
-    marginBottom: 16
   },
 
   row: {
