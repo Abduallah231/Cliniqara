@@ -38,7 +38,7 @@ export default function PatientActions() {
       <Pressable
         style={styles.secondaryButton}
         onPress={() =>
-          router.push("/existing-patients")
+        router.replace("/patient-overview")
         }
       >
         <Ionicons

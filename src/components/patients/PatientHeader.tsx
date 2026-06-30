@@ -9,7 +9,7 @@ import {
 
 import { Ionicons } from "@expo/vector-icons";
 
-import PatientAvatar from "./PatientAvatar";
+
 
 import { PatientSummary } from "@/models";
 
@@ -35,10 +35,7 @@ export default function PatientHeader({
 }: Props) {
   return (
     <View style={[styles.container, style]}>
-      <PatientAvatar
-    fullName={patient.fullName}
-    size="sm"
-/>
+     
 
       <View style={styles.info}>
         <Text

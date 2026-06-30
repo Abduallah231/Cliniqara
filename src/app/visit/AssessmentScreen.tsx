@@ -43,7 +43,9 @@ export default function AssessmentScreen() {
   title="Save Visit"
   icon="save-outline"
   style={styles.nextButton}
-  onPress={() => {}}
+  onPress={() => {
+  router.replace("/patient-overview");
+}}
 />
 </View>
     </SafeAreaView>

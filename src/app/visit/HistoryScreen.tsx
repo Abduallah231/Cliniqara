@@ -1,30 +1,42 @@
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import {
+  BackHandler,
   StyleSheet,
-  Text,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import AppButton from "@/components/common/AppButton";
-import AppCard from "@/components/common/AppCard";
 import AppTopBar from "@/components/common/AppTopBar";
 
 import HistoryTab from "@/components/visit/HistoryTab";
 
+
 import {
   COLORS,
-  SPACING,
-  TYPOGRAPHY,
+  SPACING
 } from "@/theme";
 
 export default function HistoryScreen() {
+  useFocusEffect(() => {
+  const onBackPress = () => {
+    router.replace("/existing-patients");
+    return true;
+  };
+
+  const subscription =
+    BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+  return () => subscription.remove();
+});
   return (
     <SafeAreaView style={styles.container}>
       <AppTopBar
         title="Visit History"
-        onBack={() => router.back()}
+        onBack={() => router.replace("/")}
         onRightPress={() => router.push("/settings")}
       />
 

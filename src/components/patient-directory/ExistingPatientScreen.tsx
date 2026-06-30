@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import { patientsData } from "@/data";
 import {
+  BackHandler,
   FlatList,
   StyleSheet,
   View
@@ -26,6 +27,20 @@ import {
 } from "@/theme";
 
 export default function ExistingPatientScreen() {
+  useFocusEffect(() => {
+  const onBackPress = () => {
+    router.replace("/");
+    return true;
+  };
+
+  const subscription =
+    BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
+
+  return () => subscription.remove();
+});
   const [search, setSearch] = useState("");
 
   const [selectedFilter, setSelectedFilter] =
@@ -67,7 +82,7 @@ export default function ExistingPatientScreen() {
     <SafeAreaView style={styles.container}>
       <AppTopBar
         title="Existing Patients"
-        onBack={() => router.back()}
+        onBack={() => router.replace("/")}
         onRightPress={() =>
           router.push("/settings")
         }
@@ -103,20 +118,29 @@ export default function ExistingPatientScreen() {
             <PatientCard
               patient={item}
               onPress={(patient) =>
-                console.log(patient.id)
-              }
+  router.push({
+    pathname: "/patient-overview",
+    params: {
+      patientId: patient.id,
+    },
+  })
+}
               onViewPatient={(patient) =>
-                console.log(
-                  "View",
-                  patient.id
-                )
-              }
+  router.push({
+    pathname: "/patient-overview",
+    params: {
+      patientId: patient.id,
+    },
+  })
+}
               onStartVisit={(patient) =>
-                console.log(
-                  "Start",
-                  patient.id
-                )
-              }
+  router.push({
+    pathname: "/visit/HistoryScreen",
+    params: {
+      patientId: patient.id,
+    },
+  })
+}
               onToggleFavorite={(patient) =>
                 console.log(
                   "Favorite",
