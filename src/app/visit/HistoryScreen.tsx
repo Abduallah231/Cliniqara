@@ -29,30 +29,7 @@ export default function HistoryScreen() {
       />
 
       <View style={styles.content}>
-        <AppCard style={styles.patientCard}>
-          <Text style={styles.patientName}>
-            Mohamed Ahmed
-          </Text>
-
-          <Text style={styles.patientInfo}>
-            32 Years • Male
-          </Text>
-        </AppCard>
-
-        <View style={styles.sectionHeader}>
-          <Ionicons
-            name="document-text-outline"
-            size={20}
-            color={COLORS.primary}
-          />
-
-          <Text style={styles.sectionTitle}>
-            Medical History
-          </Text>
-        </View>
-
         <HistoryTab />
-
         <View style={styles.navigationBar}>
   <AppButton
     title="Back"
@@ -67,8 +44,8 @@ export default function HistoryScreen() {
     onPress={() =>
       router.push("/visit/ExaminationScreen")
     }
-  />
-</View>
+    />
+  </View>
       </View>
     </SafeAreaView>
   );
@@ -85,32 +62,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
     paddingBottom: SPACING.lg,
-  },
-
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: SPACING.sm,
-    marginTop: SPACING.md,
-  },
-
-  sectionTitle: {
-    marginLeft: SPACING.sm,
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  patientName: {
-  fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  patientInfo: {
-    marginTop: SPACING.xs,
-    color: COLORS.secondaryText,
-    fontSize: TYPOGRAPHY.small,
   },
 
 navigationBar: {
@@ -157,7 +108,4 @@ shadowOffset: {
 elevation: 6,
 },
 
-  patientCard: {
-  paddingVertical: SPACING.md,
-},
 });

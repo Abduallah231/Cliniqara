@@ -1,5 +1,12 @@
 import AppChip from "@/components/common/AppChip";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
+import Divider from "@/components/common/Divider";
+import SectionHeader from "@/components/common/SectionHeader";
+import {
+  COLORS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
@@ -7,12 +14,6 @@ import {
   Text,
   View,
 } from "react-native";
-
-import {
-  COLORS,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
 
 export default function GeneralInspectionSection() {
   const [consciousness, setConsciousness] =
@@ -85,10 +86,7 @@ export default function GeneralInspectionSection() {
   }
   defaultExpanded={false}
 >
-        <Text style={styles.label}>
-          Consciousness
-        </Text>
-
+        <SectionHeader title="Consciousness" />
         <View style={styles.row}>
           <AppChip
             label="Conscious"
@@ -142,11 +140,8 @@ export default function GeneralInspectionSection() {
             }
           />
         </View>
-
-        <Text style={styles.label}>
-          Appearance
-        </Text>
-
+<Divider />
+        <SectionHeader title="Appearance" />
         <View style={styles.row}>
           <AppChip
             label="Normal"
@@ -198,10 +193,7 @@ export default function GeneralInspectionSection() {
           />
         </View>
 
-        <Text style={styles.label}>
-          Hydration
-        </Text>
-
+        <Divider /><SectionHeader title="Hydration" />
         <View style={styles.row}>
           <AppChip
             label="Normal"
@@ -255,10 +247,7 @@ export default function GeneralInspectionSection() {
             }
           />
         </View>
-                <Text style={styles.label}>
-          Body Build
-        </Text>
-
+    <Divider /><SectionHeader title="Body Build" />
         <View style={styles.row}>
           <AppChip
             label="Average"
@@ -313,10 +302,7 @@ export default function GeneralInspectionSection() {
           />
         </View>
 
-        <Text style={styles.label}>
-          Nourishment
-        </Text>
-
+        <Divider /><SectionHeader title="Nourishment" />
         <View style={styles.row}>
           <AppChip
             label="Well Nourished"
@@ -345,10 +331,7 @@ export default function GeneralInspectionSection() {
           />
         </View>
 
-        <Text style={styles.label}>
-          Findings
-        </Text>
-
+        <Divider /><SectionHeader title="Findings" />
         <View style={styles.row}>
           {[
             "Pallor",

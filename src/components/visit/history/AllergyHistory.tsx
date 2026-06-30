@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
+import SectionHeader from "@/components/common/SectionHeader";
 
 import {
   COLORS,
@@ -118,10 +119,7 @@ export default function AllergyHistory() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
-        Any Allergy?
-      </Text>
-
+<SectionHeader title="Any Allergy?" />
       <View style={styles.row}>
         <AppChip
           label="Yes"
@@ -142,10 +140,7 @@ export default function AllergyHistory() {
 
       {hasAllergy === "Yes" && (
         <>
-          <Text style={styles.sectionTitle}>
-            Allergy Types
-          </Text>
-
+<SectionHeader title="Allergy Types" />
           <View style={styles.row}>
             {[
               "Drug",
@@ -165,7 +160,7 @@ export default function AllergyHistory() {
               />
             ))}
           </View>
-
+          
           {selectedTypes.includes("Drug") && (
             <AllergyCard
               title="Drug Allergy"
@@ -202,6 +197,7 @@ export default function AllergyHistory() {
 }
 
 const styles = StyleSheet.create({
+  
   container: {
     gap: SPACING.md,
   },

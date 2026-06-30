@@ -138,5 +138,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
+
+  paddingHorizontal: SPACING.sm,
+  paddingTop: SPACING.sm,
+  paddingBottom: SPACING.xs,
+
+  borderRadius: 25,
+  backgroundColor: "#DCEBFF",
+borderColor: "#A8C7FF",
+borderWidth: 1,
+
+  marginBottom: SPACING.sm,
   },
 });

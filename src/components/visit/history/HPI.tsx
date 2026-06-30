@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   },
 
 content: {
-  gap: SPACING.sm,
+  gap: SPACING.xs,
 
   paddingHorizontal: SPACING.sm,
   paddingTop: SPACING.sm,

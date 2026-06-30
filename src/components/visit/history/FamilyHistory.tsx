@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
+import SectionHeader from "@/components/common/SectionHeader";
 import {
   COLORS,
   SPACING,
@@ -48,10 +48,7 @@ export default function FamilyHistory() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
-        Family Diseases
-      </Text>
-
+<SectionHeader title="Family Diseases" />
       <View style={styles.row}>
         {diseases.map((disease) => (
           <AppChip

@@ -46,19 +46,21 @@ export default function VitalSignsSection() {
         <View style={styles.row}>
           <View style={styles.half}>
             <AppTextField
-              label="Systolic"
+              
               value=""
               onChangeText={() => {}}
               keyboardType="numeric"
+              placeholder="Systolic"
             />
           </View>
 
           <View style={styles.half}>
             <AppTextField
-              label="Diastolic"
+              
               value=""
               onChangeText={() => {}}
               keyboardType="numeric"
+              placeholder="Diastolic"
             />
           </View>
         </View>

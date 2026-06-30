@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
+import Divider from "@/components/common/Divider";
+import SectionHeader from "@/components/common/SectionHeader";
 import {
   COLORS,
   SPACING,
@@ -38,10 +39,9 @@ export default function DrugHistory() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
-        Current Medication
-      </Text>
-
+      
+      <View/>
+<SectionHeader title="Current Medication" />
       <View style={styles.card}>
         <AppTextField
 
@@ -75,10 +75,8 @@ export default function DrugHistory() {
           onPress={() => {}}
         />
       </View>
-
-      <Text style={styles.sectionTitle}>
-        Compliance
-      </Text>
+<Divider />
+<SectionHeader title="Compliance" />
 
       <View style={styles.row}>
         <AppChip
@@ -105,11 +103,8 @@ export default function DrugHistory() {
           }
         />
       </View>
-
-      <Text style={styles.sectionTitle}>
-        Self Medication
-      </Text>
-
+<Divider />
+<SectionHeader title="Self Medication" />
       <View style={styles.row}>
         <AppChip
           label="Yes"
@@ -138,10 +133,8 @@ export default function DrugHistory() {
           }
         />
       )}
-
-      <Text style={styles.sectionTitle}>
-        Herbal / Supplements
-      </Text>
+<Divider />
+<SectionHeader title="Herbal / Supplements" />
 
       <View style={styles.row}>
         <AppChip
@@ -200,4 +193,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: SPACING.sm,
   },
+
+
 });

@@ -1,15 +1,12 @@
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
 import AppButton from "@/components/common/AppButton";
 import AppTopBar from "@/components/common/AppTopBar";
 import AssessmentTab from "@/components/visit/AssessmentTab";
+import { router } from "expo-router";
+import {
+  StyleSheet,
+  View
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   COLORS,
@@ -30,32 +27,9 @@ export default function AssessmentScreen() {
               onBack={() => router.back()}
               onRightPress={() => router.push("/settings")}
             />
-
-      <View style={styles.patientBanner}>
-        <Text style={styles.patientName}>
-          Mohamed Ahmed
-        </Text>
-
-        <Text style={styles.patientInfo}>
-          32 Years • Male
-        </Text>
+<View style={styles.content}>
+  <AssessmentTab />
 </View>
-
-        <View style={styles.assessmentRow}>
-          <Ionicons
-            name="clipboard-outline"
-            size={16}
-            color={COLORS.primary}
-          />
-
-          <Text style={styles.assessmentText}>
-            Assessment
-          </Text>
-        </View>
-      
-      <View style={styles.content}>
-        <AssessmentTab />
-      </View>
 
       <View style={styles.navigationBar}>
   <AppButton

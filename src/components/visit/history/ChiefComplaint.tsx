@@ -1,5 +1,6 @@
+import Divider from "@/components/common/Divider";
+import SectionHeader from "@/components/common/SectionHeader";
 import { useState } from "react";
-
 
 import AppButton from "@/components/common/AppButton";
 import AppChip from "@/components/common/AppChip";
@@ -64,9 +65,11 @@ export default function ChiefComplaint({
     gap: SPACING.sm,
   }}
 >
+  
   <View style={{ flex: 1 }}>
+    <SectionHeader title="Search Complaint" />
     <AppTextField
-      label="Search Complaint"
+      label=""
       placeholder="Search complaint..."
       value={search}
       onChangeText={setSearch}
@@ -107,9 +110,9 @@ export default function ChiefComplaint({
           />
         ))}
       </View>
-
+<Divider />
+<SectionHeader title="Duration" />
       <AppTextField
-        label="Duration"
         value={duration}
         onChangeText={setDuration}
         placeholder="e.g. 3"
@@ -146,11 +149,11 @@ export default function ChiefComplaint({
     gap: SPACING.xs,
   }}
 >
-  <Text style={styles.label}>
-    Selected Complaint
-  </Text>
+  <SectionHeader title="Selected Complaint" />
+
 
   <View style={styles.selectedComplaintBox}>
+    
     <Text style={styles.selectedComplaintText}>
       {complaint || "No complaint selected"}
     </Text>

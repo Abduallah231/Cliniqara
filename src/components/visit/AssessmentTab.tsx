@@ -16,7 +16,7 @@ import HistorySummary from "./assessment/HistorySummary";
 import InvestigationResultsScreen from "./assessment/InvestigationResultsScreen";
 import InvestigationSection from "./assessment/InvestigationSection";
 import PrescriptionSection from "./assessment/PrescriptionSection";
-import ProceduresReferralsSection from "./assessment/Procedures&Referrals";
+import ProceduresReferralsSection from "./assessment/ProceduresReferrals";
 
 import {
   COLORS,
@@ -47,6 +47,27 @@ export default function AssessmentTab() {
         false
       }
     >
+      <View style={styles.patientBanner}>
+        <Text style={styles.patientName}>
+          Mohamed Ahmed
+        </Text>
+
+        <Text style={styles.patientInfo}>
+          32 Years • Male
+        </Text>
+</View>
+
+        <View style={styles.assessmentRow}>
+          <Ionicons
+            name="clipboard-outline"
+            size={16}
+            color={COLORS.primary}
+          />
+
+          <Text style={styles.assessmentText}>
+            Assessment
+          </Text>
+        </View>
       <HistorySummary />
 
       <ExaminationSummary />
@@ -177,8 +198,44 @@ const styles = StyleSheet.create({
 
   content: {
     padding: SPACING.md,
-    paddingBottom: 120,
+    paddingBottom: 70,
     gap: SPACING.md,
+  },
+
+    patientBanner: {
+    backgroundColor: COLORS.card,
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.sm,
+    padding: SPACING.md,
+    borderRadius: RADIUS.xl,
+    ...SHADOW,
+  },
+
+  patientName: {
+    fontSize: TYPOGRAPHY.body,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
+  patientInfo: {
+    marginTop: 4,
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.secondaryText,
+  },
+
+  assessmentRow: {
+    flexDirection: "row",
+  alignItems: "center",
+  marginTop: SPACING.sm,
+  marginHorizontal: SPACING.xl,
+    borderRadius: RADIUS.xl,
+  },
+
+  assessmentText: {
+    color: COLORS.primary,
+  fontSize: TYPOGRAPHY.small,
+  fontWeight: "600",
+  marginHorizontal: SPACING.xs,
   },
 
   aiButton: {

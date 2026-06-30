@@ -1,4 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
+import {
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+import AppCard from "@/components/common/AppCard";
 import { useState } from "react";
 import { ScrollView } from "react-native";
 
@@ -12,7 +19,7 @@ import HPI from "./history/HPI";
 import PastHistory from "./history/PastHistory";
 import PersonalHistory from "./history/PersonalHistory";
 
-import { COLORS, SPACING } from "@/theme";
+import { COLORS, SPACING, TYPOGRAPHY, } from "@/theme";
 
 export default function HistoryTab() {
   const [chiefComplaint, setChiefComplaint] = useState("");
@@ -21,10 +28,32 @@ export default function HistoryTab() {
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
-  paddingBottom: 50,
+  paddingBottom: 70,
   paddingTop: SPACING.xs,
 }}
     >
+              <AppCard style={styles.patientCard}>
+                <Text style={styles.patientName}>
+                  Mohamed Ahmed
+                </Text>
+      
+                <Text style={styles.patientInfo}>
+                  32 Years • Male
+                </Text>
+              </AppCard>
+      
+              <View style={styles.sectionHeader}>
+                <Ionicons
+                  name="document-text-outline"
+                  size={20}
+                  color={COLORS.primary}
+                />
+      
+                <Text style={styles.sectionTitle}>
+                  Medical History
+                </Text>
+              </View>
+      
       <CollapsibleSection
         title="Personal History"
         icon={
@@ -112,3 +141,35 @@ export default function HistoryTab() {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: SPACING.sm,
+    marginTop: SPACING.md,
+  },
+
+  sectionTitle: {
+    marginLeft: SPACING.sm,
+    fontSize: TYPOGRAPHY.body,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
+  patientName: {
+  fontSize: TYPOGRAPHY.body,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
+  patientInfo: {
+    marginTop: SPACING.xs,
+    color: COLORS.secondaryText,
+    fontSize: TYPOGRAPHY.small,
+  },
+
+  patientCard: {
+  paddingVertical: SPACING.md,
+},
+});

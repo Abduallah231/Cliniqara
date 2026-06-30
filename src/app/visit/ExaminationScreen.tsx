@@ -30,27 +30,6 @@ export default function ExaminationScreen() {
               onRightPress={() => router.push("/settings")}
             />
 
-      <View style={styles.patientBanner}>
-  <Text style={styles.patientName}>
-    Mohamed Ahmed
-  </Text>
-
-  <Text style={styles.patientInfo}>
-    32 Years • Male
-  </Text>
-</View>
-
-  <View style={styles.examRow}>
-    <Ionicons
-      name="medkit-outline"
-      size={16}
-      color={COLORS.primary}
-    />
-
-    <Text style={styles.examText}>
-      Medical Examination
-    </Text>
-  </View>
 
       <View style={styles.content}>
         <ExaminationTab />

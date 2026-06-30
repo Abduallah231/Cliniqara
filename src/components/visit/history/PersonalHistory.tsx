@@ -3,7 +3,8 @@ import { StyleSheet, Text, View } from "react-native";
 
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
+import Divider from "@/components/common/Divider";
+import SectionHeader from "@/components/common/SectionHeader";
 import {
   COLORS,
   SPACING,
@@ -49,10 +50,7 @@ export default function PersonalHistory() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>
-        Marital Status
-      </Text>
-
+      <SectionHeader title="Marital Status" />
       <View style={styles.row}>
         <AppChip
           label="Single"
@@ -101,10 +99,7 @@ export default function PersonalHistory() {
         />
       )}
 
-      <Text style={styles.label}>
-        Informant
-      </Text>
-
+      <Divider /><SectionHeader title="Informant" />
       <View style={styles.row}>
         <AppChip
           label="Self"
@@ -131,10 +126,7 @@ export default function PersonalHistory() {
         />
       </View>
 
-      <Text style={styles.label}>
-        Reliability
-      </Text>
-
+      <Divider /><SectionHeader title="Reliability" />
       <View style={styles.row}>
         <AppChip
           label="Reliable"
@@ -166,15 +158,12 @@ export default function PersonalHistory() {
           }
         />
       </View>
-
+<Divider />
       <Text style={styles.sectionTitle}>
         Lifestyle & Habits
       </Text>
 
-      <Text style={styles.label}>
-        Smoking
-      </Text>
-
+      <SectionHeader title="Smoking" />
       <View style={styles.row}>
         <AppChip
           label="Never"
@@ -234,10 +223,7 @@ export default function PersonalHistory() {
         </View>
       )}
 
-      <Text style={styles.label}>
-        Alcohol
-      </Text>
-
+      <Divider /><SectionHeader title="Alcohol" />
       <View style={styles.row}>
         <AppChip
           label="No"
@@ -314,10 +300,7 @@ export default function PersonalHistory() {
         </View>
       )}
 
-      <Text style={styles.label}>
-        Special Habits
-      </Text>
-
+      <Divider /><SectionHeader title="Special Habits" />
       <View style={styles.row}>
         <AppChip
           label="Caffeine"

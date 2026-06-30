@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
+import Divider from "@/components/common/Divider";
+import SectionHeader from "@/components/common/SectionHeader";
 import {
   COLORS,
   SPACING,
@@ -112,9 +113,7 @@ export default function PastHistory() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
-        Chronic Diseases
-      </Text>
+      <SectionHeader title="Chronic Diseases" />
 
       <View style={styles.row}>
         {diseases.map((disease) => (
@@ -135,11 +134,8 @@ export default function PastHistory() {
         value={otherDisease}
         onChangeText={setOtherDisease}
       />
-
-      <Text style={styles.sectionTitle}>
-        Previous Similar Episode
-      </Text>
-
+<Divider />
+      <SectionHeader title="Previous Similar Episode" />
       <View style={styles.row}>
         <AppChip
           label="Yes"
@@ -175,11 +171,8 @@ export default function PastHistory() {
           />
         </View>
       )}
-
-      <Text style={styles.sectionTitle}>
-        Previous Hospitalization
-      </Text>
-
+<Divider />
+      <SectionHeader title="Previous Hospitalization" />
       <View style={styles.row}>
         <AppChip
           label="Yes"
@@ -223,9 +216,8 @@ export default function PastHistory() {
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>
-        Previous Operations
-      </Text>
+      <Divider />
+      <SectionHeader title="Previous Operations" />
 
       <AppTextField
 
@@ -234,10 +226,8 @@ export default function PastHistory() {
         onChangeText={setOperations}
         multiline
       />
-            <Text style={styles.sectionTitle}>
-        Blood Transfusion
-      </Text>
-
+            <Divider />
+            <SectionHeader title="Blood Transfusion" />
       <View style={styles.row}>
         <AppChip
           label="Yes"
@@ -281,10 +271,8 @@ export default function PastHistory() {
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>
-        Major Trauma
-      </Text>
-
+      <Divider />
+      <SectionHeader title="Major Trauma" />
       <View style={styles.row}>
         <AppChip
           label="Yes"
@@ -324,10 +312,8 @@ export default function PastHistory() {
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>
-        ICU Admission
-      </Text>
-
+    <Divider />
+    <SectionHeader title="ICU Admission" />
       <View style={styles.row}>
         <AppChip
           label="Yes"
