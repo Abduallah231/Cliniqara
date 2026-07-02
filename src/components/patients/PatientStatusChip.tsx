@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import {
-    COLORS,
-    RADIUS,
-    SPACING,
-    TYPOGRAPHY,
+  COLORS,
+  RADIUS,
+  SPACING,
+  TYPOGRAPHY,
 } from "@/theme";
 
 export type PatientStatus =
@@ -12,6 +12,7 @@ export type PatientStatus =
   | "Inactive"
   | "Waiting"
   | "In Visit"
+  | "With Doctor"
   | "Completed"
   | "In Progress"
   | "Follow-up";
@@ -40,6 +41,11 @@ const STATUS_COLORS = {
     background: "#DBEAFE",
     text: COLORS.primary,
   },
+
+  "With Doctor": {
+  background: "#DBEAFE",
+  text: COLORS.primary,
+},
 
   Completed: {
     background: "#DCFCE7",

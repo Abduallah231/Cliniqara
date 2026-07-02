@@ -15,9 +15,6 @@ export default function OverviewTab() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-    
-
-      <PatientQuickActions />
 
       <ClinicalAlerts />
 

@@ -5,7 +5,7 @@ import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 
 import PatientStatusChip from "@/components/patients/PatientStatusChip";
-
+import { router } from "expo-router";
 import { PatientSummary } from "@/models";
 import {
     COLORS,
@@ -82,10 +82,13 @@ export default function PatientOverviewHeader({
         />
 
         <AppButton
-          title="New Visit"
-          icon="add-outline"
+          title="Report"
+          icon="document-text-outline"
+          variant="secondary"
           style={styles.button}
-          onPress={() => {}}
+          onPress={() =>
+            router.push("/generate-report")
+          }
         />
       </View>
     </AppCard>

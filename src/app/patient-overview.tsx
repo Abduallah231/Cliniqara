@@ -5,10 +5,10 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
-    BackHandler,
-    ScrollView,
-    StyleSheet,
-    View
+  BackHandler,
+  ScrollView,
+  StyleSheet,
+  View
 } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
@@ -17,14 +17,14 @@ import AppTopBar from "@/components/common/AppTopBar";
 import OverviewTab from "@/components/patient-overview/OverviewTab";
 import PatientOverviewHeader from "@/components/patient-overview/PatientOverviewHeader";
 import PatientOverviewTabs, {
-    PatientOverviewTab,
+  PatientOverviewTab,
 } from "@/components/patient-overview/PatientOverviewTabs";
 import VisitsTab from "@/components/patient-overview/VisitsTab";
 
 import { patientsData } from "@/data/patients";
 import {
-    COLORS,
-    SPACING,
+  COLORS,
+  SPACING,
 } from "@/theme";
 export default function PatientOverviewScreen() {
     useFocusEffect(() => {
@@ -66,11 +66,11 @@ export default function PatientOverviewScreen() {
           router.push("/settings")
         }
       />
-<ScrollView>
-      <View style={styles.content}>
-        <PatientOverviewHeader
-  patient={patient}
-/>
+        <ScrollView>
+              <View style={styles.content}>
+                <PatientOverviewHeader
+          patient={patient}
+        />
 
         <PatientOverviewTabs
           activeTab={activeTab}
