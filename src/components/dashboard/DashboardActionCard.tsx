@@ -35,6 +35,7 @@ type Props = {
   variant?: Variant;
 
   fullWidth?: boolean;
+  compact?: boolean;
 
   onPress?: () => void;
 
@@ -47,6 +48,7 @@ export default function DashboardActionCard({
   icon,
   variant = "primary",
   fullWidth = false,
+  compact = false,
   onPress,
   style,
 }: Props) {
@@ -108,9 +110,10 @@ export default function DashboardActionCard({
 
           <View style={styles.textContainer}>
             <Text
-              numberOfLines={1}
+              numberOfLines={compact ? 2 : 1}
               style={[
                 styles.title,
+                compact && styles.compactTitle,
                 {
                   color: theme.accent,
                 },
@@ -127,11 +130,13 @@ export default function DashboardActionCard({
             </Text>
           </View>
 
-          <Ionicons
-            name="chevron-forward"
-            size={28}
-            color={theme.accent}
-          />
+          {!compact && (
+            <Ionicons
+              name="chevron-forward"
+              size={28}
+              color={theme.accent}
+            />
+          )}
         </View>
       </AppCard>
     </Pressable>
@@ -221,7 +226,7 @@ const styles = StyleSheet.create({
 
     marginHorizontal: SPACING.md,
     flexShrink: 1,
-minWidth: 0,
+    minWidth: 0,
   },
 
   title: {
@@ -266,5 +271,9 @@ minWidth: 0,
     height: 70,
 
     borderRadius: 35,
+  },
+  compactTitle: {
+    fontSize: TYPOGRAPHY.small-1,
+    lineHeight: 18,
   },
 });

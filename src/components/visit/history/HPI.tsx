@@ -112,8 +112,8 @@ content: {
 
   borderRadius: 25,
   backgroundColor: "#DCEBFF",
-borderColor: "#A8C7FF",
-borderWidth: 1,
+  borderColor: "#A8C7FF",
+  borderWidth: 1,
 
   marginBottom: SPACING.sm,
 },

@@ -1,24 +1,21 @@
-import { router } from "expo-router";
-
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
 import AppTopBar from "@/components/common/AppTopBar";
+import SectionHeader from "@/components/common/SectionHeader";
 import DashboardActionCard from "@/components/dashboard/DashboardActionCard";
 import StatCard from "@/components/dashboard/StatCard";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
+import dashboardStats from "@/data/dashboard";
 import { currentDoctor } from "@/data/user";
-
 import {
   COLORS,
-  SPACING,
-  TYPOGRAPHY,
+  SPACING
 } from "@/theme";
+import { router } from "expo-router";
+import {
+  ScrollView,
+  StyleSheet,
+  View
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function DashboardScreen() {
   return (
@@ -32,32 +29,31 @@ export default function DashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <WelcomeCard
-    doctorName={`Dr. ${currentDoctor.name}`}
-    clinicName={currentDoctor.clinicName}
-/>
+          doctorName={`Dr. ${currentDoctor.name}`}
+          specialty={currentDoctor.specialty}
+          clinicName={currentDoctor.clinicName}
+        />
 
         <View style={styles.statsRow}>
           <StatCard
             title="Today's Patients"
-            value={24}
-            subtitle="12% more than yesterday"
+            value={dashboardStats.todayPatients}
+            subtitle={dashboardStats.todayPatientsSubtitle}
             icon="people-outline"
             style={styles.flex}
           />
 
           <StatCard
             title="Waiting"
-            value={5}
-            subtitle="Average 15 min"
+            value={dashboardStats.waitingPatients}
+            subtitle={dashboardStats.waitingSubtitle}
             icon="time-outline"
             color="#16A34A"
             style={styles.flex}
           />
         </View>
 
-        <Text style={styles.sectionTitle}>
-          Quick Actions
-        </Text>
+        <SectionHeader title="Quick Actions" />
 
         <DashboardActionCard
           title="New Patient"
@@ -81,7 +77,7 @@ export default function DashboardScreen() {
 
         <View style={styles.actionsRow}>
           <DashboardActionCard
-          
+            compact
             title="Existing Patients"
             subtitle="Browse patient records"
             icon="people-outline"
@@ -93,8 +89,9 @@ export default function DashboardScreen() {
           />
 
           <DashboardActionCard
-            title="Rx"
-            subtitle="Temps"
+            compact
+            title="Templates"
+            subtitle="Prescription Templates"
             icon="document-text-outline"
             style={styles.flex}
              variant="orange"
@@ -106,6 +103,7 @@ export default function DashboardScreen() {
 
         <View style={styles.actionsRow}>
           <DashboardActionCard
+            compact
             title="Statistics"
             subtitle="Clinic analytics"
             icon="bar-chart-outline"
@@ -118,6 +116,7 @@ export default function DashboardScreen() {
           />
 
           <DashboardActionCard
+            compact
             title="Clinic"
             subtitle="Management"
             icon="business-outline"
@@ -155,13 +154,6 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
     marginTop: SPACING.md,
     justifyContent: "space-between",
-  },
-
-  sectionTitle: {
-    fontSize: TYPOGRAPHY.heading,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginBottom: SPACING.lg,
   },
 
   flex: {

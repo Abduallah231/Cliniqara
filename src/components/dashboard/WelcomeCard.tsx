@@ -18,12 +18,14 @@ import {
 
 type Props = {
   doctorName: string;
+  specialty: string;
   clinicName: string;
   style?: StyleProp<ViewStyle>;
 };
 
 export default function WelcomeCard({
   doctorName,
+  specialty,
   clinicName,
   style,
 }: Props) {
@@ -35,6 +37,10 @@ export default function WelcomeCard({
 
       <Text style={styles.name}>
         {doctorName}
+      </Text>
+
+      <Text style={styles.specialty}>
+        {specialty}
       </Text>
 
       <View style={styles.clinicRow}>
@@ -67,6 +73,12 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: TYPOGRAPHY.title,
     fontWeight: "700",
+  },
+
+  specialty: {
+    color: COLORS.secondaryText,
+    fontSize: TYPOGRAPHY.body,
+    marginTop: SPACING.xs,
   },
 
   clinicRow: {
