@@ -34,48 +34,65 @@ export default function RegionalExaminationSection() {
 
   const toggleItem = (
     item: string,
-    selected: string[],
-    setSelected: (
-      value: string[]
-    ) => void
+    setSelected: React.Dispatch<
+      React.SetStateAction<string[]>
+    >
   ) => {
-    if (item === "NAD") {
-      setSelected(["NAD"]);
-      return;
-    }
+    setSelected((prev) => {
+      if (item === "NAD") {
+        return ["NAD"];
+      }
 
-    let updated = selected.filter(
-      (x) => x !== "NAD"
-    );
-
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item
+      let updated = prev.filter(
+        (x) => x !== "NAD"
       );
-    } else {
-      updated.push(item);
-    }
 
-    if (updated.length === 0) {
-      updated = ["NAD"];
-    }
+      if (updated.includes(item)) {
+        updated = updated.filter(
+          (x) => x !== item
+        );
+      } else {
+        updated = [...updated, item];
+      }
 
-    setSelected(updated);
+      return updated.length === 0
+        ? ["NAD"]
+        : updated;
+    });
   };
+    const [headNotes, setHeadNotes] =
+      useState("");
 
-  const Section = ({
-    title,
-    items,
-    selected,
-    setSelected,
-  }: {
-    title: string;
-    items: string[];
-    selected: string[];
-    setSelected: (
-      value: string[]
-    ) => void;
-  }) => (
+    const [neckNotes, setNeckNotes] =
+      useState("");
+
+    const [
+      upperLimbNotes,
+      setUpperLimbNotes,
+    ] = useState("");
+
+    const [
+      lowerLimbNotes,
+      setLowerLimbNotes,
+    ] = useState("");
+
+    const Section = ({
+      title,
+      items,
+      selected,
+      setSelected,
+      notes,
+      setNotes,
+    }: {
+      title: string;
+      items: string[];
+      selected: string[];
+      setSelected: React.Dispatch<
+        React.SetStateAction<string[]>
+      >;
+      notes: string;
+      setNotes: (value: string) => void;
+    }) => (
     <>
       <Text style={styles.sectionTitle}>
         {title}
@@ -92,7 +109,6 @@ export default function RegionalExaminationSection() {
             onPress={() =>
               toggleItem(
                 item,
-                selected,
                 setSelected
               )
             }
@@ -101,10 +117,9 @@ export default function RegionalExaminationSection() {
       </View>
 
       <AppTextField
-        
         placeholder="Other findings..."
-        value=""
-        onChangeText={() => {}}
+        value={notes}
+        onChangeText={setNotes}
         multiline
       />
     </>
@@ -134,6 +149,8 @@ export default function RegionalExaminationSection() {
           ]}
           selected={headFindings}
           setSelected={setHeadFindings}
+          notes={headNotes}
+          setNotes={setHeadNotes}
         />
 
         <Section
@@ -148,6 +165,8 @@ export default function RegionalExaminationSection() {
           ]}
           selected={neckFindings}
           setSelected={setNeckFindings}
+          notes={neckNotes}
+          setNotes={setNeckNotes}
         />
 
         <Section
@@ -166,6 +185,8 @@ export default function RegionalExaminationSection() {
           setSelected={
             setUpperLimbFindings
           }
+          notes={upperLimbNotes}
+          setNotes={setUpperLimbNotes}
         />
 
         <Section
@@ -185,6 +206,8 @@ export default function RegionalExaminationSection() {
           setSelected={
             setLowerLimbFindings
           }
+          notes={lowerLimbNotes}
+          setNotes={setLowerLimbNotes}
         />
       </CollapsibleSection>
     </View>

@@ -11,6 +11,91 @@ import {
   TYPOGRAPHY,
 } from "@/theme";
 
+type AllergyCardProps = {
+  title: string;
+  type: string;
+  allergen: Record<string, string>;
+  setAllergen: React.Dispatch<
+    React.SetStateAction<Record<string, string>>
+  >;
+  reaction: Record<string, string>;
+  setReaction: React.Dispatch<
+    React.SetStateAction<Record<string, string>>
+  >;
+  severity: Record<string, string>;
+  setSeverity: React.Dispatch<
+    React.SetStateAction<Record<string, string>>
+  >;
+};
+
+function AllergyCard({
+  title,
+  type,
+  allergen,
+  setAllergen,
+  reaction,
+  setReaction,
+  severity,
+  setSeverity,
+}: AllergyCardProps) {
+  return (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>
+        {title}
+      </Text>
+
+      <AppTextField
+        label="Allergen"
+        placeholder="Allergen"
+        value={allergen[type] ?? ""}
+        onChangeText={(text) =>
+          setAllergen((prev) => ({
+            ...prev,
+            [type]: text,
+          }))
+        }
+      />
+
+      <AppTextField
+        label="Reaction"
+        placeholder="Reaction"
+        value={reaction[type] ?? ""}
+        onChangeText={(text) =>
+          setReaction((prev) => ({
+            ...prev,
+            [type]: text,
+          }))
+        }
+      />
+
+      <Text style={styles.label}>
+        Severity
+      </Text>
+
+      <View style={styles.row}>
+        {[
+          "Mild",
+          "Moderate",
+          "Severe",
+          "Anaphylaxis",
+        ].map((item) => (
+          <AppChip
+            key={item}
+            label={item}
+            selected={severity[type] === item}
+            onPress={() =>
+              setSeverity((prev) => ({
+                ...prev,
+                [type]: item,
+              }))
+            }
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
 export default function AllergyHistory() {
   const [hasAllergy, setHasAllergy] =
     useState("No");
@@ -51,72 +136,6 @@ export default function AllergyHistory() {
       [type]: value,
     });
   };
-
-  const AllergyCard = ({
-    title,
-    type,
-  }: {
-    title: string;
-    type: string;
-  }) => (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>
-        {title}
-      </Text>
-
-      <AppTextField
-        label="Allergen"
-        placeholder="Allergen"
-        value={allergen[type] ?? ""}
-        onChangeText={(text) =>
-          setAllergen({
-            ...allergen,
-            [type]: text,
-          })
-        }
-      />
-
-      <AppTextField
-        label="Reaction"
-        placeholder="Reaction"
-        value={reaction[type] ?? ""}
-        onChangeText={(text) =>
-          setReaction({
-            ...reaction,
-            [type]: text,
-          })
-        }
-      />
-
-      <Text style={styles.label}>
-        Severity
-      </Text>
-
-      <View style={styles.row}>
-        {[
-          "Mild",
-          "Moderate",
-          "Severe",
-          "Anaphylaxis",
-        ].map((item) => (
-          <AppChip
-            key={item}
-            label={item}
-            selected={
-              severity[type] === item
-            }
-            onPress={() =>
-              setAllergySeverity(
-                type,
-                item
-              )
-            }
-          />
-        ))}
-      </View>
-    </View>
-  );
-
   return (
     <View style={styles.container}>
 <SectionHeader title="Any Allergy?" />
@@ -163,16 +182,28 @@ export default function AllergyHistory() {
           
           {selectedTypes.includes("Drug") && (
             <AllergyCard
-              title="Drug Allergy"
-              type="Drug"
-            />
+  title="Drug Allergy"
+  type="Drug"
+  allergen={allergen}
+  setAllergen={setAllergen}
+  reaction={reaction}
+  setReaction={setReaction}
+  severity={severity}
+  setSeverity={setSeverity}
+/>
           )}
 
           {selectedTypes.includes("Food") && (
             <AllergyCard
-              title="Food Allergy"
-              type="Food"
-            />
+  title="Food Allergy"
+  type="Food"
+  allergen={allergen}
+  setAllergen={setAllergen}
+  reaction={reaction}
+  setReaction={setReaction}
+  severity={severity}
+  setSeverity={setSeverity}
+/>
           )}
 
           {selectedTypes.includes(
@@ -181,6 +212,12 @@ export default function AllergyHistory() {
             <AllergyCard
               title="Environmental Allergy"
               type="Environmental"
+  allergen={allergen}
+  setAllergen={setAllergen}
+  reaction={reaction}
+  setReaction={setReaction}
+  severity={severity}
+  setSeverity={setSeverity}
             />
           )}
 
@@ -188,6 +225,12 @@ export default function AllergyHistory() {
             <AllergyCard
               title="Other Allergy"
               type="Other"
+              allergen={allergen}
+              setAllergen={setAllergen}
+              reaction={reaction}
+              setReaction={setReaction}
+              severity={severity}
+              setSeverity={setSeverity}
             />
           )}
         </>

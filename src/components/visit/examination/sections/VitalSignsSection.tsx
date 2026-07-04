@@ -26,6 +26,16 @@ export default function VitalSignsSection() {
   const [oxygenSource, setOxygenSource] =
     useState("Room Air");
 
+  const [systolicBP, setSystolicBP] = useState("");
+  const [diastolicBP, setDiastolicBP] = useState("");
+  const [heartRate, setHeartRate] = useState("");
+  const [spo2, setSpo2] = useState("");
+  const [temperature, setTemperature] = useState("");
+  const [respiratoryRate, setRespiratoryRate] = useState("");
+  const [bloodGlucose, setBloodGlucose] = useState("");
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
+
   return (
     <View style={styles.container}>
       <CollapsibleSection
@@ -47,8 +57,8 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               
-              value=""
-              onChangeText={() => {}}
+              value={systolicBP}
+              onChangeText={setSystolicBP}
               keyboardType="numeric"
               placeholder="Systolic"
             />
@@ -57,8 +67,8 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               
-              value=""
-              onChangeText={() => {}}
+              value={diastolicBP}
+              onChangeText={setDiastolicBP}
               keyboardType="numeric"
               placeholder="Diastolic"
             />
@@ -69,8 +79,8 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="Heart Rate"
-              value=""
-              onChangeText={() => {}}
+              value={heartRate}
+              onChangeText={setHeartRate}
               keyboardType="numeric"
               placeholder="bpm"
             />
@@ -107,8 +117,8 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="SpO₂"
-              value=""
-              onChangeText={() => {}}
+              value={spo2}
+              onChangeText={setSpo2}
               keyboardType="numeric"
               placeholder="%"
             />
@@ -144,8 +154,8 @@ export default function VitalSignsSection() {
         </View>
                 <AppTextField
           label="Temperature"
-          value=""
-          onChangeText={() => {}}
+          value={temperature}
+          onChangeText={setTemperature}
           keyboardType="numeric"
           placeholder="°C"
         />
@@ -174,8 +184,8 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="Respiratory Rate"
-              value=""
-              onChangeText={() => {}}
+              value={respiratoryRate}
+              onChangeText={setRespiratoryRate      }
               keyboardType="numeric"
               placeholder="breaths/min"
             />
@@ -184,8 +194,8 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="Blood Glucose"
-              value=""
-              onChangeText={() => {}}
+              value={bloodGlucose}
+              onChangeText={setBloodGlucose}
               keyboardType="numeric"
               placeholder="mg/dL"
             />
@@ -196,8 +206,8 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="Weight"
-              value=""
-              onChangeText={() => {}}
+              value={weight}
+              onChangeText={setWeight}
               keyboardType="numeric"
               placeholder="kg"
             />
@@ -206,8 +216,8 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="Height"
-              value=""
-              onChangeText={() => {}}
+              value={height}
+              onChangeText={setHeight}
               keyboardType="numeric"
               placeholder="cm"
             />

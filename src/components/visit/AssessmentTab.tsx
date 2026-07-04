@@ -2,22 +2,14 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
 import {
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 
-import DiagnosisSection from "./assessment/DiagnosisSection";
-import ExaminationSummary from "./assessment/ExaminationSummary";
-import HistorySummary from "./assessment/HistorySummary";
-import InvestigationResultsScreen from "./assessment/InvestigationResultsScreen";
-import InvestigationSection from "./assessment/InvestigationSection";
-import PrescriptionSection from "./assessment/PrescriptionSection";
-import ProceduresReferralsSection from "./assessment/ProceduresReferrals";
-
+import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import {
   COLORS,
   RADIUS,
@@ -25,6 +17,14 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import DiagnosisSection from "./assessment/DiagnosisSection";
+import ExaminationSummary from "./assessment/ExaminationSummary";
+import HistorySummary from "./assessment/HistorySummary";
+import InvestigationResultsScreen from "./assessment/InvestigationResultsScreen";
+import InvestigationSection from "./assessment/InvestigationSection";
+import PrescriptionSection from "./assessment/PrescriptionSection";
+import ProceduresReferralsSection from "./assessment/ProceduresReferrals";
+import VisitHeaderCard from "./VisitHeaderCard";
 
 export default function AssessmentTab() {
   const [
@@ -38,7 +38,7 @@ export default function AssessmentTab() {
   ] = useState<any[]>([]);
 
   return (
-    <ScrollView
+    <AppKeyboardAwareScrollView
       style={styles.container}
       contentContainerStyle={
         styles.content
@@ -47,27 +47,10 @@ export default function AssessmentTab() {
         false
       }
     >
-      <View style={styles.patientBanner}>
-        <Text style={styles.patientName}>
-          Mohamed Ahmed
-        </Text>
-
-        <Text style={styles.patientInfo}>
-          32 Years • Male
-        </Text>
-</View>
-
-        <View style={styles.assessmentRow}>
-          <Ionicons
-            name="clipboard-outline"
-            size={16}
-            color={COLORS.primary}
-          />
-
-          <Text style={styles.assessmentText}>
-            Assessment
-          </Text>
-        </View>
+      <VisitHeaderCard
+        sectionTitle="Medical Assessment"
+        icon="clipboard-outline"
+      />
       <HistorySummary />
 
       <ExaminationSummary />
@@ -186,7 +169,8 @@ export default function AssessmentTab() {
       >
         <PrescriptionSection />
       </CollapsibleSection>
-          </ScrollView>
+      <View style={{ height: 50 }} />
+          </AppKeyboardAwareScrollView>
   );
 }
 

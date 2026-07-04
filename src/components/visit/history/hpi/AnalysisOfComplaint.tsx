@@ -4,7 +4,8 @@ import {
   Text,
   View,
 } from "react-native";
-
+import Divider from "@/components/common/Divider";
+import SectionHeader from "@/components/common/SectionHeader";
 import AppButton from "@/components/common/AppButton";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
@@ -18,8 +19,10 @@ import {
 import ExcretaAnalysis from "./ExcretaAnalysis";
 import PainAnalysis from "./PainAnalysis";
 
+import type { SelectionOption } from "@/models/selection";
+
 type Props = {
-  chiefComplaint: string;
+  chiefComplaint?: SelectionOption;
 };
 
 export default function AnalysisOfComplaint({
@@ -76,7 +79,7 @@ export default function AnalysisOfComplaint({
   ].filter(
     (item) =>
       item.toLowerCase() !==
-      chiefComplaint.toLowerCase()
+      chiefComplaint?.label.toLowerCase()
   );
 
   const addSymptom = (
@@ -115,9 +118,8 @@ export default function AnalysisOfComplaint({
 
   return (
     <View style={styles.container}>
-            <Text style={styles.sectionTitle}>
-        Onset
-      </Text>
+    <Divider />
+    <SectionHeader title="Onset" />
 
       <Text style={styles.subTitle}>
         Mode of Onset
@@ -211,10 +213,8 @@ export default function AnalysisOfComplaint({
           />
         ))}
       </View>
-
-      <Text style={styles.sectionTitle}>
-        Course
-      </Text>
+      <Divider />
+      <SectionHeader title="Course" />
 
       <View style={styles.row}>
         {[
@@ -250,9 +250,8 @@ export default function AnalysisOfComplaint({
           onChangeText={setOtherCourse}
         />
       )}
-            <Text style={styles.sectionTitle}>
-        Associated Symptoms
-      </Text>
+      <Divider />
+      <SectionHeader title="Associated Symptoms" />
 
       <View style={styles.searchRow}>
         <View style={{ flex: 1 }}>
@@ -308,7 +307,7 @@ export default function AnalysisOfComplaint({
 
           <View style={styles.row}>
             <AppChip
-              label={chiefComplaint}
+              label={chiefComplaint?.label ?? ""}
               selected
               onPress={() => {}}
             />
@@ -340,25 +339,27 @@ export default function AnalysisOfComplaint({
           </View>
         </>
       )}
+      <Divider />
+      <SectionHeader title="Aggravating Factors" />
 
       <AppTextField
-        label="Aggravating Factors"
         placeholder="Enter aggravating factors"
         value={aggravating}
         onChangeText={setAggravating}
         multiline
       />
 
+
       <AppTextField
-        label="Relieving Factors"
+        label=""
         placeholder="Enter relieving factors"
         value={relieving}
         onChangeText={setRelieving}
         multiline
       />
-
+      <Divider />
+      <SectionHeader title="Effect of Treatment" />
       <AppTextField
-        label="Effect of Treatment"
         placeholder="Enter effect of treatment"
         value={treatmentEffect}
         onChangeText={
@@ -366,9 +367,8 @@ export default function AnalysisOfComplaint({
         }
         multiline
       />
-            <Text style={styles.sectionTitle}>
-        Complaint Type
-      </Text>
+            <Divider />
+      <SectionHeader title="Complaint Type" />
 
       <View style={styles.row}>
         <AppChip

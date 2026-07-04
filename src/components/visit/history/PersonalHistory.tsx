@@ -47,7 +47,14 @@ export default function PersonalHistory() {
       setHabits([...habits, habit]);
     }
   };
-
+  const [cigarettesPerDay, setCigarettesPerDay] = useState("");
+const [yearsSmoking, setYearsSmoking] = useState("");
+const [yearsSinceQuitting, setYearsSinceQuitting] = useState("");
+const [cupsPerDay, setCupsPerDay] = useState("");
+const [drugType, setDrugType] = useState("");
+const [sleepNotes, setSleepNotes] = useState("");
+const [otherHabit, setOtherHabit] = useState("");
+const [yearsSinceStopping, setYearsSinceStopping] = useState("");
   return (
     <View style={styles.container}>
       <SectionHeader title="Marital Status" />
@@ -190,13 +197,15 @@ export default function PersonalHistory() {
             {smoking !== "Never" && (
         <View style={styles.box}>
           <AppTextField
-        
-            placeholder="Cigarettes Per Day"
-            keyboardType="numeric"
-          />
+  value={cigarettesPerDay}
+  onChangeText={setCigarettesPerDay}
+  placeholder="Cigarettes Per Day"
+  keyboardType="numeric"
+/>
 
           <AppTextField
-    
+            value={yearsSmoking}
+            onChangeText={setYearsSmoking}
             placeholder="Years Smoking"
             keyboardType="numeric"
           />
@@ -215,10 +224,11 @@ export default function PersonalHistory() {
 
           {smoking === "Former" && (
             <AppTextField
-          
-              placeholder="Years Since Quitting"
-              keyboardType="numeric"
-            />
+  value={yearsSinceQuitting}
+  onChangeText={setYearsSinceQuitting}
+  placeholder="Years Since Quitting"
+  keyboardType="numeric"
+/>
           )}
         </View>
       )}
@@ -250,7 +260,7 @@ export default function PersonalHistory() {
 
       {alcohol !== "No" && (
         <View style={styles.box}>
-          <text>How often</text>
+          <Text>How often</Text>
           <View style={styles.row}>
             <AppChip
               label="Occasional"
@@ -292,10 +302,11 @@ export default function PersonalHistory() {
 
           {alcohol === "Former" && (
             <AppTextField
-       
-              placeholder="Years Since Stopping"
-              keyboardType="numeric"
-            />
+  value={yearsSinceStopping}
+  onChangeText={setYearsSinceStopping}
+  placeholder="Years Since Stopping"
+  keyboardType="numeric"
+/>
           )}
         </View>
       )}
@@ -346,17 +357,19 @@ export default function PersonalHistory() {
           }
         />
       </View>
-            <View style={styles.box}>
+      <View style={styles.box}>
         {habits.includes("Caffeine") && (
           <AppTextField
-        
+            value={cupsPerDay}
+            onChangeText={setCupsPerDay}
             placeholder="Cups Per Day"
           />
         )}
 
         {habits.includes("Drug Use") && (
           <AppTextField
-      
+            value={drugType}
+            onChangeText={setDrugType}
             placeholder="Type of Drug"
           />
         )}
@@ -402,14 +415,16 @@ export default function PersonalHistory() {
           "Sleep Disturbance"
         ) && (
           <AppTextField
-         
+            value={sleepNotes}
+            onChangeText={setSleepNotes}
             placeholder="Sleep Notes"
           />
         )}
 
         {habits.includes("Other") && (
           <AppTextField
-      
+            value={otherHabit}
+            onChangeText={setOtherHabit}
             placeholder="Other Habit Description"
           />
         )}

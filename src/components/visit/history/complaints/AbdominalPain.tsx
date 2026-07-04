@@ -1,295 +1,335 @@
-import { visitStyles as styles } from "@/theme/visitStyles";
+import AppCard from "@/components/common/AppCard";
+import AppChip from "@/components/common/AppChip";
+import AppTextField from "@/components/common/AppTextField";
+import {
+  COLORS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/theme";
+import Divider from "@/components/common/Divider";
+import SectionHeader from "@/components/common/SectionHeader";
 import { useState } from "react";
 import {
-  Pressable,
   ScrollView,
+  StyleSheet,
   Text,
-  TextInput,
-  View
+  View,
 } from "react-native";
+import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
+const LOCATION_OPTIONS = [
+  "Epigastric",
+  "RUQ",
+  "LUQ",
+  "RLQ",
+  "LLQ",
+  "Suprapubic",
+  "Flank",
+  "Diffuse",
+];
+
+const CHARACTER_OPTIONS = [
+  "Burning",
+  "Colicky",
+  "Sharp",
+  "Dull Ache",
+];
+
+const RADIATION_OPTIONS = [
+  "Back",
+  "Right Shoulder",
+  "Groin",
+  "No Radiation",
+];
+
+const ASSOCIATED_OPTIONS = [
+  "Nausea / Vomiting",
+  "Diarrhea",
+  "Constipation",
+  "Fever",
+  "Jaundice",
+  "Weight Loss",
+  "GI Bleeding",
+  "Urinary Symptoms",
+  "Gynecological Symptoms",
+];
+
+const RED_FLAG_OPTIONS = [
+  "GI Bleeding",
+  "Persistent Vomiting",
+  "Weight Loss",
+  "Jaundice",
+  "Shock",
+  "Syncope",
+];
+
+const PMH_OPTIONS = [
+  "Gallstones",
+  "Peptic Ulcer Disease",
+  "Kidney Stones",
+  "IBS",
+  "IBD",
+  "Previous Abdominal Surgery",
+];
+
+const MEDICATION_OPTIONS = [
+  "NSAIDs",
+  "Recent Antibiotics",
+];
+
 export default function AbdominalPain() {
-  const [location, setLocation] = useState("");
+  const [location, setLocation] =
+    useState("");
 
-  const [character, setCharacter] = useState<string[]>([]);
-  const [associated, setAssociated] = useState<string[]>([]);
-  const [redFlags, setRedFlags] = useState<string[]>([]);
-  const [pmh, setPmh] = useState<string[]>([]);
-  const [medications, setMedications] = useState<string[]>([]);
+  const [radiation, setRadiation] =
+    useState("");
 
-  const [radiation, setRadiation] = useState("");
+  const [character, setCharacter] =
+    useState<string[]>([]);
+
+  const [associated, setAssociated] =
+    useState<string[]>([]);
+
+  const [redFlags, setRedFlags] =
+    useState<string[]>([]);
+
+  const [pmh, setPmh] =
+    useState<string[]>([]);
+
+  const [medications, setMedications] =
+    useState<string[]>([]);
+
+  const [otherMedication, setOtherMedication] =
+    useState("");
 
   const toggleMulti = (
     value: string,
     list: string[],
-    setList: (value: string[]) => void
+    setter: React.Dispatch<
+      React.SetStateAction<string[]>
+    >
   ) => {
-    if (list.includes(value)) {
-      setList(list.filter((x) => x !== value));
-    } else {
-      setList([...list, value]);
-    }
+    setter(
+      list.includes(value)
+        ? list.filter(
+            (item) => item !== value
+          )
+        : [...list, value]
+    );
   };
 
-  const Chip = ({
-    label,
-    selected,
-    onPress,
-  }: {
-    label: string;
-    selected: boolean;
-    onPress: () => void;
-  }) => (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.chip,
-        selected && styles.selectedChip,
-      ]}
-    >
-      <Text
-        style={
-          selected
-            ? styles.selectedChipText
-            : styles.chipText
-        }
-      >
-        {label}
-      </Text>
-    </Pressable>
-  );
-
   return (
-    <ScrollView
+    <AppKeyboardAwareScrollView
+      style={styles.container}
+      contentContainerStyle={
+        styles.content
+      }
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>
         Abdominal Pain
       </Text>
 
-      {/* Location */}
+      <AppCard>
+        <SectionHeader title="Location" />
 
-      <Text style={styles.sectionTitle}>
-        Location
-      </Text>
+        <View style={styles.chipContainer}>
+          {LOCATION_OPTIONS.map((item) => (
+            <AppChip
+              key={item}
+              label={item}
+              selected={location === item}
+              onPress={() =>
+                setLocation(
+                  location === item
+                    ? ""
+                    : item
+                )
+              }
+            />
+          ))}
+        </View>
+        <Divider />
+        <SectionHeader title="Character" />
 
-      <View style={styles.row}>
-        {[
-          "Epigastric",
-          "RUQ",
-          "LUQ",
-          "RLQ",
-          "LLQ",
-          "Suprapubic",
-          "Flank",
-          "Diffuse",
-        ].map((item) => (
-          <Chip
-            key={item}
-            label={item}
-            selected={location === item}
-            onPress={() =>
-              setLocation(
-                location === item
-                  ? ""
-                  : item
-              )
-            }
-          />
-        ))}
-      </View>
+        <View style={styles.chipContainer}>
+          {CHARACTER_OPTIONS.map(
+            (item) => (
+              <AppChip
+                key={item}
+                label={item}
+                selected={character.includes(
+                  item
+                )}
+                onPress={() =>
+                  toggleMulti(
+                    item,
+                    character,
+                    setCharacter
+                  )
+                }
+              />
+            )
+          )}
+        </View>
 
-      {/* Character */}
+        <Divider />
+        <SectionHeader title="Radiation" />
 
-      <Text style={styles.sectionTitle}>
-        Character
-      </Text>
+        <View style={styles.chipContainer}>
+          {RADIATION_OPTIONS.map(
+            (item) => (
+              <AppChip
+                key={item}
+                label={item}
+                selected={
+                  radiation === item
+                }
+                onPress={() =>
+                  setRadiation(
+                    radiation === item
+                      ? ""
+                      : item
+                  )
+                }
+              />
+            )
+          )}
+        </View>
+        <Divider />
+        <SectionHeader title="Associated Symptoms" />
 
-      <View style={styles.row}>
-        {[
-          "Burning",
-          "Colicky",
-          "Sharp",
-          "Dull Ache",
-        ].map((item) => (
-          <Chip
-            key={item}
-            label={item}
-            selected={character.includes(
-              item
-            )}
-            onPress={() =>
-              toggleMulti(
-                item,
-                character,
-                setCharacter
-              )
-            }
-          />
-        ))}
-      </View>
+        <View style={styles.chipContainer}>
+          {ASSOCIATED_OPTIONS.map(
+            (item) => (
+              <AppChip
+                key={item}
+                label={item}
+                selected={associated.includes(
+                  item
+                )}
+                onPress={() =>
+                  toggleMulti(
+                    item,
+                    associated,
+                    setAssociated
+                  )
+                }
+              />
+            )
+          )}
+        </View>
+        <Divider />
+        <SectionHeader title="Red Flags" />
 
-      {/* Radiation */}
 
-      <Text style={styles.sectionTitle}>
-        Radiation
-      </Text>
+        <View style={styles.chipContainer}>
+          {RED_FLAG_OPTIONS.map(
+            (item) => (
+              <AppChip
+                key={item}
+                label={item}
+                selected={redFlags.includes(
+                  item
+                )}
+                onPress={() =>
+                  toggleMulti(
+                    item,
+                    redFlags,
+                    setRedFlags
+                  )
+                }
+              />
+            )
+          )}
+        </View>
+        <Divider />
+        <SectionHeader title="Relevant Past Medical
+          History" />
 
-      <View style={styles.row}>
-        {[
-          "Back",
-          "Right Shoulder",
-          "Groin",
-          "No Radiation",
-        ].map((item) => (
-          <Chip
-            key={item}
-            label={item}
-            selected={
-              radiation === item
-            }
-            onPress={() =>
-              setRadiation(
-                radiation === item
-                  ? ""
-                  : item
-              )
-            }
-          />
-        ))}
-      </View>
+        <View style={styles.chipContainer}>
+          {PMH_OPTIONS.map((item) => (
+            <AppChip
+              key={item}
+              label={item}
+              selected={pmh.includes(
+                item
+              )}
+              onPress={() =>
+                toggleMulti(
+                  item,
+                  pmh,
+                  setPmh
+                )
+              }
+            />
+          ))}
+        </View>
+        <Divider />
+        <SectionHeader title="Relevant Medication History" />
 
-      {/* Associated Symptoms */}
+        <View style={styles.chipContainer}>
+          {MEDICATION_OPTIONS.map(
+            (item) => (
+              <AppChip
+                key={item}
+                label={item}
+                selected={medications.includes(
+                  item
+                )}
+                onPress={() =>
+                  toggleMulti(
+                    item,
+                    medications,
+                    setMedications
+                  )
+                }
+              />
+            )
+          )}
+        </View>
+        <Divider />
+        <SectionHeader title="Other Medications" />
 
-      <Text style={styles.sectionTitle}>
-        Associated Symptoms
-      </Text>
-
-      <View style={styles.row}>
-        {[
-          "Nausea/Vomiting",
-          "Diarrhea",
-          "Constipation",
-          "Fever",
-          "Jaundice",
-          "Weight Loss",
-          "GI Bleeding",
-          "Urinary Symptoms",
-          "Gynecological Symptoms",
-        ].map((item) => (
-          <Chip
-            key={item}
-            label={item}
-            selected={associated.includes(
-              item
-            )}
-            onPress={() =>
-              toggleMulti(
-                item,
-                associated,
-                setAssociated
-              )
-            }
-          />
-        ))}
-      </View>
-
-      {/* Red Flags */}
-
-      <Text style={styles.sectionTitle}>
-        Red Flags
-      </Text>
-
-      <View style={styles.row}>
-        {[
-          "GI Bleeding",
-          "Persistent Vomiting",
-          "Weight Loss",
-          "Jaundice",
-          "Shock",
-          "Syncope",
-        ].map((item) => (
-          <Chip
-            key={item}
-            label={item}
-            selected={redFlags.includes(
-              item
-            )}
-            onPress={() =>
-              toggleMulti(
-                item,
-                redFlags,
-                setRedFlags
-              )
-            }
-          />
-        ))}
-      </View>
-
-      {/* PMH */}
-
-      <Text style={styles.sectionTitle}>
-        Relevant Past Medical History
-      </Text>
-
-      <View style={styles.row}>
-        {[
-          "Gallstones",
-          "Peptic Ulcer Disease",
-          "Kidney Stones",
-          "IBS",
-          "IBD",
-          "Previous Abdominal Surgery",
-        ].map((item) => (
-          <Chip
-            key={item}
-            label={item}
-            selected={pmh.includes(
-              item
-            )}
-            onPress={() =>
-              toggleMulti(
-                item,
-                pmh,
-                setPmh
-              )
-            }
-          />
-        ))}
-      </View>
-
-      {/* Medication History */}
-
-      <Text style={styles.sectionTitle}>
-        Relevant Medication History
-      </Text>
-
-      <View style={styles.row}>
-        {[
-          "NSAIDs",
-          "Recent Antibiotics",
-        ].map((item) => (
-          <Chip
-            key={item}
-            label={item}
-            selected={medications.includes(
-              item
-            )}
-            onPress={() =>
-              toggleMulti(
-                item,
-                medications,
-                setMedications
-              )
-            }
-          />
-        ))}
-      </View>
-
-      <TextInput
-        placeholder="Other relevant medications..."
-        style={styles.input}
-      />
-    </ScrollView>
+        <AppTextField
+          value={otherMedication}
+          onChangeText={
+            setOtherMedication
+          }
+          placeholder="Specify other medications..."
+          multiline
+        />
+      </AppCard>
+          </AppKeyboardAwareScrollView>
   );
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+
+  content: {
+    paddingBottom: SPACING.lg,
+  },
+
+  title: {
+    fontSize: TYPOGRAPHY.heading,
+    fontWeight: "700",
+    color: COLORS.text,
+    marginBottom: SPACING.lg,
+  },
+
+  sectionTitle: {
+    fontSize: TYPOGRAPHY.body,
+    fontWeight: "700",
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+    marginTop: SPACING.md,
+  },
+
+  chipContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: SPACING.sm,
+  },
+});

@@ -10,7 +10,7 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
-
+import chronicDiseases from "@/data/chronicDiseases";
 export default function PastHistory() {
   const [selectedDiseases, setSelectedDiseases] =
     useState<string[]>([]);
@@ -81,21 +81,6 @@ export default function PastHistory() {
   const [ventilator, setVentilator] =
     useState("");
 
-  const diseases = [
-    "Diabetes",
-    "Hypertension",
-    "IHD",
-    "Heart Failure",
-    "Asthma",
-    "COPD",
-    "CKD",
-    "CLD",
-    "Thyroid Disease",
-    "Epilepsy",
-    "Stroke",
-    "Cancer",
-  ];
-
   const toggleDisease = (disease: string) => {
     if (selectedDiseases.includes(disease)) {
       setSelectedDiseases(
@@ -116,7 +101,7 @@ export default function PastHistory() {
       <SectionHeader title="Chronic Diseases" />
 
       <View style={styles.row}>
-        {diseases.map((disease) => (
+        {chronicDiseases.map((disease) => (
           <AppChip
             key={disease}
             label={disease}

@@ -61,27 +61,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
 
-  patientBanner: {
-    backgroundColor: COLORS.card,
-    marginHorizontal: SPACING.md,
-    marginTop: SPACING.sm,
-    padding: SPACING.md,
-    borderRadius: RADIUS.xl,
-    ...SHADOW,
-  },
-
-  patientName: {
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  patientInfo: {
-    marginTop: 4,
-    fontSize: TYPOGRAPHY.small,
-    color: COLORS.secondaryText,
-  },
-
   content: {
     flex: 1,
     marginTop: SPACING.md,
@@ -132,18 +111,4 @@ shadowOffset: {
 elevation: 6,
 },
 
-  examRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: SPACING.sm,
-  marginHorizontal: SPACING.xl,
-    borderRadius: RADIUS.xl,
-},
-
-examText: {
-  color: COLORS.primary,
-  fontSize: TYPOGRAPHY.small,
-  fontWeight: "600",
-  marginHorizontal: SPACING.xs,
-},
 });

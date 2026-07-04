@@ -1,8 +1,9 @@
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
 import { useState } from "react";
-
-import AppButton from "@/components/common/AppButton";
+import chiefComplaints from "@/data/chiefComplaints";
+import AppDropdown from "@/components/common/AppDropdown";
+import type { SelectionOption } from "@/models/selection";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -10,106 +11,77 @@ import {
   Text,
   View,
 } from "react-native";
-
+import defaultQuickChiefComplaints from "@/data/defaultQuickChiefComplaints";
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
-
-const COMMON_COMPLAINTS = [
-  "Fever",
-  "Cough",
-  "Dyspnea",
-  "Chest Pain",
-  "Palpitations",
-  "Headache",
-  "Abdominal Pain",
-  "Vomiting",
-  "Diarrhea",
-  "Dizziness",
-];
-
 type Props = {
-  complaint: string;
-  setComplaint: (value: string) => void;
+  complaint?: SelectionOption;
+  setComplaint: (
+    value: SelectionOption | undefined
+  ) => void;
 };
 
 export default function ChiefComplaint({
   complaint,
   setComplaint,
 }: Props) {
-  const [search, setSearch] = useState("");
   const [duration, setDuration] = useState("");
   const [durationUnit, setDurationUnit] =
     useState("Days");
+  const quickComplaints =
+    defaultQuickChiefComplaints;
 
-  const filteredComplaints =
-    COMMON_COMPLAINTS.filter((item) =>
-      item
-        .toLowerCase()
-        .includes(search.toLowerCase())
+  const dropdownComplaints =
+    chiefComplaints.filter(
+      (complaint) =>
+        !quickComplaints.some(
+          (quick) =>
+            quick.id === complaint.id
+        )
     );
-
   return (
     <View
       style={{
         gap: SPACING.sm,
       }}
     >
-      <View
-  style={{
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: SPACING.sm,
-  }}
->
-  
-  <View style={{ flex: 1 }}>
-    <SectionHeader title="Search Complaint" />
-    <AppTextField
-      label=""
-      placeholder="Search complaint..."
-      value={search}
-      onChangeText={setSearch}
-    />
-  </View>
+<SectionHeader title="Chief Complaint" />
 
-  <AppButton
-    title="Add"
-    onPress={() => {
-      if (search.trim()) {
-        setComplaint(search.trim());
+<Text style={styles.subTitle}>
+  Quick Selection
+</Text>
+
+<View style={styles.quickRow}>
+  {quickComplaints.map((item) => (
+    <AppChip
+      key={item.id}
+      label={item.label}
+      selected={
+        complaint?.id === item.id
       }
-    }}
-    style={{
-      width: 90,
-      marginBottom: 2,
-    }}
-  />
+      onPress={() =>
+        setComplaint(item)
+      }
+    />
+  ))}
 </View>
 
-      
-      <View
-        style={{
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: SPACING.xs,
-        }}
-      >
-        {filteredComplaints.map((item) => (
-          <AppChip
-            
-            key={item}
-            label={item}
-            selected={complaint === item}
-            onPress={() =>
-              setComplaint(item)
-            }
-          />
-        ))}
-      </View>
+<Divider />
+<Text style={styles.subTitle}>
+  All Chief Complaints
+</Text>
+
+<AppDropdown
+  placeholder="Search all complaints..."
+  selected={complaint}
+  options={dropdownComplaints}
+  onChange={setComplaint}
+/>
+
 <Divider />
 <SectionHeader title="Duration" />
       <AppTextField
@@ -155,7 +127,7 @@ export default function ChiefComplaint({
   <View style={styles.selectedComplaintBox}>
     
     <Text style={styles.selectedComplaintText}>
-      {complaint || "No complaint selected"}
+      {complaint?.label ?? "No complaint selected"}
     </Text>
   </View>
 </View>
@@ -182,6 +154,17 @@ label: {
   fontSize: TYPOGRAPHY.small,
   fontWeight: "600",
   color: COLORS.text,
+  marginBottom: SPACING.xs,
+},
+quickRow: {
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: SPACING.xs,
+},
+subTitle: {
+  fontSize: TYPOGRAPHY.small,
+  fontWeight: "600",
+  color: COLORS.secondaryText,
   marginBottom: SPACING.xs,
 },
 });

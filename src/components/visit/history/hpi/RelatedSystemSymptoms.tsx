@@ -27,73 +27,46 @@ import SkinSystem from "../related-systems/SkinSystem";
 
 export default function RelatedSystemSymptoms() {
   const [selectedSystem, setSelectedSystem] =
-    useState("General");
+  useState<SystemType>("General");
 
   const systems = [
-    "General",
-    "CVS",
-    "Chest",
-    "GIT",
-    "Renal",
-    "Neuro",
-    "Musculoskeletal",
-    "Endocrine",
-    "Hematology",
-    "Skin",
-    "Gynecology",
-    "Obstetric",
-    "ENT",
-    "Ophthalmology",
-  ];
+  "General",
+  "CVS",
+  "Chest",
+  "GIT",
+  "Renal",
+  "Neuro",
+  "Musculoskeletal",
+  "Endocrine",
+  "Hematology",
+  "Skin",
+  "Gynecology",
+  "Obstetric",
+  "ENT",
+  "Ophthalmology",
+] as const;
 
-  const renderSystem = () => {
-    switch (selectedSystem) {
-      case "General":
-        return <GeneralSystem />;
+type SystemType = (typeof systems)[number];
 
-      case "CVS":
-        return <CVSSystem />;
+  const SYSTEM_COMPONENTS = {
+  General: GeneralSystem,
+  CVS: CVSSystem,
+  Chest: ChestSystem,
+  GIT: GITSystem,
+  Renal: RenalSystem,
+  Neuro: NeuroSystem,
+  Musculoskeletal: MusculoskeletalSystem,
+  Endocrine: EndocrineSystem,
+  Hematology: HematologySystem,
+  Skin: SkinSystem,
+  Gynecology: GynecologySystem,
+  Obstetric: ObstetricSystem,
+  ENT: ENTSystem,
+  Ophthalmology: OphthalmologySystem,
+};
 
-      case "Chest":
-        return <ChestSystem />;
-
-      case "GIT":
-        return <GITSystem />;
-
-      case "Renal":
-        return <RenalSystem />;
-
-      case "Neuro":
-        return <NeuroSystem />;
-
-      case "Musculoskeletal":
-        return <MusculoskeletalSystem />;
-
-      case "Endocrine":
-        return <EndocrineSystem />;
-
-      case "Hematology":
-        return <HematologySystem />;
-
-      case "Skin":
-        return <SkinSystem />;
-
-      case "Gynecology":
-        return <GynecologySystem />;
-
-      case "Obstetric":
-        return <ObstetricSystem />;
-
-      case "ENT":
-        return <ENTSystem />;
-
-      case "Ophthalmology":
-        return <OphthalmologySystem />;
-
-      default:
-        return <GeneralSystem />;
-    }
-  };
+const SelectedSystem =
+  SYSTEM_COMPONENTS[selectedSystem];
 
   return (
     <View style={styles.container}>
@@ -113,7 +86,7 @@ export default function RelatedSystemSymptoms() {
       </View>
 
       <View style={styles.content}>
-        {renderSystem()}
+        <SelectedSystem />
       </View>
     </View>
   );

@@ -42,12 +42,13 @@ export default function HistoryScreen() {
 
       <View style={styles.content}>
         <HistoryTab />
+        
         <View style={styles.navigationBar}>
   <AppButton
     title="Back"
     variant="secondary"
     style={styles.backButton}
-    onPress={() => router.back()}
+    onPress={() => router.replace("/")}
   />
 
   <AppButton

@@ -40,37 +40,21 @@ export default function GeneralInspectionSection() {
   const toggleFinding = (
     item: string
   ) => {
-    if (findings.includes(item)) {
-      setFindings(
-        findings.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setFindings([
-        ...findings,
-        item,
-      ]);
-    }
+    setFindings((prev) =>
+      prev.includes(item)
+        ? prev.filter((x) => x !== item)
+        : [...prev, item]
+    );
   };
 
   const toggleEdemaLocation = (
     item: string
   ) => {
-    if (
-      edemaLocations.includes(item)
-    ) {
-      setEdemaLocations(
-        edemaLocations.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setEdemaLocations([
-        ...edemaLocations,
-        item,
-      ]);
-    }
+    setEdemaLocations((prev) =>
+      prev.includes(item)
+        ? prev.filter((x) => x !== item)
+        : [...prev, item]
+    );
   };
 
   return (

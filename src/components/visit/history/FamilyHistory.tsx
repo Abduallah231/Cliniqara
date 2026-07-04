@@ -9,7 +9,7 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
-
+import chronicDiseases from "@/data/chronicDiseases";
 export default function FamilyHistory() {
   const [selectedDiseases, setSelectedDiseases] =
     useState<string[]>([]);
@@ -19,17 +19,6 @@ export default function FamilyHistory() {
 
   const [affectedMember, setAffectedMember] =
     useState("");
-
-  const diseases = [
-    "Diabetes",
-    "Hypertension",
-    "IHD",
-    "Stroke",
-    "Cancer",
-    "Asthma",
-    "Thyroid Disease",
-    "CKD",
-  ];
 
   const toggleDisease = (disease: string) => {
     if (selectedDiseases.includes(disease)) {
@@ -50,7 +39,7 @@ export default function FamilyHistory() {
     <View style={styles.container}>
 <SectionHeader title="Family Diseases" />
       <View style={styles.row}>
-        {diseases.map((disease) => (
+        {chronicDiseases.map((disease) => (
           <AppChip
             key={disease}
             label={disease}

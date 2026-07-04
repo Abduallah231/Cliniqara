@@ -1,3 +1,4 @@
+import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import {
   COLORS,
   RADIUS,
@@ -5,45 +6,29 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
-import { Ionicons } from "@expo/vector-icons";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import GeneralInspectionSection from "./examination/sections/GeneralInspectionSection";
 import RegionalExaminationSection from "./examination/sections/RegionalExaminationSection";
 import SystemExaminationSection from "./examination/sections/SystemExaminationSection";
 import VitalSignsSection from "./examination/sections/VitalSignsSection";
-
+import VisitHeaderCard from "./VisitHeaderCard";
 export default function ExaminationTab() {
   return (
-    <ScrollView
+    <AppKeyboardAwareScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-     <View style={styles.patientBanner}>
-  <Text style={styles.patientName}>
-    Mohamed Ahmed
-  </Text>
-
-  <Text style={styles.patientInfo}>
-    32 Years • Male
-  </Text>
-</View>
-
-<View style={styles.examRow}>
-  <Ionicons
-    name="medkit-outline"
-    size={16}
-    color={COLORS.primary}
-  />
-  <Text style={styles.examText}>
-    Medical Examination
-  </Text>
-</View> 
+      <VisitHeaderCard
+        sectionTitle="Medical Examination"
+        icon="medkit-outline"
+      />
       <VitalSignsSection />
       <GeneralInspectionSection />
       <RegionalExaminationSection />
       <SystemExaminationSection />
-    </ScrollView>
+      <View style={{ height: 50 }} />
+    </AppKeyboardAwareScrollView>
   );
 }
 

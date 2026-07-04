@@ -1,3 +1,12 @@
+import AppCard from "@/components/common/AppCard";
+import AppTextField from "@/components/common/AppTextField";
+import { SelectionOption } from "@/models/selection";
+import {
+  COLORS,
+  SPACING,
+  TYPOGRAPHY
+} from "@/theme";
+import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
 import {
   FlatList,
@@ -7,18 +16,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { SelectionOption } from "@/models/selection";
-import AppCard from "@/components/common/AppCard";
-import AppTextField from "@/components/common/AppTextField";
-import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  COLORS,
-  RADIUS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
 
 type Props = {
   visible: boolean;
@@ -80,7 +77,7 @@ export default function SelectionSheet({
           <AppTextField
             value={search}
             onChangeText={setSearch}
-            placeholder="Search governorate..."
+            placeholder={`Search ${title.toLowerCase()}...`}
           />
           <View style={{ height: SPACING.md }} />
 

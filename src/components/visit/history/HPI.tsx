@@ -1,7 +1,7 @@
+import CollapsibleSection from "@/components/common/CollapsibleSection";
+import type { SelectionOption } from "@/models/selection";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
-
-import CollapsibleSection from "@/components/common/CollapsibleSection";
 
 import AbdominalPain from "./complaints/AbdominalPain";
 import AnalysisOfComplaint from "./hpi/AnalysisOfComplaint";
@@ -15,7 +15,7 @@ import {
 } from "@/theme";
 
 type Props = {
-  chiefComplaint: string;
+  chiefComplaint?: SelectionOption;
 };
 
 export default function HPI({
@@ -46,7 +46,7 @@ export default function HPI({
         />
       }
     >
-      {chiefComplaint === "Abdominal Pain" ? (
+      {chiefComplaint?.id === "abdominal-pain" ? (
         <AbdominalPain />
       ) : (
         <AnalysisOfComplaint

@@ -1,15 +1,17 @@
 import { ReactNode } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    ScrollViewProps,
-    StyleSheet,
+  Platform,
+  StyleSheet,
 } from "react-native";
+import {
+  KeyboardAwareScrollView,
+} from "react-native-keyboard-aware-scroll-view";
 
-type Props = ScrollViewProps & {
+type Props = {
   children: ReactNode;
-};
+} & React.ComponentProps<
+  typeof KeyboardAwareScrollView
+>;
 
 export default function AppKeyboardAwareScrollView({
   children,
@@ -17,27 +19,23 @@ export default function AppKeyboardAwareScrollView({
   ...props
 }: Props) {
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
+      {...props}
       style={styles.container}
-      behavior={
-        Platform.OS === "ios"
-          ? "padding"
-          : "height"
-      }
+      contentContainerStyle={[
+        styles.content,
+        contentContainerStyle,
+      ]}
+      enableOnAndroid
+      enableAutomaticScroll
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      extraScrollHeight={120}
+      extraHeight={120}
+      keyboardOpeningTime={0}
     >
-      <ScrollView
-        {...props}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-        automaticallyAdjustKeyboardInsets
-        contentContainerStyle={[
-          styles.content,
-          contentContainerStyle,
-        ]}
-      >
-        {children}
-      </ScrollView>
-    </KeyboardAvoidingView>
+      {children}
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -48,6 +46,5 @@ const styles = StyleSheet.create({
 
   content: {
     flexGrow: 1,
-    paddingBottom: 40,
   },
 });

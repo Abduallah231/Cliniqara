@@ -24,10 +24,58 @@ import NeurologyExam from "../systems/NeurologyExam";
 import ObstetricExam from "../systems/ObstetricExam";
 import OphthalmologyExam from "../systems/OphthalmologyExam";
 import SkinExam from "../systems/SkinExam";
+
+const SYSTEMS = [
+  { id: "cvs", label: "CVS" },
+  { id: "chest", label: "Chest" },
+  { id: "abdomen", label: "Abdomen" },
+  { id: "neurology", label: "Neurology" },
+  {
+    id: "musculoskeletal",
+    label: "Musculoskeletal",
+  },
+  {
+    id: "endocrine",
+    label: "Endocrine",
+  },
+  { id: "skin", label: "Skin" },
+  {
+    id: "gynecology",
+    label: "Gynecology",
+  },
+  {
+    id: "obstetric",
+    label: "Obstetric",
+  },
+  { id: "ent", label: "ENT" },
+  {
+    id: "ophthalmology",
+    label: "Ophthalmology",
+  },
+] as const;
+
+type SystemId =
+  (typeof SYSTEMS)[number]["id"];
+
+const SYSTEM_COMPONENTS = {
+  cvs: CVSExam,
+  chest: ChestExam,
+  abdomen: AbdomenExam,
+  neurology: NeurologyExam,
+  musculoskeletal: MusculoskeletalExam,
+  endocrine: EndocrineExam,
+  skin: SkinExam,
+  gynecology: GynecologyExam,
+  obstetric: ObstetricExam,
+  ent: ENTExam,
+  ophthalmology: OphthalmologyExam,
+} as const;
+
 export default function SystemExaminationSection() {
   const [selectedSystem, setSelectedSystem] =
-    useState("CVS");
-
+  useState<SystemId>("cvs");
+  const SelectedSystem =
+  SYSTEM_COMPONENTS[selectedSystem];
   return (
     <View style={styles.container}>
       <CollapsibleSection
@@ -42,27 +90,15 @@ export default function SystemExaminationSection() {
   defaultExpanded={false}
 >
         <View style={styles.row}>
-          {[
-            "CVS",
-            "Chest",
-            "Abdomen",
-            "Neurology",
-            "Musculoskeletal",
-            "Endocrine",
-            "Skin",
-            "Gynecology",
-            "Obstetric",
-            "ENT",
-            "Ophthalmology",
-          ].map((system) => (
+          {SYSTEMS.map((system) => (
             <AppChip
-              key={system}
-              label={system}
+              key={system.id}
+              label={system.label}
               selected={
-                selectedSystem === system
+                selectedSystem === system.id
               }
               onPress={() =>
-                setSelectedSystem(system)
+                setSelectedSystem(system.id)
               }
             />
           ))}
@@ -74,56 +110,7 @@ export default function SystemExaminationSection() {
           }}
         />
 
-        {selectedSystem === "CVS" && (
-          <CVSExam />
-        )}
-
-        {selectedSystem === "Chest" && (
-          <ChestExam />
-        )}
-
-        {selectedSystem ===
-          "Abdomen" && (
-          <AbdomenExam />
-        )}
-
-        {selectedSystem ===
-          "Neurology" && (
-          <NeurologyExam />
-        )}
-
-        {selectedSystem ===
-          "Musculoskeletal" && (
-          <MusculoskeletalExam />
-        )}
-
-        {selectedSystem ===
-          "Endocrine" && (
-          <EndocrineExam />
-        )}
-
-        {selectedSystem === "Skin" && (
-          <SkinExam />
-        )}
-
-        {selectedSystem ===
-          "Gynecology" && (
-          <GynecologyExam />
-        )}
-
-        {selectedSystem ===
-          "Obstetric" && (
-          <ObstetricExam />
-        )}
-
-        {selectedSystem === "ENT" && (
-          <ENTExam />
-        )}
-
-        {selectedSystem ===
-          "Ophthalmology" && (
-          <OphthalmologyExam />
-        )}
+        {SelectedSystem && <SelectedSystem />}
       </CollapsibleSection>
     </View>
   );

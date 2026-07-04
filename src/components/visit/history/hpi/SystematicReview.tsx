@@ -5,15 +5,15 @@ import {
   Text,
   View,
 } from "react-native";
-
+import { Ionicons } from "@expo/vector-icons";
 import AppChip from "@/components/common/AppChip";
-
+import AppCard from "@/components/common/AppCard";
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
-
+import SectionHeader from "@/components/common/SectionHeader";
 const SYSTEMATIC_REVIEW_DATA = [
   {
     title: "General",
@@ -212,7 +212,7 @@ export default function SystematicReview() {
     <View style={styles.container}>
       {SYSTEMATIC_REVIEW_DATA.map(
         (system) => (
-          <View
+          <AppCard
             key={system.title}
             style={styles.card}
           >
@@ -226,15 +226,24 @@ export default function SystematicReview() {
                 )
               }
             >
-              <Text style={styles.title}>
-                {system.title}
-              </Text>
+              <View style={styles.headerContent}>
+                <View style={styles.titleContainer}>
+                  <View style={styles.accent} />
+                  <Text style={styles.title}>
+                    {system.title}
+                  </Text>
+                </View>
 
-              <Text style={styles.arrow}>
-                {expanded === system.title
-                  ? "▲"
-                  : "▼"}
-              </Text>
+                <Ionicons
+                  name={
+                    expanded === system.title
+                      ? "chevron-down"
+                      : "chevron-forward"
+                  }
+                  size={22}
+                  color={COLORS.primary}
+                />
+              </View>
             </Pressable>
 
             {expanded === system.title && (
@@ -257,7 +266,7 @@ export default function SystematicReview() {
                 )}
               </View>
             )}
-          </View>
+          </AppCard>
         )
       )}
     </View>
@@ -270,28 +279,14 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 14,
     padding: SPACING.md,
-    backgroundColor: COLORS.background,
   },
 
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-
-  title: {
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  arrow: {
-    fontSize: TYPOGRAPHY.body,
-    color: COLORS.primary,
+    paddingVertical: SPACING.xs,
   },
 
   row: {
@@ -300,4 +295,31 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
     marginTop: SPACING.md,
   },
+
+  headerContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  accent: {
+    width: 4,
+    height: 24,
+    borderRadius: 99,
+    backgroundColor: COLORS.primary,
+    marginRight: SPACING.sm,
+  },
+
+  title: {
+    fontSize: TYPOGRAPHY.body,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
 });

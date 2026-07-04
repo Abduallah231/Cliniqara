@@ -1,16 +1,15 @@
+import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import { Ionicons } from "@expo/vector-icons";
+import { useState } from "react";
 import {
   StyleSheet,
-  Text,
-  View,
+  View
 } from "react-native";
-
-import AppCard from "@/components/common/AppCard";
-import { useState } from "react";
-import { ScrollView } from "react-native";
 
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 
+import { SelectionOption } from "@/models/selection";
+import { COLORS, SPACING, TYPOGRAPHY, } from "@/theme";
 import AllergyHistory from "./history/AllergyHistory";
 import ChiefComplaint from "./history/ChiefComplaint";
 import DrugHistory from "./history/DrugHistory";
@@ -18,41 +17,24 @@ import FamilyHistory from "./history/FamilyHistory";
 import HPI from "./history/HPI";
 import PastHistory from "./history/PastHistory";
 import PersonalHistory from "./history/PersonalHistory";
-
-import { COLORS, SPACING, TYPOGRAPHY, } from "@/theme";
+import VisitHeaderCard from "./VisitHeaderCard";
 
 export default function HistoryTab() {
-  const [chiefComplaint, setChiefComplaint] = useState("");
+const [chiefComplaint, setChiefComplaint] =
+  useState<SelectionOption | undefined>();
 
   return (
-    <ScrollView
+    <AppKeyboardAwareScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
-  paddingBottom: 70,
-  paddingTop: SPACING.xs,
-}}
+        paddingBottom: 120,
+        paddingTop: SPACING.xs,
+      }}
     >
-              <AppCard style={styles.patientCard}>
-                <Text style={styles.patientName}>
-                  Mohamed Ahmed
-                </Text>
-      
-                <Text style={styles.patientInfo}>
-                  32 Years • Male
-                </Text>
-              </AppCard>
-      
-              <View style={styles.sectionHeader}>
-                <Ionicons
-                  name="document-text-outline"
-                  size={20}
-                  color={COLORS.primary}
-                />
-      
-                <Text style={styles.sectionTitle}>
-                  Medical History
-                </Text>
-              </View>
+              <VisitHeaderCard
+  sectionTitle="Medical History"
+  icon="document-text-outline"
+/>
       
       <CollapsibleSection
         title="Personal History"
@@ -138,7 +120,8 @@ export default function HistoryTab() {
       >
         <FamilyHistory />
       </CollapsibleSection>
-    </ScrollView>
+      <View style={{ height: 50 }} />
+    </AppKeyboardAwareScrollView>
   );
 }
 
