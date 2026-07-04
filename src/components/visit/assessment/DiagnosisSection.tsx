@@ -6,9 +6,9 @@ import {
   Text,
   View,
 } from "react-native";
-
+import diagnoses from "@/data/diagnoses";
 import AppTextField from "@/components/common/AppTextField";
-
+import DiagnosisCard from "./DiagnosisCard";
 import {
   COLORS,
   RADIUS,
@@ -16,6 +16,31 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+type SearchResultsProps = {
+  items: string[];
+  onSelect: (item: string) => void;
+};
+
+function SearchResults({
+  items,
+  onSelect,
+}: SearchResultsProps) {
+  if (!items.length) return null;
+
+  return (
+    <View style={styles.results}>
+      {items.slice(0, 8).map((item) => (
+        <Pressable
+          key={item}
+          style={styles.resultItem}
+          onPress={() => onSelect(item)}
+        >
+          <Text>{item}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
 
 export default function DiagnosisSection() {
   const [primaryDiagnosis, setPrimaryDiagnosis] =
@@ -34,79 +59,25 @@ export default function DiagnosisSection() {
     setSearchDifferential,
   ] = useState("");
 
-  const diagnosisDatabase = [
-    "Diabetes Mellitus",
-    "Hypertension",
-    "Heart Failure",
-    "Acute Coronary Syndrome",
-    "Community Acquired Pneumonia",
-    "Asthma",
-    "COPD",
-    "GERD",
-    "Costochondritis",
-    "Panic Disorder",
-    "Migraine",
-    "Iron Deficiency Anemia",
-    "Chronic Kidney Disease",
-  ];
+  const filterDiagnoses = (search: string) =>
+  diagnoses.filter((item) =>
+    item
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  const diagnosisDatabase = diagnoses;
 
   const filteredPrimary =
-    diagnosisDatabase.filter((item) =>
-      item
-        .toLowerCase()
-        .includes(searchPrimary.toLowerCase())
+    filterDiagnoses(searchPrimary).filter(
+      (item) => !primaryDiagnosis.includes(item)
     );
 
   const filteredDifferential =
-    diagnosisDatabase.filter((item) =>
-      item
-        .toLowerCase()
-        .includes(
-          searchDifferential.toLowerCase()
-        )
+    filterDiagnoses(searchDifferential).filter(
+      (item) =>
+        !differentialDiagnoses.includes(item)
     );
-
-  const DiagnosisCard = ({
-    title,
-    diagnosis,
-    icon,
-    onRemove,
-  }: {
-    title: string;
-    diagnosis: string;
-    icon: keyof typeof Ionicons.glyphMap;
-    onRemove: () => void;
-  }) => (
-    <Pressable
-      style={styles.card}
-      onPress={onRemove}
-    >
-      <View style={styles.cardHeader}>
-        <Ionicons
-          name={icon}
-          size={20}
-          color={COLORS.primary}
-        />
-
-        <View style={{ flex: 1 }}>
-          <Text style={styles.cardTitle}>
-            {title}
-          </Text>
-
-          <Text style={styles.cardText}>
-            {diagnosis}
-          </Text>
-        </View>
-
-        <Ionicons
-          name="close-circle"
-          size={22}
-          color="#ef4444"
-        />
-      </View>
-    </Pressable>
-  );
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
@@ -137,22 +108,13 @@ export default function DiagnosisSection() {
       />
 
       {searchPrimary.length > 0 && (
-        <View style={styles.results}>
-          {filteredPrimary
-            .slice(0, 8)
-            .map((item) => (
-              <Pressable
-                key={item}
-                style={styles.resultItem}
-                onPress={() => {
-                  setPrimaryDiagnosis([item]);
-                  setSearchPrimary("");
-                }}
-              >
-                <Text>{item}</Text>
-              </Pressable>
-            ))}
-        </View>
+        <SearchResults
+          items={filteredPrimary}
+          onSelect={(item) => {
+            setPrimaryDiagnosis([item]);
+            setSearchPrimary("");
+          }}
+        />
       )}
 
       {primaryDiagnosis.map((item) => (
@@ -179,33 +141,19 @@ export default function DiagnosisSection() {
           setSearchDifferential
         }
       />
-            {searchDifferential.length > 0 && (
-        <View style={styles.results}>
-          {filteredDifferential
-            .slice(0, 8)
-            .map((item) => (
-              <Pressable
-                key={item}
-                style={styles.resultItem}
-                onPress={() => {
-                  if (
-                    !differentialDiagnoses.includes(
-                      item
-                    )
-                  ) {
-                    setDifferentialDiagnoses([
-                      ...differentialDiagnoses,
-                      item,
-                    ]);
-                  }
-
-                  setSearchDifferential("");
-                }}
-              >
-                <Text>{item}</Text>
-              </Pressable>
-            ))}
-        </View>
+      {searchDifferential.length > 0 && (
+        <SearchResults
+          items={filteredDifferential}
+          onSelect={(item) => {
+            if (!differentialDiagnoses.includes(item)) {
+              setDifferentialDiagnoses([
+                ...differentialDiagnoses,
+                item,
+              ]);
+            }
+            setSearchDifferential("");
+          }}
+        />
       )}
 
       {differentialDiagnoses.map((item) => (

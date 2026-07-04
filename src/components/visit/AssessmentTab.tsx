@@ -25,6 +25,7 @@ import InvestigationSection from "./assessment/InvestigationSection";
 import PrescriptionSection from "./assessment/PrescriptionSection";
 import ProceduresReferralsSection from "./assessment/ProceduresReferrals";
 import VisitHeaderCard from "./VisitHeaderCard";
+import currentPatient from "@/data/currentPatient";
 
 export default function AssessmentTab() {
   const [
@@ -48,7 +49,7 @@ export default function AssessmentTab() {
       }
     >
       <VisitHeaderCard
-        sectionTitle="Medical Assessment"
+        sectionTitle="Assessment"
         icon="clipboard-outline"
       />
       <HistorySummary />

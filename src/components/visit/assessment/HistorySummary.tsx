@@ -162,13 +162,14 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: COLORS.card,
-    borderRadius: RADIUS.xl,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: SPACING.md,
-    ...SHADOW,
-  },
+  backgroundColor: COLORS.card,
+  borderRadius: RADIUS.xl,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  padding: SPACING.md,
+  alignSelf: "stretch",
+  ...SHADOW,
+},
 
   header: {
     flexDirection: "row",
@@ -190,17 +191,19 @@ const styles = StyleSheet.create({
   },
 
   tag: {
-    backgroundColor: COLORS.primary + "12",
-    borderWidth: 1,
-    borderColor: COLORS.primary + "30",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
+  backgroundColor: COLORS.primary + "12",
+  borderWidth: 1,
+  borderColor: COLORS.primary + "30",
+  borderRadius: 999,
+  paddingHorizontal: 12,
+  paddingVertical: 7,
+  maxWidth: "100%",
+},
 
   tagText: {
-    color: COLORS.primary,
-    fontWeight: "600",
-    fontSize: TYPOGRAPHY.small,
-  },
+  color: COLORS.primary,
+  fontWeight: "600",
+  fontSize: TYPOGRAPHY.small,
+  flexShrink: 1,
+},
 });

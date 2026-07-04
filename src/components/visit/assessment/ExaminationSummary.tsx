@@ -142,14 +142,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  card: {
-    backgroundColor: COLORS.card,
-    borderRadius: RADIUS.xl,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: SPACING.md,
-    ...SHADOW,
-  },
+card: {
+  backgroundColor: COLORS.card,
+  borderRadius: RADIUS.xl,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  padding: SPACING.md,
+  alignSelf: "stretch",
+  ...SHADOW,
+},
 
   header: {
     flexDirection: "row",
@@ -172,17 +173,19 @@ const styles = StyleSheet.create({
   },
 
   tag: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 999,
-    backgroundColor: COLORS.primary + "12",
-    borderWidth: 1,
-    borderColor: COLORS.primary + "30",
-  },
+  paddingHorizontal: 12,
+  paddingVertical: 7,
+  borderRadius: 999,
+  backgroundColor: COLORS.primary + "12",
+  borderWidth: 1,
+  borderColor: COLORS.primary + "30",
+  maxWidth: "100%",
+},
 
   tagText: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.primary,
+    flexShrink: 1,
   },
 });

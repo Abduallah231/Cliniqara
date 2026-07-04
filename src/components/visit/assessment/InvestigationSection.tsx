@@ -8,7 +8,7 @@ import {
 } from "react-native";
 
 import AppTextField from "@/components/common/AppTextField";
-
+import investigations from "@/data/investigations";
 import {
   COLORS,
   RADIUS,
@@ -33,47 +33,20 @@ export default function InvestigationSection({
   const [searchText, setSearchText] =
     useState("");
 
-  const investigationDatabase = [
-    "CBC",
-    "ESR",
-    "CRP",
-    "Procalcitonin",
-    "Ferritin",
-    "Iron Profile",
-    "FBS",
-    "RBS",
-    "HbA1c",
-    "Urea",
-    "Creatinine",
-    "Na",
-    "K",
-    "ALT",
-    "AST",
-    "ALP",
-    "Albumin",
-    "TSH",
-    "FT4",
-    "Urinalysis",
-    "Urine Culture",
-    "Blood Culture",
-    "ECG",
-    "Echo",
-    "Troponin",
-    "Chest X-Ray",
-    "Abdominal Ultrasound",
-    "CT Brain",
-    "CT Chest",
-    "MRI Brain",
-  ];
+  const investigationDatabase = investigations;
 
   const filteredInvestigations =
-    investigationDatabase.filter(
+  investigations
+    .filter((item) =>
+      item.name
+        .toLowerCase()
+        .includes(searchText.toLowerCase())
+    )
+    .filter(
       (item) =>
-        item
-          .toLowerCase()
-          .includes(
-            searchText.toLowerCase()
-          )
+        !selectedInvestigations.some(
+          (x) => x.name === item
+        )
     );
 
   const addInvestigation = (
@@ -144,15 +117,13 @@ export default function InvestigationSection({
             .slice(0, 10)
             .map((item) => (
               <Pressable
-                key={item}
+                key={item.name}
                 style={styles.resultItem}
                 onPress={() =>
-                  addInvestigation(
-                    item
-                  )
+                  addInvestigation(item.name)
                 }
               >
-                <Text>{item}</Text>
+                <Text>{item.name}</Text>
               </Pressable>
             ))}
         </View>
@@ -163,15 +134,10 @@ export default function InvestigationSection({
       </Text>
             {selectedInvestigations.map(
         (item) => (
-          <Pressable
-            key={item.name}
-            style={styles.card}
-            onPress={() =>
-              removeInvestigation(
-                item.name
-              )
-            }
-          >
+          <View
+  key={item.name}
+  style={styles.card}
+>
             <View
               style={styles.cardHeader}
             >
@@ -201,13 +167,19 @@ export default function InvestigationSection({
                 </Text>
               </View>
 
-              <Ionicons
-                name="close-circle"
-                size={22}
-                color="#ef4444"
-              />
+              <Pressable
+                onPress={() =>
+                  removeInvestigation(item.name)
+                }
+              >
+                <Ionicons
+                  name="close-circle"
+                  size={22}
+                  color={COLORS.danger}
+                />
+              </Pressable>
             </View>
-          </Pressable>
+          </View>
         )
       )}
 

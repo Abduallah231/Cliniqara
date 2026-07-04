@@ -19,10 +19,10 @@ import {
 
 export default function ProceduresReferralsSection() {
   const [procedures, setProcedures] =
-    useState([""]);
+  useState<string[]>([]);
 
-  const [referrals, setReferrals] =
-    useState([""]);
+const [referrals, setReferrals] =
+  useState<string[]>([]);
 
   const updateProcedure = (
     text: string,

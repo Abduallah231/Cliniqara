@@ -1,0 +1,160 @@
+const diagnoses = [
+  // Cardiovascular
+  "Hypertension",
+  "Hypertensive Emergency",
+  "Heart Failure",
+  "Acute Coronary Syndrome",
+  "STEMI",
+  "NSTEMI",
+  "Stable Angina",
+  "Unstable Angina",
+  "Atrial Fibrillation",
+  "Supraventricular Tachycardia",
+  "Ventricular Tachycardia",
+  "Bradycardia",
+  "Pericarditis",
+  "Myocarditis",
+  "Cardiomyopathy",
+  "Aortic Dissection",
+  "Deep Vein Thrombosis",
+  "Pulmonary Embolism",
+
+  // Respiratory
+  "Asthma",
+  "COPD",
+  "Acute Bronchitis",
+  "Community Acquired Pneumonia",
+  "Hospital Acquired Pneumonia",
+  "Tuberculosis",
+  "Pleural Effusion",
+  "Pneumothorax",
+  "COVID-19",
+  "Influenza",
+  "Upper Respiratory Tract Infection",
+  "Acute Sinusitis",
+  "Pharyngitis",
+  "Laryngitis",
+
+  // Gastroenterology
+  "GERD",
+  "Peptic Ulcer Disease",
+  "Gastritis",
+  "Acute Gastroenteritis",
+  "Irritable Bowel Syndrome",
+  "Inflammatory Bowel Disease",
+  "Appendicitis",
+  "Acute Cholecystitis",
+  "Biliary Colic",
+  "Cholangitis",
+  "Pancreatitis",
+  "Hepatitis",
+  "Liver Cirrhosis",
+  "Constipation",
+  "Diarrhea",
+  "Hemorrhoids",
+
+  // Endocrine
+  "Diabetes Mellitus",
+  "Diabetic Ketoacidosis",
+  "Hyperosmolar Hyperglycemic State",
+  "Hypoglycemia",
+  "Hypothyroidism",
+  "Hyperthyroidism",
+  "Goiter",
+  "Adrenal Insufficiency",
+  "Cushing Syndrome",
+
+  // Renal
+  "Urinary Tract Infection",
+  "Pyelonephritis",
+  "Acute Kidney Injury",
+  "Chronic Kidney Disease",
+  "Nephrotic Syndrome",
+  "Nephritic Syndrome",
+  "Renal Colic",
+  "Kidney Stones",
+  "Benign Prostatic Hyperplasia",
+
+  // Neurology
+  "Migraine",
+  "Tension Headache",
+  "Cluster Headache",
+  "Stroke",
+  "Transient Ischemic Attack",
+  "Epilepsy",
+  "Meningitis",
+  "Encephalitis",
+  "Bell's Palsy",
+  "Parkinson Disease",
+
+  // Hematology
+  "Iron Deficiency Anemia",
+  "Megaloblastic Anemia",
+  "Hemolytic Anemia",
+  "Aplastic Anemia",
+  "Sickle Cell Disease",
+  "Thalassemia",
+  "Leukemia",
+  "Lymphoma",
+
+  // Rheumatology
+  "Osteoarthritis",
+  "Rheumatoid Arthritis",
+  "Gout",
+  "Systemic Lupus Erythematosus",
+  "Ankylosing Spondylitis",
+
+  // Dermatology
+  "Cellulitis",
+  "Eczema",
+  "Psoriasis",
+  "Acne Vulgaris",
+  "Urticaria",
+  "Herpes Zoster",
+  "Fungal Skin Infection",
+
+  // ENT
+  "Otitis Media",
+  "Otitis Externa",
+  "Tonsillitis",
+  "Peritonsillar Abscess",
+  "Epistaxis",
+
+  // Ophthalmology
+  "Conjunctivitis",
+  "Corneal Abrasion",
+  "Acute Glaucoma",
+  "Cataract",
+  "Diabetic Retinopathy",
+
+  // Psychiatry
+  "Generalized Anxiety Disorder",
+  "Panic Disorder",
+  "Major Depressive Disorder",
+  "Bipolar Disorder",
+  "Schizophrenia",
+  "Insomnia",
+
+  // Pediatrics
+  "Bronchiolitis",
+  "Croup",
+  "Febrile Seizure",
+  "Hand Foot and Mouth Disease",
+
+  // General / Emergency
+  "Sepsis",
+  "Septic Shock",
+  "Hypovolemic Shock",
+  "Anaphylaxis",
+  "Heat Stroke",
+  "Dehydration",
+  "Syncope",
+  "Vertigo",
+  "Costochondritis",
+  "Musculoskeletal Chest Pain",
+  "Low Back Pain",
+  "Neck Pain",
+  "Fibromyalgia",
+];
+
+export default diagnoses;

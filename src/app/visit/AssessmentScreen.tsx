@@ -10,10 +10,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   COLORS,
-  RADIUS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
+  SPACING
 } from "@/theme";
 
 export default function AssessmentScreen() {
@@ -56,42 +53,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-  },
-
-  patientBanner: {
-    backgroundColor: COLORS.card,
-    marginHorizontal: SPACING.md,
-    marginTop: SPACING.sm,
-    padding: SPACING.md,
-    borderRadius: RADIUS.xl,
-    ...SHADOW,
-  },
-
-  patientName: {
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  patientInfo: {
-    marginTop: 4,
-    fontSize: TYPOGRAPHY.small,
-    color: COLORS.secondaryText,
-  },
-
-  assessmentRow: {
-    flexDirection: "row",
-  alignItems: "center",
-  marginTop: SPACING.sm,
-  marginHorizontal: SPACING.xl,
-    borderRadius: RADIUS.xl,
-  },
-
-  assessmentText: {
-    color: COLORS.primary,
-  fontSize: TYPOGRAPHY.small,
-  fontWeight: "600",
-  marginHorizontal: SPACING.xs,
   },
 
   content: {
