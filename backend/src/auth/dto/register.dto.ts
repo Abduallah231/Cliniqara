@@ -1,6 +1,5 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 import { AccountType, DoctorLevel } from '@prisma/client';
-import { IsEnum } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 export class RegisterDto {
   @IsEnum(AccountType)
   accountType!: AccountType;

@@ -79,11 +79,7 @@ model Clinic {
 
   city                String
 
-  workingDays         String
-
-  workingHoursStart   String
-
-  workingHoursEnd     String
+  workingDays         ClinicWorkingDay[]
 
   isActive            Boolean     @default(true)
 
@@ -113,6 +109,16 @@ enum MembershipStatus {
   PENDING
   ACTIVE
   REMOVED
+}
+
+enum WeekDay {
+  SATURDAY
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
 }
 
 model ClinicMember {
@@ -145,6 +151,28 @@ model ClinicMember {
 enum Gender {
   MALE
   FEMALE
+}
+
+model ClinicWorkingDay {
+  id         String   @id @default(uuid())
+
+  clinicId   String
+
+  day        WeekDay
+
+  startTime  String
+
+  endTime    String
+
+  isClosed   Boolean  @default(false)
+
+  clinic     Clinic   @relation(fields: [clinicId], references: [id])
+
+  @@unique([clinicId, day])
+
+  @@index([clinicId])
+
+  @@map("clinic_working_days")
 }
 
 model Patient {

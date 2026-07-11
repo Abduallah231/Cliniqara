@@ -1,10 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
-import { UnauthorizedException } from '@nestjs/common';
+import { RegisterDto } from '../dto/register.dto';
 import { JwtService } from './jwt.service';
-import { PasswordService } from './password.service'
+import { PasswordService } from './password.service';
 @Injectable()
 export class AuthService {
   constructor(
@@ -13,32 +12,31 @@ export class AuthService {
   private readonly jwtService: JwtService,
 ) {}
   async register(dto: RegisterDto) {
-  const existingUser = await this.prisma.user.findUnique({
-    where: {
-      email: dto.email,
-    },
-  });
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
-  if (existingUser) {
-    throw new ConflictException('Email already exists');
-  }
-  const passwordHash = await this.passwordService.hash(dto.password);
-  const user = await this.prisma.user.create({
-  data: {
-    userCode: crypto.randomUUID(),
+    if (existingUser) {
+      throw new ConflictException("Email already exists");
+    }
 
-    accountType: dto.accountType,
-    doctorLevel: dto.doctorLevel,
+    const hashedPassword = await this.passwordService.hash(dto.password);
 
-    fullName: dto.fullName,
-    email: dto.email,
-    phone: dto.phone,
+    const user = await this.prisma.user.create({
+      data: {
+        userCode: crypto.randomUUID(),
+        accountType: dto.accountType,
+        doctorLevel: dto.doctorLevel,
+        fullName: dto.fullName,
+        email: dto.email,
+        phone: dto.phone,
+        passwordHash: hashedPassword,
+      },
+    });
+    const { passwordHash, ...safeUser } = user;
+    return safeUser;
+}
 
-    passwordHash,
-  },
-});
-  return user;
-};
 async login(dto: LoginDto) {
   const user = await this.prisma.user.findUnique({
     where: {
@@ -69,11 +67,13 @@ async login(dto: LoginDto) {
 
   const refreshToken = this.jwtService.generateRefreshToken(payload);
 
+  const { passwordHash, ...safeUser } = user;
+
   return {
     message: 'Login successful',
     accessToken,
     refreshToken,
-    user,
+    user: safeUser,
   };
 }
 }
