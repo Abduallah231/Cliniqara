@@ -5,8 +5,16 @@ import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth.service';
 import { JwtService } from './services/jwt.service';
 import { PasswordService } from './services/password.service';
+import { JwtModule } from '@nestjs/jwt';
 @Module({
-  imports: [],
+  imports: [
+    JwtModule.register({
+      secret: 'cliniqara-secret-key',
+      signOptions: {
+        expiresIn: '15m',
+      },
+    }),
+  ],
   controllers: [AuthController],
   providers: [
     AuthService,

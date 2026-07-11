@@ -1,20 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService as NestJwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class JwtService {
-  generateAccessToken(): string {
-    return '';
+  constructor(
+    private readonly jwtService: NestJwtService,
+  ) {}
+
+  generateAccessToken(payload: object) {
+    return this.jwtService.sign(payload, {
+      expiresIn: '15m',
+    });
   }
 
-  generateRefreshToken(): string {
-    return '';
-  }
-
-  verifyAccessToken(): boolean {
-    return true;
-  }
-
-  verifyRefreshToken(): boolean {
-    return true;
+  generateRefreshToken(payload: object) {
+    return this.jwtService.sign(payload, {
+      expiresIn: '30d',
+    });
   }
 }
