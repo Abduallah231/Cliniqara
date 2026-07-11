@@ -6,6 +6,7 @@ import { AuthService } from './services/auth.service';
 import { JwtService } from './services/jwt.service';
 import { PasswordService } from './services/password.service';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './strategies/jwt.strategy';
 @Module({
   imports: [
     JwtModule.register({
@@ -20,6 +21,7 @@ import { JwtModule } from '@nestjs/jwt';
     AuthService,
     PasswordService,
     JwtService,
+    JwtStrategy,
     JwtAuthGuard,
     RolesGuard,
   ],
