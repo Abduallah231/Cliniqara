@@ -11,6 +11,11 @@ enum AccountType {
   RECEPTION
 }
 
+enum DoctorLevel {
+  INTERN
+  DOCTOR
+}
+
 enum VerificationStatus {
   PENDING
   APPROVED
@@ -21,6 +26,7 @@ model User {
   id                      String               @id @default(uuid())
   userCode                String               @unique
   accountType             AccountType
+  doctorLevel             DoctorLevel?
 
   fullName                String
 
