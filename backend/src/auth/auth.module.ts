@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthController } from './controllers/auth.controller';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
-import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth.service';
 import { JwtService } from './services/jwt.service';
 import { PasswordService } from './services/password.service';
-import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 @Module({
   imports: [
     JwtModule.register({
-      secret: 'cliniqara-secret-key',
+      secret: process.env.JWT_SECRET,
       signOptions: {
         expiresIn: '15m',
       },
@@ -25,6 +25,10 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     JwtAuthGuard,
     RolesGuard,
   ],
-  exports: [AuthService],
+  exports: [
+    AuthService,
+    JwtAuthGuard,
+    RolesGuard,
+  ]
 })
 export class AuthModule {}
