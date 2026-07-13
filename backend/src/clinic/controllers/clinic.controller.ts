@@ -15,7 +15,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { UpdateClinicDto } from '../dto/update-clinic.dto';
 @Controller('clinics')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ClinicController {
   constructor(
     private readonly clinicService: ClinicService,
@@ -36,7 +36,7 @@ export class ClinicController {
     return this.clinicService.getMyClinic(user.id);
   }
   @Patch('me')
-updateMyClinic(
+  updateMyClinic(
   @CurrentUser() user: AuthenticatedUser,
   @Body() dto: UpdateClinicDto,
 ) {

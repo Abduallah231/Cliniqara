@@ -2,6 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateClinicDto } from '../dto/create-clinic.dto';
 import { UpdateClinicDto } from '../dto/update-clinic.dto';
+import {
+  ClinicRole,
+  MembershipStatus,
+} from '@prisma/client';
 @Injectable()
 export class ClinicService {
   constructor(private readonly prisma: PrismaService) {}
@@ -43,29 +47,29 @@ export class ClinicService {
           clinicId: clinic.id,
           userId,
 
-          clinicRole: 'OWNER',
-          status: 'ACTIVE',
+          clinicRole: ClinicRole.OWNER,
+          status: MembershipStatus.ACTIVE,
         },
       });
       return clinic;
     });
   }
   async getMyClinic(userId: string) {
-  return this.prisma.clinic.findFirst({
-    where: {
-      members: {
-        some: {
-          userId,
-          status: 'ACTIVE',
+    return this.prisma.clinic.findFirst({
+      where: {
+        members: {
+          some: {
+            userId,
+            status: MembershipStatus.ACTIVE,
+          },
         },
       },
-    },
-    include: {
-      workingDays: true,
-      members: true,
-      },
-    });
-  }
+      include: {
+        workingDays: true,
+        members: true,
+        },
+      });
+    }
   async updateMyClinic(
     userId: string,
     dto: UpdateClinicDto,
@@ -74,7 +78,7 @@ export class ClinicService {
       await this.prisma.clinicMember.findFirst({
         where: {
           userId,
-          status: 'ACTIVE',
+          status: MembershipStatus.ACTIVE,
         },
       });
 
