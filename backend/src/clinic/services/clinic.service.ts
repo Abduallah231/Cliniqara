@@ -50,4 +50,20 @@ export class ClinicService {
       return clinic;
     });
   }
+  async getMyClinic(userId: string) {
+  return this.prisma.clinic.findFirst({
+    where: {
+      members: {
+        some: {
+          userId,
+          status: 'ACTIVE',
+        },
+      },
+    },
+    include: {
+      workingDays: true,
+      members: true,
+    },
+  });
+}
 }

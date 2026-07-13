@@ -8,7 +8,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
 import { ClinicService } from '../services/clinic.service';
 import { CreateClinicDto } from '../dto/create-clinic.dto';
-
+import { Get } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -27,5 +27,11 @@ export class ClinicController {
     @Body() dto: CreateClinicDto,
   ) {
     return this.clinicService.create(user.id, dto);
+  }
+  @Get('me')
+  getMyClinic(
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.clinicService.getMyClinic(user.id);
   }
 }
