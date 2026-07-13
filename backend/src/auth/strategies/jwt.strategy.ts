@@ -8,11 +8,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET ?? 'cliniqara-secret-key',
+      secretOrKey:
+        process.env.JWT_SECRET ?? 'cliniqara-secret-key',
     });
   }
 
   async validate(payload: any) {
-    return payload;
+    return {
+      id: payload.sub,
+      accountType: payload.accountType,
+      doctorLevel: payload.doctorLevel,
+    };
   }
 }

@@ -4,7 +4,8 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
 import { ClinicService } from '../services/clinic.service';
 import { CreateClinicDto } from '../dto/create-clinic.dto';
 
@@ -13,7 +14,7 @@ import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 
 @Controller('clinics')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 export class ClinicController {
   constructor(
     private readonly clinicService: ClinicService,
@@ -22,8 +23,9 @@ export class ClinicController {
   @Post()
   @Roles('DOCTOR')
   create(
+    @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateClinicDto,
   ) {
-    return this.clinicService.create(dto);
+    return this.clinicService.create(user.id, dto);
   }
 }
