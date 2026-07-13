@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateClinicDto } from '../dto/create-clinic.dto';
-
+import { UpdateClinicDto } from '../dto/update-clinic.dto';
 @Injectable()
 export class ClinicService {
   constructor(private readonly prisma: PrismaService) {}
@@ -63,7 +63,40 @@ export class ClinicService {
     include: {
       workingDays: true,
       members: true,
-    },
-  });
-}
+      },
+    });
+  }
+  async updateMyClinic(
+    userId: string,
+    dto: UpdateClinicDto,
+  ) {
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId,
+          status: 'ACTIVE',
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException('Clinic not found');
+    }
+
+    return this.prisma.clinic.update({
+      where: {
+        id: membership.clinicId,
+      },
+      data: {
+        ...(dto.name !== undefined && { name: dto.name }),
+        ...(dto.phone !== undefined && { phone: dto.phone }),
+        ...(dto.email !== undefined && { email: dto.email }),
+        ...(dto.address !== undefined && { address: dto.address }),
+        ...(dto.country !== undefined && { country: dto.country }),
+        ...(dto.city !== undefined && { city: dto.city }),
+      },
+      include: {
+        workingDays: true,
+      },
+    });
+  }
 }

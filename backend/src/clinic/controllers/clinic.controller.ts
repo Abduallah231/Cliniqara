@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Get,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -8,11 +10,10 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
 import { ClinicService } from '../services/clinic.service';
 import { CreateClinicDto } from '../dto/create-clinic.dto';
-import { Get } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
-
+import { UpdateClinicDto } from '../dto/update-clinic.dto';
 @Controller('clinics')
 @UseGuards(JwtAuthGuard)
 export class ClinicController {
@@ -34,4 +35,14 @@ export class ClinicController {
   ) {
     return this.clinicService.getMyClinic(user.id);
   }
+  @Patch('me')
+updateMyClinic(
+  @CurrentUser() user: AuthenticatedUser,
+  @Body() dto: UpdateClinicDto,
+) {
+  return this.clinicService.updateMyClinic(
+    user.id,
+    dto,
+  );
+}
 }
