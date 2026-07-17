@@ -1,5 +1,5 @@
- test auth module
- .env
- JWT_SECRET=cliniqara-secret-key
-
- 
+Prisma Migration
+Prisma Generate
+CodeGeneratorService
+National ID Parser
+Age Calculator

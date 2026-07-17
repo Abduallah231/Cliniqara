@@ -16,7 +16,7 @@ import DrugHistory from "./history/DrugHistory";
 import FamilyHistory from "./history/FamilyHistory";
 import HPI from "./history/HPI";
 import PastHistory from "./history/PastHistory";
-import PersonalHistory from "./history/PersonalHistory";
+import SocialHistory from "./history/SocialHistory";
 import VisitHeaderCard from "./VisitHeaderCard";
 
 export default function HistoryTab() {
@@ -35,20 +35,6 @@ const [chiefComplaint, setChiefComplaint] =
   sectionTitle="Medical History"
   icon="document-text-outline"
 />
-      
-      <CollapsibleSection
-        title="Personal History"
-        icon={
-          <Ionicons
-            name="person-outline"
-            size={20}
-            color={COLORS.primary}
-          />
-        }
-        defaultExpanded
-      >
-        <PersonalHistory />
-      </CollapsibleSection>
 
       <CollapsibleSection
         title="Chief Complaint"
@@ -80,6 +66,20 @@ const [chiefComplaint, setChiefComplaint] =
         }
       >
         <PastHistory />
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Social History"
+        icon={
+          <Ionicons
+            name="people-outline"
+            size={20}
+            color={COLORS.primary}
+          />
+        }
+        
+      >
+        <SocialHistory />
       </CollapsibleSection>
 
       <CollapsibleSection

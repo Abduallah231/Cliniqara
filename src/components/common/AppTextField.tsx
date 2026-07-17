@@ -47,6 +47,9 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 
   showLabel?: boolean;
+
+  maxLength?: number;
+  autoFocus?: boolean;
 };
 
 export default function AppTextField({
@@ -74,6 +77,8 @@ export default function AppTextField({
   editable = true,
 
   style,
+  maxLength,
+  autoFocus = false,
 }: Props) {
   return (
     <View style={style}>
@@ -119,6 +124,8 @@ export default function AppTextField({
             styles.input,
             multiline && styles.multiline,
           ]}
+          maxLength={maxLength}
+          autoFocus={autoFocus}
         />
       </View>
 

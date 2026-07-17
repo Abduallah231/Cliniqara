@@ -3,7 +3,6 @@ import type { SelectionOption } from "@/models/selection";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
 
-import AbdominalPain from "./complaints/AbdominalPain";
 import AnalysisOfComplaint from "./hpi/AnalysisOfComplaint";
 import RelatedSystemSymptoms from "./hpi/RelatedSystemSymptoms";
 import SystematicReview from "./hpi/SystematicReview";
@@ -46,13 +45,9 @@ export default function HPI({
         />
       }
     >
-      {chiefComplaint?.id === "abdominal-pain" ? (
-        <AbdominalPain />
-      ) : (
-        <AnalysisOfComplaint
-          chiefComplaint={chiefComplaint}
-        />
-      )}
+      <AnalysisOfComplaint
+        chiefComplaint={chiefComplaint}
+      />
     </CollapsibleSection>
 
     <CollapsibleSection

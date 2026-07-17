@@ -1,10 +1,9 @@
-import AppCard from "@/components/common/AppCard";
 import AppTextField from "@/components/common/AppTextField";
 import { SelectionOption } from "@/models/selection";
 import {
   COLORS,
   SPACING,
-  TYPOGRAPHY
+  TYPOGRAPHY,
 } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
@@ -37,54 +36,69 @@ export default function SelectionSheet({
   const [search, setSearch] = useState("");
 
   const filteredOptions = useMemo(() => {
-    if (!search.trim()) return options;
+    const keyword = search.trim().toLowerCase();
 
-    return options.filter((option) =>
-      option.label
-        .toLowerCase()
-        .includes(search.toLowerCase())
+    const sorted = [...options].sort((a, b) =>
+      a.label.localeCompare(b.label)
+    );
+
+    if (!keyword) return sorted;
+
+    return sorted.filter((item) =>
+      item.label.toLowerCase().includes(keyword)
     );
   }, [options, search]);
+
+  const closeSheet = () => {
+    setSearch("");
+    onClose();
+  };
 
   return (
     <Modal
       visible={visible}
       animationType="slide"
       transparent
-      onRequestClose={() => {
-        setSearch("");
-        onClose();
-      }}
+      onRequestClose={closeSheet}
     >
-      <View style={styles.overlay}>
-        
-        <AppCard style={styles.sheet}>
-
+      <Pressable
+        style={styles.overlay}
+        onPress={closeSheet}
+      >
+        <Pressable
+          style={styles.sheet}
+          onPress={() => {}}
+        >
           <View style={styles.header}>
-    <Text style={styles.title}>
-        {title}
-    </Text>
+            <Text style={styles.title}>
+              {title}
+            </Text>
 
-    <Pressable onPress={onClose}>
-        <Ionicons
-            name="close"
-            size={22}
-            color={COLORS.secondaryText}
-        />
-    </Pressable>
-</View>
+            <Pressable onPress={closeSheet}>
+              <Ionicons
+                name="close"
+                size={24}
+                color={COLORS.secondaryText}
+              />
+            </Pressable>
+          </View>
 
           <AppTextField
             value={search}
             onChangeText={setSearch}
             placeholder={`Search ${title.toLowerCase()}...`}
           />
+
           <View style={{ height: SPACING.md }} />
 
           <FlatList
             data={filteredOptions}
-            keyboardShouldPersistTaps="handled"
             keyExtractor={(item) => item.id}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: SPACING.md,
+            }}
             renderItem={({ item }) => (
               <Pressable
                 style={[
@@ -94,8 +108,7 @@ export default function SelectionSheet({
                 ]}
                 onPress={() => {
                   onSelect(item);
-                  setSearch("");
-                  onClose();
+                  closeSheet();
                 }}
               >
                 <Text
@@ -118,14 +131,25 @@ export default function SelectionSheet({
               </Pressable>
             )}
             ListEmptyComponent={
-              <Text style={styles.empty}>
-                No governorate found.
-              </Text>
+              <Pressable
+                style={styles.item}
+                onPress={() => {
+                  onSelect({
+                    id: "other",
+                    label: "Other",
+                  });
+
+                  closeSheet();
+                }}
+              >
+                <Text style={styles.itemText}>
+                  Other
+                </Text>
+              </Pressable>
             }
           />
-
-        </AppCard>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
@@ -138,26 +162,33 @@ const styles = StyleSheet.create({
   },
 
   sheet: {
-    height: "75%",
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    padding: SPACING.lg,
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.xl,
+    maxHeight: "75%",
+  },
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: SPACING.md,
   },
 
   title: {
     fontSize: TYPOGRAPHY.heading,
     fontWeight: "700",
     color: COLORS.text,
-    marginBottom: SPACING.md,
   },
 
   item: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-
+    alignItems: "center",
     paddingVertical: SPACING.md,
-
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
@@ -175,16 +206,4 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: "700",
   },
-
-  empty: {
-    textAlign: "center",
-    color: COLORS.secondaryText,
-    paddingVertical: SPACING.xl,
-  },
-  header: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: SPACING.md,
-},
 });

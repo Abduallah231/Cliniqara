@@ -55,6 +55,7 @@ model User {
 
   createdClinics Clinic[] @relation("ClinicOwner")
   clinicMemberships  ClinicMember[]
+  visits Visit[]
 
   @@index([accountType])
   @@index([verificationStatus])
@@ -92,6 +93,7 @@ model Clinic {
 
   members             ClinicMember[]
   patients            Patient[]
+  visits              Visit[]
 
   @@index([createdById])
   @@index([city])
@@ -153,6 +155,27 @@ enum Gender {
   FEMALE
 }
 
+enum PatientIdentifierType {
+  NATIONAL_ID
+  BIRTH_CERTIFICATE
+  PASSPORT
+  OTHER
+  UNKNOWN
+}
+
+enum AgeUnit {
+  YEARS
+  MONTHS
+  DAYS
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
 model ClinicWorkingDay {
   id         String   @id @default(uuid())
 
@@ -184,28 +207,38 @@ model Patient {
 
   fullName          String
 
-  nationalId        String?
+  identifierType    PatientIdentifierType
 
-  dateOfBirth       DateTime
+  identifierNumber  String?
 
+  dateOfBirth DateTime?
+
+  estimatedAgeValue Int?
+
+  estimatedAgeUnit AgeUnit?
+
+  maritalStatus     MaritalStatus
+
+  governorate       String?
+
+  city              String?
+
+  district          String?
+
+  streetAddress     String?
+  
   gender            Gender
 
   phone             String?
 
-  address           String?
-
   occupation        String?
-
-  maritalStatus     String?
-
-  childrenCount     Int         @default(0)
-
-  notes             String?
 
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
   clinic            Clinic      @relation(fields: [clinicId], references: [id])
+
+  visits Visit[]
 
   @@unique([clinicId, patientCode])
 
@@ -214,4 +247,45 @@ model Patient {
   @@index([phone])
 
   @@map("patients")
+}
+
+enum VisitStatus {
+  OPEN
+  COMPLETED
+  CANCELLED
+}
+
+model Visit {
+  id String @id @default(uuid())
+
+  visitCode String
+
+  secureCode String @unique
+
+  patientId String
+
+  clinicId String
+
+  createdById String
+
+  visitStatus VisitStatus @default(OPEN)
+
+  visitDate DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id])
+  clinic Clinic @relation(fields: [clinicId], references: [id])
+  createdBy User @relation(fields: [createdById], references: [id])
+
+  complaints Complaint[]
+
+  @@unique([clinicId, visitCode])
+
+  @@index([patientId])
+  @@index([clinicId])
+  @@index([visitDate])
+
+  @@map("visits")
 }
