@@ -1,5 +1,4 @@
 import CollapsibleSection from "@/components/common/CollapsibleSection";
-import type { SelectionOption } from "@/models/selection";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
 
@@ -13,16 +12,10 @@ import {
   TYPOGRAPHY,
 } from "@/theme";
 
-type Props = {
-  chiefComplaint?: SelectionOption;
-};
-
-export default function HPI({
-  chiefComplaint,
-}: Props) {
+export default function HPI() {
   return (
     <View style={styles.container}>
-  <View style={styles.header}>
+    <View style={styles.header}>
     <Ionicons
       name="document-text-outline"
       size={20}
@@ -45,9 +38,7 @@ export default function HPI({
         />
       }
     >
-      <AnalysisOfComplaint
-        chiefComplaint={chiefComplaint}
-      />
+      <AnalysisOfComplaint/>
     </CollapsibleSection>
 
     <CollapsibleSection

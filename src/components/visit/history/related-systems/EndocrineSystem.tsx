@@ -1,39 +1,43 @@
-import { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import { useVisitStore } from "@/store/visitStore";
 
 export default function EndocrineSystem() {
-  const [selected, setSelected] =
-    useState<string[]>([]);
+  const {
+    visit,
+    updateRelatedSystemField,
+  } = useVisitStore();
 
-  const [otherFinding, setOtherFinding] =
-    useState("");
+  const selected =
+    (visit.history.hpi.relatedSystemSymptoms.fields.find(
+      (f) => f.fieldId === "Endocrine"
+    )?.value as string[]) ?? [];
+
+  const otherFinding =
+    (visit.history.hpi.relatedSystemSymptoms.fields.find(
+      (f) => f.fieldId === "EndocrineOther"
+    )?.value as string) ?? "";
 
   const toggle = (item: string) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const updated = selected.includes(item)
+      ? selected.filter((x) => x !== item)
+      : [...selected, item];
+
+    updateRelatedSystemField(
+      "Endocrine",
+      "Endocrine",
+      updated
+    );
   };
 
   const Section = ({
@@ -53,12 +57,8 @@ export default function EndocrineSystem() {
           <AppChip
             key={item}
             label={item}
-            selected={selected.includes(
-              item
-            )}
-            onPress={() =>
-              toggle(item)
-            }
+            selected={selected.includes(item)}
+            onPress={() => toggle(item)}
           />
         ))}
       </View>
@@ -71,7 +71,7 @@ export default function EndocrineSystem() {
         Endocrine
       </Text>
 
-      <Section
+            <Section
         title="Core"
         items={[
           "Weight Gain",
@@ -165,13 +165,17 @@ export default function EndocrineSystem() {
         label="Other Findings"
         placeholder="Add other findings..."
         value={otherFinding}
-        onChangeText={setOtherFinding}
+        onChangeText={(text) =>
+          updateRelatedSystemField(
+            "EndocrineOther",
+            "Endocrine Other",
+            text
+          )
+        }
         multiline
       />
     </View>
-  );
-}
-
+  );}
 const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,

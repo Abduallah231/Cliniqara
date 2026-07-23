@@ -10,7 +10,7 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
-import currentPatient from "@/data/currentPatient";
+import { useVisitStore } from "@/store/visitStore";
 type Props = {
   sectionTitle: string;
   icon: keyof typeof Ionicons.glyphMap;
@@ -20,16 +20,38 @@ export default function VisitHeaderCard({
   sectionTitle,
   icon,
 }: Props){
+
+  const patient = useVisitStore(
+    (state) => state.visit.patient
+  );
+  
+  const genderLabel =
+  patient.gender === "male"
+    ? "Male"
+    : "Female";
+
+  const patientInfo = [
+    genderLabel,
+    patient.age
+      ? `${patient.age} ${patient.ageUnit}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+
   return (
     <>
       <AppCard style={styles.patientCard}>
         <Text style={styles.patientName}>
-          {currentPatient.fullName}
+          {patient.fullName || "New Patient"}
         </Text>
 
         <Text style={styles.patientInfo}>
-          {`${currentPatient.gender} · ${currentPatient.age}`}
+          {patientInfo}
         </Text>
+
+        
       </AppCard>
 
       <View style={styles.sectionHeader}>
@@ -42,6 +64,7 @@ export default function VisitHeaderCard({
         <Text style={styles.sectionTitle}>
           {sectionTitle}
         </Text>
+        
       </View>
     </>
   );

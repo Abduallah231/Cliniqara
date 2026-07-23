@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import {
   StyleSheet,
   Text,
@@ -15,25 +15,31 @@ import {
 } from "@/theme";
 
 export default function ChestSystem() {
-  const [selected, setSelected] =
-    useState<string[]>([]);
+  const {
+    visit,
+    updateRelatedSystemField,
+  } = useVisitStore();
 
-  const [otherFinding, setOtherFinding] =
-    useState("");
+  const selected =
+    (visit.history.hpi.relatedSystemSymptoms.fields.find(
+      (f) => f.fieldId === "Chest"
+    )?.value as string[]) ?? [];
+
+  const otherFinding =
+    (visit.history.hpi.relatedSystemSymptoms.fields.find(
+      (f) => f.fieldId === "ChestOther"
+    )?.value as string) ?? "";
 
   const toggle = (item: string) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const updated = selected.includes(item)
+      ? selected.filter((x) => x !== item)
+      : [...selected, item];
+
+    updateRelatedSystemField(
+      "Chest",
+      "Chest",
+      updated
+    );
   };
 
   const Section = ({
@@ -113,8 +119,12 @@ export default function ChestSystem() {
         label="Other Findings"
         placeholder="Add other findings..."
         value={otherFinding}
-        onChangeText={
-          setOtherFinding
+        onChangeText={(text) =>
+          updateRelatedSystemField(
+            "ChestOther",
+            "Chest Other",
+            text
+          )
         }
         multiline
       />

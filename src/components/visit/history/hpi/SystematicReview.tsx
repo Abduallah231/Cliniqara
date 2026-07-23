@@ -1,3 +1,11 @@
+import AppCard from "@/components/common/AppCard";
+import AppChip from "@/components/common/AppChip";
+import {
+  COLORS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/theme";
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
   Pressable,
@@ -5,15 +13,8 @@ import {
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import AppChip from "@/components/common/AppChip";
-import AppCard from "@/components/common/AppCard";
-import {
-  COLORS,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
-import SectionHeader from "@/components/common/SectionHeader";
+import { useVisitStore } from "@/store/visitStore";
+
 const SYSTEMATIC_REVIEW_DATA = [
   {
     title: "General",
@@ -188,91 +189,104 @@ export default function SystematicReview() {
   const [expanded, setExpanded] =
     useState<string | null>(null);
 
-  const [selectedSymptoms, setSelectedSymptoms] =
-    useState<string[]>([]);
+  const {
+    visit,
+    updateSystematicReviewField,
+  } = useVisitStore();
 
   const toggleSymptom = (
+    system: string,
     symptom: string
   ) => {
-    if (selectedSymptoms.includes(symptom)) {
-      setSelectedSymptoms(
-        selectedSymptoms.filter(
-          (s) => s !== symptom
-        )
-      );
-    } else {
-      setSelectedSymptoms([
-        ...selectedSymptoms,
-        symptom,
-      ]);
-    }
+    const selected =
+      (visit.history.hpi.systematicReview.systems.find(
+        (s) => s.fieldId === system
+      )?.value as string[]) ?? [];
+
+    const updated = selected.includes(symptom)
+      ? selected.filter((x) => x !== symptom)
+      : [...selected, symptom];
+
+    updateSystematicReviewField(
+      system,
+      system,
+      updated
+    );
   };
 
   return (
     <View style={styles.container}>
       {SYSTEMATIC_REVIEW_DATA.map(
-        (system) => (
-          <AppCard
-            key={system.title}
-            style={styles.card}
-          >
-            <Pressable
-              style={styles.header}
-              onPress={() =>
-                setExpanded(
-                  expanded === system.title
-                    ? null
-                    : system.title
-                )
-              }
+        (system) => {
+          const selected =
+            (visit.history.hpi.systematicReview.systems.find(
+              (s) =>
+                s.fieldId === system.title
+            )?.value as string[]) ?? [];
+
+          return (
+            <AppCard
+              key={system.title}
+              style={styles.card}
             >
-              <View style={styles.headerContent}>
-                <View style={styles.titleContainer}>
-                  <View style={styles.accent} />
-                  <Text style={styles.title}>
-                    {system.title}
-                  </Text>
-                </View>
-
-                <Ionicons
-                  name={
+              <Pressable
+                style={styles.header}
+                onPress={() =>
+                  setExpanded(
                     expanded === system.title
-                      ? "chevron-down"
-                      : "chevron-forward"
-                  }
-                  size={22}
-                  color={COLORS.primary}
-                />
-              </View>
-            </Pressable>
-
-            {expanded === system.title && (
-              <View style={styles.row}>
-                {system.symptoms.map(
-                  (symptom) => (
-                    <AppChip
-                      key={symptom}
-                      label={symptom}
-                      selected={selectedSymptoms.includes(
-                        symptom
-                      )}
-                      onPress={() =>
-                        toggleSymptom(
-                          symptom
-                        )
-                      }
-                    />
+                      ? null
+                      : system.title
                   )
-                )}
-              </View>
-            )}
-          </AppCard>
-        )
-      )}
-    </View>
-  );
-}
+                }
+              >
+                <View style={styles.headerContent}>
+                  <View style={styles.titleContainer}>
+                    <View style={styles.accent} />
 
+                    <Text style={styles.title}>
+                      {system.title}
+                    </Text>
+                  </View>
+
+                  <Ionicons
+                    name={
+                      expanded === system.title
+                        ? "chevron-down"
+                        : "chevron-forward"
+                    }
+                    size={22}
+                    color={COLORS.primary}
+                  />
+                </View>
+              </Pressable>
+              {expanded === system.title && (
+  <View style={styles.row}>
+    {system.symptoms.map(
+      (symptom) => (
+        <AppChip
+          key={symptom}
+          label={symptom}
+          selected={selected.includes(
+            symptom
+          )}
+          onPress={() =>
+            toggleSymptom(
+              system.title,
+              symptom
+            )
+          }
+        />
+      )
+    )}
+  </View>
+)}
+
+          </AppCard>
+        );
+      }
+    )}
+  </View>
+);}
 const styles = StyleSheet.create({
   container: {
     gap: SPACING.sm,
@@ -321,5 +335,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: COLORS.text,
   },
-
 });

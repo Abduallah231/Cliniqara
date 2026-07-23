@@ -6,8 +6,6 @@ export * from "./prescription";
 
 export * from "./clinic";
 
-export * from "./report";
-
 export * from "./WaitingPatient";
 
 export * from "./TemplateFolder";

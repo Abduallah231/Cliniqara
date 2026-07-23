@@ -1,37 +1,45 @@
+import AppChip from "@/components/common/AppChip";
+import AppDropdown from "@/components/common/AppDropdown";
+import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
-import { useState } from "react";
 import chiefComplaints from "@/data/chiefComplaints";
-import AppDropdown from "@/components/common/AppDropdown";
-import type { SelectionOption } from "@/models/selection";
-import AppChip from "@/components/common/AppChip";
-import AppTextField from "@/components/common/AppTextField";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
 import defaultQuickChiefComplaints from "@/data/defaultQuickChiefComplaints";
+import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import {
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-type Props = {
-  complaint?: SelectionOption;
-  setComplaint: (
-    value: SelectionOption | undefined
-  ) => void;
-};
+export default function ChiefComplaint() {
+  const { visit, updateVisit } = useVisitStore();
 
-export default function ChiefComplaint({
-  complaint,
-  setComplaint,
-}: Props) {
-  const [duration, setDuration] = useState("");
-  const [durationUnit, setDurationUnit] =
-    useState("Days");
+  const chiefComplaint = visit.history.chiefComplaint;
+  const complaint = chiefComplaint.complaintId
+  ? {
+      id: chiefComplaint.complaintId,
+      label: chiefComplaint.complaintName,
+    }
+  : undefined;
+  const updateChiefComplaint = (
+    updates: Partial<typeof chiefComplaint>
+  ) => {
+    updateVisit({
+      history: {
+        ...visit.history,
+        chiefComplaint: {
+          ...chiefComplaint,
+          ...updates,
+        },
+      },
+    });
+  };
   const quickComplaints =
     defaultQuickChiefComplaints;
 
@@ -64,7 +72,7 @@ export default function ChiefComplaint({
         complaint?.id === item.id
       }
       onPress={() =>
-        setComplaint(item)
+        updateChiefComplaint({ complaintId: item.id, complaintName: item.label })
       }
     />
   ))}
@@ -79,14 +87,14 @@ export default function ChiefComplaint({
   placeholder="Search all complaints..."
   selected={complaint}
   options={dropdownComplaints}
-  onChange={setComplaint}
+  onChange={(item) => updateChiefComplaint({ complaintId: item.id, complaintName: item.label })}
 />
 
 <Divider />
 <SectionHeader title="Duration" />
       <AppTextField
-        value={duration}
-        onChangeText={setDuration}
+        value={chiefComplaint.durationValue}
+        onChangeText={(text) => updateChiefComplaint({ durationValue: text })}
         placeholder="e.g. 3"
         keyboardType="numeric"
       />
@@ -108,9 +116,9 @@ export default function ChiefComplaint({
           <AppChip
             key={item}
             label={item}
-            selected={durationUnit === item}
+            selected={chiefComplaint.durationUnit === item}
             onPress={() =>
-              setDurationUnit(item)
+              updateChiefComplaint({ durationUnit: item })
             }
           />
         ))}
@@ -127,7 +135,7 @@ export default function ChiefComplaint({
   <View style={styles.selectedComplaintBox}>
     
     <Text style={styles.selectedComplaintText}>
-      {complaint?.label ?? "No complaint selected"}
+      {chiefComplaint.complaintName || "No complaint selected"}
     </Text>
   </View>
 </View>

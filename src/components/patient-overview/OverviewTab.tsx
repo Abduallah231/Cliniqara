@@ -1,12 +1,10 @@
 import { ScrollView, StyleSheet } from "react-native";
 
-import ClinicalAlerts from "./ClinicalAlerts";
 import ClinicalSnapshot from "./ClinicalSnapshot";
 import LatestVisitCard from "./LatestVisitCard";
 
 import { SPACING } from "@/theme";
 
-import PatientQuickActions from "@/components/patients/PatientQuickActions";
 
 export default function OverviewTab() {
   return (
@@ -16,7 +14,6 @@ export default function OverviewTab() {
       showsVerticalScrollIndicator={false}
     >
 
-      <ClinicalAlerts />
 
       <ClinicalSnapshot />
 

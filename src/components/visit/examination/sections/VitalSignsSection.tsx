@@ -1,14 +1,13 @@
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
+import { useVisitStore } from "@/store/visitStore";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import {
   COLORS,
   RADIUS,
@@ -17,38 +16,31 @@ import {
 } from "@/theme";
 
 export default function VitalSignsSection() {
-  const [pulseRhythm, setPulseRhythm] =
-    useState("Regular");
+  const vitalSigns = useVisitStore(
+    (state) => state.visit.examination.vitalSigns
+  );
 
-  const [temperatureRoute, setTemperatureRoute] =
-    useState("Oral");
+  const updateVitalSigns = useVisitStore(
+    (state) => state.updateVitalSigns
+  );
 
-  const [oxygenSource, setOxygenSource] =
-    useState("Room Air");
-
-  const [systolicBP, setSystolicBP] = useState("");
-  const [diastolicBP, setDiastolicBP] = useState("");
-  const [heartRate, setHeartRate] = useState("");
-  const [spo2, setSpo2] = useState("");
-  const [temperature, setTemperature] = useState("");
-  const [respiratoryRate, setRespiratoryRate] = useState("");
-  const [bloodGlucose, setBloodGlucose] = useState("");
-  const [weight, setWeight] = useState("");
-  const [height, setHeight] = useState("");
+  const updateBloodPressure = useVisitStore(
+    (state) => state.updateBloodPressure
+  );
 
   return (
     <View style={styles.container}>
       <CollapsibleSection
-  title="Vital Signs"
-  icon={
-    <Ionicons
-      name="pulse-outline"
-      size={20}
-      color={COLORS.primary}
-    />
-  }
-  defaultExpanded
->
+        title="Vital Signs"
+        icon={
+          <Ionicons
+            name="pulse-outline"
+            size={20}
+            color={COLORS.primary}
+          />
+        }
+        defaultExpanded
+      >
         <Text style={styles.sectionTitle}>
           Blood Pressure
         </Text>
@@ -56,9 +48,16 @@ export default function VitalSignsSection() {
         <View style={styles.row}>
           <View style={styles.half}>
             <AppTextField
-              
-              value={systolicBP}
-              onChangeText={setSystolicBP}
+              value={
+                vitalSigns.bloodPressure.systolic
+              }
+              onChangeText={(value) =>
+                updateBloodPressure(
+                  value,
+                  vitalSigns.bloodPressure
+                    .diastolic
+                )
+              }
               keyboardType="numeric"
               placeholder="Systolic"
             />
@@ -66,9 +65,16 @@ export default function VitalSignsSection() {
 
           <View style={styles.half}>
             <AppTextField
-              
-              value={diastolicBP}
-              onChangeText={setDiastolicBP}
+              value={
+                vitalSigns.bloodPressure.diastolic
+              }
+              onChangeText={(value) =>
+                updateBloodPressure(
+                  vitalSigns.bloodPressure
+                    .systolic,
+                  value
+                )
+              }
               keyboardType="numeric"
               placeholder="Diastolic"
             />
@@ -79,8 +85,12 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="Heart Rate"
-              value={heartRate}
-              onChangeText={setHeartRate}
+              value={vitalSigns.heartRate}
+              onChangeText={(value) =>
+                updateVitalSigns({
+                  heartRate: value,
+                })
+              }
               keyboardType="numeric"
               placeholder="bpm"
             />
@@ -89,26 +99,27 @@ export default function VitalSignsSection() {
               <AppChip
                 label="Regular"
                 selected={
-                  pulseRhythm ===
-                  "Regular"
+                  !vitalSigns.pulseRhythm ||
+                  vitalSigns.pulseRhythm === "Regular"
                 }
                 onPress={() =>
-                  setPulseRhythm(
-                    "Regular"
-                  )
+                  updateVitalSigns({
+                    pulseRhythm: "Regular",
+                  })
                 }
               />
 
               <AppChip
                 label="Irregular"
                 selected={
-                  pulseRhythm ===
+                  vitalSigns.pulseRhythm ===
                   "Irregular"
                 }
                 onPress={() =>
-                  setPulseRhythm(
-                    "Irregular"
-                  )
+                  updateVitalSigns({
+                    pulseRhythm:
+                      "Irregular",
+                  })
                 }
               />
             </View>
@@ -117,8 +128,12 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="SpO₂"
-              value={spo2}
-              onChangeText={setSpo2}
+              value={vitalSigns.spo2}
+              onChangeText={(value) =>
+                updateVitalSigns({
+                  spo2: value,
+                })
+              }
               keyboardType="numeric"
               placeholder="%"
             />
@@ -127,35 +142,42 @@ export default function VitalSignsSection() {
               <AppChip
                 label="Room Air"
                 selected={
-                  oxygenSource ===
-                  "Room Air"
+                  !vitalSigns.oxygenSource ||
+                  vitalSigns.oxygenSource === "Room Air"
                 }
                 onPress={() =>
-                  setOxygenSource(
-                    "Room Air"
-                  )
+                  updateVitalSigns({
+                    oxygenSource:
+                      "Room Air",
+                  })
                 }
               />
 
               <AppChip
                 label="Oxygen"
                 selected={
-                  oxygenSource ===
+                  vitalSigns.oxygenSource ===
                   "Oxygen"
                 }
                 onPress={() =>
-                  setOxygenSource(
-                    "Oxygen"
-                  )
+                  updateVitalSigns({
+                    oxygenSource:
+                      "Oxygen",
+                  })
                 }
               />
             </View>
           </View>
         </View>
-                <AppTextField
+
+        <AppTextField
           label="Temperature"
-          value={temperature}
-          onChangeText={setTemperature}
+          value={vitalSigns.temperature}
+          onChangeText={(value) =>
+            updateVitalSigns({
+              temperature: value,
+            })
+          }
           keyboardType="numeric"
           placeholder="°C"
         />
@@ -165,27 +187,36 @@ export default function VitalSignsSection() {
             "Oral",
             "Axillary",
             "Tympanic",
+            "Temporal",
             "Rectal",
           ].map((item) => (
             <AppChip
               key={item}
               label={item}
               selected={
-                temperatureRoute === item
+                vitalSigns.temperatureRoute ===
+                item
               }
               onPress={() =>
-                setTemperatureRoute(item)
+                updateVitalSigns({
+                  temperatureRoute:
+                    item,
+                })
               }
             />
           ))}
         </View>
 
-        <View style={styles.row}>
+                <View style={styles.row}>
           <View style={styles.half}>
             <AppTextField
               label="Respiratory Rate"
-              value={respiratoryRate}
-              onChangeText={setRespiratoryRate      }
+              value={vitalSigns.respiratoryRate}
+              onChangeText={(value) =>
+                updateVitalSigns({
+                  respiratoryRate: value,
+                })
+              }
               keyboardType="numeric"
               placeholder="breaths/min"
             />
@@ -194,8 +225,12 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="Blood Glucose"
-              value={bloodGlucose}
-              onChangeText={setBloodGlucose}
+              value={vitalSigns.bloodGlucose}
+              onChangeText={(value) =>
+                updateVitalSigns({
+                  bloodGlucose: value,
+                })
+              }
               keyboardType="numeric"
               placeholder="mg/dL"
             />
@@ -206,8 +241,12 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="Weight"
-              value={weight}
-              onChangeText={setWeight}
+              value={vitalSigns.weight}
+              onChangeText={(value) =>
+                updateVitalSigns({
+                  weight: value,
+                })
+              }
               keyboardType="numeric"
               placeholder="kg"
             />
@@ -216,8 +255,12 @@ export default function VitalSignsSection() {
           <View style={styles.half}>
             <AppTextField
               label="Height"
-              value={height}
-              onChangeText={setHeight}
+              value={vitalSigns.height}
+              onChangeText={(value) =>
+                updateVitalSigns({
+                  height: value,
+                })
+              }
               keyboardType="numeric"
               placeholder="cm"
             />
@@ -230,14 +273,14 @@ export default function VitalSignsSection() {
 
         <View style={styles.bmiBox}>
           <Text style={styles.bmiText}>
-            BMI will be calculated
-            automatically
+            {vitalSigns.bmi || "--"}
           </Text>
         </View>
       </CollapsibleSection>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
@@ -280,8 +323,9 @@ const styles = StyleSheet.create({
   },
 
   bmiText: {
-    color: COLORS.secondaryText,
-    fontSize: TYPOGRAPHY.body,
+    color: COLORS.primary,
+    fontSize: 28,
+    fontWeight: "700",
     textAlign: "center",
   },
 });

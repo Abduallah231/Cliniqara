@@ -1,98 +1,89 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+const SYSTEM_ID = "skin";
+
 export default function SkinExam() {
-  const [lesionFindings, setLesionFindings] =
-    useState<string[]>(["Normal"]);
+  const {
+    visit,
+    updateSystemExaminationField,
+  } = useVisitStore();
 
-  const [distributionFindings, setDistributionFindings] =
-    useState<string[]>(["Localized"]);
+  const getValue = (
+    fieldId: string
+  ) => {
+    const system =
+      visit.examination.systemExamination.systems.find(
+        (s) =>
+          s.systemId === SYSTEM_ID
+      );
 
-  const [secondaryChanges, setSecondaryChanges] =
-    useState<string[]>([]);
+    return (
+      system?.fields.find(
+        (f) =>
+          f.fieldId === fieldId
+      )?.value ?? null
+    );
+  };
 
-  const [colorChanges, setColorChanges] =
-    useState<string[]>(["Normal"]);
-
-  const [nailFindings, setNailFindings] =
-    useState<string[]>(["Normal"]);
-
-  const [hairFindings, setHairFindings] =
-    useState<string[]>(["Normal"]);
-
-  const [redFlags, setRedFlags] =
-    useState<string[]>(["None"]);
-
-  const [lesionSites, setLesionSites] =
-    useState<string[]>([]);
-
-  const [lesionNumber, setLesionNumber] =
-    useState("");
-
-  const [lesionShape, setLesionShape] =
-    useState("");
-
-  const [lesionBorder, setLesionBorder] =
-    useState("");
-
-  const [lesionColor, setLesionColor] =
-    useState("");
-
-  const [lesionSize, setLesionSize] =
-    useState("");
-
-  const [lesionSurface, setLesionSurface] =
-    useState("");
-
-  const [lesionSymptoms, setLesionSymptoms] =
-    useState<string[]>([]);
-
-  const [blanching, setBlanching] =
-    useState("");
-
-  const [tenderness, setTenderness] =
-    useState("");
-
-  const [mucosalInvolvement, setMucosalInvolvement] =
-    useState("");
-
-  const [otherFindings, setOtherFindings] =
-    useState("");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any,
+    unit?: string
+  ) =>
+    updateSystemExaminationField(
+      SYSTEM_ID,
+      fieldId,
+      fieldLabel,
+      value,
+      unit
+    );
 
   const toggleFinding = (
+    fieldId: string,
+    fieldLabel: string,
     item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >,
     normal = "Normal"
   ) => {
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ??
+      [normal];
+
     if (item === normal) {
-      setSelected([normal]);
+      updateField(
+        fieldId,
+        fieldLabel,
+        [normal]
+      );
       return;
     }
 
-    let updated = selected.filter(
-      (x) => x !== normal
-    );
-
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item
+    let updated =
+      current.filter(
+        (x) => x !== normal
       );
+
+    if (
+      updated.includes(item)
+    ) {
+      updated =
+        updated.filter(
+          (x) => x !== item
+        );
     } else {
       updated.push(item);
     }
@@ -100,54 +91,64 @@ export default function SkinExam() {
     if (!updated.length)
       updated = [normal];
 
-    setSelected(updated);
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const toggleMulti = (
-    item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >
+    fieldId: string,
+    fieldLabel: string,
+    item: string
   ) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ?? [];
+
+    const updated =
+      current.includes(item)
+        ? current.filter(
+            (x) => x !== item
+          )
+        : [...current, item];
+
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const ChipGroup = ({
-  items,
-  selected,
-  setSelected,
-  normal = "Normal",
-}: {
-  items: string[];
-  selected: string[];
-  setSelected: React.Dispatch<
-    React.SetStateAction<string[]>
-  >;
-  normal?: string;
-}) => (
+    items,
+    fieldId,
+    fieldLabel,
+    normal = "Normal",
+  }: {
+    items: string[];
+    fieldId: string;
+    fieldLabel: string;
+    normal?: string;
+  }) => (
     <View style={styles.row}>
       {items.map((item) => (
         <AppChip
           key={item}
           label={item}
-          selected={selected.includes(item)}
+          selected={(
+            (getValue(
+              fieldId
+            ) as string[]) ??
+            [normal]
+          ).includes(item)}
           onPress={() =>
             toggleFinding(
+              fieldId,
+              fieldLabel,
               item,
-              selected,
-              setSelected,
               normal
             )
           }
@@ -174,11 +175,15 @@ export default function SkinExam() {
           "Nodule",
           "Ulcer",
         ]}
-        selected={lesionFindings}
-        setSelected={setLesionFindings}
+        fieldId="lesionFindings"
+        fieldLabel="Skin Lesions"
       />
 
-      {!lesionFindings.includes("Normal") && (
+      {!(
+        (getValue(
+          "lesionFindings"
+        ) as string[]) ?? ["Normal"]
+      ).includes("Normal") && (
         <View style={styles.group}>
           <Text style={styles.label}>
             Site
@@ -199,55 +204,118 @@ export default function SkinExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={lesionSites.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "lesionSites"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    lesionSites,
-                    setLesionSites
+                    "lesionSites",
+                    "Lesion Sites",
+                    item
                   )
                 }
               />
             ))}
           </View>
-                    <AppTextField
+
+          <AppTextField
             label="Number"
-            value={lesionNumber}
-            onChangeText={setLesionNumber}
+            value={
+              (getValue(
+                "lesionNumber"
+              ) as string) ?? ""
+            }
+            onChangeText={(text) =>
+              updateField(
+                "lesionNumber",
+                "Lesion Number",
+                text
+              )
+            }
             placeholder="Single / Multiple"
           />
 
           <AppTextField
             label="Size"
-            value={lesionSize}
-            onChangeText={setLesionSize}
+            value={
+              (getValue(
+                "lesionSize"
+              ) as string) ?? ""
+            }
+            onChangeText={(text) =>
+              updateField(
+                "lesionSize",
+                "Lesion Size",
+                text
+              )
+            }
             placeholder="cm"
           />
 
           <AppTextField
             label="Shape"
-            value={lesionShape}
-            onChangeText={setLesionShape}
+            value={
+              (getValue(
+                "lesionShape"
+              ) as string) ?? ""
+            }
+            onChangeText={(text) =>
+              updateField(
+                "lesionShape",
+                "Lesion Shape",
+                text
+              )
+            }
           />
 
-          <AppTextField
+                    <AppTextField
             label="Border"
-            value={lesionBorder}
-            onChangeText={setLesionBorder}
+            value={
+              (getValue(
+                "lesionBorder"
+              ) as string) ?? ""
+            }
+            onChangeText={(text) =>
+              updateField(
+                "lesionBorder",
+                "Lesion Border",
+                text
+              )
+            }
           />
 
           <AppTextField
             label="Color"
-            value={lesionColor}
-            onChangeText={setLesionColor}
+            value={
+              (getValue(
+                "lesionColor"
+              ) as string) ?? ""
+            }
+            onChangeText={(text) =>
+              updateField(
+                "lesionColor",
+                "Lesion Color",
+                text
+              )
+            }
           />
 
           <AppTextField
             label="Surface"
-            value={lesionSurface}
-            onChangeText={setLesionSurface}
+            value={
+              (getValue(
+                "lesionSurface"
+              ) as string) ?? ""
+            }
+            onChangeText={(text) =>
+              updateField(
+                "lesionSurface",
+                "Lesion Surface",
+                text
+              )
+            }
           />
 
           <Text style={styles.label}>
@@ -264,14 +332,16 @@ export default function SkinExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={lesionSymptoms.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "lesionSymptoms"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    lesionSymptoms,
-                    setLesionSymptoms
+                    "lesionSymptoms",
+                    "Lesion Symptoms",
+                    item
                   )
                 }
               />
@@ -293,10 +363,8 @@ export default function SkinExam() {
           "Extensor",
           "Sun Exposed",
         ]}
-        selected={distributionFindings}
-        setSelected={
-          setDistributionFindings
-        }
+        fieldId="distributionFindings"
+        fieldLabel="Distribution"
         normal="Localized"
       />
 
@@ -315,14 +383,16 @@ export default function SkinExam() {
           <AppChip
             key={item}
             label={item}
-            selected={secondaryChanges.includes(
-              item
-            )}
+            selected={(
+              (getValue(
+                "secondaryChanges"
+              ) as string[]) ?? []
+            ).includes(item)}
             onPress={() =>
               toggleMulti(
-                item,
-                secondaryChanges,
-                setSecondaryChanges
+                "secondaryChanges",
+                "Secondary Changes",
+                item
               )
             }
           />
@@ -342,8 +412,8 @@ export default function SkinExam() {
           "Cyanosis",
           "Jaundice",
         ]}
-        selected={colorChanges}
-        setSelected={setColorChanges}
+        fieldId="colorChanges"
+        fieldLabel="Color Changes"
       />
 
       <Text style={styles.sectionTitle}>
@@ -358,8 +428,8 @@ export default function SkinExam() {
           "Pitting",
           "Onychomycosis",
         ]}
-        selected={nailFindings}
-        setSelected={setNailFindings}
+        fieldId="nailFindings"
+        fieldLabel="Nail Findings"
       />
 
       <Text style={styles.sectionTitle}>
@@ -373,9 +443,10 @@ export default function SkinExam() {
           "Hirsutism",
           "Brittle Hair",
         ]}
-        selected={hairFindings}
-        setSelected={setHairFindings}
+        fieldId="hairFindings"
+        fieldLabel="Hair Findings"
       />
+
             <Text style={styles.sectionTitle}>
         Blanching
       </Text>
@@ -385,9 +456,15 @@ export default function SkinExam() {
           <AppChip
             key={item}
             label={item}
-            selected={blanching === item}
+            selected={
+              getValue("blanching") === item
+            }
             onPress={() =>
-              setBlanching(item)
+              updateField(
+                "blanching",
+                "Blanching",
+                item
+              )
             }
           />
         ))}
@@ -402,9 +479,15 @@ export default function SkinExam() {
           <AppChip
             key={item}
             label={item}
-            selected={tenderness === item}
+            selected={
+              getValue("tenderness") === item
+            }
             onPress={() =>
-              setTenderness(item)
+              updateField(
+                "tenderness",
+                "Tenderness",
+                item
+              )
             }
           />
         ))}
@@ -420,10 +503,16 @@ export default function SkinExam() {
             key={item}
             label={item}
             selected={
-              mucosalInvolvement === item
+              getValue(
+                "mucosalInvolvement"
+              ) === item
             }
             onPress={() =>
-              setMucosalInvolvement(item)
+              updateField(
+                "mucosalInvolvement",
+                "Mucosal Involvement",
+                item
+              )
             }
           />
         ))}
@@ -442,15 +531,24 @@ export default function SkinExam() {
           "Skin Sloughing",
           "Suspected Melanoma",
         ]}
-        selected={redFlags}
-        setSelected={setRedFlags}
+        fieldId="redFlags"
+        fieldLabel="Red Flags"
         normal="None"
       />
 
-      
       <AppTextField
-        value={otherFindings}
-        onChangeText={setOtherFindings}
+        value={
+          (getValue(
+            "otherFindings"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "otherFindings",
+            "Other Findings",
+            text
+          )
+        }
         placeholder="Add other findings..."
         multiline
       />
@@ -462,26 +560,22 @@ const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },
-
   sectionTitle: {
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
   },
-
   label: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
   },
-
   group: {
     gap: SPACING.sm,
   },

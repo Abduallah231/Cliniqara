@@ -1,107 +1,139 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import { StyleSheet, Text, View } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+const SYSTEM_ID = "abdomen";
+
 export default function AbdomenExam() {
-  const [inspectionFindings, setInspectionFindings] =
-    useState<string[]>(["NAD"]);
+  const {
+    visit,
+    updateSystemExaminationField,
+  } = useVisitStore();
 
-  const [herniaType, setHerniaType] =
-    useState<string[]>([]);
+  const getValue = (
+    fieldId: string
+  ) => {
+    const system =
+      visit.examination.systemExamination.systems.find(
+        (s) =>
+          s.systemId === SYSTEM_ID
+      );
 
-  const [palpationFindings, setPalpationFindings] =
-    useState<string[]>(["Soft and Lax"]);
+    return (
+      system?.fields.find(
+        (f) =>
+          f.fieldId === fieldId
+      )?.value ?? null
+    );
+  };
 
-  const [percussionFindings, setPercussionFindings] =
-    useState<string[]>(["NAD"]);
-
-  const [auscultationFindings, setAuscultationFindings] =
-    useState<string[]>(["NAD"]);
-
-  const [specialSigns, setSpecialSigns] =
-    useState<string[]>(["No Special Signs"]);
-
-  const [otherFindings, setOtherFindings] =
-    useState("");
-
-  const [distensionSeverity, setDistensionSeverity] =
-    useState("");
-
-  const [tendernessSite, setTendernessSite] =
-    useState<string[]>([]);
-
-  const [tendernessSeverity, setTendernessSeverity] =
-    useState("");
-
-  const [massSite, setMassSite] =
-    useState<string[]>([]);
-
-  const [massMobility, setMassMobility] =
-    useState("");
-
-  const [liverSpan, setLiverSpan] =
-    useState("");
-
-  const [spleenGrade, setSpleenGrade] =
-    useState("");
-
-  const [bruitSites, setBruitSites] =
-    useState<string[]>([]);
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any,
+    unit?: string
+  ) =>
+    updateSystemExaminationField(
+      SYSTEM_ID,
+      fieldId,
+      fieldLabel,
+      value,
+      unit
+    );
 
   const toggleFinding = (
+    fieldId: string,
+    fieldLabel: string,
     item: string,
-    selected: string[],
-    setSelected: (value: string[]) => void,
     normalValue = "NAD"
   ) => {
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ??
+      [normalValue];
+
     if (item === normalValue) {
-      setSelected([normalValue]);
+      updateField(
+        fieldId,
+        fieldLabel,
+        [normalValue]
+      );
       return;
     }
 
-    let updated = selected.filter(
-      (x) => x !== normalValue
-    );
+    let updated =
+      current.filter(
+        (x) =>
+          x !== normalValue
+      );
 
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item);
+    if (
+      updated.includes(item)
+    ) {
+      updated =
+        updated.filter(
+          (x) =>
+            x !== item
+        );
     } else {
       updated.push(item);
     }
 
-    if (updated.length === 0) {
+    if (
+      updated.length === 0
+    ) {
       updated = [normalValue];
     }
 
-    setSelected(updated);
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const toggleMultiSelect = (
-    item: string,
-    selected: string[],
-    setSelected: (value: string[]) => void
+    fieldId: string,
+    fieldLabel: string,
+    item: string
   ) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter((x) => x !== item)
-      );
-    } else {
-      setSelected([...selected, item]);
-    }
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ?? [];
+
+    const updated =
+      current.includes(item)
+        ? current.filter(
+            (x) =>
+              x !== item
+          )
+        : [
+            ...current,
+            item,
+          ];
+
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
+      <Text
+        style={
+          styles.sectionTitle
+        }
+      >
         Inspection
       </Text>
 
@@ -118,83 +150,143 @@ export default function AbdomenExam() {
           <AppChip
             key={item}
             label={item}
-            selected={inspectionFindings.includes(item)}
+            selected={(
+              (getValue(
+                "inspectionFindings"
+              ) as string[]) ??
+              ["NAD"]
+            ).includes(item)}
             onPress={() =>
               toggleFinding(
-                item,
-                inspectionFindings,
-                setInspectionFindings
+                "inspectionFindings",
+                "Inspection Findings",
+                item
               )
             }
           />
         ))}
       </View>
 
-      {inspectionFindings.includes(
+      {(
+        (getValue(
+          "inspectionFindings"
+        ) as string[]) ??
+        []
+      ).includes(
         "Distension"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
-            Distension Severity
+        <View
+          style={styles.group}
+        >
+          <Text
+            style={
+              styles.label
+            }
+          >
+            Distension
+            Severity
           </Text>
 
-          <View style={styles.row}>
+          <View
+            style={styles.row}
+          >
             {[
               "Mild",
               "Moderate",
               "Severe",
-            ].map((item) => (
-              <AppChip
-                key={item}
-                label={item}
-                selected={
-                  distensionSeverity === item
-                }
-                onPress={() =>
-                  setDistensionSeverity(item)
-                }
-              />
-            ))}
+            ].map(
+              (item) => (
+                <AppChip
+                  key={
+                    item
+                  }
+                  label={
+                    item
+                  }
+                  selected={
+                    getValue(
+                      "distensionSeverity"
+                    ) ===
+                    item
+                  }
+                  onPress={() =>
+                    updateField(
+                      "distensionSeverity",
+                      "Distension Severity",
+                      item
+                    )
+                  }
+                />
+              )
+            )}
           </View>
         </View>
       )}
 
-      {inspectionFindings.includes(
+      {(
+        (getValue(
+          "inspectionFindings"
+        ) as string[]) ??
+        []
+      ).includes(
         "Hernia"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <View
+          style={styles.group}
+        >
+          <Text
+            style={
+              styles.label
+            }
+          >
             Hernia Type
           </Text>
 
-          <View style={styles.row}>
+          <View
+            style={styles.row}
+          >
             {[
               "Inguinal",
               "Femoral",
               "Umbilical",
               "Incisional",
               "Epigastric",
-            ].map((item) => (
-              <AppChip
-                key={item}
-                label={item}
-                selected={herniaType.includes(
-                  item
-                )}
-                onPress={() =>
-                  toggleMultiSelect(
-                    item,
-                    herniaType,
-                    setHerniaType
-                  )
-                }
-              />
-            ))}
+            ].map(
+              (item) => (
+                <AppChip
+                  key={
+                    item
+                  }
+                  label={
+                    item
+                  }
+                  selected={(
+                    (getValue(
+                      "herniaType"
+                    ) as string[]) ??
+                    []
+                  ).includes(
+                    item
+                  )}
+                  onPress={() =>
+                    toggleMultiSelect(
+                      "herniaType",
+                      "Hernia Type",
+                      item
+                    )
+                  }
+                />
+              )
+            )}
           </View>
         </View>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <Text
+        style={
+          styles.sectionTitle
+        }
+      >
         Palpation
       </Text>
 
@@ -209,21 +301,29 @@ export default function AbdomenExam() {
           <AppChip
             key={item}
             label={item}
-            selected={palpationFindings.includes(
-              item
-            )}
+            selected={(
+              (getValue(
+                "palpationFindings"
+              ) as string[]) ??
+              [
+                "Soft and Lax",
+              ]
+            ).includes(item)}
             onPress={() =>
               toggleFinding(
+                "palpationFindings",
+                "Palpation Findings",
                 item,
-                palpationFindings,
-                setPalpationFindings,
                 "Soft and Lax"
               )
             }
           />
         ))}
       </View>
-            {palpationFindings.includes(
+
+            {((
+        getValue("palpationFindings")
+      ) as string[])?.includes(
         "Tenderness"
       ) && (
         <View style={styles.group}>
@@ -245,14 +345,16 @@ export default function AbdomenExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={tendernessSite.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "tendernessSite"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMultiSelect(
-                    item,
-                    tendernessSite,
-                    setTendernessSite
+                    "tendernessSite",
+                    "Tenderness Site",
+                    item
                   )
                 }
               />
@@ -273,10 +375,16 @@ export default function AbdomenExam() {
                 key={item}
                 label={item}
                 selected={
-                  tendernessSeverity === item
+                  getValue(
+                    "tendernessSeverity"
+                  ) === item
                 }
                 onPress={() =>
-                  setTendernessSeverity(item)
+                  updateField(
+                    "tendernessSeverity",
+                    "Tenderness Severity",
+                    item
+                  )
                 }
               />
             ))}
@@ -284,7 +392,9 @@ export default function AbdomenExam() {
         </View>
       )}
 
-      {palpationFindings.includes(
+      {((
+        getValue("palpationFindings")
+      ) as string[])?.includes(
         "Mass"
       ) && (
         <View style={styles.group}>
@@ -305,14 +415,16 @@ export default function AbdomenExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={massSite.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "massSite"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMultiSelect(
-                    item,
-                    massSite,
-                    setMassSite
+                    "massSite",
+                    "Mass Site",
+                    item
                   )
                 }
               />
@@ -332,10 +444,16 @@ export default function AbdomenExam() {
                 key={item}
                 label={item}
                 selected={
-                  massMobility === item
+                  getValue(
+                    "massMobility"
+                  ) === item
                 }
                 onPress={() =>
-                  setMassMobility(item)
+                  updateField(
+                    "massMobility",
+                    "Mass Mobility",
+                    item
+                  )
                 }
               />
             ))}
@@ -348,8 +466,19 @@ export default function AbdomenExam() {
       </Text>
 
       <AppTextField
-        value={liverSpan}
-        onChangeText={setLiverSpan}
+        value={
+          (getValue(
+            "liverSpan"
+          ) as string) ?? ""
+        }
+        onChangeText={(v) =>
+          updateField(
+            "liverSpan",
+            "Liver Span",
+            v,
+            "cm"
+          )
+        }
         placeholder="cm"
       />
 
@@ -369,10 +498,16 @@ export default function AbdomenExam() {
             key={item}
             label={item}
             selected={
-              spleenGrade === item
+              getValue(
+                "spleenGrade"
+              ) === item
             }
             onPress={() =>
-              setSpleenGrade(item)
+              updateField(
+                "spleenGrade",
+                "Spleen Grade",
+                item
+              )
             }
           />
         ))}
@@ -393,21 +528,24 @@ export default function AbdomenExam() {
           <AppChip
             key={item}
             label={item}
-            selected={percussionFindings.includes(
-              item
-            )}
+            selected={(
+              (getValue(
+                "percussionFindings"
+              ) as string[]) ??
+              ["NAD"]
+            ).includes(item)}
             onPress={() =>
               toggleFinding(
-                item,
-                percussionFindings,
-                setPercussionFindings
+                "percussionFindings",
+                "Percussion Findings",
+                item
               )
             }
           />
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>
+            <Text style={styles.sectionTitle}>
         Auscultation
       </Text>
 
@@ -422,20 +560,28 @@ export default function AbdomenExam() {
           <AppChip
             key={item}
             label={item}
-            selected={auscultationFindings.includes(
-              item
-            )}
+            selected={(
+              (getValue(
+                "auscultationFindings"
+              ) as string[]) ??
+              ["NAD"]
+            ).includes(item)}
             onPress={() =>
               toggleFinding(
-                item,
-                auscultationFindings,
-                setAuscultationFindings
+                "auscultationFindings",
+                "Auscultation Findings",
+                item
               )
             }
           />
         ))}
       </View>
-            {auscultationFindings.includes(
+
+      {((
+        getValue(
+          "auscultationFindings"
+        )
+      ) as string[])?.includes(
         "Bruit"
       ) && (
         <View style={styles.group}>
@@ -453,14 +599,17 @@ export default function AbdomenExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={bruitSites.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "bruitSites"
+                  ) as string[]) ??
+                  []
+                ).includes(item)}
                 onPress={() =>
                   toggleMultiSelect(
-                    item,
-                    bruitSites,
-                    setBruitSites
+                    "bruitSites",
+                    "Bruit Sites",
+                    item
                   )
                 }
               />
@@ -487,14 +636,17 @@ export default function AbdomenExam() {
           <AppChip
             key={item}
             label={item}
-            selected={specialSigns.includes(
-              item
-            )}
+            selected={(
+              (getValue(
+                "specialSigns"
+              ) as string[]) ??
+              ["No Special Signs"]
+            ).includes(item)}
             onPress={() =>
               toggleFinding(
+                "specialSigns",
+                "Special Signs",
                 item,
-                specialSigns,
-                setSpecialSigns,
                 "No Special Signs"
               )
             }
@@ -502,51 +654,54 @@ export default function AbdomenExam() {
         ))}
       </View>
 
-      
-
       <AppTextField
         placeholder="Add other findings..."
-        value={otherFindings}
-        onChangeText={setOtherFindings}
+        value={
+          (getValue(
+            "otherFindings"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "otherFindings",
+            "Other Findings",
+            text
+          )
+        }
         multiline
       />
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },
-
   sectionTitle: {
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
     marginTop: SPACING.sm,
   },
-
   label: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
   },
-
   group: {
     gap: SPACING.sm,
   },
-
   inputRow: {
     flexDirection: "row",
     gap: SPACING.sm,
   },
-
   half: {
     flex: 1,
   },

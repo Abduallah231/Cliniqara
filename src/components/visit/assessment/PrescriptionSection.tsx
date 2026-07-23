@@ -1,14 +1,12 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState } from "react";
 import {
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppTextField from "@/components/common/AppTextField";
-
+import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
   RADIUS,
@@ -18,17 +16,45 @@ import {
 } from "@/theme";
 
 export default function PrescriptionSection() {
-  const [medications, setMedications] =
-    useState([""]);
+  const prescription = useVisitStore(
+    (state) => state.visit.assessment.prescription
+  );
 
-  const [advice, setAdvice] =
-    useState("");
+  const addPrescriptionMedication =
+    useVisitStore(
+      (state) =>
+        state.addPrescriptionMedication
+    );
 
-  const [notes, setNotes] =
-    useState("");
+  const updatePrescriptionMedication =
+    useVisitStore(
+      (state) =>
+        state.updatePrescriptionMedication
+    );
 
-  const [followUp, setFollowUp] =
-    useState("");
+  const removePrescriptionMedication =
+    useVisitStore(
+      (state) =>
+        state.removePrescriptionMedication
+    );
+
+  const updatePrescriptionAdvice =
+    useVisitStore(
+      (state) =>
+        state.updatePrescriptionAdvice
+    );
+
+  const updatePrescriptionNotes =
+    useVisitStore(
+      (state) =>
+        state.updatePrescriptionNotes
+    );
+
+  const updatePrescriptionFollowUp =
+    useVisitStore(
+      (state) =>
+        state.updatePrescriptionFollowUp
+    );
 
   const followUpOptions = [
     "3 Days",
@@ -40,21 +66,22 @@ export default function PrescriptionSection() {
   ];
 
   const addMedication = () =>
-    setMedications([
-      ...medications,
-      "",
-    ]);
+    addPrescriptionMedication({
+      medication: "",
+      instructions: "",
+    });
 
   const removeMedication = (
     index: number
   ) => {
-    if (medications.length === 1)
+    if (
+      prescription.medications
+        .length === 1
+    )
       return;
 
-    setMedications(
-      medications.filter(
-        (_, i) => i !== index
-      )
+    removePrescriptionMedication(
+      index
     );
   };
 
@@ -62,12 +89,12 @@ export default function PrescriptionSection() {
     text: string,
     index: number
   ) => {
-    const updated = [
-      ...medications,
-    ];
-
-    updated[index] = text;
-    setMedications(updated);
+    updatePrescriptionMedication(
+      index,
+      {
+        medication: text,
+      }
+    );
   };
 
   return (
@@ -80,7 +107,6 @@ export default function PrescriptionSection() {
           size={20}
           color={COLORS.primary}
         />
-
         <Text
           style={styles.templateText}
         >
@@ -88,8 +114,11 @@ export default function PrescriptionSection() {
         </Text>
       </Pressable>
 
-      {medications.map(
-        (medication, index) => (
+      {prescription.medications.map(
+        (
+          medication,
+          index
+        ) => (
           <View
             key={index}
             style={styles.card}
@@ -132,18 +161,28 @@ export default function PrescriptionSection() {
             </View>
 
             <AppTextField
-              multiline
-              placeholder="Drug • Dose • Route • Frequency • Duration"
-              value={medication}
-              onChangeText={(
-                text
-              ) =>
-                updateMedication(
-                  text,
-                  index
-                )
+            label="Medication"
+              placeholder="Paracetamol 500mg tab"
+              value={medication.medication}
+              onChangeText={(text) =>
+                updatePrescriptionMedication(index, {
+                  medication: text,
+                })
               }
             />
+
+            <AppTextField
+              multiline
+              label="Instructions"
+              placeholder="قرص كل ٨ ساعات بعد الاكل لمدة ٥ ايام"
+              value={medication.instructions}
+              onChangeText={(text) =>
+                updatePrescriptionMedication(index, {
+                  instructions: text,
+                })
+              }
+            />
+
           </View>
         )
       )}
@@ -157,7 +196,6 @@ export default function PrescriptionSection() {
           size={20}
           color={COLORS.white}
         />
-
         <Text
           style={styles.addButtonText}
         >
@@ -171,8 +209,10 @@ export default function PrescriptionSection() {
 
       <AppTextField
         multiline
-        value={advice}
-        onChangeText={setAdvice}
+        value={prescription.advice}
+        onChangeText={
+          updatePrescriptionAdvice
+        }
         placeholder="Patient advice..."
       />
 
@@ -182,8 +222,10 @@ export default function PrescriptionSection() {
 
       <AppTextField
         multiline
-        value={notes}
-        onChangeText={setNotes}
+        value={prescription.notes}
+        onChangeText={
+          updatePrescriptionNotes
+        }
         placeholder="Additional notes..."
       />
 
@@ -198,20 +240,24 @@ export default function PrescriptionSection() {
               key={item}
               style={[
                 styles.chip,
-                followUp === item &&
+                prescription.followUp ===
+                  item &&
                   styles.selectedChip,
               ]}
               onPress={() =>
-                setFollowUp(item)
+                updatePrescriptionFollowUp(
+                  item
+                )
               }
             >
               <Text
                 style={[
                   styles.chipText,
-                  followUp === item && {
-                    color:
-                      COLORS.white,
-                  },
+                  prescription.followUp ===
+                    item && {
+                      color:
+                        COLORS.white,
+                    },
                 ]}
               >
                 {item}
@@ -221,12 +267,31 @@ export default function PrescriptionSection() {
         )}
       </View>
 
-      <AppTextField
+            <AppTextField
         placeholder="Custom follow up..."
-        value={followUp}
-        onChangeText={setFollowUp}
+        value={prescription.followUp}
+        onChangeText={
+          updatePrescriptionFollowUp
+        }
       />
-          </View>
+
+      <Pressable
+        style={styles.printButton}
+        onPress={() => {
+          // TODO: Open prescription preview / print
+        }}
+      >
+        <Ionicons
+          name="print-outline"
+          size={20}
+          color={COLORS.primary}
+        />
+
+        <Text style={styles.printButtonText}>
+          Print Prescription
+        </Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -325,4 +390,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: TYPOGRAPHY.small,
   },
+
+  printButton: {
+  height: 52,
+  borderRadius: RADIUS.lg,
+  borderWidth: 1,
+  borderColor: COLORS.primary,
+  backgroundColor: COLORS.card,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: SPACING.sm,
+  ...SHADOW,
+},
+
+printButtonText: {
+  color: COLORS.primary,
+  fontSize: TYPOGRAPHY.body,
+  fontWeight: "700",
+},
 });

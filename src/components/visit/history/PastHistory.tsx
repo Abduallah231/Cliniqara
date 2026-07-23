@@ -1,103 +1,73 @@
-import { useState } from "react";
 import { StyleSheet, View } from "react-native";
+import { useVisitStore } from "@/store/visitStore";
 
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
+
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+
 import chronicDiseases from "@/data/chronicDiseases";
+
 export default function PastHistory() {
-  const [selectedDiseases, setSelectedDiseases] =
-    useState<string[]>([]);
+  const {
+    visit,
+    updatePastHistoryField,
+  } = useVisitStore();
 
-  const [otherDisease, setOtherDisease] =
-    useState("");
+  const getValue = (fieldId: string) =>
+    visit.history.pastHistory.fields.find(
+      (field) => field.fieldId === fieldId
+    )?.value ?? null;
 
-  const [similarEpisode, setSimilarEpisode] =
-    useState("No");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any
+  ) => {
+    updatePastHistoryField(
+      fieldId,
+      fieldLabel,
+      value
+    );
+  };
 
-  const [episodeFrequency, setEpisodeFrequency] =
-    useState("");
+  const toggleMultiSelect = (
+    fieldId: string,
+    fieldLabel: string,
+    value: string
+  ) => {
+    const current =
+      (getValue(fieldId) as string[]) ?? [];
 
-  const [lastEpisode, setLastEpisode] =
-    useState("");
-
-  const [hospitalization, setHospitalization] =
-    useState("No");
-
-  const [hospitalReason, setHospitalReason] =
-    useState("");
-
-  const [hospitalDate, setHospitalDate] =
-    useState("");
-
-  const [hospitalStay, setHospitalStay] =
-    useState("");
-
-  const [operations, setOperations] =
-    useState("");
-
-  const [transfusion, setTransfusion] =
-    useState("No");
-
-  const [transfusionReason, setTransfusionReason] =
-    useState("");
-
-  const [transfusionDate, setTransfusionDate] =
-    useState("");
-
-  const [transfusionReaction, setTransfusionReaction] =
-    useState("");
-
-  const [trauma, setTrauma] =
-    useState("No");
-
-  const [traumaType, setTraumaType] =
-    useState("");
-
-  const [traumaDate, setTraumaDate] =
-    useState("");
-
-  const [traumaComplications, setTraumaComplications] =
-    useState("");
-
-  const [icu, setIcu] =
-    useState("No");
-
-  const [icuReason, setIcuReason] =
-    useState("");
-
-  const [icuDate, setIcuDate] =
-    useState("");
-
-  const [icuDuration, setIcuDuration] =
-    useState("");
-
-  const [ventilator, setVentilator] =
-    useState("");
-
-  const toggleDisease = (disease: string) => {
-    if (selectedDiseases.includes(disease)) {
-      setSelectedDiseases(
-        selectedDiseases.filter(
-          (d) => d !== disease
+    if (current.includes(value)) {
+      updatePastHistoryField(
+        fieldId,
+        fieldLabel,
+        current.filter(
+          (x) => x !== value
         )
       );
     } else {
-      setSelectedDiseases([
-        ...selectedDiseases,
-        disease,
-      ]);
+      updatePastHistoryField(
+        fieldId,
+        fieldLabel,
+        [...current, value]
+      );
     }
   };
 
   return (
     <View style={styles.container}>
+      {/* =========================
+          Chronic Diseases
+      ========================= */}
+
       <SectionHeader title="Chronic Diseases" />
 
       <View style={styles.row}>
@@ -105,259 +75,528 @@ export default function PastHistory() {
           <AppChip
             key={disease}
             label={disease}
-            selected={selectedDiseases.includes(disease)}
+            selected={(
+              (getValue(
+                "chronicDiseases"
+              ) as string[]) ?? []
+            ).includes(disease)}
             onPress={() =>
-              toggleDisease(disease)
+              toggleMultiSelect(
+                "chronicDiseases",
+                "Chronic Diseases",
+                disease
+              )
             }
           />
         ))}
       </View>
 
       <AppTextField
-  
         placeholder="Other chronic disease..."
-        value={otherDisease}
-        onChangeText={setOtherDisease}
+        value={
+          (getValue(
+            "otherChronicDisease"
+          ) as string) ?? ""
+        }
+        onChangeText={(v) =>
+          updateField(
+            "otherChronicDisease",
+            "Other Chronic Disease",
+            v
+          )
+        }
       />
-<Divider />
+
+      <Divider />
+
+      {/* =========================
+          Previous Similar Episode
+      ========================= */}
+
       <SectionHeader title="Previous Similar Episode" />
+
       <View style={styles.row}>
         <AppChip
           label="Yes"
-          selected={similarEpisode === "Yes"}
+          selected={
+            getValue(
+              "previousSimilarEpisode"
+            ) === "Yes"
+          }
           onPress={() =>
-            setSimilarEpisode("Yes")
+            updateField(
+              "previousSimilarEpisode",
+              "Previous Similar Episode",
+              "Yes"
+            )
           }
         />
 
         <AppChip
           label="No"
-          selected={similarEpisode === "No"}
+          selected={
+            getValue(
+              "previousSimilarEpisode"
+            ) === "No"
+          }
           onPress={() =>
-            setSimilarEpisode("No")
+            updateField(
+              "previousSimilarEpisode",
+              "Previous Similar Episode",
+              "No"
+            )
           }
         />
       </View>
 
-      {similarEpisode === "Yes" && (
+      {getValue(
+        "previousSimilarEpisode"
+      ) === "Yes" && (
         <View style={styles.box}>
           <AppTextField
-    
-            placeholder="Frequency"
-            value={episodeFrequency}
-            onChangeText={setEpisodeFrequency}
+
+            placeholder="How many episodes?"
+            value={
+              (getValue(
+                "episodeFrequency"
+              ) as string) ?? ""
+            }
+            onChangeText={(v) =>
+              updateField(
+                "episodeFrequency",
+                "Episode Frequency",
+                v
+              )
+            }
           />
 
           <AppTextField
-     
-            placeholder="Last Episode"
-            value={lastEpisode}
-            onChangeText={setLastEpisode}
+
+            placeholder="Last Episode Date"
+            value={
+              (getValue(
+                "lastEpisode"
+              ) as string) ?? ""
+            }
+            onChangeText={(v) =>
+              updateField(
+                "lastEpisode",
+                "Last Episode",
+                v
+              )
+            }
           />
         </View>
       )}
+
+      <Divider />
+
+      {/* =========================
+    Previous Hospitalization
+========================= */}
+
+<SectionHeader title="Previous Hospitalization" />
+
+<View style={styles.row}>
+  <AppChip
+    label="Yes"
+    selected={
+      getValue("previousHospitalization") ===
+      "Yes"
+    }
+    onPress={() =>
+      updateField(
+        "previousHospitalization",
+        "Previous Hospitalization",
+        "Yes"
+      )
+    }
+  />
+
+  <AppChip
+    label="No"
+    selected={
+      getValue("previousHospitalization") ===
+      "No"
+    }
+    onPress={() =>
+      updateField(
+        "previousHospitalization",
+        "Previous Hospitalization",
+        "No"
+      )
+    }
+  />
+</View>
+
+{getValue("previousHospitalization") ===
+  "Yes" && (
+  <View style={styles.box}>
+    <AppTextField
+      placeholder="Reason"
+      value={
+        (getValue(
+          "hospitalizationReason"
+        ) as string) ?? ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "hospitalizationReason",
+          "Hospitalization Reason",
+          v
+        )
+      }
+    />
+
+    <AppTextField
+      placeholder="Date"
+      value={
+        (getValue(
+          "hospitalizationDate"
+        ) as string) ?? ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "hospitalizationDate",
+          "Hospitalization Date",
+          v
+        )
+      }
+    />
+
+    <AppTextField
+      placeholder="Duration of Stay"
+      value={
+        (getValue(
+          "hospitalizationDuration"
+        ) as string) ?? ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "hospitalizationDuration",
+          "Hospitalization Duration",
+          v
+        )
+      }
+    />
+  </View>
+)}
+
 <Divider />
-      <SectionHeader title="Previous Hospitalization" />
-      <View style={styles.row}>
-        <AppChip
-          label="Yes"
-          selected={hospitalization === "Yes"}
-          onPress={() =>
-            setHospitalization("Yes")
-          }
-        />
 
-        <AppChip
-          label="No"
-          selected={hospitalization === "No"}
-          onPress={() =>
-            setHospitalization("No")
-          }
-        />
-      </View>
+{/* =========================
+    Previous Operations
+========================= */}
 
-      {hospitalization === "Yes" && (
-        <View style={styles.box}>
-          <AppTextField
+<SectionHeader title="Previous Operations" />
 
-            placeholder="Reason"
-            value={hospitalReason}
-            onChangeText={setHospitalReason}
-          />
+<AppTextField
+  placeholder="List previous operations..."
+  multiline
+  value={
+    (getValue(
+      "previousOperations"
+    ) as string) ?? ""
+  }
+  onChangeText={(v) =>
+    updateField(
+      "previousOperations",
+      "Previous Operations",
+      v
+    )
+  }
+/>
 
-          <AppTextField
+<Divider />
 
-            placeholder="Date"
-            value={hospitalDate}
-            onChangeText={setHospitalDate}
-          />
+{/* =========================
+    Blood Transfusion
+========================= */}
 
-          <AppTextField
+<SectionHeader title="Blood Transfusion" />
 
-            placeholder="Duration of Stay"
-            value={hospitalStay}
-            onChangeText={setHospitalStay}
-          />
-        </View>
-      )}
+<View style={styles.row}>
+  <AppChip
+    label="Yes"
+    selected={
+      getValue("bloodTransfusion") ===
+      "Yes"
+    }
+    onPress={() =>
+      updateField(
+        "bloodTransfusion",
+        "Blood Transfusion",
+        "Yes"
+      )
+    }
+  />
 
-      <Divider />
-      <SectionHeader title="Previous Operations" />
+  <AppChip
+    label="No"
+    selected={
+      getValue("bloodTransfusion") ===
+      "No"
+    }
+    onPress={() =>
+      updateField(
+        "bloodTransfusion",
+        "Blood Transfusion",
+        "No"
+      )
+    }
+  />
+</View>
 
-      <AppTextField
+{getValue("bloodTransfusion") ===
+  "Yes" && (
+  <View style={styles.box}>
+    <AppTextField
+      placeholder="Reason"
+      value={
+        (getValue(
+          "transfusionReason"
+        ) as string) ?? ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "transfusionReason",
+          "Transfusion Reason",
+          v
+        )
+      }
+    />
 
-        placeholder="List previous operations..."
-        value={operations}
-        onChangeText={setOperations}
-        multiline
-      />
-            <Divider />
-            <SectionHeader title="Blood Transfusion" />
-      <View style={styles.row}>
-        <AppChip
-          label="Yes"
-          selected={transfusion === "Yes"}
-          onPress={() =>
-            setTransfusion("Yes")
-          }
-        />
+    <AppTextField
+      placeholder="When"
+      value={
+        (getValue(
+          "transfusionDate"
+        ) as string) ?? ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "transfusionDate",
+          "Transfusion Date",
+          v
+        )
+      }
+    />
 
-        <AppChip
-          label="No"
-          selected={transfusion === "No"}
-          onPress={() =>
-            setTransfusion("No")
-          }
-        />
-      </View>
+    <AppTextField
+      placeholder="Any transfusion reaction?"
+      value={
+        (getValue(
+          "transfusionReaction"
+        ) as string) ?? ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "transfusionReaction",
+          "Transfusion Reaction",
+          v
+        )
+      }
+    />
+  </View>
+)}
 
-      {transfusion === "Yes" && (
-        <View style={styles.box}>
-          <AppTextField
+<Divider />
 
-            placeholder="Reason"
-            value={transfusionReason}
-            onChangeText={setTransfusionReason}
-          />
+{/* =========================
+    Major Trauma
+========================= */}
 
-          <AppTextField
+<SectionHeader title="Major Trauma" />
 
-            placeholder="When"
-            value={transfusionDate}
-            onChangeText={setTransfusionDate}
-          />
+<View style={styles.row}>
+  <AppChip
+    label="Yes"
+    selected={
+      getValue("majorTrauma") === "Yes"
+    }
+    onPress={() =>
+      updateField(
+        "majorTrauma",
+        "Major Trauma",
+        "Yes"
+      )
+    }
+  />
 
-          <AppTextField
+  <AppChip
+    label="No"
+    selected={
+      getValue("majorTrauma") === "No"
+    }
+    onPress={() =>
+      updateField(
+        "majorTrauma",
+        "Major Trauma",
+        "No"
+      )
+    }
+  />
+</View>
 
-            placeholder="Any transfusion reaction?"
-            value={transfusionReaction}
-            onChangeText={setTransfusionReaction}
-          />
-        </View>
-      )}
+{getValue("majorTrauma") === "Yes" && (
+  <View style={styles.box}>
+    <AppTextField
+      placeholder="Type of trauma"
+      value={
+        (getValue("traumaType") as string) ??
+        ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "traumaType",
+          "Trauma Type",
+          v
+        )
+      }
+    />
 
-      <Divider />
-      <SectionHeader title="Major Trauma" />
-      <View style={styles.row}>
-        <AppChip
-          label="Yes"
-          selected={trauma === "Yes"}
-          onPress={() => setTrauma("Yes")}
-        />
+    <AppTextField
+      placeholder="When"
+      value={
+        (getValue("traumaDate") as string) ??
+        ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "traumaDate",
+          "Trauma Date",
+          v
+        )
+      }
+    />
 
-        <AppChip
-          label="No"
-          selected={trauma === "No"}
-          onPress={() => setTrauma("No")}
-        />
-      </View>
+    <AppTextField
+      placeholder="Residual disability / complications"
+      value={
+        (getValue(
+          "traumaComplications"
+        ) as string) ?? ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "traumaComplications",
+          "Trauma Complications",
+          v
+        )
+      }
+    />
+  </View>
+)}
 
-      {trauma === "Yes" && (
-        <View style={styles.box}>
-          <AppTextField
+<Divider />
 
-            placeholder="Type of trauma"
-            value={traumaType}
-            onChangeText={setTraumaType}
-          />
+{/* =========================
+    ICU Admission
+========================= */}
 
-          <AppTextField
+<SectionHeader title="ICU Admission" />
 
-            placeholder="When"
-            value={traumaDate}
-            onChangeText={setTraumaDate}
-          />
+<View style={styles.row}>
+  <AppChip
+    label="Yes"
+    selected={
+      getValue("icuAdmission") === "Yes"
+    }
+    onPress={() =>
+      updateField(
+        "icuAdmission",
+        "ICU Admission",
+        "Yes"
+      )
+    }
+  />
 
-          <AppTextField
+  <AppChip
+    label="No"
+    selected={
+      getValue("icuAdmission") === "No"
+    }
+    onPress={() =>
+      updateField(
+        "icuAdmission",
+        "ICU Admission",
+        "No"
+      )
+    }
+  />
+</View>
 
-            placeholder="Residual disability / complications"
-            value={traumaComplications}
-            onChangeText={setTraumaComplications}
-          />
-        </View>
-      )}
+{getValue("icuAdmission") === "Yes" && (
+  <View style={styles.box}>
+    <AppTextField
+      placeholder="Reason"
+      value={
+        (getValue("icuReason") as string) ??
+        ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "icuReason",
+          "ICU Reason",
+          v
+        )
+      }
+    />
 
-    <Divider />
-    <SectionHeader title="ICU Admission" />
-      <View style={styles.row}>
-        <AppChip
-          label="Yes"
-          selected={icu === "Yes"}
-          onPress={() => setIcu("Yes")}
-        />
+    <AppTextField
+      placeholder="When"
+      value={
+        (getValue("icuDate") as string) ?? ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "icuDate",
+          "ICU Date",
+          v
+        )
+      }
+    />
 
-        <AppChip
-          label="No"
-          selected={icu === "No"}
-          onPress={() => setIcu("No")}
-        />
-      </View>
+    <AppTextField
+      placeholder="Duration"
+      value={
+        (getValue("icuDuration") as string) ??
+        ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "icuDuration",
+          "ICU Duration",
+          v
+        )
+      }
+    />
 
-      {icu === "Yes" && (
-        <View style={styles.box}>
-          <AppTextField
+    <AppTextField
+      placeholder="Ventilator support?"
+      value={
+        (getValue(
+          "ventilatorSupport"
+        ) as string) ?? ""
+      }
+      onChangeText={(v) =>
+        updateField(
+          "ventilatorSupport",
+          "Ventilator Support",
+          v
+        )
+      }
+    />
+  </View>
+)}
 
-            placeholder="Reason"
-            value={icuReason}
-            onChangeText={setIcuReason}
-          />
-
-          <AppTextField
-
-            placeholder="When"
-            value={icuDate}
-            onChangeText={setIcuDate}
-          />
-
-          <AppTextField
-
-            placeholder="Duration"
-            value={icuDuration}
-            onChangeText={setIcuDuration}
-          />
-
-          <AppTextField
-
-            placeholder="Ventilator support?"
-            value={ventilator}
-            onChangeText={setVentilator}
-          />
-        </View>
-      )}
-    </View>
-  );
+</View>
+);
 }
 
 const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
-  },
-
-  sectionTitle: {
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginTop: SPACING.sm,
   },
 
   row: {
@@ -368,5 +607,12 @@ const styles = StyleSheet.create({
 
   box: {
     gap: SPACING.sm,
+  },
+
+  sectionTitle: {
+    fontSize: TYPOGRAPHY.body,
+    fontWeight: "700",
+    color: COLORS.text,
+    marginTop: SPACING.sm,
   },
 });

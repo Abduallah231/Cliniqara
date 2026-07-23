@@ -1,14 +1,12 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState } from "react";
 import {
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppTextField from "@/components/common/AppTextField";
-
+import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
   RADIUS,
@@ -18,29 +16,57 @@ import {
 } from "@/theme";
 
 export default function ProceduresReferralsSection() {
-  const [procedures, setProcedures] =
-  useState<string[]>([]);
+  const procedures =
+    useVisitStore(
+      (state) =>
+        state.visit.assessment
+          .proceduresReferrals
+          .procedures
+    );
 
-const [referrals, setReferrals] =
-  useState<string[]>([]);
+  const referrals =
+    useVisitStore(
+      (state) =>
+        state.visit.assessment
+          .proceduresReferrals
+          .referrals
+    );
 
-  const updateProcedure = (
-    text: string,
-    index: number
-  ) => {
-    const updated = [...procedures];
-    updated[index] = text;
-    setProcedures(updated);
-  };
+  const addProcedure =
+    useVisitStore(
+      (state) =>
+        state.addProcedure
+    );
 
-  const updateReferral = (
-    text: string,
-    index: number
-  ) => {
-    const updated = [...referrals];
-    updated[index] = text;
-    setReferrals(updated);
-  };
+  const updateProcedure =
+    useVisitStore(
+      (state) =>
+        state.updateProcedure
+    );
+
+  const removeProcedure =
+    useVisitStore(
+      (state) =>
+        state.removeProcedure
+    );
+
+  const addReferral =
+    useVisitStore(
+      (state) =>
+        state.addReferral
+    );
+
+  const updateReferral =
+    useVisitStore(
+      (state) =>
+        state.updateReferral
+    );
+
+  const removeReferral =
+    useVisitStore(
+      (state) =>
+        state.removeReferral
+    );
 
   return (
     <View style={styles.container}>
@@ -48,61 +74,72 @@ const [referrals, setReferrals] =
         Procedures
       </Text>
 
-      {procedures.map((item, index) => (
-        <View
-          key={index}
-          style={styles.card}
-        >
-          <View style={styles.cardHeader}>
-            <Ionicons
-              name="construct-outline"
-              size={20}
-              color={COLORS.primary}
-            />
-
-            <Text style={styles.cardTitle}>
-              Procedure {index + 1}
-            </Text>
-
-            <Pressable
-              onPress={() =>
-                setProcedures(
-                  procedures.filter(
-                    (_, i) =>
-                      i !== index
-                  )
-                )
+      {procedures.map(
+        (item, index) => (
+          <View
+            key={index}
+            style={styles.card}
+          >
+            <View
+              style={
+                styles.cardHeader
               }
             >
               <Ionicons
-                name="trash-outline"
+                name="construct-outline"
                 size={20}
-                color="#ef4444"
+                color={
+                  COLORS.primary
+                }
               />
-            </Pressable>
-          </View>
 
-          <AppTextField
-            multiline
-            placeholder="Procedure details..."
-            value={item}
-            onChangeText={(text) =>
-              updateProcedure(
-                text,
-                index
-              )
-            }
-          />
-        </View>
-      ))}
+              <Text
+                style={
+                  styles.cardTitle
+                }
+              >
+                Procedure{" "}
+                {index + 1}
+              </Text>
+
+              <Pressable
+                onPress={() =>
+                  removeProcedure(
+                    index
+                  )
+                }
+              >
+                <Ionicons
+                  name="trash-outline"
+                  size={20}
+                  color="#ef4444"
+                />
+              </Pressable>
+            </View>
+
+            <AppTextField
+              multiline
+              placeholder="Procedure details..."
+              value={item.details}
+              onChangeText={(
+                text
+              ) =>
+                updateProcedure(
+                  index,
+                  text
+                )
+              }
+            />
+          </View>
+        )
+      )}
 
       <Pressable
         style={styles.button}
         onPress={() =>
-          setProcedures([
-            ...procedures,
-            "",
-          ])
+          addProcedure({
+            details: "",
+          })
         }
       >
         <Ionicons
@@ -111,7 +148,9 @@ const [referrals, setReferrals] =
           color={COLORS.white}
         />
 
-        <Text style={styles.buttonText}>
+        <Text
+          style={styles.buttonText}
+        >
           Add Procedure
         </Text>
       </Pressable>
@@ -120,61 +159,71 @@ const [referrals, setReferrals] =
         Referrals
       </Text>
 
-      {referrals.map((item, index) => (
-        <View
-          key={index}
-          style={styles.card}
-        >
-          <View style={styles.cardHeader}>
-            <Ionicons
-              name="people-outline"
-              size={20}
-              color={COLORS.primary}
-            />
-
-            <Text style={styles.cardTitle}>
-              Referral {index + 1}
-            </Text>
-
-            <Pressable
-              onPress={() =>
-                setReferrals(
-                  referrals.filter(
-                    (_, i) =>
-                      i !== index
-                  )
-                )
+      {referrals.map(
+        (item, index) => (
+          <View
+            key={index}
+            style={styles.card}
+          >
+            <View
+              style={
+                styles.cardHeader
               }
             >
               <Ionicons
-                name="trash-outline"
+                name="people-outline"
                 size={20}
-                color="#ef4444"
+                color={
+                  COLORS.primary
+                }
               />
-            </Pressable>
+
+              <Text
+                style={
+                  styles.cardTitle
+                }
+              >
+                Referral{" "}
+                {index + 1}
+              </Text>
+
+              <Pressable
+                onPress={() =>
+                  removeReferral(
+                    index
+                  )
+                }
+              >
+                <Ionicons
+                  name="trash-outline"
+                  size={20}
+                  color="#ef4444"
+                />
+              </Pressable>
+            </View>
+
+            <AppTextField
+              multiline
+              placeholder="Referral details..."
+              value={item.details}
+              onChangeText={(
+                text
+              ) =>
+                updateReferral(
+                  index,
+                  text
+                )
+              }
+            />
           </View>
-
-          <AppTextField
-            multiline
-            placeholder="Referral details..."
-            value={item}
-            onChangeText={(text) =>
-              updateReferral(
-                text,
-                index
-              )
-            }
-          />
-        </View>
-      ))}
-
-      <Pressable
+        )
+      )}
+            <Pressable
         style={styles.button}
         onPress={() =>
-          setReferrals([
-            ...referrals,
-            "",
-          ])
+          addReferral({
+            details: "",
+          })
         }
       >
         <Ionicons
@@ -183,11 +232,13 @@ const [referrals, setReferrals] =
           color={COLORS.white}
         />
 
-        <Text style={styles.buttonText}>
+        <Text
+          style={styles.buttonText}
+        >
           Add Referral
         </Text>
       </Pressable>
-          </View>
+    </View>
   );
 }
 

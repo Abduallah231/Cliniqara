@@ -1,98 +1,53 @@
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
+import { useVisitStore } from "@/store/visitStore";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
-export default function RegionalExaminationSection() {
-  const [headFindings, setHeadFindings] =
-    useState<string[]>(["NAD"]);
+type RegionalSection =
+  | "head"
+  | "neck"
+  | "upperLimb"
+  | "lowerLimb";
 
-  const [neckFindings, setNeckFindings] =
-    useState<string[]>(["NAD"]);
+function Section({
+  title,
+  section,
+  items,
+}: {
+  title: string;
+  section: RegionalSection;
+  items: string[];
+}) {
+  const regional = useVisitStore(
+    (state) =>
+      state.visit.examination
+        .regionalExamination
+  );
 
-  const [
-    upperLimbFindings,
-    setUpperLimbFindings,
-  ] = useState<string[]>(["NAD"]);
+  const updateRegionalSection =
+    useVisitStore(
+      (state) =>
+        state.updateRegionalSection
+    );
 
-  const [
-    lowerLimbFindings,
-    setLowerLimbFindings,
-  ] = useState<string[]>(["NAD"]);
+  const toggleRegionalFinding =
+    useVisitStore(
+      (state) =>
+        state.toggleRegionalFinding
+    );
 
-  const toggleItem = (
-    item: string,
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >
-  ) => {
-    setSelected((prev) => {
-      if (item === "NAD") {
-        return ["NAD"];
-      }
-
-      let updated = prev.filter(
-        (x) => x !== "NAD"
-      );
-
-      if (updated.includes(item)) {
-        updated = updated.filter(
-          (x) => x !== item
-        );
-      } else {
-        updated = [...updated, item];
-      }
-
-      return updated.length === 0
-        ? ["NAD"]
-        : updated;
-    });
-  };
-    const [headNotes, setHeadNotes] =
-      useState("");
-
-    const [neckNotes, setNeckNotes] =
-      useState("");
-
-    const [
-      upperLimbNotes,
-      setUpperLimbNotes,
-    ] = useState("");
-
-    const [
-      lowerLimbNotes,
-      setLowerLimbNotes,
-    ] = useState("");
-
-    const Section = ({
-      title,
-      items,
-      selected,
-      setSelected,
-      notes,
-      setNotes,
-    }: {
-      title: string;
-      items: string[];
-      selected: string[];
-      setSelected: React.Dispatch<
-        React.SetStateAction<string[]>
-      >;
-      notes: string;
-      setNotes: (value: string) => void;
-    }) => (
+  return (
     <>
       <Text style={styles.sectionTitle}>
         {title}
@@ -103,58 +58,77 @@ export default function RegionalExaminationSection() {
           <AppChip
             key={item}
             label={item}
-            selected={selected.includes(
-              item
-            )}
+            selected={regional[
+              section
+            ].findings.includes(item)}
             onPress={() =>
-              toggleItem(
-                item,
-                setSelected
+              toggleRegionalFinding(
+                section,
+                item
               )
             }
           />
         ))}
       </View>
 
-      <AppTextField
-        placeholder="Other findings..."
-        value={notes}
-        onChangeText={setNotes}
-        multiline
-      />
+      {regional[
+        section
+      ].findings.includes(
+        "Others"
+      ) && (
+        <AppTextField
+          placeholder="Other findings..."
+          value={
+            regional[section].notes
+          }
+          onChangeText={(
+            value
+          ) =>
+            updateRegionalSection(
+              section,
+              {
+                notes: value,
+              }
+            )
+          }
+          multiline
+        />
+      )}
     </>
   );
+}
 
+export default function RegionalExaminationSection() {
   return (
     <View style={styles.container}>
       <CollapsibleSection
-  title="Regional Examination"
-  icon={
-    <Ionicons
-      name="body-outline"
-      size={20}
-      color={COLORS.primary}
-    />
-  }
-  defaultExpanded={false}
->
-        <Section
+        title="Regional Examination"
+        icon={
+          <Ionicons
+            name="body-outline"
+            size={20}
+            color={COLORS.primary}
+          />
+        }
+        defaultExpanded={false}
+      >
+
+                <Section
           title="Head Examination"
+          section="head"
           items={[
             "NAD",
             "Scalp Lesion",
             "Skull Deformity",
             "Facial Asymmetry",
             "Tenderness",
+            "Others",
           ]}
-          selected={headFindings}
-          setSelected={setHeadFindings}
-          notes={headNotes}
-          setNotes={setHeadNotes}
         />
 
         <Section
           title="Neck Examination"
+          section="neck"
           items={[
             "NAD",
             "Neck Mass",
@@ -162,15 +136,13 @@ export default function RegionalExaminationSection() {
             "Thyroid Enlargement",
             "Tenderness",
             "Restricted Movement",
+            "Others",
           ]}
-          selected={neckFindings}
-          setSelected={setNeckFindings}
-          notes={neckNotes}
-          setNotes={setNeckNotes}
         />
 
         <Section
           title="Upper Limb Examination"
+          section="upperLimb"
           items={[
             "NAD",
             "Swelling",
@@ -178,19 +150,13 @@ export default function RegionalExaminationSection() {
             "Tenderness",
             "Weakness",
             "Restricted Movement",
+            "Others",
           ]}
-          selected={
-            upperLimbFindings
-          }
-          setSelected={
-            setUpperLimbFindings
-          }
-          notes={upperLimbNotes}
-          setNotes={setUpperLimbNotes}
         />
 
         <Section
           title="Lower Limb Examination"
+          section="lowerLimb"
           items={[
             "NAD",
             "Swelling",
@@ -199,15 +165,8 @@ export default function RegionalExaminationSection() {
             "Weakness",
             "Restricted Movement",
             "Edema",
+            "Others",
           ]}
-          selected={
-            lowerLimbFindings
-          }
-          setSelected={
-            setLowerLimbFindings
-          }
-          notes={lowerLimbNotes}
-          setNotes={setLowerLimbNotes}
         />
       </CollapsibleSection>
     </View>

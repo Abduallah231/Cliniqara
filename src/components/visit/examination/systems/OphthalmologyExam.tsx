@@ -1,79 +1,89 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+const SYSTEM_ID = "ophthalmology";
+
 export default function OphthalmologyExam() {
-  const [visualFindings, setVisualFindings] =
-    useState<string[]>(["Normal"]);
+  const {
+    visit,
+    updateSystemExaminationField,
+  } = useVisitStore();
 
-  const [externalFindings, setExternalFindings] =
-    useState<string[]>(["Normal"]);
+  const getValue = (
+    fieldId: string
+  ) => {
+    const system =
+      visit.examination.systemExamination.systems.find(
+        (s) =>
+          s.systemId === SYSTEM_ID
+      );
 
-  const [
-    conjunctivaFindings,
-    setConjunctivaFindings,
-  ] = useState<string[]>(["Normal"]);
+    return (
+      system?.fields.find(
+        (f) =>
+          f.fieldId === fieldId
+      )?.value ?? null
+    );
+  };
 
-  const [corneaFindings, setCorneaFindings] =
-    useState<string[]>(["Clear"]);
-
-  const [pupilFindings, setPupilFindings] =
-    useState<string[]>(["Normal"]);
-
-  const [ocularMovementFindings, setOcularMovementFindings] =
-    useState<string[]>(["Full"]);
-
-  const [fundusFindings, setFundusFindings] =
-    useState<string[]>(["Normal"]);
-
-  const [redFlags, setRedFlags] =
-    useState<string[]>(["None"]);
-
-  const [visualAcuity, setVisualAcuity] =
-    useState("");
-
-  const [visualSide, setVisualSide] =
-    useState("");
-
-  const [pupilSize, setPupilSize] =
-    useState("");
-
-  const [otherFindings, setOtherFindings] =
-    useState("");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any,
+    unit?: string
+  ) =>
+    updateSystemExaminationField(
+      SYSTEM_ID,
+      fieldId,
+      fieldLabel,
+      value,
+      unit
+    );
 
   const toggleFinding = (
+    fieldId: string,
+    fieldLabel: string,
     item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >,
     normal = "Normal"
   ) => {
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ??
+      [normal];
+
     if (item === normal) {
-      setSelected([normal]);
+      updateField(
+        fieldId,
+        fieldLabel,
+        [normal]
+      );
       return;
     }
 
-    let updated = selected.filter(
-      (x) => x !== normal
-    );
-
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item
+    let updated =
+      current.filter(
+        (x) => x !== normal
       );
+
+    if (
+      updated.includes(item)
+    ) {
+      updated =
+        updated.filter(
+          (x) => x !== item
+        );
     } else {
       updated.push(item);
     }
@@ -81,20 +91,22 @@ export default function OphthalmologyExam() {
     if (!updated.length)
       updated = [normal];
 
-    setSelected(updated);
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const ChipGroup = ({
     items,
-    selected,
-    setSelected,
+    fieldId,
+    fieldLabel,
     normal = "Normal",
   }: {
     items: string[];
-    selected: string[];
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >;
+    fieldId: string;
+    fieldLabel: string;
     normal?: string;
   }) => (
     <View style={styles.row}>
@@ -102,12 +114,17 @@ export default function OphthalmologyExam() {
         <AppChip
           key={item}
           label={item}
-          selected={selected.includes(item)}
+          selected={(
+            (getValue(
+              fieldId
+            ) as string[]) ??
+            [normal]
+          ).includes(item)}
           onPress={() =>
             toggleFinding(
+              fieldId,
+              fieldLabel,
               item,
-              selected,
-              setSelected,
               normal
             )
           }
@@ -128,18 +145,30 @@ export default function OphthalmologyExam() {
           "Reduced",
           "Blindness",
         ]}
-        selected={visualFindings}
-        setSelected={setVisualFindings}
+        fieldId="visualFindings"
+        fieldLabel="Visual Findings"
       />
 
-      {visualFindings.includes(
-        "Reduced"
-      ) && (
+      {(
+        (getValue(
+          "visualFindings"
+        ) as string[]) ?? []
+      ).includes("Reduced") && (
         <>
           <AppTextField
             label="Visual Acuity"
-            value={visualAcuity}
-            onChangeText={setVisualAcuity}
+            value={
+              (getValue(
+                "visualAcuity"
+              ) as string) ?? ""
+            }
+            onChangeText={(text) =>
+              updateField(
+                "visualAcuity",
+                "Visual Acuity",
+                text
+              )
+            }
             placeholder="6/6"
           />
 
@@ -157,10 +186,16 @@ export default function OphthalmologyExam() {
                 key={item}
                 label={item}
                 selected={
-                  visualSide === item
+                  getValue(
+                    "visualSide"
+                  ) === item
                 }
                 onPress={() =>
-                  setVisualSide(item)
+                  updateField(
+                    "visualSide",
+                    "Visual Side",
+                    item
+                  )
                 }
               />
             ))}
@@ -180,8 +215,8 @@ export default function OphthalmologyExam() {
           "Swelling",
           "Redness",
         ]}
-        selected={externalFindings}
-        setSelected={setExternalFindings}
+        fieldId="externalFindings"
+        fieldLabel="External Findings"
       />
 
       <Text style={styles.sectionTitle}>
@@ -196,9 +231,10 @@ export default function OphthalmologyExam() {
           "Hemorrhage",
           "Discharge",
         ]}
-        selected={conjunctivaFindings}
-        setSelected={setConjunctivaFindings}
+        fieldId="conjunctivaFindings"
+        fieldLabel="Conjunctiva Findings"
       />
+
             <Text style={styles.sectionTitle}>
         Cornea
       </Text>
@@ -211,8 +247,8 @@ export default function OphthalmologyExam() {
           "Scar",
           "Foreign Body",
         ]}
-        selected={corneaFindings}
-        setSelected={setCorneaFindings}
+        fieldId="corneaFindings"
+        fieldLabel="Cornea Findings"
         normal="Clear"
       />
 
@@ -228,17 +264,31 @@ export default function OphthalmologyExam() {
           "RAPD",
           "Irregular",
         ]}
-        selected={pupilFindings}
-        setSelected={setPupilFindings}
+        fieldId="pupilFindings"
+        fieldLabel="Pupil Findings"
       />
 
-      {pupilFindings.some(
+      {(
+        (getValue(
+          "pupilFindings"
+        ) as string[]) ?? []
+      ).some(
         (x) => x !== "Normal"
       ) && (
         <AppTextField
           label="Pupil Size (mm)"
-          value={pupilSize}
-          onChangeText={setPupilSize}
+          value={
+            (getValue(
+              "pupilSize"
+            ) as string) ?? ""
+          }
+          onChangeText={(text) =>
+            updateField(
+              "pupilSize",
+              "Pupil Size",
+              text
+            )
+          }
           keyboardType="numeric"
           placeholder="e.g. 3"
         />
@@ -255,10 +305,8 @@ export default function OphthalmologyExam() {
           "Painful",
           "Nystagmus",
         ]}
-        selected={ocularMovementFindings}
-        setSelected={
-          setOcularMovementFindings
-        }
+        fieldId="ocularMovementFindings"
+        fieldLabel="Ocular Movement Findings"
         normal="Full"
       />
 
@@ -275,8 +323,8 @@ export default function OphthalmologyExam() {
           "Hypertensive Retinopathy",
           "Retinal Hemorrhage",
         ]}
-        selected={fundusFindings}
-        setSelected={setFundusFindings}
+        fieldId="fundusFindings"
+        fieldLabel="Fundus Findings"
       />
 
       <Text style={styles.sectionTitle}>
@@ -292,14 +340,24 @@ export default function OphthalmologyExam() {
           "Retinal Detachment",
           "Chemical Injury",
         ]}
-        selected={redFlags}
-        setSelected={setRedFlags}
+        fieldId="redFlags"
+        fieldLabel="Red Flags"
         normal="None"
       />
-            
-      <AppTextField
-        value={otherFindings}
-        onChangeText={setOtherFindings}
+
+            <AppTextField
+        value={
+          (getValue(
+            "otherFindings"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "otherFindings",
+            "Other Findings",
+            text
+          )
+        }
         placeholder="Add other findings..."
         multiline
       />
@@ -311,26 +369,22 @@ const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },
-
   sectionTitle: {
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
   },
-
   label: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
   },
-
   group: {
     gap: SPACING.sm,
   },

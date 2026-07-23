@@ -1,51 +1,80 @@
-import { useMemo, useState } from "react";
-
+import { useMemo } from "react";
 import { ComplaintTemplate } from "../models/ComplaintTemplate";
+import { useVisitStore } from "@/store/visitStore";
 
 type ComplaintValues = Record<string, any>;
 
 export default function useComplaintForm(
-  template: ComplaintTemplate
+  template?: ComplaintTemplate
 ) {
-  const initialValues = useMemo<ComplaintValues>(() => {
-    const values: ComplaintValues = {};
+  const {
+    visit,
+    updateAnalysisField,
+  } = useVisitStore();
+
+  const values = useMemo<ComplaintValues>(() => {
+    if (!template) {
+      return {};
+    }
+
+    const result: ComplaintValues = {};
 
     template.sections.forEach((section) => {
       section.fields.forEach((field) => {
-        switch (field.type) {
-          case "MULTI_SELECT":
-            values[field.code] = [];
-            break;
+        const saved =
+          visit.history.hpi.analysis.fields.find(
+            (item) => item.fieldId === field.code
+          );
 
-          case "BOOLEAN":
-            values[field.code] = false;
-            break;
+        if (saved) {
+          result[field.code] = saved.value;
+        } else {
+          switch (field.type) {
+            case "MULTI_SELECT":
+              result[field.code] = [];
+              break;
 
-          default:
-            values[field.code] = "";
+            case "BOOLEAN":
+              result[field.code] = false;
+              break;
+
+            default:
+              result[field.code] = "";
+          }
         }
       });
     });
 
-    return values;
-  }, [template]);
-
-  const [values, setValues] =
-    useState<ComplaintValues>(initialValues);
+    return result;
+  }, [template, visit.history.hpi.analysis.fields]);
 
   const setValue = (
     fieldCode: string,
     value: any
   ) => {
-    setValues((previous) => ({
-      ...previous,
-      [fieldCode]: value,
-    }));
+    if (!template) return;
+
+    let label = fieldCode;
+
+    for (const section of template.sections) {
+      const field = section.fields.find(
+        (f) => f.code === fieldCode
+      );
+
+      if (field) {
+        label = field.label;
+        break;
+      }
+    }
+
+    updateAnalysisField(
+      fieldCode,
+      label,
+      value
+    );
   };
 
-  const reset = () => {
-    setValues(initialValues);
-  };
+  const reset = () => {};
 
   return {
     values,

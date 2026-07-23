@@ -1,89 +1,89 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+const SYSTEM_ID = "obstetric";
+
 export default function ObstetricExam() {
-  const [generalFindings, setGeneralFindings] =
-    useState<string[]>(["Normal"]);
+  const {
+    visit,
+    updateSystemExaminationField,
+  } = useVisitStore();
 
-  const [htnFindings, setHtnFindings] =
-    useState<string[]>(["Absent"]);
+  const getValue = (
+    fieldId: string
+  ) => {
+    const system =
+      visit.examination.systemExamination.systems.find(
+        (s) =>
+          s.systemId === SYSTEM_ID
+      );
 
-  const [abdominalFindings, setAbdominalFindings] =
-    useState<string[]>(["Normal"]);
+    return (
+      system?.fields.find(
+        (f) =>
+          f.fieldId === fieldId
+      )?.value ?? null
+    );
+  };
 
-  const [fundalHeight, setFundalHeight] =
-    useState("");
-
-  const [fundalAssessment, setFundalAssessment] =
-    useState("");
-
-  const [liquorAssessment, setLiquorAssessment] =
-    useState("Normal");
-
-  const [fetalLie, setFetalLie] =
-    useState("");
-
-  const [fetalPresentation, setFetalPresentation] =
-    useState("");
-
-  const [presentationPosition, setPresentationPosition] =
-    useState("");
-
-  const [engagement, setEngagement] =
-    useState("");
-
-  const [fhr, setFhr] =
-    useState("");
-
-  const [fetalMovements, setFetalMovements] =
-    useState("");
-
-  const [multiplePregnancy, setMultiplePregnancy] =
-    useState("Singleton");
-
-  const [uterineActivity, setUterineActivity] =
-    useState("");
-
-  const [redFlags, setRedFlags] =
-    useState<string[]>(["None"]);
-
-  const [otherFindings, setOtherFindings] =
-    useState("");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any,
+    unit?: string
+  ) =>
+    updateSystemExaminationField(
+      SYSTEM_ID,
+      fieldId,
+      fieldLabel,
+      value,
+      unit
+    );
 
   const toggleFinding = (
+    fieldId: string,
+    fieldLabel: string,
     item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >,
     normal = "Normal"
   ) => {
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ??
+      [normal];
+
     if (item === normal) {
-      setSelected([normal]);
+      updateField(
+        fieldId,
+        fieldLabel,
+        [normal]
+      );
       return;
     }
 
-    let updated = selected.filter(
-      (x) => x !== normal
-    );
-
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item
+    let updated =
+      current.filter(
+        (x) => x !== normal
       );
+
+    if (
+      updated.includes(item)
+    ) {
+      updated =
+        updated.filter(
+          (x) => x !== item
+        );
     } else {
       updated.push(item);
     }
@@ -91,20 +91,22 @@ export default function ObstetricExam() {
     if (!updated.length)
       updated = [normal];
 
-    setSelected(updated);
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const ChipGroup = ({
     items,
-    selected,
-    setSelected,
+    fieldId,
+    fieldLabel,
     normal = "Normal",
   }: {
     items: string[];
-    selected: string[];
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >;
+    fieldId: string;
+    fieldLabel: string;
     normal?: string;
   }) => (
     <View style={styles.row}>
@@ -112,12 +114,17 @@ export default function ObstetricExam() {
         <AppChip
           key={item}
           label={item}
-          selected={selected.includes(item)}
+          selected={(
+            (getValue(
+              fieldId
+            ) as string[]) ??
+            [normal]
+          ).includes(item)}
           onPress={() =>
             toggleFinding(
+              fieldId,
+              fieldLabel,
               item,
-              selected,
-              setSelected,
               normal
             )
           }
@@ -139,8 +146,8 @@ export default function ObstetricExam() {
           "Edema",
           "Jaundice",
         ]}
-        selected={generalFindings}
-        setSelected={setGeneralFindings}
+        fieldId="generalFindings"
+        fieldLabel="General Findings"
       />
 
       <Text style={styles.sectionTitle}>
@@ -154,8 +161,8 @@ export default function ObstetricExam() {
           "Hyperreflexia",
           "Clonus",
         ]}
-        selected={htnFindings}
-        setSelected={setHtnFindings}
+        fieldId="htnFindings"
+        fieldLabel="Hypertensive Signs"
         normal="Absent"
       />
 
@@ -170,24 +177,45 @@ export default function ObstetricExam() {
           "Tenderness",
           "Contractions",
         ]}
-        selected={abdominalFindings}
-        setSelected={setAbdominalFindings}
+        fieldId="abdominalFindings"
+        fieldLabel="Abdominal Findings"
       />
 
       <AppTextField
         label="Fundal Height"
-        value={fundalHeight}
-        onChangeText={setFundalHeight}
+        value={
+          (getValue(
+            "fundalHeight"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "fundalHeight",
+            "Fundal Height",
+            text
+          )
+        }
         placeholder="cm"
       />
 
       <AppTextField
         label="Fundal Assessment"
-        value={fundalAssessment}
-        onChangeText={setFundalAssessment}
+        value={
+          (getValue(
+            "fundalAssessment"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "fundalAssessment",
+            "Fundal Assessment",
+            text
+          )
+        }
         placeholder="Corresponds to GA..."
       />
-            <Text style={styles.sectionTitle}>
+
+      <Text style={styles.sectionTitle}>
         Liquor
       </Text>
 
@@ -200,15 +228,23 @@ export default function ObstetricExam() {
           <AppChip
             key={item}
             label={item}
-            selected={liquorAssessment === item}
+            selected={
+              getValue(
+                "liquorAssessment"
+              ) === item
+            }
             onPress={() =>
-              setLiquorAssessment(item)
+              updateField(
+                "liquorAssessment",
+                "Liquor Assessment",
+                item
+              )
             }
           />
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>
+            <Text style={styles.sectionTitle}>
         Fetal Lie
       </Text>
 
@@ -221,9 +257,15 @@ export default function ObstetricExam() {
           <AppChip
             key={item}
             label={item}
-            selected={fetalLie === item}
+            selected={
+              getValue("fetalLie") === item
+            }
             onPress={() =>
-              setFetalLie(item)
+              updateField(
+                "fetalLie",
+                "Fetal Lie",
+                item
+              )
             }
           />
         ))}
@@ -243,10 +285,16 @@ export default function ObstetricExam() {
             key={item}
             label={item}
             selected={
-              fetalPresentation === item
+              getValue(
+                "fetalPresentation"
+              ) === item
             }
             onPress={() =>
-              setFetalPresentation(item)
+              updateField(
+                "fetalPresentation",
+                "Fetal Presentation",
+                item
+              )
             }
           />
         ))}
@@ -254,9 +302,17 @@ export default function ObstetricExam() {
 
       <AppTextField
         label="Position"
-        value={presentationPosition}
-        onChangeText={
-          setPresentationPosition
+        value={
+          (getValue(
+            "presentationPosition"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "presentationPosition",
+            "Presentation Position",
+            text
+          )
         }
         placeholder="LOA, ROA..."
       />
@@ -278,9 +334,17 @@ export default function ObstetricExam() {
           <AppChip
             key={item}
             label={item}
-            selected={engagement === item}
+            selected={
+              getValue(
+                "engagement"
+              ) === item
+            }
             onPress={() =>
-              setEngagement(item)
+              updateField(
+                "engagement",
+                "Engagement",
+                item
+              )
             }
           />
         ))}
@@ -288,8 +352,17 @@ export default function ObstetricExam() {
 
       <AppTextField
         label="Fetal Heart Rate"
-        value={fhr}
-        onChangeText={setFhr}
+        value={
+          (getValue("fhr") as string) ??
+          ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "fhr",
+            "Fetal Heart Rate",
+            text
+          )
+        }
         keyboardType="numeric"
         placeholder="bpm"
       />
@@ -308,10 +381,16 @@ export default function ObstetricExam() {
             key={item}
             label={item}
             selected={
-              fetalMovements === item
+              getValue(
+                "fetalMovements"
+              ) === item
             }
             onPress={() =>
-              setFetalMovements(item)
+              updateField(
+                "fetalMovements",
+                "Fetal Movements",
+                item
+              )
             }
           />
         ))}
@@ -331,10 +410,16 @@ export default function ObstetricExam() {
             key={item}
             label={item}
             selected={
-              multiplePregnancy === item
+              getValue(
+                "multiplePregnancy"
+              ) === item
             }
             onPress={() =>
-              setMultiplePregnancy(item)
+              updateField(
+                "multiplePregnancy",
+                "Multiple Pregnancy",
+                item
+              )
             }
           />
         ))}
@@ -354,14 +439,21 @@ export default function ObstetricExam() {
             key={item}
             label={item}
             selected={
-              uterineActivity === item
+              getValue(
+                "uterineActivity"
+              ) === item
             }
             onPress={() =>
-              setUterineActivity(item)
+              updateField(
+                "uterineActivity",
+                "Uterine Activity",
+                item
+              )
             }
           />
         ))}
       </View>
+
             <Text style={styles.sectionTitle}>
         Red Flags
       </Text>
@@ -376,16 +468,24 @@ export default function ObstetricExam() {
           "Severe Hypertension",
           "Eclampsia",
         ]}
-        selected={redFlags}
-        setSelected={setRedFlags}
+        fieldId="redFlags"
+        fieldLabel="Red Flags"
         normal="None"
       />
 
-      
-
       <AppTextField
-        value={otherFindings}
-        onChangeText={setOtherFindings}
+        value={
+          (getValue(
+            "otherFindings"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "otherFindings",
+            "Other Findings",
+            text
+          )
+        }
         placeholder="Add other findings..."
         multiline
       />
@@ -397,26 +497,22 @@ const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },
-
   sectionTitle: {
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
   },
-
   label: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
   },
-
   group: {
     gap: SPACING.sm,
   },

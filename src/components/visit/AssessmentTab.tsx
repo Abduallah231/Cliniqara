@@ -1,15 +1,5 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View
-} from "react-native";
-
-import CollapsibleSection from "@/components/common/CollapsibleSection";
-
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
+import CollapsibleSection from "@/components/common/CollapsibleSection";
 import {
   COLORS,
   RADIUS,
@@ -17,26 +7,26 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useState } from "react";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import DiagnosisSection from "./assessment/DiagnosisSection";
-import ExaminationSummary from "./assessment/ExaminationSummary";
-import HistorySummary from "./assessment/HistorySummary";
 import InvestigationResultsScreen from "./assessment/InvestigationResultsScreen";
 import InvestigationSection from "./assessment/InvestigationSection";
 import PrescriptionSection from "./assessment/PrescriptionSection";
 import ProceduresReferralsSection from "./assessment/ProceduresReferrals";
 import VisitHeaderCard from "./VisitHeaderCard";
-import currentPatient from "@/data/currentPatient";
 
 export default function AssessmentTab() {
   const [
-    showInvestigationResults,
-    setShowInvestigationResults,
-  ] = useState(false);
-
-  const [
-    selectedInvestigations,
-    setSelectedInvestigations,
-  ] = useState<any[]>([]);
+  showInvestigationResults,
+  setShowInvestigationResults,
+] = useState(false);
 
   return (
     <AppKeyboardAwareScrollView
@@ -52,9 +42,6 @@ export default function AssessmentTab() {
         sectionTitle="Assessment"
         icon="clipboard-outline"
       />
-      <HistorySummary />
-
-      <ExaminationSummary />
 
       <Pressable
         style={styles.aiButton}
@@ -64,7 +51,6 @@ export default function AssessmentTab() {
           size={20}
           color={COLORS.white}
         />
-
         <Text
           style={styles.aiButtonText}
         >
@@ -81,7 +67,6 @@ export default function AssessmentTab() {
             size={20}
             color={COLORS.primary}
           />
-
           <Text style={styles.aiTitle}>
             AI Clinical Decision
             Support
@@ -89,12 +74,21 @@ export default function AssessmentTab() {
         </View>
 
         <Text style={styles.aiText}>
-              AI-generated diagnoses, investigations, and treatment
-    suggestions are provided solely as clinical decision support.
-    They may be incomplete or inaccurate and must not be relied
-    upon as a substitute for professional medical judgment.
-    The treating physician is solely responsible for all clinical
-    decisions and patient care.
+          AI-generated diagnoses,
+          investigations, and
+          treatment suggestions are
+          provided solely as
+          clinical decision
+          support. They may be
+          incomplete or inaccurate
+          and must not be relied
+          upon as a substitute for
+          professional medical
+          judgment. The treating
+          physician is solely
+          responsible for all
+          clinical decisions and
+          patient care.
         </Text>
       </View>
 
@@ -123,12 +117,6 @@ export default function AssessmentTab() {
         }
       >
         <InvestigationSection
-          selectedInvestigations={
-            selectedInvestigations
-          }
-          setSelectedInvestigations={
-            setSelectedInvestigations
-          }
           onOpenResults={() =>
             setShowInvestigationResults(
               !showInvestigationResults
@@ -137,15 +125,11 @@ export default function AssessmentTab() {
         />
 
         {showInvestigationResults && (
-          <InvestigationResultsScreen
-            investigations={
-              selectedInvestigations
-            }
-          />
+          <InvestigationResultsScreen />
         )}
       </CollapsibleSection>
 
-      <CollapsibleSection
+            <CollapsibleSection
         title="Procedures & Referrals"
         icon={
           <Ionicons
@@ -170,8 +154,9 @@ export default function AssessmentTab() {
       >
         <PrescriptionSection />
       </CollapsibleSection>
+
       <View style={{ height: 50 }} />
-          </AppKeyboardAwareScrollView>
+    </AppKeyboardAwareScrollView>
   );
 }
 
@@ -187,7 +172,7 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
 
-    patientBanner: {
+  patientBanner: {
     backgroundColor: COLORS.card,
     marginHorizontal: SPACING.md,
     marginTop: SPACING.sm,
@@ -210,17 +195,17 @@ const styles = StyleSheet.create({
 
   assessmentRow: {
     flexDirection: "row",
-  alignItems: "center",
-  marginTop: SPACING.sm,
-  marginHorizontal: SPACING.xl,
+    alignItems: "center",
+    marginTop: SPACING.sm,
+    marginHorizontal: SPACING.xl,
     borderRadius: RADIUS.xl,
   },
 
   assessmentText: {
     color: COLORS.primary,
-  fontSize: TYPOGRAPHY.small,
-  fontWeight: "600",
-  marginHorizontal: SPACING.xs,
+    fontSize: TYPOGRAPHY.small,
+    fontWeight: "600",
+    marginHorizontal: SPACING.xs,
   },
 
   aiButton: {

@@ -1,119 +1,140 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+const SYSTEM_ID = "endocrine";
+
 export default function EndocrineExam() {
-  const [generalFindings, setGeneralFindings] =
-    useState<string[]>(["Normal"]);
+  const {
+    visit,
+    updateSystemExaminationField,
+  } = useVisitStore();
 
-  const [thyroidFindings, setThyroidFindings] =
-    useState<string[]>(["Normal"]);
+  const getValue = (
+    fieldId: string
+  ) => {
+    const system =
+      visit.examination.systemExamination.systems.find(
+        (s) =>
+          s.systemId === SYSTEM_ID
+      );
 
-  const [thyroidEyeSigns, setThyroidEyeSigns] =
-    useState<string[]>([]);
+    return (
+      system?.fields.find(
+        (f) =>
+          f.fieldId === fieldId
+      )?.value ?? null
+    );
+  };
 
-  const [diabeticFindings, setDiabeticFindings] =
-    useState<string[]>(["None"]);
-
-  const [diabeticFootFindings, setDiabeticFootFindings] =
-    useState<string[]>([]);
-
-  const [neuropathyType, setNeuropathyType] =
-    useState("");
-
-  const [hypothyroidFindings, setHypothyroidFindings] =
-    useState<string[]>(["Absent"]);
-
-  const [hyperthyroidFindings, setHyperthyroidFindings] =
-    useState<string[]>(["Absent"]);
-
-  const [cushingFindings, setCushingFindings] =
-    useState<string[]>(["Absent"]);
-
-  const [acromegalyFindings, setAcromegalyFindings] =
-    useState<string[]>(["Absent"]);
-
-  const [addisonFindings, setAddisonFindings] =
-    useState<string[]>(["Absent"]);
-
-  const [otherFindings, setOtherFindings] =
-    useState("");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any,
+    unit?: string
+  ) =>
+    updateSystemExaminationField(
+      SYSTEM_ID,
+      fieldId,
+      fieldLabel,
+      value,
+      unit
+    );
 
   const toggleFinding = (
+    fieldId: string,
+    fieldLabel: string,
     item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >,
     normal = "Normal"
   ) => {
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ??
+      [normal];
+
     if (item === normal) {
-      setSelected([normal]);
+      updateField(
+        fieldId,
+        fieldLabel,
+        [normal]
+      );
       return;
     }
 
-    let updated = selected.filter(
-      (x) => x !== normal
-    );
-
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item
+    let updated =
+      current.filter(
+        (x) => x !== normal
       );
+
+    if (
+      updated.includes(item)
+    ) {
+      updated =
+        updated.filter(
+          (x) => x !== item
+        );
     } else {
       updated.push(item);
     }
 
-    if (!updated.length)
+    if (!updated.length) {
       updated = [normal];
+    }
 
-    setSelected(updated);
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const toggleMulti = (
-    item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >
+    fieldId: string,
+    fieldLabel: string,
+    item: string
   ) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ?? [];
+
+    const updated =
+      current.includes(item)
+        ? current.filter(
+            (x) => x !== item
+          )
+        : [
+            ...current,
+            item,
+          ];
+
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const ChipGroup = ({
     items,
-    selected,
-    setSelected,
+    fieldId,
+    fieldLabel,
     normal = "Normal",
   }: {
     items: string[];
-    selected: string[];
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >;
+    fieldId: string;
+    fieldLabel: string;
     normal?: string;
   }) => (
     <View style={styles.row}>
@@ -121,12 +142,17 @@ export default function EndocrineExam() {
         <AppChip
           key={item}
           label={item}
-          selected={selected.includes(item)}
+          selected={(
+            (getValue(
+              fieldId
+            ) as string[]) ??
+            [normal]
+          ).includes(item)}
           onPress={() =>
             toggleFinding(
+              fieldId,
+              fieldLabel,
               item,
-              selected,
-              setSelected,
               normal
             )
           }
@@ -149,8 +175,8 @@ export default function EndocrineExam() {
           "Hyperpigmentation",
           "Vitiligo",
         ]}
-        selected={generalFindings}
-        setSelected={setGeneralFindings}
+        fieldId="generalFindings"
+        fieldLabel="General Findings"
       />
 
       <Text style={styles.sectionTitle}>
@@ -165,8 +191,8 @@ export default function EndocrineExam() {
           "Thyroid Tenderness",
           "Thyroid Bruit",
         ]}
-        selected={thyroidFindings}
-        setSelected={setThyroidFindings}
+        fieldId="thyroidFindings"
+        fieldLabel="Thyroid Findings"
       />
 
       <Text style={styles.label}>
@@ -183,14 +209,16 @@ export default function EndocrineExam() {
           <AppChip
             key={item}
             label={item}
-            selected={thyroidEyeSigns.includes(
-              item
-            )}
+            selected={(
+              (getValue(
+                "thyroidEyeSigns"
+              ) as string[]) ?? []
+            ).includes(item)}
             onPress={() =>
               toggleMulti(
-                item,
-                thyroidEyeSigns,
-                setThyroidEyeSigns
+                "thyroidEyeSigns",
+                "Thyroid Eye Signs",
+                item
               )
             }
           />
@@ -211,21 +239,29 @@ export default function EndocrineExam() {
           <AppChip
             key={item}
             label={item}
-            selected={diabeticFindings.includes(
-              item
-            )}
+            selected={(
+              (getValue(
+                "diabeticFindings"
+              ) as string[]) ??
+              ["None"]
+            ).includes(item)}
             onPress={() =>
               toggleFinding(
+                "diabeticFindings",
+                "Diabetic Findings",
                 item,
-                diabeticFindings,
-                setDiabeticFindings,
                 "None"
               )
             }
           />
         ))}
       </View>
-            {diabeticFindings.includes(
+
+            {(
+        (getValue(
+          "diabeticFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Diabetic Foot"
       ) && (
         <View style={styles.group}>
@@ -243,14 +279,16 @@ export default function EndocrineExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={diabeticFootFindings.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "diabeticFootFindings"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    diabeticFootFindings,
-                    setDiabeticFootFindings
+                    "diabeticFootFindings",
+                    "Diabetic Foot Findings",
+                    item
                   )
                 }
               />
@@ -259,7 +297,11 @@ export default function EndocrineExam() {
         </View>
       )}
 
-      {diabeticFindings.includes(
+      {(
+        (getValue(
+          "diabeticFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Peripheral Neuropathy"
       ) && (
         <View style={styles.group}>
@@ -277,10 +319,16 @@ export default function EndocrineExam() {
                 key={item}
                 label={item}
                 selected={
-                  neuropathyType === item
+                  getValue(
+                    "neuropathyType"
+                  ) === item
                 }
                 onPress={() =>
-                  setNeuropathyType(item)
+                  updateField(
+                    "neuropathyType",
+                    "Neuropathy Type",
+                    item
+                  )
                 }
               />
             ))}
@@ -300,10 +348,8 @@ export default function EndocrineExam() {
           "Delayed Reflexes",
           "Bradycardia",
         ]}
-        selected={hypothyroidFindings}
-        setSelected={
-          setHypothyroidFindings
-        }
+        fieldId="hypothyroidFindings"
+        fieldLabel="Hypothyroid Findings"
         normal="Absent"
       />
 
@@ -319,10 +365,8 @@ export default function EndocrineExam() {
           "Tachycardia",
           "Hyperreflexia",
         ]}
-        selected={hyperthyroidFindings}
-        setSelected={
-          setHyperthyroidFindings
-        }
+        fieldId="hyperthyroidFindings"
+        fieldLabel="Hyperthyroid Findings"
         normal="Absent"
       />
 
@@ -338,10 +382,8 @@ export default function EndocrineExam() {
           "Purple Striae",
           "Proximal Weakness",
         ]}
-        selected={cushingFindings}
-        setSelected={
-          setCushingFindings
-        }
+        fieldId="cushingFindings"
+        fieldLabel="Cushing Findings"
         normal="Absent"
       />
 
@@ -357,10 +399,8 @@ export default function EndocrineExam() {
           "Coarse Facial Features",
           "Macroglossia",
         ]}
-        selected={acromegalyFindings}
-        setSelected={
-          setAcromegalyFindings
-        }
+        fieldId="acromegalyFindings"
+        fieldLabel="Acromegaly Findings"
         normal="Absent"
       />
 
@@ -369,22 +409,31 @@ export default function EndocrineExam() {
       </Text>
 
       <ChipGroup
-  items={[
-    "Absent",
-    "Hyperpigmentation",
-    "Weight Loss",
-    "Hypotension",
-    "Vitiligo",
-  ]}
-  selected={addisonFindings}
-  setSelected={setAddisonFindings}
-  normal="Absent"
-/>
-           
+        items={[
+          "Absent",
+          "Hyperpigmentation",
+          "Weight Loss",
+          "Hypotension",
+          "Vitiligo",
+        ]}
+        fieldId="addisonFindings"
+        fieldLabel="Addison Findings"
+        normal="Absent"
+      />
 
-      <AppTextField
-        value={otherFindings}
-        onChangeText={setOtherFindings}
+            <AppTextField
+        value={
+          (getValue(
+            "otherFindings"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "otherFindings",
+            "Other Findings",
+            text
+          )
+        }
         placeholder="Add other findings..."
         multiline
       />
@@ -396,26 +445,22 @@ const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },
-
   sectionTitle: {
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
   },
-
   label: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
   },
-
   group: {
     gap: SPACING.sm,
   },

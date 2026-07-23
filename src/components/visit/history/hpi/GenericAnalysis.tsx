@@ -1,46 +1,38 @@
-import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
-import {
-  SPACING,
-} from "@/theme";
+import { SPACING } from "@/theme";
+import { useVisitStore } from "@/store/visitStore";
 
 export default function GenericAnalysis() {
-  const [modeOfOnset, setModeOfOnset] =
-    useState("");
+  const {
+    visit,
+    updateAnalysisField,
+  } = useVisitStore();
 
-  const [circumstance, setCircumstance] =
-    useState("");
+  const getValue = (fieldId: string) => {
+    return (
+      visit.history.hpi.analysis.fields.find(
+        (f) => f.fieldId === fieldId
+      )?.value ?? ""
+    );
+  };
 
-  const [trigger, setTrigger] =
-    useState("");
-
-  const [course, setCourse] =
-    useState("");
-
-  const [otherOnset, setOtherOnset] =
-    useState("");
-
-  const [otherCourse, setOtherCourse] =
-    useState("");
-
-  const [aggravating, setAggravating] =
-    useState("");
-
-  const [relieving, setRelieving] =
-    useState("");
-
-  const [treatmentEffect, setTreatmentEffect] =
-    useState("");
+  const modeOfOnset = getValue("modeOfOnset") as string;
+  const circumstance = getValue("circumstance") as string;
+  const trigger = getValue("trigger") as string;
+  const course = getValue("course") as string;
+  const otherOnset = getValue("otherOnset") as string;
+  const otherCourse = getValue("otherCourse") as string;
+  const aggravating = getValue("aggravating") as string;
+  const relieving = getValue("relieving") as string;
+  const treatmentEffect =
+    getValue("treatmentEffect") as string;
 
   return (
     <View style={styles.container}>
-
       <SectionHeader title="Onset" />
 
       <Text style={styles.subTitle}>
@@ -60,10 +52,10 @@ export default function GenericAnalysis() {
             label={item}
             selected={modeOfOnset === item}
             onPress={() =>
-              setModeOfOnset(
-                modeOfOnset === item
-                  ? ""
-                  : item
+              updateAnalysisField(
+                "modeOfOnset",
+                "Mode of Onset",
+                modeOfOnset === item ? "" : item
               )
             }
           />
@@ -74,7 +66,13 @@ export default function GenericAnalysis() {
         <AppTextField
           placeholder="Specify onset..."
           value={otherOnset}
-          onChangeText={setOtherOnset}
+          onChangeText={(text) =>
+            updateAnalysisField(
+              "otherOnset",
+              "Other Onset",
+              text
+            )
+          }
         />
       )}
 
@@ -97,10 +95,10 @@ export default function GenericAnalysis() {
             label={item}
             selected={circumstance === item}
             onPress={() =>
-              setCircumstance(
-                circumstance === item
-                  ? ""
-                  : item
+              updateAnalysisField(
+                "circumstance",
+                "Circumstance",
+                circumstance === item ? "" : item
               )
             }
           />
@@ -125,10 +123,10 @@ export default function GenericAnalysis() {
             label={item}
             selected={trigger === item}
             onPress={() =>
-              setTrigger(
-                trigger === item
-                  ? ""
-                  : item
+              updateAnalysisField(
+                "trigger",
+                "Trigger",
+                trigger === item ? "" : item
               )
             }
           />
@@ -139,7 +137,7 @@ export default function GenericAnalysis() {
 
       <SectionHeader title="Course" />
 
-      <View style={styles.row}>
+            <View style={styles.row}>
         {[
           "Progressive",
           "Static",
@@ -155,10 +153,10 @@ export default function GenericAnalysis() {
             label={item}
             selected={course === item}
             onPress={() =>
-              setCourse(
-                course === item
-                  ? ""
-                  : item
+              updateAnalysisField(
+                "course",
+                "Course",
+                course === item ? "" : item
               )
             }
           />
@@ -169,7 +167,13 @@ export default function GenericAnalysis() {
         <AppTextField
           placeholder="Describe course..."
           value={otherCourse}
-          onChangeText={setOtherCourse}
+          onChangeText={(text) =>
+            updateAnalysisField(
+              "otherCourse",
+              "Other Course",
+              text
+            )
+          }
         />
       )}
 
@@ -181,7 +185,13 @@ export default function GenericAnalysis() {
         multiline
         placeholder="Enter aggravating factors..."
         value={aggravating}
-        onChangeText={setAggravating}
+        onChangeText={(text) =>
+          updateAnalysisField(
+            "aggravating",
+            "Aggravating Factors",
+            text
+          )
+        }
       />
 
       <Divider />
@@ -192,7 +202,13 @@ export default function GenericAnalysis() {
         multiline
         placeholder="Enter relieving factors..."
         value={relieving}
-        onChangeText={setRelieving}
+        onChangeText={(text) =>
+          updateAnalysisField(
+            "relieving",
+            "Relieving Factors",
+            text
+          )
+        }
       />
 
       <Divider />
@@ -203,12 +219,17 @@ export default function GenericAnalysis() {
         multiline
         placeholder="Describe the effect of treatment..."
         value={treatmentEffect}
-        onChangeText={setTreatmentEffect}
+        onChangeText={(text) =>
+          updateAnalysisField(
+            "treatmentEffect",
+            "Effect of Treatment",
+            text
+          )
+        }
       />
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,

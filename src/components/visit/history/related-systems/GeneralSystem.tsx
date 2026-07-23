@@ -1,25 +1,32 @@
-import { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import { useVisitStore } from "@/store/visitStore";
 
 export default function GeneralSystem() {
-  const [selectedSymptoms, setSelectedSymptoms] =
-    useState<string[]>([]);
+  const {
+    visit,
+    updateRelatedSystemField,
+  } = useVisitStore();
 
-  const [otherFinding, setOtherFinding] =
-    useState("");
+  const selectedSymptoms =
+    (visit.history.hpi.relatedSystemSymptoms.fields.find(
+      (f) => f.fieldId === "General"
+    )?.value as string[]) ?? [];
+
+  const otherFinding =
+    (visit.history.hpi.relatedSystemSymptoms.fields.find(
+      (f) => f.fieldId === "GeneralOther"
+    )?.value as string) ?? "";
 
   const symptoms = [
     "Fever",
@@ -34,18 +41,21 @@ export default function GeneralSystem() {
   const toggleSymptom = (
     symptom: string
   ) => {
-    if (selectedSymptoms.includes(symptom)) {
-      setSelectedSymptoms(
-        selectedSymptoms.filter(
-          (item) => item !== symptom
-        )
-      );
-    } else {
-      setSelectedSymptoms([
-        ...selectedSymptoms,
-        symptom,
-      ]);
-    }
+    const updated =
+      selectedSymptoms.includes(symptom)
+        ? selectedSymptoms.filter(
+            (item) => item !== symptom
+          )
+        : [
+            ...selectedSymptoms,
+            symptom,
+          ];
+
+    updateRelatedSystemField(
+      "General",
+      "General",
+      updated
+    );
   };
 
   return (
@@ -69,16 +79,23 @@ export default function GeneralSystem() {
         ))}
       </View>
 
-      <AppTextField
+            <AppTextField
         label="Other Findings"
         placeholder="Add other findings..."
         value={otherFinding}
-        onChangeText={setOtherFinding}
+        onChangeText={(text) =>
+          updateRelatedSystemField(
+            "GeneralOther",
+            "General Other",
+            text
+          )
+        }
         multiline
       />
     </View>
   );
-}
+
+  }
 
 const styles = StyleSheet.create({
   container: {

@@ -1,14 +1,13 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState } from "react";
 import {
-  Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import diagnoses from "@/data/diagnoses";
-import AppTextField from "@/components/common/AppTextField";
+import AppDropdown from "@/components/common/AppDropdown";
 import DiagnosisCard from "./DiagnosisCard";
+import diagnoses from "@/data/diagnoses";
+import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
   RADIUS,
@@ -16,68 +15,55 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
-type SearchResultsProps = {
-  items: string[];
-  onSelect: (item: string) => void;
-};
-
-function SearchResults({
-  items,
-  onSelect,
-}: SearchResultsProps) {
-  if (!items.length) return null;
-
-  return (
-    <View style={styles.results}>
-      {items.slice(0, 8).map((item) => (
-        <Pressable
-          key={item}
-          style={styles.resultItem}
-          onPress={() => onSelect(item)}
-        >
-          <Text>{item}</Text>
-        </Pressable>
-      ))}
-    </View>
-  );
-}
 
 export default function DiagnosisSection() {
-  const [primaryDiagnosis, setPrimaryDiagnosis] =
-    useState<string[]>([]);
-
-  const [
-    differentialDiagnoses,
-    setDifferentialDiagnoses,
-  ] = useState<string[]>([]);
-
-  const [searchPrimary, setSearchPrimary] =
-    useState("");
-
-  const [
-    searchDifferential,
-    setSearchDifferential,
-  ] = useState("");
-
-  const filterDiagnoses = (search: string) =>
-  diagnoses.filter((item) =>
-    item
-      .toLowerCase()
-      .includes(search.toLowerCase())
+  const diagnosis = useVisitStore(
+    (state) =>
+      state.visit.assessment.diagnosis
   );
 
-  const diagnosisDatabase = diagnoses;
-
-  const filteredPrimary =
-    filterDiagnoses(searchPrimary).filter(
-      (item) => !primaryDiagnosis.includes(item)
+  const updatePrimaryDiagnosis =
+    useVisitStore(
+      (state) =>
+        state.updatePrimaryDiagnosis
     );
 
-  const filteredDifferential =
-    filterDiagnoses(searchDifferential).filter(
+  const addDifferentialDiagnosis =
+    useVisitStore(
+      (state) =>
+        state.addDifferentialDiagnosis
+    );
+
+  const removeDifferentialDiagnosis =
+    useVisitStore(
+      (state) =>
+        state.removeDifferentialDiagnosis
+    );
+
+  const diagnosisOptions =
+    diagnoses.map((item) => ({
+      id: item,
+      label: item,
+    }));
+
+  const primaryOptions =
+    diagnosisOptions.filter(
       (item) =>
-        !differentialDiagnoses.includes(item)
+        item.label !==
+        diagnosis.primaryDiagnosis
+          ?.diagnosis
     );
+
+  const differentialOptions =
+    diagnosisOptions.filter(
+      (item) =>
+        !diagnosis.differentialDiagnoses.some(
+          (d) =>
+            d.diagnosis ===
+            item.label
+        )
+    );
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
@@ -92,7 +78,11 @@ export default function DiagnosisSection() {
         />
 
         <Text style={styles.emptyText}>
-          No AI suggestions yet
+          {diagnosis
+            .aiSuggestedDiagnoses
+            .length === 0
+            ? "No AI suggestions yet"
+            : `${diagnosis.aiSuggestedDiagnoses.length} AI suggestions`}
         </Text>
       </View>
 
@@ -100,77 +90,79 @@ export default function DiagnosisSection() {
         Primary Diagnosis
       </Text>
 
-      <AppTextField
-        icon="search-outline"
+      <AppDropdown
         placeholder="Search diagnosis..."
-        value={searchPrimary}
-        onChangeText={setSearchPrimary}
+        selected={
+          diagnosis.primaryDiagnosis
+            ? {
+                id: diagnosis
+                  .primaryDiagnosis
+                  .diagnosis,
+                label:
+                  diagnosis
+                    .primaryDiagnosis
+                    .diagnosis,
+              }
+            : undefined
+        }
+        options={primaryOptions}
+        onChange={(item) =>
+          updatePrimaryDiagnosis({
+            diagnosis: item.label,
+          })
+        }
       />
 
-      {searchPrimary.length > 0 && (
-        <SearchResults
-          items={filteredPrimary}
-          onSelect={(item) => {
-            setPrimaryDiagnosis([item]);
-            setSearchPrimary("");
-          }}
-        />
-      )}
-
-      {primaryDiagnosis.map((item) => (
+      {diagnosis.primaryDiagnosis && (
         <DiagnosisCard
-          key={item}
           title="Primary Diagnosis"
-          diagnosis={item}
+          diagnosis={
+            diagnosis
+              .primaryDiagnosis
+              .diagnosis
+          }
           icon="medical-outline"
           onRemove={() =>
-            setPrimaryDiagnosis([])
+            updatePrimaryDiagnosis(
+              undefined
+            )
           }
         />
-      ))}
+      )}
 
       <Text style={styles.title}>
         Differential Diagnoses
       </Text>
 
-      <AppTextField
-        icon="search-outline"
-        placeholder="Search differential..."
-        value={searchDifferential}
-        onChangeText={
-          setSearchDifferential
+      <AppDropdown
+        placeholder="Search differential diagnosis..."
+        selected={undefined}
+        options={
+          differentialOptions
+        }
+        onChange={(item) =>
+          addDifferentialDiagnosis({
+            diagnosis: item.label,
+          })
         }
       />
-      {searchDifferential.length > 0 && (
-        <SearchResults
-          items={filteredDifferential}
-          onSelect={(item) => {
-            if (!differentialDiagnoses.includes(item)) {
-              setDifferentialDiagnoses([
-                ...differentialDiagnoses,
-                item,
-              ]);
+            {diagnosis.differentialDiagnoses.map(
+        (item) => (
+          <DiagnosisCard
+            key={item.diagnosis}
+            title="Differential Diagnosis"
+            diagnosis={
+              item.diagnosis
             }
-            setSearchDifferential("");
-          }}
-        />
-      )}
-
-      {differentialDiagnoses.map((item) => (
-        <DiagnosisCard
-          key={item}
-          title="Differential Diagnosis"
-          diagnosis={item}
-          icon="git-compare-outline"
-          onRemove={() =>
-            setDifferentialDiagnoses(
-              differentialDiagnoses.filter(
-                (x) => x !== item
+            icon="git-compare-outline"
+            onRemove={() =>
+              removeDifferentialDiagnosis(
+                item.diagnosis
               )
-            )
-          }
-        />
-      ))}
+            }
+          />
+        )
+      )}
     </View>
   );
 }
@@ -202,49 +194,5 @@ const styles = StyleSheet.create({
     color: COLORS.secondaryText,
     fontSize: TYPOGRAPHY.small,
     textAlign: "center",
-  },
-
-  results: {
-    backgroundColor: COLORS.card,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    overflow: "hidden",
-    ...SHADOW,
-  },
-
-  resultItem: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-
-  card: {
-    backgroundColor: COLORS.card,
-    borderRadius: RADIUS.xl,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    ...SHADOW,
-  },
-
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.md,
-  },
-
-  cardTitle: {
-    fontSize: TYPOGRAPHY.small,
-    color: COLORS.secondaryText,
-    fontWeight: "600",
-  },
-
-  cardText: {
-    marginTop: 4,
-    fontSize: TYPOGRAPHY.body,
-    color: COLORS.text,
-    fontWeight: "700",
   },
 });

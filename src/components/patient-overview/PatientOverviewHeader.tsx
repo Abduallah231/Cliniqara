@@ -4,8 +4,6 @@ import { StyleSheet, Text, View } from "react-native";
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 
-import PatientStatusChip from "@/components/patients/PatientStatusChip";
-import { router } from "expo-router";
 import { PatientSummary } from "@/models";
 import {
     COLORS,
@@ -29,9 +27,6 @@ export default function PatientOverviewHeader({
               {patient.fullName}
             </Text>
 
-            <PatientStatusChip
-              status="Active"
-            />
           </View>
 
           <Text style={styles.subtitle}>
@@ -71,24 +66,6 @@ export default function PatientOverviewHeader({
           variant="secondary"
           style={styles.button}
           onPress={() => {}}
-        />
-
-        <AppButton
-          title="Call"
-          icon="call-outline"
-          variant="secondary"
-          style={styles.button}
-          onPress={() => {}}
-        />
-
-        <AppButton
-          title="Report"
-          icon="document-text-outline"
-          variant="secondary"
-          style={styles.button}
-          onPress={() =>
-            router.push("/generate-report")
-          }
         />
       </View>
     </AppCard>

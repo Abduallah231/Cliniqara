@@ -1,86 +1,89 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+const SYSTEM_ID = "musculoskeletal";
+
 export default function MusculoskeletalExam() {
-  const [generalFindings, setGeneralFindings] =
-    useState<string[]>(["NAD"]);
+  const {
+    visit,
+    updateSystemExaminationField,
+  } = useVisitStore();
 
-  const [jointFindings, setJointFindings] =
-    useState<string[]>(["Normal"]);
+  const getValue = (
+    fieldId: string
+  ) => {
+    const system =
+      visit.examination.systemExamination.systems.find(
+        (s) =>
+          s.systemId === SYSTEM_ID
+      );
 
-  const [muscleFindings, setMuscleFindings] =
-    useState<string[]>(["Normal"]);
+    return (
+      system?.fields.find(
+        (f) =>
+          f.fieldId === fieldId
+      )?.value ?? null
+    );
+  };
 
-  const [gait, setGait] =
-    useState("Normal");
-
-  const [redFlags, setRedFlags] =
-    useState<string[]>(["None"]);
-
-  const [otherFindings, setOtherFindings] =
-    useState("");
-
-  const [painSites, setPainSites] =
-    useState<string[]>([]);
-
-  const [painSeverity, setPainSeverity] =
-    useState("");
-
-  const [swellingSites, setSwellingSites] =
-    useState<string[]>([]);
-
-  const [swellingType, setSwellingType] =
-    useState("");
-
-  const [stiffnessDuration, setStiffnessDuration] =
-    useState("");
-
-  const [limitedRomJoints, setLimitedRomJoints] =
-    useState<string[]>([]);
-
-  const [jointPattern, setJointPattern] =
-    useState("");
-
-  const [weaknessLocation, setWeaknessLocation] =
-    useState("");
-
-  const [powerGrade, setPowerGrade] =
-    useState("");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any,
+    unit?: string
+  ) =>
+    updateSystemExaminationField(
+      SYSTEM_ID,
+      fieldId,
+      fieldLabel,
+      value,
+      unit
+    );
 
   const toggleFinding = (
+    fieldId: string,
+    fieldLabel: string,
     item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >,
     normal = "NAD"
   ) => {
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ??
+      [normal];
+
     if (item === normal) {
-      setSelected([normal]);
+      updateField(
+        fieldId,
+        fieldLabel,
+        [normal]
+      );
       return;
     }
 
-    let updated = selected.filter(
-      (x) => x !== normal
-    );
-
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item
+    let updated =
+      current.filter(
+        (x) => x !== normal
       );
+
+    if (
+      updated.includes(item)
+    ) {
+      updated =
+        updated.filter(
+          (x) => x !== item
+        );
     } else {
       updated.push(item);
     }
@@ -88,41 +91,49 @@ export default function MusculoskeletalExam() {
     if (!updated.length)
       updated = [normal];
 
-    setSelected(updated);
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const toggleMulti = (
-    item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >
+    fieldId: string,
+    fieldLabel: string,
+    item: string
   ) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ?? [];
+
+    const updated =
+      current.includes(item)
+        ? current.filter(
+            (x) => x !== item
+          )
+        : [
+            ...current,
+            item,
+          ];
+
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const ChipGroup = ({
     items,
-    selected,
-    setSelected,
+    fieldId,
+    fieldLabel,
     normal = "NAD",
   }: {
     items: string[];
-    selected: string[];
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >;
+    fieldId: string;
+    fieldLabel: string;
     normal?: string;
   }) => (
     <View style={styles.row}>
@@ -130,12 +141,17 @@ export default function MusculoskeletalExam() {
         <AppChip
           key={item}
           label={item}
-          selected={selected.includes(item)}
+          selected={(
+            (getValue(
+              fieldId
+            ) as string[]) ??
+            [normal]
+          ).includes(item)}
           onPress={() =>
             toggleFinding(
+              fieldId,
+              fieldLabel,
               item,
-              selected,
-              setSelected,
               normal
             )
           }
@@ -159,11 +175,15 @@ export default function MusculoskeletalExam() {
           "Stiffness",
           "Limited ROM",
         ]}
-        selected={generalFindings}
-        setSelected={setGeneralFindings}
+        fieldId="generalFindings"
+        fieldLabel="General Findings"
       />
 
-      {generalFindings.includes("Pain") && (
+      {(
+        (getValue(
+          "generalFindings"
+        ) as string[]) ?? []
+      ).includes("Pain") && (
         <View style={styles.group}>
           <Text style={styles.label}>
             Pain Site
@@ -185,12 +205,16 @@ export default function MusculoskeletalExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={painSites.includes(item)}
+                selected={(
+                  (getValue(
+                    "painSites"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    painSites,
-                    setPainSites
+                    "painSites",
+                    "Pain Sites",
+                    item
                   )
                 }
               />
@@ -211,17 +235,28 @@ export default function MusculoskeletalExam() {
                 key={item}
                 label={item}
                 selected={
-                  painSeverity === item
+                  getValue(
+                    "painSeverity"
+                  ) === item
                 }
                 onPress={() =>
-                  setPainSeverity(item)
+                  updateField(
+                    "painSeverity",
+                    "Pain Severity",
+                    item
+                  )
                 }
               />
             ))}
           </View>
         </View>
       )}
-            {generalFindings.includes(
+
+            {(
+        (getValue(
+          "generalFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Swelling"
       ) && (
         <View style={styles.group}>
@@ -243,14 +278,16 @@ export default function MusculoskeletalExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={swellingSites.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "swellingSites"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    swellingSites,
-                    setSwellingSites
+                    "swellingSites",
+                    "Swelling Sites",
+                    item
                   )
                 }
               />
@@ -272,10 +309,16 @@ export default function MusculoskeletalExam() {
                 key={item}
                 label={item}
                 selected={
-                  swellingType === item
+                  getValue(
+                    "swellingType"
+                  ) === item
                 }
                 onPress={() =>
-                  setSwellingType(item)
+                  updateField(
+                    "swellingType",
+                    "Swelling Type",
+                    item
+                  )
                 }
               />
             ))}
@@ -283,20 +326,36 @@ export default function MusculoskeletalExam() {
         </View>
       )}
 
-      {generalFindings.includes(
+      {(
+        (getValue(
+          "generalFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Stiffness"
       ) && (
         <AppTextField
           label="Morning Stiffness"
-          value={stiffnessDuration}
-          onChangeText={
-            setStiffnessDuration
+          value={
+            (getValue(
+              "stiffnessDuration"
+            ) as string) ?? ""
+          }
+          onChangeText={(text) =>
+            updateField(
+              "stiffnessDuration",
+              "Morning Stiffness",
+              text
+            )
           }
           placeholder="Duration in minutes"
         />
       )}
 
-      {generalFindings.includes(
+      {(
+        (getValue(
+          "generalFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Limited ROM"
       ) && (
         <View style={styles.group}>
@@ -316,14 +375,16 @@ export default function MusculoskeletalExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={limitedRomJoints.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "limitedRomJoints"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    limitedRomJoints,
-                    setLimitedRomJoints
+                    "limitedRomJoints",
+                    "Limited ROM Joints",
+                    item
                   )
                 }
               />
@@ -345,8 +406,8 @@ export default function MusculoskeletalExam() {
           "Instability",
           "Effusion",
         ]}
-        selected={jointFindings}
-        setSelected={setJointFindings}
+        fieldId="jointFindings"
+        fieldLabel="Joint Findings"
         normal="Normal"
       />
 
@@ -364,10 +425,16 @@ export default function MusculoskeletalExam() {
             key={item}
             label={item}
             selected={
-              jointPattern === item
+              getValue(
+                "jointPattern"
+              ) === item
             }
             onPress={() =>
-              setJointPattern(item)
+              updateField(
+                "jointPattern",
+                "Joint Pattern",
+                item
+              )
             }
           />
         ))}
@@ -385,20 +452,32 @@ export default function MusculoskeletalExam() {
           "Hypertrophy",
           "Tenderness",
         ]}
-        selected={muscleFindings}
-        setSelected={setMuscleFindings}
+        fieldId="muscleFindings"
+        fieldLabel="Muscle Findings"
         normal="Normal"
       />
 
-      {muscleFindings.includes(
+      {(
+        (getValue(
+          "muscleFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Weakness"
       ) && (
         <View style={styles.group}>
           <AppTextField
             label="Weakness Location"
-            value={weaknessLocation}
-            onChangeText={
-              setWeaknessLocation
+            value={
+              (getValue(
+                "weaknessLocation"
+              ) as string) ?? ""
+            }
+            onChangeText={(text) =>
+              updateField(
+                "weaknessLocation",
+                "Weakness Location",
+                text
+              )
             }
             placeholder="Affected muscles"
           />
@@ -420,16 +499,23 @@ export default function MusculoskeletalExam() {
                 key={item}
                 label={item}
                 selected={
-                  powerGrade === item
+                  getValue(
+                    "powerGrade"
+                  ) === item
                 }
                 onPress={() =>
-                  setPowerGrade(item)
+                  updateField(
+                    "powerGrade",
+                    "Power Grade",
+                    item
+                  )
                 }
               />
             ))}
           </View>
         </View>
       )}
+
             <Text style={styles.sectionTitle}>
         Gait
       </Text>
@@ -446,9 +532,15 @@ export default function MusculoskeletalExam() {
           <AppChip
             key={item}
             label={item}
-            selected={gait === item}
+            selected={
+              getValue("gait") === item
+            }
             onPress={() =>
-              setGait(item)
+              updateField(
+                "gait",
+                "Gait",
+                item
+              )
             }
           />
         ))}
@@ -467,14 +559,24 @@ export default function MusculoskeletalExam() {
           "Neurovascular Deficit",
           "Cauda Equina",
         ]}
-        selected={redFlags}
-        setSelected={setRedFlags}
+        fieldId="redFlags"
+        fieldLabel="Red Flags"
         normal="None"
       />
 
       <AppTextField
-        value={otherFindings}
-        onChangeText={setOtherFindings}
+        value={
+          (getValue(
+            "otherFindings"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "otherFindings",
+            "Other Findings",
+            text
+          )
+        }
         placeholder="Add other findings..."
         multiline
       />
@@ -486,26 +588,22 @@ const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },
-
   sectionTitle: {
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
   },
-
   label: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
   },
-
   group: {
     gap: SPACING.sm,
   },

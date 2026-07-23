@@ -1,14 +1,13 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState } from "react";
 import {
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
-import AppTextField from "@/components/common/AppTextField";
+import AppDropdown from "@/components/common/AppDropdown";
 import investigations from "@/data/investigations";
+import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
   RADIUS,
@@ -19,73 +18,49 @@ import {
 
 type Props = {
   onOpenResults: () => void;
-  selectedInvestigations: any[];
-  setSelectedInvestigations: React.Dispatch<
-    React.SetStateAction<any[]>
-  >;
 };
 
 export default function InvestigationSection({
   onOpenResults,
-  selectedInvestigations,
-  setSelectedInvestigations,
 }: Props) {
-  const [searchText, setSearchText] =
-    useState("");
-
-  const investigationDatabase = investigations;
-
-  const filteredInvestigations =
-  investigations
-    .filter((item) =>
-      item.name
-        .toLowerCase()
-        .includes(searchText.toLowerCase())
-    )
-    .filter(
-      (item) =>
-        !selectedInvestigations.some(
-          (x) => x.name === item
-        )
+  const investigationsState =
+    useVisitStore(
+      (state) =>
+        state.visit.assessment
+          .investigations
     );
 
-  const addInvestigation = (
-    investigation: string
-  ) => {
-    if (
-      selectedInvestigations.some(
-        (x) =>
-          x.name === investigation
-      )
-    )
-      return;
-
-    setSelectedInvestigations([
-      ...selectedInvestigations,
-      {
-        name: investigation,
-        status: "Requested",
-      },
-    ]);
-
-    setSearchText("");
-  };
-
-  const removeInvestigation = (
-    investigation: string
-  ) => {
-    setSelectedInvestigations(
-      selectedInvestigations.filter(
-        (x) =>
-          x.name !== investigation
-      )
+  const addRequestedInvestigation =
+    useVisitStore(
+      (state) =>
+        state.addRequestedInvestigation
     );
-  };
+
+  const removeRequestedInvestigation =
+    useVisitStore(
+      (state) =>
+        state.removeRequestedInvestigation
+    );
+
+  const investigationOptions =
+    investigations
+      .filter(
+        (item) =>
+          !investigationsState.requestedInvestigations.some(
+            (x) =>
+              x.name === item.name
+          )
+      )
+      .map((item) => ({
+        id: item.name,
+        label: item.name,
+      }));
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        AI Suggested Investigations
+        AI Suggested
+        Investigations
       </Text>
 
       <View style={styles.aiCard}>
@@ -96,7 +71,11 @@ export default function InvestigationSection({
         />
 
         <Text style={styles.emptyText}>
-          No AI suggestions yet
+          {investigationsState
+            .aiSuggestedInvestigations
+            .length === 0
+            ? "No AI suggestions yet"
+            : `${investigationsState.aiSuggestedInvestigations.length} AI suggestions`}
         </Text>
       </View>
 
@@ -104,47 +83,42 @@ export default function InvestigationSection({
         Search Investigation
       </Text>
 
-      <AppTextField
-        icon="search-outline"
+      <AppDropdown
         placeholder="Search investigation..."
-        value={searchText}
-        onChangeText={setSearchText}
+        selected={undefined}
+        options={
+          investigationOptions
+        }
+        onChange={(item) =>
+          addRequestedInvestigation({
+            name: item.label,
+            status: "requested",
+          })
+        }
       />
 
-      {searchText.length > 0 && (
-        <View style={styles.results}>
-          {filteredInvestigations
-            .slice(0, 10)
-            .map((item) => (
-              <Pressable
-                key={item.name}
-                style={styles.resultItem}
-                onPress={() =>
-                  addInvestigation(item.name)
-                }
-              >
-                <Text>{item.name}</Text>
-              </Pressable>
-            ))}
-        </View>
-      )}
-
       <Text style={styles.title}>
-        Requested Investigations
+        Requested
+        Investigations
       </Text>
-            {selectedInvestigations.map(
+
+      {investigationsState.requestedInvestigations.map(
         (item) => (
           <View
-  key={item.name}
-  style={styles.card}
->
+            key={item.name}
+            style={styles.card}
+          >
             <View
-              style={styles.cardHeader}
+              style={
+                styles.cardHeader
+              }
             >
               <Ionicons
                 name="flask-outline"
                 size={20}
-                color={COLORS.primary}
+                color={
+                  COLORS.primary
+                }
               />
 
               <View
@@ -169,22 +143,26 @@ export default function InvestigationSection({
 
               <Pressable
                 onPress={() =>
-                  removeInvestigation(item.name)
+                  removeRequestedInvestigation(
+                    item.name
+                  )
                 }
               >
                 <Ionicons
                   name="close-circle"
                   size={22}
-                  color={COLORS.danger}
+                  color={
+                    COLORS.danger
+                  }
                 />
               </Pressable>
             </View>
           </View>
         )
       )}
-
-      {selectedInvestigations.length >
-        0 && (
+            {investigationsState
+        .requestedInvestigations
+        .length > 0 && (
         <Pressable
           style={styles.openButton}
           onPress={onOpenResults}
@@ -194,9 +172,10 @@ export default function InvestigationSection({
             size={20}
             color={COLORS.white}
           />
-
           <Text
-            style={styles.openButtonText}
+            style={
+              styles.openButtonText
+            }
           >
             Enter Results
           </Text>
@@ -234,22 +213,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  results: {
-    backgroundColor: COLORS.card,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    overflow: "hidden",
-    ...SHADOW,
-  },
-
-  resultItem: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-
   card: {
     backgroundColor: COLORS.card,
     borderRadius: RADIUS.xl,
@@ -275,6 +238,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: TYPOGRAPHY.small,
     color: COLORS.secondaryText,
+    textTransform: "capitalize",
   },
 
   openButton: {

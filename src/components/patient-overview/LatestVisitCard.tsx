@@ -53,24 +53,6 @@ export default function LatestVisitCard() {
           </Text>
         </View>
 
-        <View style={styles.info}>
-          <View style={styles.row}>
-            <Ionicons
-              name="medical-outline"
-              size={18}
-              color={COLORS.primary}
-            />
-
-            <Text style={styles.label}>
-              Treatment
-            </Text>
-          </View>
-
-          <Text style={styles.value}>
-            Aspirin + Clopidogrel +
-            Atorvastatin
-          </Text>
-        </View>
 
         <View style={styles.info}>
           <View style={styles.row}>

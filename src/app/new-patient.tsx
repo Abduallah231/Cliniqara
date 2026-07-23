@@ -10,6 +10,7 @@ import AgeField from "@/components/patient-form/AgeField";
 import PatientActions from "@/components/patient-form/PatientActions";
 import governorates from "@/data/governorates";
 import occupations from "@/data/occupations";
+import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
   SPACING,
@@ -17,7 +18,6 @@ import {
 } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -28,26 +28,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 
 export default function NewPatientScreen() {
-  const [patient, setPatient] = useState({
-    identifierType: "National ID",
-    identifierNumber: "",
-    documentType: "",
-    fullName: "",
-    age: "",
-    ageUnit: "Years",
-    gender: "male",
 
-    maritalStatus: "Single",
-    childrenCount: "",
+  const { visit, updateVisit } = useVisitStore();
 
-    phone: "",
-    occupation: "",
-    otherOccupation: "",
-    governorate: "",
-    city: "",
-    district: "",
-    street: "",
-  });
+  const patient = visit.patient;
 
   const updatePatient = <
     K extends keyof typeof patient
@@ -55,10 +39,12 @@ export default function NewPatientScreen() {
     key: K,
     value: (typeof patient)[K]
   ) => {
-    setPatient((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    updateVisit({
+      patient: {
+        ...patient,
+        [key]: value,
+      },
+    });
   };
 
   return (

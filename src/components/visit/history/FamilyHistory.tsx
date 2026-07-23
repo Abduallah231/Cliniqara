@@ -1,51 +1,80 @@
-import { useState } from "react";
 import { StyleSheet, View } from "react-native";
+import { useVisitStore } from "@/store/visitStore";
 
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import SectionHeader from "@/components/common/SectionHeader";
+
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+
 import chronicDiseases from "@/data/chronicDiseases";
+
 export default function FamilyHistory() {
-  const [selectedDiseases, setSelectedDiseases] =
-    useState<string[]>([]);
+  const {
+    visit,
+    updateFamilyHistoryField,
+  } = useVisitStore();
 
-  const [otherDisease, setOtherDisease] =
-    useState("");
+  const getValue = (fieldId: string) =>
+    visit.history.familyHistory.fields.find(
+      (field) => field.fieldId === fieldId
+    )?.value ?? null;
 
-  const [affectedMember, setAffectedMember] =
-    useState("");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any
+  ) => {
+    updateFamilyHistoryField(
+      fieldId,
+      fieldLabel,
+      value
+    );
+  };
 
-  const toggleDisease = (disease: string) => {
-    if (selectedDiseases.includes(disease)) {
-      setSelectedDiseases(
-        selectedDiseases.filter(
+  const toggleDisease = (
+    disease: string
+  ) => {
+    const current =
+      (getValue(
+        "familyDiseases"
+      ) as string[]) ?? [];
+
+    if (current.includes(disease)) {
+      updateFamilyHistoryField(
+        "familyDiseases",
+        "Family Diseases",
+        current.filter(
           (d) => d !== disease
         )
       );
     } else {
-      setSelectedDiseases([
-        ...selectedDiseases,
-        disease,
-      ]);
+      updateFamilyHistoryField(
+        "familyDiseases",
+        "Family Diseases",
+        [...current, disease]
+      );
     }
   };
 
   return (
     <View style={styles.container}>
-<SectionHeader title="Family Diseases" />
+      <SectionHeader title="Family Diseases" />
+
       <View style={styles.row}>
         {chronicDiseases.map((disease) => (
           <AppChip
             key={disease}
             label={disease}
-            selected={selectedDiseases.includes(
-              disease
-            )}
+            selected={(
+              (getValue(
+                "familyDiseases"
+              ) as string[]) ?? []
+            ).includes(disease)}
             onPress={() =>
               toggleDisease(disease)
             }
@@ -54,17 +83,35 @@ export default function FamilyHistory() {
       </View>
 
       <AppTextField
-
         placeholder="Other family disease..."
-        value={otherDisease}
-        onChangeText={setOtherDisease}
+        value={
+          (getValue(
+            "otherDisease"
+          ) as string) ?? ""
+        }
+        onChangeText={(v) =>
+          updateField(
+            "otherDisease",
+            "Other Disease",
+            v
+          )
+        }
       />
 
       <AppTextField
-
         placeholder="Affected family member"
-        value={affectedMember}
-        onChangeText={setAffectedMember}
+        value={
+          (getValue(
+            "affectedMember"
+          ) as string) ?? ""
+        }
+        onChangeText={(v) =>
+          updateField(
+            "affectedMember",
+            "Affected Family Member",
+            v
+          )
+        }
       />
     </View>
   );

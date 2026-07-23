@@ -1,18 +1,16 @@
-import { useState } from "react";
 import {
   StyleSheet,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
-
+import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
-  SPACING
+  SPACING,
 } from "@/theme";
-
 import { Ionicons } from "@expo/vector-icons";
+
 import AbdomenExam from "../systems/AbdomenExam";
 import CVSExam from "../systems/CVSExam";
 import ChestExam from "../systems/ChestExam";
@@ -26,79 +24,83 @@ import OphthalmologyExam from "../systems/OphthalmologyExam";
 import SkinExam from "../systems/SkinExam";
 
 const SYSTEMS = [
-  { id: "cvs", label: "CVS" },
-  { id: "chest", label: "Chest" },
   { id: "abdomen", label: "Abdomen" },
-  { id: "neurology", label: "Neurology" },
-  {
-    id: "musculoskeletal",
-    label: "Musculoskeletal",
-  },
-  {
-    id: "endocrine",
-    label: "Endocrine",
-  },
-  { id: "skin", label: "Skin" },
-  {
-    id: "gynecology",
-    label: "Gynecology",
-  },
-  {
-    id: "obstetric",
-    label: "Obstetric",
-  },
+  
+  { id: "chest", label: "Chest" },
+  { id: "cvs", label: "CVS" },
+  { id: "endocrine", label: "Endocrine" },
   { id: "ent", label: "ENT" },
-  {
-    id: "ophthalmology",
-    label: "Ophthalmology",
-  },
+  { id: "gynecology", label: "Gynecology" },
+  { id: "musculoskeletal", label: "Musculoskeletal" },
+  { id: "neurology", label: "Neurology" },
+  { id: "obstetric", label: "Obstetric" },
+  { id: "ophthalmology", label: "Ophthalmology" },
+  { id: "skin", label: "Skin" },
 ] as const;
 
 type SystemId =
   (typeof SYSTEMS)[number]["id"];
 
 const SYSTEM_COMPONENTS = {
-  cvs: CVSExam,
-  chest: ChestExam,
   abdomen: AbdomenExam,
-  neurology: NeurologyExam,
-  musculoskeletal: MusculoskeletalExam,
+  chest: ChestExam,
+  cvs: CVSExam,
   endocrine: EndocrineExam,
-  skin: SkinExam,
-  gynecology: GynecologyExam,
-  obstetric: ObstetricExam,
   ent: ENTExam,
+  gynecology: GynecologyExam,
+  musculoskeletal: MusculoskeletalExam,
+  neurology: NeurologyExam,
+  obstetric: ObstetricExam,  
   ophthalmology: OphthalmologyExam,
+  skin: SkinExam,
 } as const;
 
 export default function SystemExaminationSection() {
-  const [selectedSystem, setSelectedSystem] =
-  useState<SystemId>("cvs");
+  const selectedSystem =
+    useVisitStore(
+      (state) =>
+        state.visit.examination
+          .systemExamination
+          .selectedSystem
+    ) as SystemId;
+
+  const updateSelectedSystem =
+    useVisitStore(
+      (state) =>
+        state.updateSelectedSystem
+    );
+
   const SelectedSystem =
-  SYSTEM_COMPONENTS[selectedSystem];
+    SYSTEM_COMPONENTS[
+      selectedSystem
+    ] ?? SYSTEM_COMPONENTS.cvs;
+
   return (
     <View style={styles.container}>
       <CollapsibleSection
-  title="System Examination"
-  icon={
-    <Ionicons
-      name="medkit-outline"
-      size={20}
-      color={COLORS.primary}
-    />
-  }
-  defaultExpanded={false}
->
+        title="System Examination"
+        icon={
+          <Ionicons
+            name="medkit-outline"
+            size={20}
+            color={COLORS.primary}
+          />
+        }
+        defaultExpanded={false}
+      >
         <View style={styles.row}>
           {SYSTEMS.map((system) => (
             <AppChip
               key={system.id}
               label={system.label}
               selected={
-                selectedSystem === system.id
+                selectedSystem ===
+                system.id
               }
               onPress={() =>
-                setSelectedSystem(system.id)
+                updateSelectedSystem(
+                  system.id
+                )
               }
             />
           ))}
@@ -110,7 +112,7 @@ export default function SystemExaminationSection() {
           }}
         />
 
-        {SelectedSystem && <SelectedSystem />}
+        <SelectedSystem />
       </CollapsibleSection>
     </View>
   );
@@ -125,16 +127,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
-
-  paddingHorizontal: SPACING.sm,
-  paddingTop: SPACING.sm,
-  paddingBottom: SPACING.xs,
-
-  borderRadius: 25,
-  backgroundColor: "#DCEBFF",
-borderColor: "#A8C7FF",
-borderWidth: 1,
-
-  marginBottom: SPACING.sm,
+    paddingHorizontal:
+      SPACING.sm,
+    paddingTop: SPACING.sm,
+    paddingBottom:
+      SPACING.xs,
+    borderRadius: 25,
+    backgroundColor: "#DCEBFF",
+    borderColor: "#A8C7FF",
+    borderWidth: 1,
+    marginBottom:
+      SPACING.sm,
   },
 });

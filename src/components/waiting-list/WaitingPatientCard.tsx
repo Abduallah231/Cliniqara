@@ -8,7 +8,7 @@ import {
 
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
-import PatientStatusChip from "@/components/patients/PatientStatusChip";
+
 
 import { WaitingPatient } from "@/models";
 
@@ -35,9 +35,6 @@ export default function WaitingPatientCard({
           </Text>
         </View>
 
-        <PatientStatusChip
-          status={patient.status}
-        />
       </View>
 
       <Text style={styles.name}>

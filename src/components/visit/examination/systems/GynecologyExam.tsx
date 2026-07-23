@@ -1,99 +1,89 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+const SYSTEM_ID = "gynecology";
+
 export default function GynecologyExam() {
-  const [externalFindings, setExternalFindings] =
-    useState<string[]>(["Normal"]);
+  const {
+    visit,
+    updateSystemExaminationField,
+  } = useVisitStore();
 
-  const [vaginalFindings, setVaginalFindings] =
-    useState<string[]>(["Normal"]);
+  const getValue = (
+    fieldId: string
+  ) => {
+    const system =
+      visit.examination.systemExamination.systems.find(
+        (s) =>
+          s.systemId === SYSTEM_ID
+      );
 
-  const [cervixFindings, setCervixFindings] =
-    useState<string[]>(["Healthy"]);
+    return (
+      system?.fields.find(
+        (f) =>
+          f.fieldId === fieldId
+      )?.value ?? null
+    );
+  };
 
-  const [uterusFindings, setUterusFindings] =
-    useState<string[]>(["Normal"]);
-
-  const [adnexalFindings, setAdnexalFindings] =
-    useState<string[]>(["Normal"]);
-
-  const [fornixFindings, setFornixFindings] =
-    useState<string[]>(["Normal"]);
-
-  const [prolapseFindings, setProlapseFindings] =
-    useState<string[]>(["Absent"]);
-
-  const [pidFindings, setPidFindings] =
-    useState<string[]>(["Absent"]);
-
-  const [redFlags, setRedFlags] =
-    useState<string[]>(["None"]);
-
-  const [dischargeType, setDischargeType] =
-    useState("");
-
-  const [
-    cervicalDischargeType,
-    setCervicalDischargeType,
-  ] = useState("");
-
-  const [uterusSize, setUterusSize] =
-    useState("");
-
-  const [
-    uterusMobility,
-    setUterusMobility,
-  ] = useState("");
-
-  const [
-    adnexalMassSide,
-    setAdnexalMassSide,
-  ] = useState("");
-
-  const [
-    adnexalMassType,
-    setAdnexalMassType,
-  ] = useState("");
-
-  const [
-    otherFindings,
-    setOtherFindings,
-  ] = useState("");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any,
+    unit?: string
+  ) =>
+    updateSystemExaminationField(
+      SYSTEM_ID,
+      fieldId,
+      fieldLabel,
+      value,
+      unit
+    );
 
   const toggleFinding = (
+    fieldId: string,
+    fieldLabel: string,
     item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >,
     normal = "Normal"
   ) => {
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ??
+      [normal];
+
     if (item === normal) {
-      setSelected([normal]);
+      updateField(
+        fieldId,
+        fieldLabel,
+        [normal]
+      );
       return;
     }
 
-    let updated = selected.filter(
-      (x) => x !== normal
-    );
-
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item
+    let updated =
+      current.filter(
+        (x) => x !== normal
       );
+
+    if (
+      updated.includes(item)
+    ) {
+      updated =
+        updated.filter(
+          (x) => x !== item
+        );
     } else {
       updated.push(item);
     }
@@ -101,41 +91,49 @@ export default function GynecologyExam() {
     if (!updated.length)
       updated = [normal];
 
-    setSelected(updated);
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const toggleMulti = (
-    item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >
+    fieldId: string,
+    fieldLabel: string,
+    item: string
   ) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ?? [];
+
+    const updated =
+      current.includes(item)
+        ? current.filter(
+            (x) => x !== item
+          )
+        : [
+            ...current,
+            item,
+          ];
+
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const ChipGroup = ({
     items,
-    selected,
-    setSelected,
+    fieldId,
+    fieldLabel,
     normal = "Normal",
   }: {
     items: string[];
-    selected: string[];
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >;
+    fieldId: string;
+    fieldLabel: string;
     normal?: string;
   }) => (
     <View style={styles.row}>
@@ -143,12 +141,17 @@ export default function GynecologyExam() {
         <AppChip
           key={item}
           label={item}
-          selected={selected.includes(item)}
+          selected={(
+            (getValue(
+              fieldId
+            ) as string[]) ??
+            [normal]
+          ).includes(item)}
           onPress={() =>
             toggleFinding(
+              fieldId,
+              fieldLabel,
               item,
-              selected,
-              setSelected,
               normal
             )
           }
@@ -175,13 +178,15 @@ export default function GynecologyExam() {
           "Bartholin Abscess",
           "Pigmented Lesion",
         ]}
-        selected={externalFindings}
-        setSelected={
-          setExternalFindings
-        }
+        fieldId="externalFindings"
+        fieldLabel="External Findings"
       />
 
-      {externalFindings.includes(
+      {(
+        (getValue(
+          "externalFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Discharge"
       ) && (
         <View style={styles.group}>
@@ -200,10 +205,16 @@ export default function GynecologyExam() {
                 key={item}
                 label={item}
                 selected={
-                  dischargeType === item
+                  getValue(
+                    "dischargeType"
+                  ) === item
                 }
                 onPress={() =>
-                  setDischargeType(item)
+                  updateField(
+                    "dischargeType",
+                    "Discharge Type",
+                    item
+                  )
                 }
               />
             ))}
@@ -222,16 +233,15 @@ export default function GynecologyExam() {
           "Tenderness",
           "Mass",
         ]}
-        selected={vaginalFindings}
-        setSelected={
-          setVaginalFindings
-        }
+        fieldId="vaginalFindings"
+        fieldLabel="Vaginal Findings"
       />
 
       <Text style={styles.sectionTitle}>
         Cervix
       </Text>
-            <ChipGroup
+
+      <ChipGroup
         items={[
           "Healthy",
           "Erosion",
@@ -241,12 +251,16 @@ export default function GynecologyExam() {
           "Bleeding",
           "Growth",
         ]}
-        selected={cervixFindings}
-        setSelected={setCervixFindings}
+        fieldId="cervixFindings"
+        fieldLabel="Cervix Findings"
         normal="Healthy"
       />
 
-      {cervixFindings.includes(
+            {(
+        (getValue(
+          "cervixFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Discharge"
       ) && (
         <View style={styles.group}>
@@ -264,11 +278,14 @@ export default function GynecologyExam() {
                 key={item}
                 label={item}
                 selected={
-                  cervicalDischargeType ===
-                  item
+                  getValue(
+                    "cervicalDischargeType"
+                  ) === item
                 }
                 onPress={() =>
-                  setCervicalDischargeType(
+                  updateField(
+                    "cervicalDischargeType",
+                    "Cervical Discharge Type",
                     item
                   )
                 }
@@ -290,14 +307,24 @@ export default function GynecologyExam() {
           "Retroverted",
           "Restricted Mobility",
         ]}
-        selected={uterusFindings}
-        setSelected={setUterusFindings}
+        fieldId="uterusFindings"
+        fieldLabel="Uterus Findings"
       />
 
       <AppTextField
         label="Uterus Size"
-        value={uterusSize}
-        onChangeText={setUterusSize}
+        value={
+          (getValue(
+            "uterusSize"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "uterusSize",
+            "Uterus Size",
+            text
+          )
+        }
         placeholder="e.g. 8 weeks"
       />
 
@@ -315,10 +342,16 @@ export default function GynecologyExam() {
             key={item}
             label={item}
             selected={
-              uterusMobility === item
+              getValue(
+                "uterusMobility"
+              ) === item
             }
             onPress={() =>
-              setUterusMobility(item)
+              updateField(
+                "uterusMobility",
+                "Uterus Mobility",
+                item
+              )
             }
           />
         ))}
@@ -334,11 +367,15 @@ export default function GynecologyExam() {
           "Tenderness",
           "Mass",
         ]}
-        selected={adnexalFindings}
-        setSelected={setAdnexalFindings}
+        fieldId="adnexalFindings"
+        fieldLabel="Adnexal Findings"
       />
 
-      {adnexalFindings.includes(
+      {(
+        (getValue(
+          "adnexalFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Mass"
       ) && (
         <View style={styles.group}>
@@ -356,10 +393,16 @@ export default function GynecologyExam() {
                 key={item}
                 label={item}
                 selected={
-                  adnexalMassSide === item
+                  getValue(
+                    "adnexalMassSide"
+                  ) === item
                 }
                 onPress={() =>
-                  setAdnexalMassSide(item)
+                  updateField(
+                    "adnexalMassSide",
+                    "Adnexal Mass Side",
+                    item
+                  )
                 }
               />
             ))}
@@ -379,10 +422,16 @@ export default function GynecologyExam() {
                 key={item}
                 label={item}
                 selected={
-                  adnexalMassType === item
+                  getValue(
+                    "adnexalMassType"
+                  ) === item
                 }
                 onPress={() =>
-                  setAdnexalMassType(item)
+                  updateField(
+                    "adnexalMassType",
+                    "Adnexal Mass Type",
+                    item
+                  )
                 }
               />
             ))}
@@ -401,9 +450,10 @@ export default function GynecologyExam() {
           "Fullness",
           "Mass",
         ]}
-        selected={fornixFindings}
-        setSelected={setFornixFindings}
+        fieldId="fornixFindings"
+        fieldLabel="Fornix Findings"
       />
+
             <Text style={styles.sectionTitle}>
         Pelvic Organ Prolapse
       </Text>
@@ -416,8 +466,8 @@ export default function GynecologyExam() {
           "Uterine Prolapse",
           "Vault Prolapse",
         ]}
-        selected={prolapseFindings}
-        setSelected={setProlapseFindings}
+        fieldId="prolapseFindings"
+        fieldLabel="Prolapse Findings"
         normal="Absent"
       />
 
@@ -432,8 +482,8 @@ export default function GynecologyExam() {
           "Adnexal Tenderness",
           "Uterine Tenderness",
         ]}
-        selected={pidFindings}
-        setSelected={setPidFindings}
+        fieldId="pidFindings"
+        fieldLabel="PID Findings"
         normal="Absent"
       />
 
@@ -450,14 +500,24 @@ export default function GynecologyExam() {
           "Suspicious Cervical Growth",
           "Foul Discharge",
         ]}
-        selected={redFlags}
-        setSelected={setRedFlags}
+        fieldId="redFlags"
+        fieldLabel="Red Flags"
         normal="None"
       />
 
       <AppTextField
-        value={otherFindings}
-        onChangeText={setOtherFindings}
+        value={
+          (getValue(
+            "otherFindings"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "otherFindings",
+            "Other Findings",
+            text
+          )
+        }
         placeholder="Add other findings..."
         multiline
       />
@@ -469,26 +529,22 @@ const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },
-
   sectionTitle: {
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
   },
-
   label: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
   },
-
   group: {
     gap: SPACING.sm,
   },

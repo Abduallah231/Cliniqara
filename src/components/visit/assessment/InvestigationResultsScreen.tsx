@@ -7,9 +7,9 @@ import {
   Text,
   View,
 } from "react-native";
-
 import AppTextField from "@/components/common/AppTextField";
 import investigationsData from "@/data/investigations";
+import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
   RADIUS,
@@ -18,169 +18,244 @@ import {
   TYPOGRAPHY,
 } from "@/theme";
 
-type Props = {
-  investigations: any[];
-};
+export default function InvestigationResultsScreen() {
+  const investigationsState = useVisitStore(
+    (state) =>
+      state.visit.assessment.investigations
+  );
 
-export default function InvestigationResultsScreen({
-  investigations,
-}: Props) {
+  const updateInvestigationResult =
+    useVisitStore(
+      (state) =>
+        state.updateInvestigationResult
+    );
+
+  const updateInvestigationStatus =
+    useVisitStore(
+      (state) =>
+        state.updateInvestigationStatus
+    );
+
   const [expandedItem, setExpandedItem] =
     useState<string | null>(null);
 
-  const [results, setResults] = useState<
-    Record<string, string>
-  >({});
+  const getResultValue = (
+    investigationId: string,
+    fieldId: string
+  ) => {
+    const result =
+      investigationsState.results.find(
+        (item) =>
+          item.investigationId ===
+          investigationId
+      );
+
+    return (
+      result?.values.find(
+        (field) =>
+          field.fieldId === fieldId
+      )?.value ?? ""
+    );
+  };
 
   const updateResult = (
-    key: string,
+    investigationId: string,
+    fieldId: string,
+    fieldLabel: string,
     value: string
   ) => {
-    setResults((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    updateInvestigationResult(
+      investigationId,
+      fieldId,
+      fieldLabel,
+      value
+    );
+
+    updateInvestigationStatus(
+      investigationId,
+      "completed"
+    );
   };
 
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.container}
+      contentContainerStyle={
+        styles.container
+      }
     >
       <Text style={styles.title}>
         Investigation Results
       </Text>
 
-      {investigations.map((investigation) => {
-        const expanded =
-          expandedItem === investigation.name;
+      {investigationsState.requestedInvestigations.map(
+        (investigation) => {
+          const expanded =
+            expandedItem ===
+            investigation.name;
 
-        const investigationInfo =
-          investigationsData.find(
-            (item) =>
-              item.name === investigation.name
-          );
+          const investigationInfo =
+            investigationsData.find(
+              (item) =>
+                item.name ===
+                investigation.name
+            );
 
-        const type =
-          investigationInfo?.type ?? "single";
+          const type =
+            investigationInfo?.type ??
+            "single";
 
-        return (
-          <View
-            key={investigation.name}
-            style={styles.card}
-          >
-            <Pressable
-              style={styles.header}
-              onPress={() =>
-                setExpandedItem(
-                  expanded
-                    ? null
-                    : investigation.name
-                )
-              }
+          return (
+            <View
+              key={investigation.name}
+              style={styles.card}
             >
-              <View style={styles.headerLeft}>
-                <Ionicons
-                  name="flask-outline"
-                  size={20}
-                  color={COLORS.primary}
-                />
-
-                <Text
-                  style={styles.headerTitle}
+              <Pressable
+                style={styles.header}
+                onPress={() =>
+                  setExpandedItem(
+                    expanded
+                      ? null
+                      : investigation.name
+                  )
+                }
+              >
+                <View
+                  style={
+                    styles.headerLeft
+                  }
                 >
-                  {investigation.name}
-                </Text>
-              </View>
-
-              <Ionicons
-                name={
-                  expanded
-                    ? "chevron-up"
-                    : "chevron-down"
-                }
-                size={20}
-                color={
-                  COLORS.secondaryText
-                }
-              />
-            </Pressable>
-
-            {expanded && (
-              <View style={styles.content}>
-                {type === "single" && (
-                  <AppTextField
-                    placeholder="Result"
-                    value={
-                      results[
-                        investigation.name
-                      ] ?? ""
-                    }
-                    onChangeText={(text) =>
-                      updateResult(
-                        investigation.name,
-                        text
-                      )
+                  <Ionicons
+                    name="flask-outline"
+                    size={20}
+                    color={
+                      COLORS.primary
                     }
                   />
-                )}
 
-                {type === "multi" && (
-                  <>
-                    {investigationInfo?.fields?.map(
-                      (field: string) => (
-                        <AppTextField
-                          key={field}
-                          placeholder={field}
-                          value={
-                            results[
-                              `${investigation.name}-${field}`
-                            ] ?? ""
-                          }
-                          onChangeText={(
-                            text
-                          ) =>
-                            updateResult(
-                              `${investigation.name}-${field}`,
-                              text
-                            )
-                          }
-                        />
-                      )
-                    )}
-                  </>
-                )}
-
-                {type === "text" && (
-                  <AppTextField
-                    multiline
-                    placeholder="Interpretation"
-                    value={
-                      results[
-                        `${investigation.name}-interpretation`
-                      ] ?? ""
+                  <Text
+                    style={
+                      styles.headerTitle
                     }
-                    onChangeText={(text) =>
-                      updateResult(
-                        `${investigation.name}-interpretation`,
-                        text
-                      )
-                    }
-                  />
-                )}
+                  >
+                    {investigation.name}
+                  </Text>
+                </View>
 
-                {type === "report" && (
-                  <>
+                <Ionicons
+                  name={
+                    expanded
+                      ? "chevron-up"
+                      : "chevron-down"
+                  }
+                  size={20}
+                  color={
+                    COLORS.secondaryText
+                  }
+                />
+              </Pressable>
+
+              {expanded && (
+                <View
+                  style={
+                    styles.content
+                  }
+                >
+                  {type === "single" && (
                     <AppTextField
-                      placeholder="Body Part / Region"
-                      value={
-                        results[
-                          `${investigation.name}-region`
-                        ] ?? ""
-                      }
-                      onChangeText={(text) =>
+                      placeholder="Result"
+                      value={String(
+                        getResultValue(
+                          investigation.name,
+                          "result"
+                        )
+                      )}
+                      onChangeText={(
+                        text
+                      ) =>
                         updateResult(
-                          `${investigation.name}-region`,
+                          investigation.name,
+                          "result",
+                          "Result",
+                          text
+                        )
+                      }
+                    />
+                  )}
+
+                  {type === "multi" && (
+                    <>
+                      {investigationInfo?.fields?.map(
+                        (
+                          field: string
+                        ) => (
+                          <AppTextField
+                            key={field}
+                            placeholder={
+                              field
+                            }
+                            value={String(
+                              getResultValue(
+                                investigation.name,
+                                field
+                              )
+                            )}
+                            onChangeText={(
+                              text
+                            ) =>
+                              updateResult(
+                                investigation.name,
+                                field,
+                                field,
+                                text
+                              )
+                            }
+                          />
+                        )
+                      )}
+                    </>
+                  )}
+
+                  {type === "text" && (
+                    <AppTextField
+                      multiline
+                      placeholder="Interpretation"
+                      value={String(
+                        getResultValue(
+                          investigation.name,
+                          "interpretation"
+                        )
+                      )}
+                      onChangeText={(
+                        text
+                      ) =>
+                        updateResult(
+                          investigation.name,
+                          "interpretation",
+                          "Interpretation",
+                          text
+                        )
+                      }
+                    />
+                  )}
+
+                  {type === "report" && (
+                    <>
+                                        <AppTextField
+                      placeholder="Body Part / Region"
+                      value={String(
+                        getResultValue(
+                          investigation.name,
+                          "region"
+                        )
+                      )}
+                      onChangeText={(
+                        text
+                      ) =>
+                        updateResult(
+                          investigation.name,
+                          "region",
+                          "Body Part / Region",
                           text
                         )
                       }
@@ -189,14 +264,19 @@ export default function InvestigationResultsScreen({
                     <AppTextField
                       multiline
                       placeholder="Report"
-                      value={
-                        results[
-                          `${investigation.name}-report`
-                        ] ?? ""
-                      }
-                      onChangeText={(text) =>
+                      value={String(
+                        getResultValue(
+                          investigation.name,
+                          "report"
+                        )
+                      )}
+                      onChangeText={(
+                        text
+                      ) =>
                         updateResult(
-                          `${investigation.name}-report`,
+                          investigation.name,
+                          "report",
+                          "Report",
                           text
                         )
                       }

@@ -81,40 +81,6 @@ export default function ClinicalSnapshot() {
             ))}
           </View>
         </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.vitals}>
-          <View style={styles.item}>
-            <Text style={styles.value}>
-              150/90
-            </Text>
-
-            <Text style={styles.caption}>
-              Last BP
-            </Text>
-          </View>
-
-          <View style={styles.item}>
-            <Text style={styles.value}>
-              82
-            </Text>
-
-            <Text style={styles.caption}>
-              Pulse
-            </Text>
-          </View>
-
-          <View style={styles.item}>
-            <Text style={styles.value}>
-              28.4
-            </Text>
-
-            <Text style={styles.caption}>
-              BMI
-            </Text>
-          </View>
-        </View>
       </AppCard>
     </View>
   );

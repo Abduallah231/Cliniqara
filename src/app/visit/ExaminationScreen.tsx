@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     marginTop: SPACING.md,
+    marginBottom: SPACING.lg,
     
   },
 

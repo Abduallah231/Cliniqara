@@ -44,21 +44,21 @@ export default function HistoryScreen() {
         <HistoryTab />
         
         <View style={styles.navigationBar}>
-  <AppButton
-    title="Back"
-    variant="secondary"
-    style={styles.backButton}
-    onPress={() => router.replace("/")}
-  />
+        <AppButton
+          title="Back"
+          variant="secondary"
+          style={styles.backButton}
+          onPress={() => router.replace("/")}
+        />
 
-  <AppButton
-    title="Next"
-    style={styles.nextButton}
-    onPress={() =>
-      router.push("/visit/ExaminationScreen")
-    }
-    />
-  </View>
+        <AppButton
+          title="Next"
+          style={styles.nextButton}
+          onPress={() =>
+            router.push("/visit/ExaminationScreen")
+          }
+          />
+        </View>
       </View>
     </SafeAreaView>
   );

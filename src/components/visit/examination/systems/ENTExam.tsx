@@ -1,77 +1,89 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+const SYSTEM_ID = "ent";
+
 export default function ENTExam() {
-  const [earFindings, setEarFindings] =
-    useState<string[]>(["Normal"]);
+  const {
+    visit,
+    updateSystemExaminationField,
+  } = useVisitStore();
 
-  const [noseFindings, setNoseFindings] =
-    useState<string[]>(["Normal"]);
+  const getValue = (
+    fieldId: string
+  ) => {
+    const system =
+      visit.examination.systemExamination.systems.find(
+        (s) =>
+          s.systemId === SYSTEM_ID
+      );
 
-  const [throatFindings, setThroatFindings] =
-    useState<string[]>(["Normal"]);
+    return (
+      system?.fields.find(
+        (f) =>
+          f.fieldId === fieldId
+      )?.value ?? null
+    );
+  };
 
-  const [neckFindings, setNeckFindings] =
-    useState<string[]>(["Normal"]);
-
-  const [redFlags, setRedFlags] =
-    useState<string[]>(["None"]);
-
-  const [hearingSide, setHearingSide] =
-    useState("");
-
-  const [dischargeType, setDischargeType] =
-    useState("");
-
-  const [tonsilGrade, setTonsilGrade] =
-    useState("");
-
-  const [lymphNodes, setLymphNodes] =
-    useState<string[]>([]);
-
-  const [thyroidType, setThyroidType] =
-    useState("");
-
-  const [neckMassLocation, setNeckMassLocation] =
-    useState("");
-
-  const [otherFindings, setOtherFindings] =
-    useState("");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any,
+    unit?: string
+  ) =>
+    updateSystemExaminationField(
+      SYSTEM_ID,
+      fieldId,
+      fieldLabel,
+      value,
+      unit
+    );
 
   const toggleFinding = (
+    fieldId: string,
+    fieldLabel: string,
     item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >,
     normal = "Normal"
   ) => {
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ??
+      [normal];
+
     if (item === normal) {
-      setSelected([normal]);
+      updateField(
+        fieldId,
+        fieldLabel,
+        [normal]
+      );
       return;
     }
 
-    let updated = selected.filter(
-      (x) => x !== normal
-    );
-
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item
+    let updated =
+      current.filter(
+        (x) => x !== normal
       );
+
+    if (
+      updated.includes(item)
+    ) {
+      updated =
+        updated.filter(
+          (x) => x !== item
+        );
     } else {
       updated.push(item);
     }
@@ -79,41 +91,49 @@ export default function ENTExam() {
     if (!updated.length)
       updated = [normal];
 
-    setSelected(updated);
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const toggleMulti = (
-    item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >
+    fieldId: string,
+    fieldLabel: string,
+    item: string
   ) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ?? [];
+
+    const updated =
+      current.includes(item)
+        ? current.filter(
+            (x) => x !== item
+          )
+        : [
+            ...current,
+            item,
+          ];
+
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const ChipGroup = ({
     items,
-    selected,
-    setSelected,
+    fieldId,
+    fieldLabel,
     normal = "Normal",
   }: {
     items: string[];
-    selected: string[];
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >;
+    fieldId: string;
+    fieldLabel: string;
     normal?: string;
   }) => (
     <View style={styles.row}>
@@ -121,12 +141,17 @@ export default function ENTExam() {
         <AppChip
           key={item}
           label={item}
-          selected={selected.includes(item)}
+          selected={(
+            (getValue(
+              fieldId
+            ) as string[]) ??
+            [normal]
+          ).includes(item)}
           onPress={() =>
             toggleFinding(
+              fieldId,
+              fieldLabel,
               item,
-              selected,
-              setSelected,
               normal
             )
           }
@@ -153,11 +178,15 @@ export default function ENTExam() {
           "Tinnitus",
           "Vertigo",
         ]}
-        selected={earFindings}
-        setSelected={setEarFindings}
+        fieldId="earFindings"
+        fieldLabel="Ear Findings"
       />
 
-      {earFindings.includes(
+      {(
+        (getValue(
+          "earFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Hearing Loss"
       ) && (
         <View style={styles.group}>
@@ -175,10 +204,16 @@ export default function ENTExam() {
                 key={item}
                 label={item}
                 selected={
-                  hearingSide === item
+                  getValue(
+                    "hearingSide"
+                  ) === item
                 }
                 onPress={() =>
-                  setHearingSide(item)
+                  updateField(
+                    "hearingSide",
+                    "Hearing Side",
+                    item
+                  )
                 }
               />
             ))}
@@ -200,11 +235,15 @@ export default function ENTExam() {
           "Epistaxis",
           "Post Nasal Drip",
         ]}
-        selected={noseFindings}
-        setSelected={setNoseFindings}
+        fieldId="noseFindings"
+        fieldLabel="Nose Findings"
       />
 
-      {noseFindings.includes(
+      {(
+        (getValue(
+          "noseFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Nasal Discharge"
       ) && (
         <View style={styles.group}>
@@ -222,16 +261,23 @@ export default function ENTExam() {
                 key={item}
                 label={item}
                 selected={
-                  dischargeType === item
+                  getValue(
+                    "dischargeType"
+                  ) === item
                 }
                 onPress={() =>
-                  setDischargeType(item)
+                  updateField(
+                    "dischargeType",
+                    "Discharge Type",
+                    item
+                  )
                 }
               />
             ))}
           </View>
         </View>
       )}
+
             <Text style={styles.sectionTitle}>
         Throat
       </Text>
@@ -247,11 +293,15 @@ export default function ENTExam() {
           "Oral Thrush",
           "Hoarseness",
         ]}
-        selected={throatFindings}
-        setSelected={setThroatFindings}
+        fieldId="throatFindings"
+        fieldLabel="Throat Findings"
       />
 
-      {throatFindings.includes(
+      {(
+        (getValue(
+          "throatFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Tonsillar Enlargement"
       ) && (
         <View style={styles.group}>
@@ -270,10 +320,16 @@ export default function ENTExam() {
                 key={item}
                 label={item}
                 selected={
-                  tonsilGrade === item
+                  getValue(
+                    "tonsilGrade"
+                  ) === item
                 }
                 onPress={() =>
-                  setTonsilGrade(item)
+                  updateField(
+                    "tonsilGrade",
+                    "Tonsil Grade",
+                    item
+                  )
                 }
               />
             ))}
@@ -293,11 +349,15 @@ export default function ENTExam() {
           "Neck Mass",
           "Tenderness",
         ]}
-        selected={neckFindings}
-        setSelected={setNeckFindings}
+        fieldId="neckFindings"
+        fieldLabel="Neck Findings"
       />
 
-      {neckFindings.includes(
+      {(
+        (getValue(
+          "neckFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Lymphadenopathy"
       ) && (
         <View style={styles.group}>
@@ -316,14 +376,16 @@ export default function ENTExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={lymphNodes.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "lymphNodes"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    lymphNodes,
-                    setLymphNodes
+                    "lymphNodes",
+                    "Lymph Nodes",
+                    item
                   )
                 }
               />
@@ -332,7 +394,11 @@ export default function ENTExam() {
         </View>
       )}
 
-      {neckFindings.includes(
+      {(
+        (getValue(
+          "neckFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Thyroid Enlargement"
       ) && (
         <View style={styles.group}>
@@ -349,10 +415,16 @@ export default function ENTExam() {
                 key={item}
                 label={item}
                 selected={
-                  thyroidType === item
+                  getValue(
+                    "thyroidType"
+                  ) === item
                 }
                 onPress={() =>
-                  setThyroidType(item)
+                  updateField(
+                    "thyroidType",
+                    "Thyroid Type",
+                    item
+                  )
                 }
               />
             ))}
@@ -360,49 +432,31 @@ export default function ENTExam() {
         </View>
       )}
 
-      {neckFindings.includes(
+      {(
+        (getValue(
+          "neckFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Neck Mass"
       ) && (
         <AppTextField
           label="Mass Location"
-          value={neckMassLocation}
-          onChangeText={
-            setNeckMassLocation
+          value={
+            (getValue(
+              "neckMassLocation"
+            ) as string) ?? ""
+          }
+          onChangeText={(text) =>
+            updateField(
+              "neckMassLocation",
+              "Neck Mass Location",
+              text
+            )
           }
           placeholder="Describe location..."
         />
       )}
 
-      <Text style={styles.sectionTitle}>
-        Red Flags
-      </Text>
-
-      <View style={styles.row}>
-        {[
-          "None",
-          "Airway Compromise",
-          "Stridor",
-          "Neck Swelling",
-          "Facial Swelling",
-          "Severe Epistaxis",
-        ].map((item) => (
-          <AppChip
-            key={item}
-            label={item}
-            selected={redFlags.includes(
-              item
-            )}
-            onPress={() =>
-              toggleFinding(
-                item,
-                redFlags,
-                setRedFlags,
-                "None"
-              )
-            }
-          />
-        ))}
-      </View>
             <Text style={styles.sectionTitle}>
         Red Flags
       </Text>
@@ -416,15 +470,24 @@ export default function ENTExam() {
           "Rapidly Enlarging Neck Mass",
           "Profuse Epistaxis",
         ]}
-        selected={redFlags}
-        setSelected={setRedFlags}
+        fieldId="redFlags"
+        fieldLabel="Red Flags"
         normal="None"
       />
 
-      
       <AppTextField
-        value={otherFindings}
-        onChangeText={setOtherFindings}
+        value={
+          (getValue(
+            "otherFindings"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "otherFindings",
+            "Other Findings",
+            text
+          )
+        }
         placeholder="Add other findings..."
         multiline
       />
@@ -436,26 +499,22 @@ const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },
-
   sectionTitle: {
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
   },
-
   label: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
   },
-
   group: {
     gap: SPACING.sm,
   },

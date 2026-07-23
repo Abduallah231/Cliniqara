@@ -2,13 +2,13 @@ import AppChip from "@/components/common/AppChip";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
+import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -16,329 +16,353 @@ import {
 } from "react-native";
 
 export default function GeneralInspectionSection() {
-  const [consciousness, setConsciousness] =
-    useState("Conscious");
-
-  const [appearance, setAppearance] =
-    useState("Normal");
-
-  const [hydration, setHydration] =
-    useState("Normal");
-
-  const [bodyBuild, setBodyBuild] =
-    useState("Average");
-
-  const [nourishment, setNourishment] =
-    useState("Well Nourished");
-
-  const [findings, setFindings] =
-    useState<string[]>([]);
-
-  const [edemaLocations, setEdemaLocations] =
-    useState<string[]>([]);
-
-  const toggleFinding = (
-    item: string
-  ) => {
-    setFindings((prev) =>
-      prev.includes(item)
-        ? prev.filter((x) => x !== item)
-        : [...prev, item]
+  const generalInspection =
+    useVisitStore(
+      (state) =>
+        state.visit.examination
+          .generalInspection
     );
-  };
 
-  const toggleEdemaLocation = (
-    item: string
-  ) => {
-    setEdemaLocations((prev) =>
-      prev.includes(item)
-        ? prev.filter((x) => x !== item)
-        : [...prev, item]
+  const updateGeneralInspection =
+    useVisitStore(
+      (state) =>
+        state.updateGeneralInspection
     );
-  };
+
+  const toggleGeneralFinding =
+    useVisitStore(
+      (state) =>
+        state.toggleGeneralFinding
+    );
+
+  const toggleEdemaLocation =
+    useVisitStore(
+      (state) =>
+        state.toggleEdemaLocation
+    );
 
   return (
     <View style={styles.container}>
       <CollapsibleSection
-  title="General Inspection"
-  icon={
-    <Ionicons
-      name="eye-outline"
-      size={20}
-      color={COLORS.primary}
-    />
-  }
-  defaultExpanded={false}
->
+        title="General Inspection"
+        icon={
+          <Ionicons
+            name="eye-outline"
+            size={20}
+            color={COLORS.primary}
+          />
+        }
+        defaultExpanded={false}
+      >
         <SectionHeader title="Consciousness" />
+
         <View style={styles.row}>
           <AppChip
             label="Conscious"
             selected={
-              consciousness ===
-              "Conscious"
+              !generalInspection.consciousness ||
+              generalInspection.consciousness ===
+                "Conscious"
             }
             onPress={() =>
-              setConsciousness(
-                "Conscious"
-              )
+              updateGeneralInspection({
+                consciousness:
+                  "Conscious",
+              })
             }
           />
 
           <AppChip
             label="Drowsy"
             selected={
-              consciousness ===
+              generalInspection.consciousness ===
               "Drowsy"
             }
             onPress={() =>
-              setConsciousness(
-                "Drowsy"
-              )
+              updateGeneralInspection({
+                consciousness:
+                  "Drowsy",
+              })
             }
           />
 
           <AppChip
             label="Confused"
             selected={
-              consciousness ===
+              generalInspection.consciousness ===
               "Confused"
             }
             onPress={() =>
-              setConsciousness(
-                "Confused"
-              )
+              updateGeneralInspection({
+                consciousness:
+                  "Confused",
+              })
             }
           />
 
           <AppChip
             label="Comatose"
             selected={
-              consciousness ===
+              generalInspection.consciousness ===
               "Comatose"
             }
             onPress={() =>
-              setConsciousness(
-                "Comatose"
-              )
+              updateGeneralInspection({
+                consciousness:
+                  "Comatose",
+              })
             }
           />
         </View>
-<Divider />
+
+        <Divider />
+
         <SectionHeader title="Appearance" />
+
         <View style={styles.row}>
           <AppChip
             label="Normal"
             selected={
-              appearance ===
-              "Normal"
+              !generalInspection.appearance ||
+              generalInspection.appearance ===
+                "Normal"
             }
             onPress={() =>
-              setAppearance(
-                "Normal"
-              )
+              updateGeneralInspection({
+                appearance:
+                  "Normal",
+              })
             }
           />
 
           <AppChip
             label="Ill"
             selected={
-              appearance === "Ill"
+              generalInspection.appearance ===
+              "Ill"
             }
             onPress={() =>
-              setAppearance("Ill")
+              updateGeneralInspection({
+                appearance: "Ill",
+              })
             }
           />
 
           <AppChip
             label="Toxic"
             selected={
-              appearance ===
+              generalInspection.appearance ===
               "Toxic"
             }
             onPress={() =>
-              setAppearance(
-                "Toxic"
-              )
+              updateGeneralInspection({
+                appearance:
+                  "Toxic",
+              })
             }
           />
 
           <AppChip
             label="Distressed"
             selected={
-              appearance ===
+              generalInspection.appearance ===
               "Distressed"
             }
             onPress={() =>
-              setAppearance(
-                "Distressed"
-              )
+              updateGeneralInspection({
+                appearance:
+                  "Distressed",
+              })
             }
           />
         </View>
 
-        <Divider /><SectionHeader title="Hydration" />
+        <Divider />
+
+                <SectionHeader title="Hydration" />
+
         <View style={styles.row}>
           <AppChip
             label="Normal"
             selected={
-              hydration ===
-              "Normal"
+              !generalInspection.hydration ||
+              generalInspection.hydration ===
+                "Normal"
             }
             onPress={() =>
-              setHydration(
-                "Normal"
-              )
+              updateGeneralInspection({
+                hydration: "Normal",
+              })
             }
           />
 
           <AppChip
             label="Mild"
             selected={
-              hydration ===
+              generalInspection.hydration ===
               "Mild"
             }
             onPress={() =>
-              setHydration(
-                "Mild"
-              )
+              updateGeneralInspection({
+                hydration: "Mild",
+              })
             }
           />
 
           <AppChip
             label="Moderate"
             selected={
-              hydration ===
+              generalInspection.hydration ===
               "Moderate"
             }
             onPress={() =>
-              setHydration(
-                "Moderate"
-              )
+              updateGeneralInspection({
+                hydration:
+                  "Moderate",
+              })
             }
           />
 
           <AppChip
             label="Severe"
             selected={
-              hydration ===
+              generalInspection.hydration ===
               "Severe"
             }
             onPress={() =>
-              setHydration(
-                "Severe"
-              )
+              updateGeneralInspection({
+                hydration: "Severe",
+              })
             }
           />
         </View>
-    <Divider /><SectionHeader title="Body Build" />
+
+        <Divider />
+
+        <SectionHeader title="Body Build" />
+
         <View style={styles.row}>
           <AppChip
             label="Average"
             selected={
-              bodyBuild ===
-              "Average"
+              !generalInspection.bodyBuild ||
+              generalInspection.bodyBuild ===
+                "Average"
             }
             onPress={() =>
-              setBodyBuild(
-                "Average"
-              )
+              updateGeneralInspection({
+                bodyBuild: "Average",
+              })
             }
           />
 
           <AppChip
             label="Thin"
             selected={
-              bodyBuild ===
+              generalInspection.bodyBuild ===
               "Thin"
             }
             onPress={() =>
-              setBodyBuild(
-                "Thin"
-              )
+              updateGeneralInspection({
+                bodyBuild: "Thin",
+              })
             }
           />
 
           <AppChip
             label="Obese"
             selected={
-              bodyBuild ===
+              generalInspection.bodyBuild ===
               "Obese"
             }
             onPress={() =>
-              setBodyBuild(
-                "Obese"
-              )
+              updateGeneralInspection({
+                bodyBuild: "Obese",
+              })
             }
           />
 
           <AppChip
             label="Athletic"
             selected={
-              bodyBuild ===
+              generalInspection.bodyBuild ===
               "Athletic"
             }
             onPress={() =>
-              setBodyBuild(
-                "Athletic"
-              )
+              updateGeneralInspection({
+                bodyBuild:
+                  "Athletic",
+              })
             }
           />
         </View>
 
-        <Divider /><SectionHeader title="Nourishment" />
+        <Divider />
+
+        <SectionHeader title="Nourishment" />
+
         <View style={styles.row}>
           <AppChip
             label="Well Nourished"
             selected={
-              nourishment ===
-              "Well Nourished"
+              !generalInspection.nourishment ||
+              generalInspection.nourishment ===
+                "Well Nourished"
             }
             onPress={() =>
-              setNourishment(
-                "Well Nourished"
-              )
+              updateGeneralInspection({
+                nourishment:
+                  "Well Nourished",
+              })
             }
           />
 
           <AppChip
             label="Malnourished"
             selected={
-              nourishment ===
+              generalInspection.nourishment ===
               "Malnourished"
             }
             onPress={() =>
-              setNourishment(
-                "Malnourished"
-              )
+              updateGeneralInspection({
+                nourishment:
+                  "Malnourished",
+              })
             }
           />
         </View>
 
-        <Divider /><SectionHeader title="Findings" />
+        <Divider />
+
+        <SectionHeader title="Findings" />
+
         <View style={styles.row}>
           {[
             "Pallor",
             "Jaundice",
             "Cyanosis",
-            "Edema",
             "Clubbing",
             "Lymphadenopathy",
+            "Edema",
           ].map((item) => (
             <AppChip
               key={item}
               label={item}
-              selected={findings.includes(
+              selected={generalInspection.findings.includes(
                 item
               )}
               onPress={() =>
-                toggleFinding(item)
+                toggleGeneralFinding(
+                  item
+                )
               }
             />
           ))}
         </View>
 
-        {findings.includes("Edema") && (
+        {generalInspection.findings.includes(
+          "Edema"
+        ) && (
           <View style={styles.box}>
             <Text
               style={styles.sectionTitle}
@@ -357,7 +381,7 @@ export default function GeneralInspectionSection() {
                 <AppChip
                   key={item}
                   label={item}
-                  selected={edemaLocations.includes(
+                  selected={generalInspection.edemaLocations.includes(
                     item
                   )}
                   onPress={() =>

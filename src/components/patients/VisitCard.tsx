@@ -3,12 +3,11 @@ import { StyleSheet, Text, View } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
-import PatientStatusChip from "@/components/patients/PatientStatusChip";
 
 import {
-    COLORS,
-    SPACING,
-    TYPOGRAPHY,
+  COLORS,
+  SPACING,
+  TYPOGRAPHY,
 } from "@/theme";
 
 type Props = {
@@ -16,10 +15,7 @@ type Props = {
   complaint: string;
   diagnosis: string;
   doctor?: string;
-  status:
-    | "Completed"
-    | "In Progress"
-    | "Follow-up";
+
   onOpen?: () => void;
 };
 
@@ -28,7 +24,6 @@ export default function VisitCard({
   complaint,
   diagnosis,
   doctor,
-  status,
   onOpen,
 }: Props) {
   return (
@@ -45,10 +40,6 @@ export default function VisitCard({
             {date}
           </Text>
         </View>
-
-        <PatientStatusChip
-          status={status}
-        />
       </View>
 
       <Text style={styles.complaint}>

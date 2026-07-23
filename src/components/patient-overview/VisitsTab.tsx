@@ -128,10 +128,10 @@ export default function VisitsTab() {
 
       {filteredVisits.length === 0 ? (
         <AppEmptyState
-  title="No Visits Found"
-  subtitle="No visit matches your search."
-  icon="document-text-outline"
-/>
+          title="No Visits Found"
+          subtitle="No visit matches your search."
+          icon="document-text-outline"
+        />
       ) : (
         <>
           <Text style={styles.year}>
@@ -150,7 +150,6 @@ export default function VisitsTab() {
                   visit.diagnosis
                 }
                 doctor={visit.doctor}
-                status={visit.status}
                 onOpen={() => {}}
               />
             )

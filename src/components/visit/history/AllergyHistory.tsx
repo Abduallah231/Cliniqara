@@ -1,9 +1,24 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+} from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 
+import AppButton from "@/components/common/AppButton";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
+import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
+
+import { useVisitStore } from "@/store/visitStore";
+import {
+  Allergy,
+  AllergySeverity,
+  AllergyType,
+} from "@/models/VisitForm/history";
 
 import {
   COLORS,
@@ -11,155 +26,116 @@ import {
   TYPOGRAPHY,
 } from "@/theme";
 
-type AllergyCardProps = {
-  title: string;
-  type: string;
-  allergen: Record<string, string>;
-  setAllergen: React.Dispatch<
-    React.SetStateAction<Record<string, string>>
-  >;
-  reaction: Record<string, string>;
-  setReaction: React.Dispatch<
-    React.SetStateAction<Record<string, string>>
-  >;
-  severity: Record<string, string>;
-  setSeverity: React.Dispatch<
-    React.SetStateAction<Record<string, string>>
-  >;
-};
-
-function AllergyCard({
-  title,
-  type,
-  allergen,
-  setAllergen,
-  reaction,
-  setReaction,
-  severity,
-  setSeverity,
-}: AllergyCardProps) {
-  return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>
-        {title}
-      </Text>
-
-      <AppTextField
-        label="Allergen"
-        placeholder="Allergen"
-        value={allergen[type] ?? ""}
-        onChangeText={(text) =>
-          setAllergen((prev) => ({
-            ...prev,
-            [type]: text,
-          }))
-        }
-      />
-
-      <AppTextField
-        label="Reaction"
-        placeholder="Reaction"
-        value={reaction[type] ?? ""}
-        onChangeText={(text) =>
-          setReaction((prev) => ({
-            ...prev,
-            [type]: text,
-          }))
-        }
-      />
-
-      <Text style={styles.label}>
-        Severity
-      </Text>
-
-      <View style={styles.row}>
-        {[
-          "Mild",
-          "Moderate",
-          "Severe",
-          "Anaphylaxis",
-        ].map((item) => (
-          <AppChip
-            key={item}
-            label={item}
-            selected={severity[type] === item}
-            onPress={() =>
-              setSeverity((prev) => ({
-                ...prev,
-                [type]: item,
-              }))
-            }
-          />
-        ))}
-      </View>
-    </View>
-  );
-}
-
 export default function AllergyHistory() {
-  const [hasAllergy, setHasAllergy] =
-    useState("No");
+  const {
+    visit,
+    updateHasAllergy,
+    addAllergy,
+    updateAllergy,
+    removeAllergy,
+  } = useVisitStore();
 
-  const [selectedTypes, setSelectedTypes] =
-    useState<string[]>([]);
-
-  const [severity, setSeverity] =
-    useState<Record<string, string>>({});
+  const [type, setType] =
+    useState<AllergyType>("Drug");
 
   const [allergen, setAllergen] =
-    useState<Record<string, string>>({});
+    useState("");
 
   const [reaction, setReaction] =
-    useState<Record<string, string>>({});
+    useState("");
 
-  const toggleType = (type: string) => {
-    if (selectedTypes.includes(type)) {
-      setSelectedTypes(
-        selectedTypes.filter(
-          (t) => t !== type
-        )
+  const [severity, setSeverity] =
+    useState<AllergySeverity>(
+      "Moderate"
+    );
+
+  const [
+    editingAllergyId,
+    setEditingAllergyId,
+  ] = useState<string | null>(
+    null
+  );
+
+  const clearForm = () => {
+    setType("Drug");
+    setAllergen("");
+    setReaction("");
+    setSeverity("Moderate");
+    setEditingAllergyId(null);
+  };
+
+  const handleAddAllergy = () => {
+    if (!allergen.trim()) return;
+
+    if (editingAllergyId) {
+      updateAllergy(
+        editingAllergyId,
+        {
+          type,
+          allergen:
+            allergen.trim(),
+          reaction:
+            reaction.trim(),
+          severity,
+        }
       );
     } else {
-      setSelectedTypes([
-        ...selectedTypes,
+      const allergy: Allergy = {
+        id: Date.now().toString(),
         type,
-      ]);
+        allergen:
+          allergen.trim(),
+        reaction:
+          reaction.trim(),
+        severity,
+      };
+
+      addAllergy(allergy);
     }
+
+    clearForm();
   };
 
-  const setAllergySeverity = (
-    type: string,
-    value: string
-  ) => {
-    setSeverity({
-      ...severity,
-      [type]: value,
-    });
-  };
   return (
     <View style={styles.container}>
-<SectionHeader title="Any Allergy?" />
+      <SectionHeader title="Any Allergy?" />
+
       <View style={styles.row}>
         <AppChip
           label="Yes"
-          selected={hasAllergy === "Yes"}
+          selected={
+            visit.history
+              .allergyHistory
+              .hasAllergy ===
+            "Yes"
+          }
           onPress={() =>
-            setHasAllergy("Yes")
+            updateHasAllergy("Yes")
           }
         />
 
         <AppChip
           label="No"
-          selected={hasAllergy === "No"}
+          selected={
+            visit.history
+              .allergyHistory
+              .hasAllergy ===
+            "No"
+          }
           onPress={() =>
-            setHasAllergy("No")
+            updateHasAllergy("No")
           }
         />
       </View>
 
-      {hasAllergy === "Yes" && (
+      {visit.history
+        .allergyHistory
+        .hasAllergy === "Yes" && (
         <>
-<SectionHeader title="Allergy Types" />
+          <Divider />
+
+          <SectionHeader title="Type" />
+
           <View style={styles.row}>
             {[
               "Drug",
@@ -170,68 +146,172 @@ export default function AllergyHistory() {
               <AppChip
                 key={item}
                 label={item}
-                selected={selectedTypes.includes(
-                  item
-                )}
+                selected={
+                  type === item
+                }
                 onPress={() =>
-                  toggleType(item)
+                  setType(
+                    item as AllergyType
+                  )
                 }
               />
             ))}
           </View>
-          
-          {selectedTypes.includes("Drug") && (
-            <AllergyCard
-  title="Drug Allergy"
-  type="Drug"
-  allergen={allergen}
-  setAllergen={setAllergen}
-  reaction={reaction}
-  setReaction={setReaction}
-  severity={severity}
-  setSeverity={setSeverity}
-/>
-          )}
 
-          {selectedTypes.includes("Food") && (
-            <AllergyCard
-  title="Food Allergy"
-  type="Food"
-  allergen={allergen}
-  setAllergen={setAllergen}
-  reaction={reaction}
-  setReaction={setReaction}
-  severity={severity}
-  setSeverity={setSeverity}
-/>
-          )}
+          <AppTextField
+            label="Allergen"
+            placeholder="Search Allergen"
+            value={allergen}
+            onChangeText={
+              setAllergen
+            }
+          />
 
-          {selectedTypes.includes(
-            "Environmental"
-          ) && (
-            <AllergyCard
-              title="Environmental Allergy"
-              type="Environmental"
-  allergen={allergen}
-  setAllergen={setAllergen}
-  reaction={reaction}
-  setReaction={setReaction}
-  severity={severity}
-  setSeverity={setSeverity}
-            />
-          )}
+          <AppTextField
+            label="Reaction"
+            placeholder="Reaction"
+            value={reaction}
+            onChangeText={
+              setReaction
+            }
+          />
 
-          {selectedTypes.includes("Other") && (
-            <AllergyCard
-              title="Other Allergy"
-              type="Other"
-              allergen={allergen}
-              setAllergen={setAllergen}
-              reaction={reaction}
-              setReaction={setReaction}
-              severity={severity}
-              setSeverity={setSeverity}
-            />
+          <Text style={styles.label}>
+            Severity
+          </Text>
+
+          <View style={styles.row}>
+            {[
+              "Mild",
+              "Moderate",
+              "Severe",
+              "Anaphylaxis",
+            ].map((item) => (
+              <AppChip
+                key={item}
+                label={item}
+                selected={
+                  severity === item
+                }
+                onPress={() =>
+                  setSeverity(
+                    item as AllergySeverity
+                  )
+                }
+              />
+            ))}
+          </View>
+
+          <AppButton
+            title={
+              editingAllergyId
+                ? "Update Allergy"
+                : "Add Allergy"
+            }
+            onPress={
+              handleAddAllergy
+            }
+          />
+
+                    {visit.history.allergyHistory.allergies.map(
+            (allergy) => (
+              <View
+                key={allergy.id}
+                style={styles.allergyCard}
+              >
+                <Text
+                  style={
+                    styles.allergyTitle
+                  }
+                >
+                  {allergy.allergen}
+                </Text>
+
+                <Text
+                  style={
+                    styles.allergyText
+                  }
+                >
+                  Type: {allergy.type}
+                </Text>
+
+                {!!allergy.reaction && (
+                  <Text
+                    style={
+                      styles.allergyText
+                    }
+                  >
+                    Reaction:{" "}
+                    {allergy.reaction}
+                  </Text>
+                )}
+
+                <Text
+                  style={
+                    styles.allergyText
+                  }
+                >
+                  Severity:{" "}
+                  {allergy.severity}
+                </Text>
+
+                <View
+                  style={
+                    styles.actionRow
+                  }
+                >
+                  <TouchableOpacity
+                    style={
+                      styles.iconButton
+                    }
+                    onPress={() => {
+                      setEditingAllergyId(
+                        allergy.id
+                      );
+
+                      setType(
+                        allergy.type
+                      );
+
+                      setAllergen(
+                        allergy.allergen
+                      );
+
+                      setReaction(
+                        allergy.reaction
+                      );
+
+                      setSeverity(
+                        allergy.severity
+                      );
+                    }}
+                  >
+                    <MaterialIcons
+                      name="edit"
+                      size={22}
+                      color={COLORS.primary}
+                    />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={
+                      styles.iconButton
+                    }
+                    onPress={() =>
+                      removeAllergy(
+                        allergy.id
+                      )
+                    }
+                  >
+                    <MaterialIcons
+                      name="delete"
+                      size={22}
+                      color="#D32F2F"
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )
           )}
         </>
       )}
@@ -240,26 +320,14 @@ export default function AllergyHistory() {
 }
 
 const styles = StyleSheet.create({
-  
   container: {
     gap: SPACING.md,
   },
 
-  card: {
-    gap: SPACING.sm,
-    marginTop: SPACING.sm,
-  },
-
-  cardTitle: {
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  sectionTitle: {
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
+  row: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: SPACING.xs,
   },
 
   label: {
@@ -268,9 +336,35 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
 
-  row: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+  allergyCard: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    padding: SPACING.md,
     gap: SPACING.xs,
+    backgroundColor: COLORS.white,
+  },
+
+  allergyTitle: {
+    fontSize: TYPOGRAPHY.body,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
+  allergyText: {
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.secondaryText,
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: SPACING.md,
+    marginTop: SPACING.sm,
+  },
+
+  iconButton: {
+    padding: 6,
   },
 });

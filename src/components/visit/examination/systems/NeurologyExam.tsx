@@ -1,77 +1,89 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+const SYSTEM_ID = "neurology";
+
 export default function NeurologyExam() {
-  const [mentalStatus, setMentalStatus] =
-    useState("Normal");
+  const {
+    visit,
+    updateSystemExaminationField,
+  } = useVisitStore();
 
-  const [cranialFindings, setCranialFindings] =
-    useState<string[]>(["NAD"]);
+  const getValue = (
+    fieldId: string
+  ) => {
+    const system =
+      visit.examination.systemExamination.systems.find(
+        (s) =>
+          s.systemId === SYSTEM_ID
+      );
 
-  const [motorFindings, setMotorFindings] =
-    useState<string[]>(["NAD"]);
+    return (
+      system?.fields.find(
+        (f) =>
+          f.fieldId === fieldId
+      )?.value ?? null
+    );
+  };
 
-  const [sensoryFindings, setSensoryFindings] =
-    useState<string[]>(["NAD"]);
-
-  const [reflexes, setReflexes] =
-    useState("Normal");
-
-  const [coordination, setCoordination] =
-    useState("Normal");
-
-  const [gait, setGait] =
-    useState("Normal");
-
-  const [weaknessLocations, setWeaknessLocations] =
-    useState<string[]>([]);
-
-  const [powerGrade, setPowerGrade] =
-    useState("");
-
-  const [tremorType, setTremorType] =
-    useState("");
-
-  const [sensoryDistribution, setSensoryDistribution] =
-    useState<string[]>([]);
-
-  const [otherFindings, setOtherFindings] =
-    useState("");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any,
+    unit?: string
+  ) =>
+    updateSystemExaminationField(
+      SYSTEM_ID,
+      fieldId,
+      fieldLabel,
+      value,
+      unit
+    );
 
   const toggleFinding = (
+    fieldId: string,
+    fieldLabel: string,
     item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >,
     normal = "NAD"
   ) => {
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ??
+      [normal];
+
     if (item === normal) {
-      setSelected([normal]);
+      updateField(
+        fieldId,
+        fieldLabel,
+        [normal]
+      );
       return;
     }
 
-    let updated = selected.filter(
-      (x) => x !== normal
-    );
-
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item
+    let updated =
+      current.filter(
+        (x) => x !== normal
       );
+
+    if (
+      updated.includes(item)
+    ) {
+      updated =
+        updated.filter(
+          (x) => x !== item
+        );
     } else {
       updated.push(item);
     }
@@ -79,41 +91,49 @@ export default function NeurologyExam() {
     if (!updated.length)
       updated = [normal];
 
-    setSelected(updated);
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const toggleMulti = (
-    item: string,
-    selected: string[],
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >
+    fieldId: string,
+    fieldLabel: string,
+    item: string
   ) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ?? [];
+
+    const updated =
+      current.includes(item)
+        ? current.filter(
+            (x) => x !== item
+          )
+        : [
+            ...current,
+            item,
+          ];
+
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const ChipGroup = ({
     items,
-    selected,
-    setSelected,
+    fieldId,
+    fieldLabel,
     normal = "NAD",
   }: {
     items: string[];
-    selected: string[];
-    setSelected: React.Dispatch<
-      React.SetStateAction<string[]>
-    >;
+    fieldId: string;
+    fieldLabel: string;
     normal?: string;
   }) => (
     <View style={styles.row}>
@@ -121,12 +141,17 @@ export default function NeurologyExam() {
         <AppChip
           key={item}
           label={item}
-          selected={selected.includes(item)}
+          selected={(
+            (getValue(
+              fieldId
+            ) as string[]) ??
+            [normal]
+          ).includes(item)}
           onPress={() =>
             toggleFinding(
+              fieldId,
+              fieldLabel,
               item,
-              selected,
-              setSelected,
               normal
             )
           }
@@ -152,9 +177,17 @@ export default function NeurologyExam() {
           <AppChip
             key={item}
             label={item}
-            selected={mentalStatus === item}
+            selected={
+              getValue(
+                "mentalStatus"
+              ) === item
+            }
             onPress={() =>
-              setMentalStatus(item)
+              updateField(
+                "mentalStatus",
+                "Mental Status",
+                item
+              )
             }
           />
         ))}
@@ -174,10 +207,11 @@ export default function NeurologyExam() {
           "Dysarthria",
           "Dysphagia",
         ]}
-        selected={cranialFindings}
-        setSelected={setCranialFindings}
+        fieldId="cranialFindings"
+        fieldLabel="Cranial Findings"
       />
-            <Text style={styles.sectionTitle}>
+
+      <Text style={styles.sectionTitle}>
         Motor Examination
       </Text>
 
@@ -191,11 +225,15 @@ export default function NeurologyExam() {
           "Tremor",
           "Fasciculation",
         ]}
-        selected={motorFindings}
-        setSelected={setMotorFindings}
+        fieldId="motorFindings"
+        fieldLabel="Motor Findings"
       />
 
-      {motorFindings.includes("Weakness") && (
+            {(
+        (getValue(
+          "motorFindings"
+        ) as string[]) ?? []
+      ).includes("Weakness") && (
         <View style={styles.group}>
           <Text style={styles.label}>
             Weakness Location
@@ -213,14 +251,16 @@ export default function NeurologyExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={weaknessLocations.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "weaknessLocations"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    weaknessLocations,
-                    setWeaknessLocations
+                    "weaknessLocations",
+                    "Weakness Locations",
+                    item
                   )
                 }
               />
@@ -232,23 +272,40 @@ export default function NeurologyExam() {
           </Text>
 
           <View style={styles.row}>
-            {["0", "1", "2", "3", "4", "5"].map(
-              (item) => (
-                <AppChip
-                  key={item}
-                  label={item}
-                  selected={powerGrade === item}
-                  onPress={() =>
-                    setPowerGrade(item)
-                  }
-                />
-              )
-            )}
+            {[
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+            ].map((item) => (
+              <AppChip
+                key={item}
+                label={item}
+                selected={
+                  getValue(
+                    "powerGrade"
+                  ) === item
+                }
+                onPress={() =>
+                  updateField(
+                    "powerGrade",
+                    "Power Grade",
+                    item
+                  )
+                }
+              />
+            ))}
           </View>
         </View>
       )}
 
-      {motorFindings.includes("Tremor") && (
+      {(
+        (getValue(
+          "motorFindings"
+        ) as string[]) ?? []
+      ).includes("Tremor") && (
         <View style={styles.group}>
           <Text style={styles.label}>
             Tremor Type
@@ -264,10 +321,16 @@ export default function NeurologyExam() {
                 key={item}
                 label={item}
                 selected={
-                  tremorType === item
+                  getValue(
+                    "tremorType"
+                  ) === item
                 }
                 onPress={() =>
-                  setTremorType(item)
+                  updateField(
+                    "tremorType",
+                    "Tremor Type",
+                    item
+                  )
                 }
               />
             ))}
@@ -288,14 +351,21 @@ export default function NeurologyExam() {
           "Vibration Loss",
           "Joint Position Loss",
         ]}
-        selected={sensoryFindings}
-        setSelected={setSensoryFindings}
+        fieldId="sensoryFindings"
+        fieldLabel="Sensory Findings"
       />
 
-      {(sensoryFindings.length > 1 ||
-        !sensoryFindings.includes(
-          "NAD"
-        )) && (
+      {(
+        ((getValue(
+          "sensoryFindings"
+        ) as string[]) ?? [])
+          .length > 1 ||
+        !(
+          (getValue(
+            "sensoryFindings"
+          ) as string[]) ?? ["NAD"]
+        ).includes("NAD")
+      ) && (
         <View style={styles.group}>
           <Text style={styles.label}>
             Distribution
@@ -311,14 +381,16 @@ export default function NeurologyExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={sensoryDistribution.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "sensoryDistribution"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    sensoryDistribution,
-                    setSensoryDistribution
+                    "sensoryDistribution",
+                    "Sensory Distribution",
+                    item
                   )
                 }
               />
@@ -326,7 +398,8 @@ export default function NeurologyExam() {
           </View>
         </View>
       )}
-            <Text style={styles.sectionTitle}>
+
+      <Text style={styles.sectionTitle}>
         Reflexes
       </Text>
 
@@ -340,15 +413,23 @@ export default function NeurologyExam() {
           <AppChip
             key={item}
             label={item}
-            selected={reflexes === item}
+            selected={
+              getValue(
+                "reflexes"
+              ) === item
+            }
             onPress={() =>
-              setReflexes(item)
+              updateField(
+                "reflexes",
+                "Reflexes",
+                item
+              )
             }
           />
         ))}
       </View>
 
-      <Text style={styles.sectionTitle}>
+            <Text style={styles.sectionTitle}>
         Coordination
       </Text>
 
@@ -363,9 +444,17 @@ export default function NeurologyExam() {
           <AppChip
             key={item}
             label={item}
-            selected={coordination === item}
+            selected={
+              getValue(
+                "coordination"
+              ) === item
+            }
             onPress={() =>
-              setCoordination(item)
+              updateField(
+                "coordination",
+                "Coordination",
+                item
+              )
             }
           />
         ))}
@@ -387,19 +476,33 @@ export default function NeurologyExam() {
           <AppChip
             key={item}
             label={item}
-            selected={gait === item}
+            selected={
+              getValue("gait") === item
+            }
             onPress={() =>
-              setGait(item)
+              updateField(
+                "gait",
+                "Gait",
+                item
+              )
             }
           />
         ))}
       </View>
 
-     
-
       <AppTextField
-        value={otherFindings}
-        onChangeText={setOtherFindings}
+        value={
+          (getValue(
+            "otherFindings"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "otherFindings",
+            "Other Findings",
+            text
+          )
+        }
         placeholder="Add other findings..."
         multiline
       />
@@ -411,26 +514,22 @@ const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },
-
   sectionTitle: {
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
   },
-
   label: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
   },
-
   group: {
     gap: SPACING.sm,
   },

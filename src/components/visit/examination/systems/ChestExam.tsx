@@ -1,99 +1,89 @@
-import { useState } from "react";
+import { useVisitStore } from "@/store/visitStore";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+const SYSTEM_ID = "chest";
+
 export default function ChestExam() {
-  const [neckFindings, setNeckFindings] =
-    useState<string[]>(["NAD"]);
+  const {
+    visit,
+    updateSystemExaminationField,
+  } = useVisitStore();
 
-  const [
-    inspectionFindings,
-    setInspectionFindings,
-  ] = useState<string[]>(["NAD"]);
+  const getValue = (
+    fieldId: string
+  ) => {
+    const system =
+      visit.examination.systemExamination.systems.find(
+        (s) =>
+          s.systemId === SYSTEM_ID
+      );
 
-  const [
-    palpationFindings,
-    setPalpationFindings,
-  ] = useState<string[]>(["NAD"]);
+    return (
+      system?.fields.find(
+        (f) =>
+          f.fieldId === fieldId
+      )?.value ?? null
+    );
+  };
 
-  const [
-    percussionFindings,
-    setPercussionFindings,
-  ] = useState<string[]>(["NAD"]);
-
-  const [
-    auscultationFindings,
-    setAuscultationFindings,
-  ] = useState<string[]>(["NAD"]);
-
-  const [dullnessLocation, setDullnessLocation] =
-    useState<string[]>([]);
-
-  const [expansionSide, setExpansionSide] =
-    useState("");
-
-  const [
-    reducedAirEntrySide,
-    setReducedAirEntrySide,
-  ] = useState("");
-
-  const [cracklesType, setCracklesType] =
-    useState("");
-
-  const [
-    cracklesLocation,
-    setCracklesLocation,
-  ] = useState<string[]>([]);
-
-  const [wheezeType, setWheezeType] =
-    useState("");
-
-  const [
-    wheezeDistribution,
-    setWheezeDistribution,
-  ] = useState("");
-
-  const [
-    bronchialLocation,
-    setBronchialLocation,
-  ] = useState<string[]>([]);
-
-  const [otherFindings, setOtherFindings] =
-    useState("");
+  const updateField = (
+    fieldId: string,
+    fieldLabel: string,
+    value: any,
+    unit?: string
+  ) =>
+    updateSystemExaminationField(
+      SYSTEM_ID,
+      fieldId,
+      fieldLabel,
+      value,
+      unit
+    );
 
   const toggleFinding = (
+    fieldId: string,
+    fieldLabel: string,
     item: string,
-    selected: string[],
-    setSelected: (
-      value: string[]
-    ) => void,
     normal = "NAD"
   ) => {
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ??
+      [normal];
+
     if (item === normal) {
-      setSelected([normal]);
+      updateField(
+        fieldId,
+        fieldLabel,
+        [normal]
+      );
       return;
     }
 
-    let updated = selected.filter(
-      (x) => x !== normal
-    );
-
-    if (updated.includes(item)) {
-      updated = updated.filter(
-        (x) => x !== item
+    let updated =
+      current.filter(
+        (x) => x !== normal
       );
+
+    if (
+      updated.includes(item)
+    ) {
+      updated =
+        updated.filter(
+          (x) => x !== item
+        );
     } else {
       updated.push(item);
     }
@@ -102,41 +92,49 @@ export default function ChestExam() {
       updated = [normal];
     }
 
-    setSelected(updated);
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const toggleMulti = (
-    item: string,
-    selected: string[],
-    setSelected: (
-      value: string[]
-    ) => void
+    fieldId: string,
+    fieldLabel: string,
+    item: string
   ) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const current =
+      (getValue(
+        fieldId
+      ) as string[]) ?? [];
+
+    const updated =
+      current.includes(item)
+        ? current.filter(
+            (x) => x !== item
+          )
+        : [
+            ...current,
+            item,
+          ];
+
+    updateField(
+      fieldId,
+      fieldLabel,
+      updated
+    );
   };
 
   const ChipGroup = ({
     items,
-    selected,
-    setSelected,
+    fieldId,
+    fieldLabel,
     normal = "NAD",
   }: {
     items: string[];
-    selected: string[];
-    setSelected: (
-      value: string[]
-    ) => void;
+    fieldId: string;
+    fieldLabel: string;
     normal?: string;
   }) => (
     <View style={styles.row}>
@@ -144,12 +142,17 @@ export default function ChestExam() {
         <AppChip
           key={item}
           label={item}
-          selected={selected.includes(item)}
+          selected={(
+            (getValue(
+              fieldId
+            ) as string[]) ??
+            [normal]
+          ).includes(item)}
           onPress={() =>
             toggleFinding(
+              fieldId,
+              fieldLabel,
               item,
-              selected,
-              setSelected,
               normal
             )
           }
@@ -178,8 +181,8 @@ export default function ChestExam() {
           "Trachea Deviated",
           "Lymphadenopathy",
         ]}
-        selected={neckFindings}
-        setSelected={setNeckFindings}
+        fieldId="neckFindings"
+        fieldLabel="Neck Findings"
       />
 
       <Title>Inspection</Title>
@@ -196,10 +199,11 @@ export default function ChestExam() {
           "Visible Pulsation",
           "Accessory Muscle Use",
         ]}
-        selected={inspectionFindings}
-        setSelected={setInspectionFindings}
+        fieldId="inspectionFindings"
+        fieldLabel="Inspection Findings"
       />
-            <Title>Palpation</Title>
+
+      <Title>Palpation</Title>
 
       <ChipGroup
         items={[
@@ -209,11 +213,15 @@ export default function ChestExam() {
           "Increased Fremitus",
           "Decreased Fremitus",
         ]}
-        selected={palpationFindings}
-        setSelected={setPalpationFindings}
+        fieldId="palpationFindings"
+        fieldLabel="Palpation Findings"
       />
 
-      {palpationFindings.includes(
+      {(
+        (getValue(
+          "palpationFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Reduced Expansion"
       ) && (
         <View style={styles.group}>
@@ -231,10 +239,16 @@ export default function ChestExam() {
                 key={item}
                 label={item}
                 selected={
-                  expansionSide === item
+                  getValue(
+                    "expansionSide"
+                  ) === item
                 }
                 onPress={() =>
-                  setExpansionSide(item)
+                  updateField(
+                    "expansionSide",
+                    "Expansion Side",
+                    item
+                  )
                 }
               />
             ))}
@@ -250,13 +264,15 @@ export default function ChestExam() {
           "Dull",
           "Hyperresonant",
         ]}
-        selected={percussionFindings}
-        setSelected={setPercussionFindings}
+        fieldId="percussionFindings"
+        fieldLabel="Percussion Findings"
       />
 
-      {percussionFindings.includes(
-        "Dull"
-      ) && (
+            {(
+        (getValue(
+          "percussionFindings"
+        ) as string[]) ?? []
+      ).includes("Dull") && (
         <View style={styles.group}>
           <Text style={styles.label}>
             Dullness Location
@@ -274,14 +290,16 @@ export default function ChestExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={dullnessLocation.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "dullnessLocation"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    dullnessLocation,
-                    setDullnessLocation
+                    "dullnessLocation",
+                    "Dullness Location",
+                    item
                   )
                 }
               />
@@ -301,11 +319,15 @@ export default function ChestExam() {
           "Pleural Rub",
           "Bronchial Breathing",
         ]}
-        selected={auscultationFindings}
-        setSelected={setAuscultationFindings}
+        fieldId="auscultationFindings"
+        fieldLabel="Auscultation Findings"
       />
 
-      {auscultationFindings.includes(
+      {(
+        (getValue(
+          "auscultationFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Reduced Air Entry"
       ) && (
         <View style={styles.group}>
@@ -323,11 +345,14 @@ export default function ChestExam() {
                 key={item}
                 label={item}
                 selected={
-                  reducedAirEntrySide ===
-                  item
+                  getValue(
+                    "reducedAirEntrySide"
+                  ) === item
                 }
                 onPress={() =>
-                  setReducedAirEntrySide(
+                  updateField(
+                    "reducedAirEntrySide",
+                    "Reduced Air Entry Side",
                     item
                   )
                 }
@@ -337,7 +362,11 @@ export default function ChestExam() {
         </View>
       )}
 
-      {auscultationFindings.includes(
+      {(
+        (getValue(
+          "auscultationFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Crackles"
       ) && (
         <View style={styles.group}>
@@ -346,20 +375,27 @@ export default function ChestExam() {
           </Text>
 
           <View style={styles.row}>
-            {["Fine", "Coarse"].map(
-              (item) => (
-                <AppChip
-                  key={item}
-                  label={item}
-                  selected={
-                    cracklesType === item
-                  }
-                  onPress={() =>
-                    setCracklesType(item)
-                  }
-                />
-              )
-            )}
+            {[
+              "Fine",
+              "Coarse",
+            ].map((item) => (
+              <AppChip
+                key={item}
+                label={item}
+                selected={
+                  getValue(
+                    "cracklesType"
+                  ) === item
+                }
+                onPress={() =>
+                  updateField(
+                    "cracklesType",
+                    "Crackles Type",
+                    item
+                  )
+                }
+              />
+            ))}
           </View>
 
           <Text style={styles.label}>
@@ -378,22 +414,29 @@ export default function ChestExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={cracklesLocation.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "cracklesLocation"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    cracklesLocation,
-                    setCracklesLocation
+                    "cracklesLocation",
+                    "Crackles Location",
+                    item
                   )
                 }
               />
             ))}
           </View>
         </View>
-            )}
-            {auscultationFindings.includes("Wheeze") && (
+      )}
+
+      {(
+        (getValue(
+          "auscultationFindings"
+        ) as string[]) ?? []
+      ).includes("Wheeze") && (
         <View style={styles.group}>
           <Text style={styles.label}>
             Wheeze Type
@@ -409,10 +452,16 @@ export default function ChestExam() {
                 key={item}
                 label={item}
                 selected={
-                  wheezeType === item
+                  getValue(
+                    "wheezeType"
+                  ) === item
                 }
                 onPress={() =>
-                  setWheezeType(item)
+                  updateField(
+                    "wheezeType",
+                    "Wheeze Type",
+                    item
+                  )
                 }
               />
             ))}
@@ -432,11 +481,14 @@ export default function ChestExam() {
                 key={item}
                 label={item}
                 selected={
-                  wheezeDistribution ===
-                  item
+                  getValue(
+                    "wheezeDistribution"
+                  ) === item
                 }
                 onPress={() =>
-                  setWheezeDistribution(
+                  updateField(
+                    "wheezeDistribution",
+                    "Wheeze Distribution",
                     item
                   )
                 }
@@ -446,7 +498,11 @@ export default function ChestExam() {
         </View>
       )}
 
-      {auscultationFindings.includes(
+            {(
+        (getValue(
+          "auscultationFindings"
+        ) as string[]) ?? []
+      ).includes(
         "Bronchial Breathing"
       ) && (
         <View style={styles.group}>
@@ -466,14 +522,16 @@ export default function ChestExam() {
               <AppChip
                 key={item}
                 label={item}
-                selected={bronchialLocation.includes(
-                  item
-                )}
+                selected={(
+                  (getValue(
+                    "bronchialLocation"
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMulti(
-                    item,
-                    bronchialLocation,
-                    setBronchialLocation
+                    "bronchialLocation",
+                    "Bronchial Location",
+                    item
                   )
                 }
               />
@@ -482,13 +540,19 @@ export default function ChestExam() {
         </View>
       )}
 
-      
-
       <AppTextField
         placeholder="Add other findings..."
-        value={otherFindings}
-        onChangeText={
-          setOtherFindings
+        value={
+          (getValue(
+            "otherFindings"
+          ) as string) ?? ""
+        }
+        onChangeText={(text) =>
+          updateField(
+            "otherFindings",
+            "Other Findings",
+            text
+          )
         }
         multiline
       />
@@ -500,25 +564,21 @@ const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },
-
   sectionTitle: {
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
   },
-
   label: {
     fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
     color: COLORS.text,
   },
-
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.xs,
   },
-
   group: {
     gap: SPACING.sm,
   },

@@ -1,39 +1,43 @@
-import { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import { useVisitStore } from "@/store/visitStore";
 
-export default function EndocrineSystem() {
-  const [selected, setSelected] =
-    useState<string[]>([]);
+export default function HematologySystem() {
+  const {
+    visit,
+    updateRelatedSystemField,
+  } = useVisitStore();
 
-  const [otherFinding, setOtherFinding] =
-    useState("");
+  const selected =
+    (visit.history.hpi.relatedSystemSymptoms.fields.find(
+      (f) => f.fieldId === "Hematology"
+    )?.value as string[]) ?? [];
+
+  const otherFinding =
+    (visit.history.hpi.relatedSystemSymptoms.fields.find(
+      (f) => f.fieldId === "HematologyOther"
+    )?.value as string) ?? "";
 
   const toggle = (item: string) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const updated = selected.includes(item)
+      ? selected.filter((x) => x !== item)
+      : [...selected, item];
+
+    updateRelatedSystemField(
+      "Hematology",
+      "Hematology",
+      updated
+    );
   };
 
   const Section = ({
@@ -53,12 +57,8 @@ export default function EndocrineSystem() {
           <AppChip
             key={item}
             label={item}
-            selected={selected.includes(
-              item
-            )}
-            onPress={() =>
-              toggle(item)
-            }
+            selected={selected.includes(item)}
+            onPress={() => toggle(item)}
           />
         ))}
       </View>
@@ -68,96 +68,74 @@ export default function EndocrineSystem() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
-        Endocrine
+        Hematology
       </Text>
-
-      <Section
-        title="Core"
+            <Section
+        title="Anemia"
         items={[
-          "Weight Gain",
-          "Appetite Change",
-        ]}
-      />
-
-      <Section
-        title="Diabetes"
-        items={[
-          "Polyuria",
-          "Polydipsia",
-          "Polyphagia",
-          "Blurred Vision",
-          "Recurrent Infections",
-        ]}
-      />
-
-      <Section
-        title="Hyperthyroidism"
-        items={[
-          "Heat Intolerance",
+          "Fatigue",
+          "Pallor",
+          "Dyspnea",
           "Palpitations",
-          "Sweating",
-          "Tremor",
-          "Anxiety",
-          "Irritability",
-          "Diarrhea",
+          "Dizziness",
+          "Syncope",
         ]}
       />
 
       <Section
-        title="Hypothyroidism"
-        items={[
-          "Cold Intolerance",
-          "Constipation",
-          "Dry Skin",
-          "Hair Loss",
-          "Hoarseness",
-          "Lethargy",
-        ]}
-      />
-
-      <Section
-        title="Pituitary"
-        items={[
-          "Headache",
-          "Visual Disturbance",
-          "Galactorrhea",
-        ]}
-      />
-
-      <Section
-        title="Adrenal"
+        title="Bleeding"
         items={[
           "Easy Bruising",
-          "Mood Changes",
-          "Hyperpigmentation",
-          "Postural Dizziness",
+          "Epistaxis",
+          "Bleeding Gums",
+          "Petechiae",
+          "Purpura",
+          "Heavy Menstrual Bleeding",
+          "Hemarthrosis",
         ]}
       />
 
       <Section
-        title="Female Reproductive"
+        title="Thrombosis"
         items={[
-          "Amenorrhea",
-          "Oligomenorrhea",
-          "Reduced Libido",
-          "Menorrhagia",
-          "Hirsutism",
+          "DVT",
+          "Pulmonary Embolism",
+          "Recurrent Miscarriage",
         ]}
       />
 
       <Section
-        title="Male Reproductive"
+        title="Infection"
         items={[
-          "Reduced Libido",
-          "Erectile Dysfunction",
+          "Recurrent Infections",
+          "Persistent Fever",
+          "Mouth Ulcers",
         ]}
       />
 
       <Section
-        title="Metabolic"
+        title="Malignancy"
         items={[
-          "Muscle Cramps",
-          "Confusion",
+          "Weight Loss",
+          "Night Sweats",
+          "Lymphadenopathy",
+          "Bone Pain",
+        ]}
+      />
+
+      <Section
+        title="Hemolysis"
+        items={[
+          "Jaundice",
+          "Dark Urine",
+        ]}
+      />
+
+      <Section
+        title="Transfusion History"
+        items={[
+          "Previous Blood Transfusion",
+          "Transfusion Reaction",
         ]}
       />
 
@@ -165,12 +143,17 @@ export default function EndocrineSystem() {
         label="Other Findings"
         placeholder="Add other findings..."
         value={otherFinding}
-        onChangeText={setOtherFinding}
+        onChangeText={(text) =>
+          updateRelatedSystemField(
+            "HematologyOther",
+            "Hematology Other",
+            text
+          )
+        }
         multiline
       />
     </View>
-  );
-}
+  );}
 
 const styles = StyleSheet.create({
   container: {

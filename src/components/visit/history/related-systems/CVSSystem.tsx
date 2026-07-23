@@ -1,39 +1,43 @@
-import { useState } from "react";
 import {
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import { useVisitStore } from "@/store/visitStore";
 
 export default function CVSSystem() {
-  const [selected, setSelected] =
-    useState<string[]>([]);
+  const {
+    visit,
+    updateRelatedSystemField,
+  } = useVisitStore();
 
-  const [otherFinding, setOtherFinding] =
-    useState("");
+  const selected =
+    (visit.history.hpi.relatedSystemSymptoms.fields.find(
+      (f) => f.fieldId === "CVS"
+    )?.value as string[]) ?? [];
+
+  const otherFinding =
+    (visit.history.hpi.relatedSystemSymptoms.fields.find(
+      (f) => f.fieldId === "CVSOther"
+    )?.value as string) ?? "";
 
   const toggle = (item: string) => {
-    if (selected.includes(item)) {
-      setSelected(
-        selected.filter(
-          (x) => x !== item
-        )
-      );
-    } else {
-      setSelected([
-        ...selected,
-        item,
-      ]);
-    }
+    const updated = selected.includes(item)
+      ? selected.filter((x) => x !== item)
+      : [...selected, item];
+
+    updateRelatedSystemField(
+      "CVS",
+      "CVS",
+      updated
+    );
   };
 
   const Section = ({
@@ -71,7 +75,7 @@ export default function CVSSystem() {
         CVS
       </Text>
 
-      <Section
+            <Section
         title="Cardiac Symptoms"
         items={[
           "Chest Pain",
@@ -113,16 +117,19 @@ export default function CVSSystem() {
         label="Other Findings"
         placeholder="Add other findings..."
         value={otherFinding}
-        onChangeText={
-          setOtherFinding
+        onChangeText={(text) =>
+          updateRelatedSystemField(
+            "CVSOther",
+            "CVS Other",
+            text
+          )
         }
         multiline
       />
     </View>
-  );
-}
+  );}
 
-const styles = StyleSheet.create({
+  const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,
   },

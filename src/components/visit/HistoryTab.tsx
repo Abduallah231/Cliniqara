@@ -1,40 +1,59 @@
-import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
+import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import {
-  StyleSheet,
-  View
-} from "react-native";
 
+import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 
-import { SelectionOption } from "@/models/selection";
-import { COLORS, SPACING, TYPOGRAPHY, } from "@/theme";
-import AllergyHistory from "./history/AllergyHistory";
-import ChiefComplaint from "./history/ChiefComplaint";
-import DrugHistory from "./history/DrugHistory";
-import FamilyHistory from "./history/FamilyHistory";
-import HPI from "./history/HPI";
-import PastHistory from "./history/PastHistory";
-import SocialHistory from "./history/SocialHistory";
+import { COLORS, SPACING } from "@/theme";
+
+import { useVisitStore } from "@/store/visitStore";
+import {
+  isPediatric,
+  shouldShowMenstrualHistory,
+} from "@/utils/patient";
+
 import VisitHeaderCard from "./VisitHeaderCard";
 
+import ChiefComplaint from "./history/ChiefComplaint";
+import HPI from "./history/HPI";
+import PastHistory from "./history/PastHistory";
+import PediatricHistory from "./history/PediatricHistory";
+import VaccinationHistory from "./history/VaccinationHistory";
+import MenstrualHistory from "./history/MenstrualHistory";
+import SocialHistory from "./history/SocialHistory";
+import DrugHistory from "./history/DrugHistory";
+import AllergyHistory from "./history/AllergyHistory";
+import FamilyHistory from "./history/FamilyHistory";
+
 export default function HistoryTab() {
-const [chiefComplaint, setChiefComplaint] =
-  useState<SelectionOption | undefined>();
+  const patient = useVisitStore(
+    (state) => state.visit.patient
+  );
+
+  const pediatric = isPediatric(
+    patient.age,
+    patient.ageUnit
+  );
+
+  const showMenstrual =
+    shouldShowMenstrualHistory(
+      patient.gender,
+      patient.age,
+      patient.ageUnit
+    );
 
   return (
     <AppKeyboardAwareScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
-        paddingBottom: 120,
         paddingTop: SPACING.xs,
+        paddingBottom: 120,
       }}
     >
-              <VisitHeaderCard
-  sectionTitle="Medical History"
-  icon="document-text-outline"
-/>
+      <VisitHeaderCard
+        sectionTitle="Medical History"
+        icon="document-text-outline"
+      />
 
       <CollapsibleSection
         title="Chief Complaint"
@@ -47,13 +66,57 @@ const [chiefComplaint, setChiefComplaint] =
         }
         defaultExpanded
       >
-        <ChiefComplaint
-          complaint={chiefComplaint}
-          setComplaint={setChiefComplaint}
-        />
+        <ChiefComplaint />
       </CollapsibleSection>
 
-      <HPI chiefComplaint={chiefComplaint} />
+      <HPI />
+
+      
+
+      {pediatric && (
+        <>
+          <CollapsibleSection
+            title="Pediatric History"
+            icon={
+              <Ionicons
+                name="happy-outline"
+                size={20}
+                color={COLORS.primary}
+              />
+            }
+          >
+            <PediatricHistory />
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            title="Vaccination History"
+            icon={
+              <Ionicons
+                name="shield-checkmark-outline"
+                size={20}
+                color={COLORS.primary}
+              />
+            }
+          >
+            <VaccinationHistory />
+          </CollapsibleSection>
+        </>
+      )}
+
+      {showMenstrual && (
+        <CollapsibleSection
+          title="Menstrual History"
+          icon={
+            <Ionicons
+              name="calendar-outline"
+              size={20}
+              color={COLORS.primary}
+            />
+          }
+        >
+          <MenstrualHistory />
+        </CollapsibleSection>
+      )}
 
       <CollapsibleSection
         title="Past History"
@@ -77,7 +140,6 @@ const [chiefComplaint, setChiefComplaint] =
             color={COLORS.primary}
           />
         }
-        
       >
         <SocialHistory />
       </CollapsibleSection>
@@ -124,35 +186,3 @@ const [chiefComplaint, setChiefComplaint] =
     </AppKeyboardAwareScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: SPACING.sm,
-    marginTop: SPACING.md,
-  },
-
-  sectionTitle: {
-    marginLeft: SPACING.sm,
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  patientName: {
-  fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  patientInfo: {
-    marginTop: SPACING.xs,
-    color: COLORS.secondaryText,
-    fontSize: TYPOGRAPHY.small,
-  },
-
-  patientCard: {
-  paddingVertical: SPACING.md,
-},
-});
