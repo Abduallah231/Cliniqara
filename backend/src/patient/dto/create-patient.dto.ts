@@ -6,6 +6,8 @@ import {
   IsString,
   MaxLength,
   Min,
+  ValidateIf,
+  IsNotEmpty,
 } from 'class-validator';
 
 import {
@@ -20,8 +22,13 @@ export class CreatePatientDto {
   @IsEnum(PatientIdentifierType)
   identifierType!: PatientIdentifierType;
 
-  @IsOptional()
+  @ValidateIf(
+    (o) =>
+      o.identifierType !==
+      PatientIdentifierType.UNKNOWN,
+  )
   @IsString()
+  @IsNotEmpty()
   @MaxLength(50)
   identifierNumber?: string;
 
@@ -29,16 +36,24 @@ export class CreatePatientDto {
   @MaxLength(200)
   fullName!: string;
 
-  @IsOptional()
+  @ValidateIf(
+    (o) =>
+      o.estimatedAgeValue === undefined,
+  )
   @Type(() => Date)
   dateOfBirth?: Date;
 
-  @IsOptional()
+  @ValidateIf(
+    (o) => !o.dateOfBirth,
+  )
   @IsInt()
   @Min(0)
   estimatedAgeValue?: number;
 
-  @IsOptional()
+  @ValidateIf(
+    (o) =>
+      o.estimatedAgeValue !== undefined,
+  )
   @IsEnum(AgeUnit)
   estimatedAgeUnit?: AgeUnit;
 

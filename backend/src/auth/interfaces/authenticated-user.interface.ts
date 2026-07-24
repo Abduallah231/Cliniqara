@@ -5,4 +5,6 @@ export interface AuthenticatedUser {
   email: string;
   accountType: AccountType;
   doctorLevel: DoctorLevel | null;
+  fullName: string;
+  isActive: boolean;
 }

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 enum AccountType {
@@ -377,178 +377,170 @@ enum InvestigationStatus {
 }
 
 model User {
-  id                      String               @id @default(uuid())
-  userCode                String               @unique
-  accountType             AccountType
-  doctorLevel             DoctorLevel?
+  id          String       @id @default(uuid())
+  userCode    String       @unique
+  accountType AccountType
+  doctorLevel DoctorLevel?
 
-  fullName                String
+  fullName String
 
-  email                   String               @unique
-  phone                   String               @unique
+  email String @unique
+  phone String @unique
 
-  passwordHash            String
+  passwordHash String
 
-  nationalId              String?
-  medicalLicenseNumber    String?              @unique
+  nationalId           String?
+  medicalLicenseNumber String? @unique
 
-  nationalIdImage         String?
-  medicalCardImage        String?
+  nationalIdImage  String?
+  medicalCardImage String?
 
-  emailVerified           Boolean              @default(false)
-  phoneVerified           Boolean              @default(false)
+  emailVerified Boolean @default(false)
+  phoneVerified Boolean @default(false)
 
-  verificationStatus      VerificationStatus   @default(PENDING)
+  verificationStatus VerificationStatus @default(PENDING)
 
-  isActive                Boolean              @default(true)
+  isActive Boolean @default(true)
 
-  lastLoginAt             DateTime?
+  lastLoginAt DateTime?
 
-  createdAt               DateTime             @default(now())
-  updatedAt               DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  createdClinics Clinic[] @relation("ClinicOwner")
-  clinicMemberships  ClinicMember[]
-  createdVisits Visit[] @relation("VisitCreatedBy")
+  createdClinics    Clinic[]       @relation("ClinicOwner")
+  clinicMemberships ClinicMember[]
+  createdVisits     Visit[]        @relation("VisitCreatedBy")
 
   doctorVisits Visit[] @relation("VisitDoctor")
 
   @@index([accountType])
   @@index([verificationStatus])
-
   @@map("users")
-  }
-  
+}
+
 model Clinic {
-  id                  String      @id @default(uuid())
+  id String @id @default(uuid())
 
-  clinicCode          String      @unique
+  clinicCode String @unique
 
-  name                String
+  name String
 
-  phone               String      
+  phone String
 
-  email               String?
+  email String?
 
-  address             String
+  address String
 
-  country             String
+  country String
 
-  city                String
+  city String
 
-  workingDays         ClinicWorkingDay[]
+  workingDays ClinicWorkingDay[]
 
-  isActive            Boolean     @default(true)
+  isActive Boolean @default(true)
 
-  createdById         String
+  createdById String
 
   createdBy User @relation("ClinicOwner", fields: [createdById], references: [id])
 
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  members             ClinicMember[]
-  patients            Patient[]
-  visits              Visit[]
+  members  ClinicMember[]
+  patients Patient[]
+  visits   Visit[]
 
   @@index([createdById])
   @@index([city])
-
   @@map("clinics")
 }
 
-
-
 model ClinicMember {
-  id                  String              @id @default(uuid())
+  id String @id @default(uuid())
 
-  clinicId            String
-  userId              String
+  clinicId String
+  userId   String
 
-  clinicRole          ClinicRole
-  status              MembershipStatus    @default(ACTIVE)
+  clinicRole ClinicRole
+  status     MembershipStatus @default(ACTIVE)
 
-  joinedAt            DateTime            @default(now())
-  removedAt           DateTime?
+  joinedAt  DateTime  @default(now())
+  removedAt DateTime?
 
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  clinic              Clinic              @relation(fields: [clinicId], references: [id])
-  user                User                @relation(fields: [userId], references: [id])
+  clinic Clinic @relation(fields: [clinicId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   @@unique([clinicId, userId])
-
   @@index([clinicId])
   @@index([userId])
   @@index([clinicRole])
-
   @@map("clinic_members")
 }
 
 model ClinicWorkingDay {
-  id         String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  clinicId   String
+  clinicId String
 
-  day        WeekDay
+  day WeekDay
 
-  startTime  String
+  startTime String
 
-  endTime    String
+  endTime String
 
-  isClosed   Boolean  @default(false)
+  isClosed Boolean @default(false)
 
-  clinic     Clinic   @relation(fields: [clinicId], references: [id])
+  clinic Clinic @relation(fields: [clinicId], references: [id])
 
   @@unique([clinicId, day])
-
   @@index([clinicId])
-
   @@map("clinic_working_days")
 }
 
 model Patient {
-  id                String      @id @default(uuid())
+  id String @id @default(uuid())
 
-  patientCode       String
+  patientCode String
 
-  clinicId          String
+  clinicId String
 
-  fullName          String
+  fullName String
 
-  identifierType    PatientIdentifierType
+  identifierType PatientIdentifierType
 
-  identifierNumber  String?
+  identifierNumber String?
 
-  dateOfBirth       DateTime?
+  dateOfBirth DateTime?
 
   estimatedAgeValue Int?
 
-  estimatedAgeUnit  AgeUnit?
+  estimatedAgeUnit AgeUnit?
 
-  maritalStatus     MaritalStatus
+  maritalStatus MaritalStatus
 
-  governorate       String?
+  governorate String?
 
-  city              String?
+  city String?
 
-  district          String?
+  district String?
 
-  streetAddress     String?
-  
-  gender            Gender
+  streetAddress String?
 
-  phone             String?
+  gender Gender
 
-  occupation        String?
+  phone String?
 
-  isActive          Boolean     @default(true)
+  occupation String?
 
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  isActive Boolean @default(true)
 
-  clinic            Clinic      @relation(fields: [clinicId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clinic Clinic @relation(fields: [clinicId], references: [id])
 
   // Past History
   chronicDiseases   PatientChronicDisease[]
@@ -559,18 +551,18 @@ model Patient {
   icuAdmissions     PatientICUAdmission[]
 
   // Drug History
-  medications            PatientMedication[]
-  medicationCompliance   MedicationCompliance?
-  selfMedication         Boolean @default(false)
-  selfMedicationDetails  String?
-  takesSupplements       Boolean @default(false)
-  supplementDetails      String?
-  
+  medications           PatientMedication[]
+  medicationCompliance  MedicationCompliance?
+  selfMedication        Boolean               @default(false)
+  selfMedicationDetails String?
+  takesSupplements      Boolean               @default(false)
+  supplementDetails     String?
+
   // Allergy History
   hasAllergy Boolean @default(false)
 
   allergies PatientAllergy[]
-  
+
   // Family History
   familyHistory PatientFamilyHistory[]
 
@@ -580,31 +572,29 @@ model Patient {
   // Vaccination History
   vaccinationHistory PatientVaccinationHistory?
 
-  visits            Visit[]
+  visits Visit[]
 
   @@unique([clinicId, patientCode])
-
   @@index([clinicId])
   @@index([fullName])
   @@index([phone])
-
   @@map("patients")
 }
 
 model Visit {
-  id          String    @id @default(uuid())
+  id String @id @default(uuid())
 
-  visitCode   String
+  visitCode String
 
-  secureCode  String    @unique @default(uuid())
+  secureCode String @unique @default(uuid())
 
-  patientId   String
+  patientId String
 
-  clinicId    String
+  clinicId String
 
   createdById String
 
-  doctorId    String
+  doctorId String
 
   visitStatus VisitStatus @default(OPEN)
 
@@ -613,10 +603,10 @@ model Visit {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  patient     Patient   @relation(fields: [patientId], references: [id])
-  clinic      Clinic    @relation(fields: [clinicId], references: [id])
-  createdBy User @relation("VisitCreatedBy", fields: [createdById], references: [id])
-  doctor User @relation("VisitDoctor", fields: [doctorId], references: [id])
+  patient   Patient @relation(fields: [patientId], references: [id])
+  clinic    Clinic  @relation(fields: [clinicId], references: [id])
+  createdBy User    @relation("VisitCreatedBy", fields: [createdById], references: [id])
+  doctor    User    @relation("VisitDoctor", fields: [doctorId], references: [id])
 
   chiefComplaint VisitChiefComplaint?
 
@@ -649,46 +639,22 @@ model Visit {
   prescription VisitPrescription?
 
   @@unique([clinicId, visitCode])
-
   @@index([patientId])
   @@index([doctorId])
   @@index([clinicId])
   @@index([visitDate])
-
   @@map("visits")
 }
 
 model PatientChronicDisease {
-  id          String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  patientId   String
+  patientId String
 
   diseaseCode String
   diseaseName String
 
-  notes       String?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-
-  @@index([patientId])
-  @@index([diseaseCode])
-
-  @@map("patient_chronic_diseases")
-}
-
-model PatientHospitalization {
-  id        String   @id @default(uuid())
-
-  patientId String
-
-  reason    String
-  date      DateTime?
-  duration  String?
-
-  notes     String?
+  notes String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -696,167 +662,180 @@ model PatientHospitalization {
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
+  @@index([diseaseCode])
+  @@map("patient_chronic_diseases")
+}
 
+model PatientHospitalization {
+  id String @id @default(uuid())
+
+  patientId String
+
+  reason   String
+  date     DateTime?
+  duration String?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
   @@map("patient_hospitalizations")
 }
 
 model PatientOperation {
-  id            String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  patientId     String
+  patientId String
 
   operationName String
   date          DateTime?
   indication    String?
 
-  notes         String?
+  notes String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
-
   @@map("patient_operations")
 }
 
 model PatientBloodTransfusion {
-  id         String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  patientId  String
+  patientId String
 
-  reason     String?
-  date       DateTime?
-  reaction   String?
+  reason   String?
+  date     DateTime?
+  reaction String?
 
-  notes      String?
+  notes String?
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
-
   @@map("patient_blood_transfusions")
 }
 
 model PatientMajorTrauma {
-  id            String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  patientId     String
+  patientId String
 
   traumaType    String
   date          DateTime?
   complications String?
 
-  notes         String?
+  notes String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
-
   @@map("patient_major_traumas")
 }
 
 model PatientICUAdmission {
-  id                 String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  patientId          String
+  patientId String
 
-  reason             String
-  date               DateTime?
-  duration           String?
-  ventilatorSupport  Boolean  @default(false)
+  reason            String
+  date              DateTime?
+  duration          String?
+  ventilatorSupport Boolean   @default(false)
 
-  notes              String?
+  notes String?
 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
-
   @@map("patient_icu_admissions")
 }
 
 model PatientMedication {
-  id            String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  patientId     String
+  patientId String
 
   medicationName String
-  dose          String?
+  dose           String?
 
   durationValue Int?
   durationUnit  DurationUnit?
 
-  notes         String?
+  notes String?
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
-
   @@map("patient_medications")
 }
 
 model PatientAllergy {
-  id          String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  patientId   String
+  patientId String
 
-  type        AllergyType
-  allergen    String
-  reaction    String?
-  severity    AllergySeverity
+  type     AllergyType
+  allergen String
+  reaction String?
+  severity AllergySeverity
 
-  notes       String?
+  notes String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
   @@index([type])
   @@index([allergen])
-
   @@map("patient_allergies")
 }
 
 model PatientFamilyHistory {
-  id             String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  patientId      String
+  patientId String
 
-  relation       FamilyRelation
-  otherRelation  String?
+  relation      FamilyRelation
+  otherRelation String?
 
-  diseases       String[]
+  diseases String[]
 
-  alive          Boolean
+  alive Boolean
 
-  ageAtDeath     Int?
-  causeOfDeath   String?
+  ageAtDeath   Int?
+  causeOfDeath String?
 
-  notes          String?
+  notes String?
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
   @@index([relation])
-
   @@map("patient_family_history")
 }
 
@@ -865,31 +844,31 @@ model PatientSocialHistory {
 
   patientId String @unique
 
-  smoking SmokingStatus?
-  cigarettesPerDay Int?
-  yearsSmoking Int?
+  smoking            SmokingStatus?
+  cigarettesPerDay   Int?
+  yearsSmoking       Int?
   yearsSinceQuitting Int?
 
-  alcohol AlcoholStatus?
-  alcoholFrequency AlcoholFrequency?
+  alcohol            AlcoholStatus?
+  alcoholFrequency   AlcoholFrequency?
   yearsSinceStopping Int?
 
-  livingCondition LivingCondition?
+  livingCondition      LivingCondition?
   livingConditionNotes String?
 
-  substanceUse String[]
+  substanceUse   String[]
   substanceNotes String?
 
-  physicalActivity PhysicalActivityLevel?
+  physicalActivity      PhysicalActivityLevel?
   physicalActivityNotes String?
 
   sleepDuration SleepDuration?
-  sleepNotes String?
+  sleepNotes    String?
 
-  socialSupport SocialSupportLevel?
+  socialSupport      SocialSupportLevel?
   socialSupportNotes String?
 
-  sexualHistory SexualHistoryStatus?
+  sexualHistory      SexualHistoryStatus?
   sexualHistoryNotes String?
 
   createdAt DateTime @default(now())
@@ -909,16 +888,16 @@ model PatientVaccinationHistory {
 
   missedVaccines String[]
 
-  partialReason VaccinationReason?
+  partialReason       VaccinationReason?
   partialOtherDetails String?
 
-  unvaccinatedReason VaccinationReason?
+  unvaccinatedReason       VaccinationReason?
   unvaccinatedOtherDetails String?
 
   previousReaction Boolean?
 
   reactionSeverity ReactionSeverity?
-  reactionDetails String?
+  reactionDetails  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -936,20 +915,20 @@ model VisitMenstrualHistory {
   ageAtMenarche Int?
 
   cycleRegularity CycleRegularity?
-  cycleLength Int?
+  cycleLength     Int?
 
   bleedingDuration BleedingDuration?
-  menstrualFlow MenstrualFlow?
+  menstrualFlow    MenstrualFlow?
 
   dysmenorrhea DysmenorrheaSeverity?
 
-  painStarts PainStart?
+  painStarts     PainStart?
   painRelievedBy String[]
 
   associatedSymptoms String[]
 
   intermenstrualBleeding Boolean?
-  postcoitalBleeding Boolean?
+  postcoitalBleeding     Boolean?
 
   pmsSymptoms String[]
 
@@ -972,28 +951,28 @@ model VisitPediatricHistory {
   // Prenatal History
   // =========================
 
-  antenatalCare AntenatalCare?
+  antenatalCare      AntenatalCare?
   antenatalCareNotes String?
 
-  maternalIllnesses String[]
+  maternalIllnesses    String[]
   maternalIllnessOther String?
 
-  pregnancyComplications String[]
+  pregnancyComplications      String[]
   pregnancyComplicationsOther String?
 
-  drugIntake Boolean?
+  drugIntake        Boolean?
   drugIntakeDetails String?
 
   smokingExposure SmokingExposure?
 
-  alcoholExposure Boolean?
+  alcoholExposure        Boolean?
   alcoholExposureDetails String?
 
   // =========================
   // Birth History
   // =========================
 
-  gestationalAge GestationalAge?
+  gestationalAge   GestationalAge?
   gestationalWeeks Int?
 
   deliveryMode DeliveryMode?
@@ -1001,10 +980,10 @@ model VisitPediatricHistory {
   birthWeight Int?
 
   nicuAdmission Boolean?
-  nicuReason String?
-  nicuDuration Int?
+  nicuReason    String?
+  nicuDuration  Int?
 
-  birthComplications String[]
+  birthComplications       String[]
   birthComplicationDetails String?
 
   // =========================
@@ -1013,7 +992,7 @@ model VisitPediatricHistory {
 
   neonatalJaundice Boolean?
 
-  phototherapy Boolean?
+  phototherapy        Boolean?
   exchangeTransfusion Boolean?
 
   neonatalSeizures Boolean?
@@ -1030,7 +1009,7 @@ model VisitPediatricHistory {
 
   development DevelopmentStatus?
 
-  delayType DelayType?
+  delayType    DelayType?
   delayDetails String?
 
   // =========================
@@ -1041,10 +1020,10 @@ model VisitPediatricHistory {
 
   grade String?
 
-  schoolPerformance SchoolPerformance?
+  schoolPerformance        SchoolPerformance?
   schoolPerformanceDetails String?
 
-  schoolAttendance SchoolAttendance?
+  schoolAttendance       SchoolAttendance?
   schoolAttendanceReason String?
 
   createdAt DateTime @default(now())
@@ -1055,12 +1034,11 @@ model VisitPediatricHistory {
   @@map("visit_pediatric_history")
 }
 
-  // =========================
-  // Chief Complaint
-  // =========================
+// =========================
+// Chief Complaint
+// =========================
 
 model VisitChiefComplaint {
-
   id String @id @default(uuid())
 
   visitId String @unique
@@ -1078,23 +1056,17 @@ model VisitChiefComplaint {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit
-    @relation(
-      fields: [visitId],
-      references: [id],
-      onDelete: Cascade
-    )
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
-  @@map("visit_chief_complaints")
   @@index([complaintCode])
+  @@map("visit_chief_complaints")
 }
 
-  // =========================
-  // Complaint Analysis
-  // =========================
+// =========================
+// Complaint Analysis
+// =========================
 
 model VisitComplaintAnalysis {
-
   id String @id @default(uuid())
 
   chiefComplaintId String @unique
@@ -1108,24 +1080,17 @@ model VisitComplaintAnalysis {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chiefComplaint VisitChiefComplaint
-    @relation(
-      fields: [chiefComplaintId],
-      references: [id],
-      onDelete: Cascade
-    )
-
-  @@map("visit_complaint_analysis")
+  chiefComplaint VisitChiefComplaint @relation(fields: [chiefComplaintId], references: [id], onDelete: Cascade)
 
   @@index([templateCode])
+  @@map("visit_complaint_analysis")
 }
 
-  // =========================
-  // Related System
-  // =========================
+// =========================
+// Related System
+// =========================
 
 model VisitRelatedSystem {
-
   id String @id @default(uuid())
 
   visitId String
@@ -1136,18 +1101,14 @@ model VisitRelatedSystem {
 
   otherFinding String?
 
-  visit Visit
-    @relation(fields:[visitId],references:[id],onDelete:Cascade)
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@unique([visitId, system])
-
   @@index([visitId])
-
   @@map("visit_related_systems")
 }
 
 model VisitSystematicReview {
-
   id String @id @default(uuid())
 
   visitId String
@@ -1156,62 +1117,48 @@ model VisitSystematicReview {
 
   symptoms String[]
 
-  visit Visit
-    @relation(
-      fields: [visitId],
-      references: [id],
-      onDelete: Cascade
-    )
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@unique([visitId, system])
-
   @@index([visitId])
-
   @@map("visit_systematic_review")
 }
 
 model VisitVitalSigns {
-
   id String @id @default(uuid())
 
   visitId String @unique
 
-  systolicBP Int?
+  systolicBP  Int?
   diastolicBP Int?
 
-  heartRate Int?
+  heartRate   Int?
   pulseRhythm PulseRhythm?
 
   respiratoryRate Int?
 
-  spo2 Int?
+  spo2         Int?
   oxygenSource OxygenSource?
 
-  temperature Decimal? @db.Decimal(4,1)
+  temperature      Decimal?          @db.Decimal(4, 1)
   temperatureRoute TemperatureRoute?
 
   bloodGlucose Int?
 
-  weight Decimal? @db.Decimal(5,2)
-  height Decimal? @db.Decimal(5,2)
+  weight Decimal? @db.Decimal(5, 2)
+  height Decimal? @db.Decimal(5, 2)
 
-  bmi Decimal? @db.Decimal(4,1)
+  bmi Decimal? @db.Decimal(4, 1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit
-    @relation(
-      fields: [visitId],
-      references: [id],
-      onDelete: Cascade
-    )
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@map("visit_vital_signs")
 }
 
 model VisitGeneralInspection {
-
   id String @id @default(uuid())
 
   visitId String @unique
@@ -1233,18 +1180,12 @@ model VisitGeneralInspection {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit
-    @relation(
-      fields: [visitId],
-      references: [id],
-      onDelete: Cascade
-    )
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@map("visit_general_inspection")
 }
 
 model VisitRegionalExamination {
-
   id String @id @default(uuid())
 
   visitId String
@@ -1258,22 +1199,14 @@ model VisitRegionalExamination {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit
-    @relation(
-      fields: [visitId],
-      references: [id],
-      onDelete: Cascade
-    )
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@unique([visitId, area])
-
   @@index([visitId])
-
   @@map("visit_regional_examinations")
 }
 
 model VisitSystemExamination {
-
   id String @id @default(uuid())
 
   visitId String
@@ -1285,22 +1218,14 @@ model VisitSystemExamination {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit
-    @relation(
-      fields: [visitId],
-      references: [id],
-      onDelete: Cascade
-    )
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@unique([visitId, system])
-
   @@index([visitId])
-
   @@map("visit_system_examinations")
 }
 
 model VisitDiagnosis {
-
   id String @id @default(uuid())
 
   visitId String @unique
@@ -1313,16 +1238,13 @@ model VisitDiagnosis {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit
-    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@index([primaryDiagnosisCode])
-
   @@map("visit_diagnoses")
 }
 
 model VisitInvestigation {
-
   id String @id @default(uuid())
 
   visitId String
@@ -1337,24 +1259,20 @@ model VisitInvestigation {
 
   notes String?
 
-  requestedAt DateTime @default(now())
+  requestedAt DateTime  @default(now())
   completedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit
-    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@index([visitId])
-
   @@index([status])
-
   @@map("visit_investigations")
 }
 
 model VisitProcedure {
-
   id String @id @default(uuid())
 
   visitId String
@@ -1364,16 +1282,13 @@ model VisitProcedure {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit
-    @relation(fields:[visitId],references:[id],onDelete:Cascade)
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@index([visitId])
-
   @@map("visit_procedures")
 }
 
 model VisitReferral {
-
   id String @id @default(uuid())
 
   visitId String
@@ -1383,16 +1298,13 @@ model VisitReferral {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit
-    @relation(fields:[visitId],references:[id],onDelete:Cascade)
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@index([visitId])
-
   @@map("visit_referrals")
 }
 
 model VisitPrescription {
-
   id String @id @default(uuid())
 
   visitId String @unique
@@ -1406,8 +1318,7 @@ model VisitPrescription {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit
-    @relation(fields:[visitId], references:[id], onDelete:Cascade)
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   medications VisitPrescriptionMedication[]
 
@@ -1415,7 +1326,6 @@ model VisitPrescription {
 }
 
 model VisitPrescriptionMedication {
-
   id String @id @default(uuid())
 
   prescriptionId String
@@ -1429,10 +1339,8 @@ model VisitPrescriptionMedication {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  prescription VisitPrescription
-    @relation(fields:[prescriptionId], references:[id], onDelete:Cascade)
+  prescription VisitPrescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
 
   @@index([prescriptionId])
-
   @@map("visit_prescription_medications")
 }

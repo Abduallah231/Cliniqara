@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { UpdateClinicDto } from '../dto/update-clinic.dto';
+import { AccountType } from '@prisma/client';
 @Controller('clinics')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ClinicController {
@@ -22,7 +23,7 @@ export class ClinicController {
   ) {}
 
   @Post()
-  @Roles('DOCTOR')
+  @Roles(AccountType.DOCTOR)
   create(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateClinicDto,

@@ -1,9 +1,11 @@
 import {
+  ArrayMinSize,
   IsArray,
   IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsPhoneNumber,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -26,8 +28,7 @@ export class CreateClinicDto {
   @IsNotEmpty()
   address!: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsPhoneNumber('EG')
   phone!: string;
 
   @IsOptional()
@@ -35,6 +36,7 @@ export class CreateClinicDto {
   email?: string;
 
   @IsArray()
+  @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => WorkingDayDto)
   workingDays!: WorkingDayDto[];

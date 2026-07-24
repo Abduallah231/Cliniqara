@@ -45,11 +45,18 @@ export class PatientService {
     // TODO (PC)
     // Parse National ID & Calculate DOB
 
+    // TODO:
+    // Parse National ID
+    // Calculate DOB
+    // Calculate Gender
+    // Generate Patient Display Code
+    // Generate Secure Patient Code
+
     return this.prisma.patient.create({
       data: {
         clinicId: membership.clinicId,
 
-        patientCode: '',
+        patientCode: crypto.randomUUID(),
 
         ...dto,
       },

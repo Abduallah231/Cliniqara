@@ -5,13 +5,13 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
-
+import { AccountType } from '@prisma/client';
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const roles = this.reflector.getAllAndOverride<string[]>(
+    const roles = this.reflector.getAllAndOverride<AccountType[]>(
       ROLES_KEY,
       [
         context.getHandler(),
