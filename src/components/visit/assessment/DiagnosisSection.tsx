@@ -1,11 +1,4 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
 import AppDropdown from "@/components/common/AppDropdown";
-import DiagnosisCard from "./DiagnosisCard";
 import diagnoses from "@/data/diagnoses";
 import { useVisitStore } from "@/store/visitStore";
 import {
@@ -15,6 +8,12 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import {
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import DiagnosisCard from "./DiagnosisCard";
 
 export default function DiagnosisSection() {
   const diagnosis = useVisitStore(
@@ -40,51 +39,27 @@ export default function DiagnosisSection() {
         state.removeDifferentialDiagnosis
     );
 
-  const diagnosisOptions =
-    diagnoses.map((item) => ({
-      id: item,
-      label: item,
-    }));
+  const diagnosisOptions = diagnoses.map((item) => ({
+    id: item.name,
+    label: item.name,
+  }));
 
-  const primaryOptions =
-    diagnosisOptions.filter(
-      (item) =>
-        item.label !==
-        diagnosis.primaryDiagnosis
-          ?.diagnosis
-    );
+  const primaryOptions = diagnosisOptions.filter(
+    (item) =>
+      item.label !== diagnosis.primaryDiagnosis?.diagnosis
+  );
 
   const differentialOptions =
     diagnosisOptions.filter(
       (item) =>
         !diagnosis.differentialDiagnoses.some(
           (d) =>
-            d.diagnosis ===
-            item.label
+            d.diagnosis === item.label
         )
     );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        AI Suggested Diagnoses
-      </Text>
-
-      <View style={styles.aiCard}>
-        <Ionicons
-          name="sparkles-outline"
-          size={22}
-          color={COLORS.primary}
-        />
-
-        <Text style={styles.emptyText}>
-          {diagnosis
-            .aiSuggestedDiagnoses
-            .length === 0
-            ? "No AI suggestions yet"
-            : `${diagnosis.aiSuggestedDiagnoses.length} AI suggestions`}
-        </Text>
-      </View>
 
       <Text style={styles.title}>
         Primary Diagnosis
@@ -95,19 +70,15 @@ export default function DiagnosisSection() {
         selected={
           diagnosis.primaryDiagnosis
             ? {
-                id: diagnosis
-                  .primaryDiagnosis
-                  .diagnosis,
-                label:
-                  diagnosis
-                    .primaryDiagnosis
-                    .diagnosis,
+                id: diagnosis.primaryDiagnosis.diagnosis,
+                label: diagnosis.primaryDiagnosis.diagnosis,
               }
             : undefined
         }
         options={primaryOptions}
         onChange={(item) =>
           updatePrimaryDiagnosis({
+            code: item.id,
             diagnosis: item.label,
           })
         }
@@ -142,6 +113,7 @@ export default function DiagnosisSection() {
         }
         onChange={(item) =>
           addDifferentialDiagnosis({
+            code: item.id,
             diagnosis: item.label,
           })
         }

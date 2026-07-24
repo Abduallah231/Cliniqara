@@ -58,27 +58,7 @@ export default function InvestigationSection({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        AI Suggested
-        Investigations
-      </Text>
-
-      <View style={styles.aiCard}>
-        <Ionicons
-          name="sparkles-outline"
-          size={22}
-          color={COLORS.primary}
-        />
-
-        <Text style={styles.emptyText}>
-          {investigationsState
-            .aiSuggestedInvestigations
-            .length === 0
-            ? "No AI suggestions yet"
-            : `${investigationsState.aiSuggestedInvestigations.length} AI suggestions`}
-        </Text>
-      </View>
-
+      
       <Text style={styles.title}>
         Search Investigation
       </Text>

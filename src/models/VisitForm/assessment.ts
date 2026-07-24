@@ -21,6 +21,7 @@ export interface DynamicFieldValue {
 // ======================================================
 
 export interface Diagnosis {
+  code: string;
   diagnosis: string;
 }
 

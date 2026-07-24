@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url = env("DATABASE_URL")
 }
 
 enum AccountType {
@@ -281,35 +282,98 @@ enum DurationUnit {
 }
 
 enum SystemType {
-
   GENERAL
-
   CVS
-
   CHEST
-
   GIT
-
   RENAL
-
   NEURO
-
   MUSCULOSKELETAL
-
   ENDOCRINE
-
   HEMATOLOGY
-
   SKIN
-
   GYNECOLOGY
-
   OBSTETRIC
-
   ENT
-
   OPHTHALMOLOGY
+}
 
+enum PulseRhythm {
+  REGULAR
+  IRREGULAR
+}
+
+enum OxygenSource {
+  ROOM_AIR
+  OXYGEN
+}
+
+enum TemperatureRoute {
+  ORAL
+  AXILLARY
+  TYMPANIC
+  TEMPORAL
+  RECTAL
+}
+
+enum ConsciousnessLevel {
+  CONSCIOUS
+  DROWSY
+  CONFUSED
+  COMATOSE
+}
+
+enum GeneralAppearance {
+  NORMAL
+  ILL
+  TOXIC
+  DISTRESSED
+}
+
+enum HydrationStatus {
+  NORMAL
+  MILD
+  MODERATE
+  SEVERE
+}
+
+enum BodyBuild {
+  AVERAGE
+  THIN
+  OBESE
+  ATHLETIC
+}
+
+enum NourishmentStatus {
+  WELL_NOURISHED
+  MALNOURISHED
+}
+
+enum RegionalExaminationArea {
+  HEAD
+  NECK
+  UPPER_LIMB
+  LOWER_LIMB
+}
+
+enum ExaminationSystem {
+  ABDOMEN
+  CHEST
+  CVS
+  ENDOCRINE
+  ENT
+  GYNECOLOGY
+  MUSCULOSKELETAL
+  NEUROLOGY
+  OBSTETRIC
+  OPHTHALMOLOGY
+  SKIN
+}
+
+enum InvestigationStatus {
+  REQUESTED
+  COMPLETED
+  CANCELLED
 }
 
 model User {
@@ -345,7 +409,9 @@ model User {
 
   createdClinics Clinic[] @relation("ClinicOwner")
   clinicMemberships  ClinicMember[]
-  visits Visit[]
+  createdVisits Visit[] @relation("VisitCreatedBy")
+
+  doctorVisits Visit[] @relation("VisitDoctor")
 
   @@index([accountType])
   @@index([verificationStatus])
@@ -360,7 +426,7 @@ model Clinic {
 
   name                String
 
-  phone               String      @unique
+  phone               String      
 
   email               String?
 
@@ -477,6 +543,8 @@ model Patient {
 
   occupation        String?
 
+  isActive          Boolean     @default(true)
+
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
@@ -524,17 +592,19 @@ model Patient {
 }
 
 model Visit {
-  id String @id @default(uuid())
+  id          String    @id @default(uuid())
 
-  visitCode String
+  visitCode   String
 
-  secureCode String @unique
+  secureCode  String    @unique @default(uuid())
 
-  patientId String
+  patientId   String
 
-  clinicId String
+  clinicId    String
 
   createdById String
+
+  doctorId    String
 
   visitStatus VisitStatus @default(OPEN)
 
@@ -545,7 +615,8 @@ model Visit {
 
   patient     Patient   @relation(fields: [patientId], references: [id])
   clinic      Clinic    @relation(fields: [clinicId], references: [id])
-  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdBy User @relation("VisitCreatedBy", fields: [createdById], references: [id])
+  doctor User @relation("VisitDoctor", fields: [doctorId], references: [id])
 
   chiefComplaint VisitChiefComplaint?
 
@@ -559,9 +630,28 @@ model Visit {
   // Pediatric History
   pediatricHistory VisitPediatricHistory?
 
+  vitalSigns VisitVitalSigns?
+
+  generalInspection VisitGeneralInspection?
+
+  regionalExaminations VisitRegionalExamination[]
+
+  systemExaminations VisitSystemExamination[]
+
+  diagnosis VisitDiagnosis?
+
+  investigations VisitInvestigation[]
+
+  procedures VisitProcedure[]
+
+  referrals VisitReferral[]
+
+  prescription VisitPrescription?
+
   @@unique([clinicId, visitCode])
 
   @@index([patientId])
+  @@index([doctorId])
   @@index([clinicId])
   @@index([visitDate])
 
@@ -1078,4 +1168,271 @@ model VisitSystematicReview {
   @@index([visitId])
 
   @@map("visit_systematic_review")
+}
+
+model VisitVitalSigns {
+
+  id String @id @default(uuid())
+
+  visitId String @unique
+
+  systolicBP Int?
+  diastolicBP Int?
+
+  heartRate Int?
+  pulseRhythm PulseRhythm?
+
+  respiratoryRate Int?
+
+  spo2 Int?
+  oxygenSource OxygenSource?
+
+  temperature Decimal? @db.Decimal(4,1)
+  temperatureRoute TemperatureRoute?
+
+  bloodGlucose Int?
+
+  weight Decimal? @db.Decimal(5,2)
+  height Decimal? @db.Decimal(5,2)
+
+  bmi Decimal? @db.Decimal(4,1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit
+    @relation(
+      fields: [visitId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  @@map("visit_vital_signs")
+}
+
+model VisitGeneralInspection {
+
+  id String @id @default(uuid())
+
+  visitId String @unique
+
+  consciousness ConsciousnessLevel?
+
+  appearance GeneralAppearance?
+
+  hydration HydrationStatus?
+
+  bodyBuild BodyBuild?
+
+  nourishment NourishmentStatus?
+
+  findings String[]
+
+  edemaLocations String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit
+    @relation(
+      fields: [visitId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  @@map("visit_general_inspection")
+}
+
+model VisitRegionalExamination {
+
+  id String @id @default(uuid())
+
+  visitId String
+
+  area RegionalExaminationArea
+
+  findings String[]
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit
+    @relation(
+      fields: [visitId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  @@unique([visitId, area])
+
+  @@index([visitId])
+
+  @@map("visit_regional_examinations")
+}
+
+model VisitSystemExamination {
+
+  id String @id @default(uuid())
+
+  visitId String
+
+  system ExaminationSystem
+
+  fields Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit
+    @relation(
+      fields: [visitId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  @@unique([visitId, system])
+
+  @@index([visitId])
+
+  @@map("visit_system_examinations")
+}
+
+model VisitDiagnosis {
+
+  id String @id @default(uuid())
+
+  visitId String @unique
+
+  primaryDiagnosisCode String?
+  primaryDiagnosisName String?
+
+  differentialDiagnoses Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit
+    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@index([primaryDiagnosisCode])
+
+  @@map("visit_diagnoses")
+}
+
+model VisitInvestigation {
+
+  id String @id @default(uuid())
+
+  visitId String
+
+  code String?
+
+  name String
+
+  status InvestigationStatus @default(REQUESTED)
+
+  result Json?
+
+  notes String?
+
+  requestedAt DateTime @default(now())
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit
+    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@index([visitId])
+
+  @@index([status])
+
+  @@map("visit_investigations")
+}
+
+model VisitProcedure {
+
+  id String @id @default(uuid())
+
+  visitId String
+
+  details String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit
+    @relation(fields:[visitId],references:[id],onDelete:Cascade)
+
+  @@index([visitId])
+
+  @@map("visit_procedures")
+}
+
+model VisitReferral {
+
+  id String @id @default(uuid())
+
+  visitId String
+
+  details String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit
+    @relation(fields:[visitId],references:[id],onDelete:Cascade)
+
+  @@index([visitId])
+
+  @@map("visit_referrals")
+}
+
+model VisitPrescription {
+
+  id String @id @default(uuid())
+
+  visitId String @unique
+
+  advice String?
+
+  notes String?
+
+  followUp String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit
+    @relation(fields:[visitId], references:[id], onDelete:Cascade)
+
+  medications VisitPrescriptionMedication[]
+
+  @@map("visit_prescriptions")
+}
+
+model VisitPrescriptionMedication {
+
+  id String @id @default(uuid())
+
+  prescriptionId String
+
+  medication String
+
+  instructions String?
+
+  sortOrder Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  prescription VisitPrescription
+    @relation(fields:[prescriptionId], references:[id], onDelete:Cascade)
+
+  @@index([prescriptionId])
+
+  @@map("visit_prescription_medications")
 }

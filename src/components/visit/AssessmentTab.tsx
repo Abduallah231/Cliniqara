@@ -15,6 +15,7 @@ import {
   Text,
   View,
 } from "react-native";
+import AISuggestionsSection from "./assessment/AISuggestionsSection";
 import DiagnosisSection from "./assessment/DiagnosisSection";
 import InvestigationResultsScreen from "./assessment/InvestigationResultsScreen";
 import InvestigationSection from "./assessment/InvestigationSection";
@@ -91,6 +92,19 @@ export default function AssessmentTab() {
           patient care.
         </Text>
       </View>
+
+      <CollapsibleSection
+        title="AI Suggestions"
+        icon={
+          <Ionicons
+            name="sparkles-outline"
+            size={20}
+            color={COLORS.primary}
+          />
+        }
+      >
+        <AISuggestionsSection />
+      </CollapsibleSection>
 
       <CollapsibleSection
         title="Diagnosis"
