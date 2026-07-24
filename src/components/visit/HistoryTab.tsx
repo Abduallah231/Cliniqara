@@ -131,18 +131,20 @@ export default function HistoryTab() {
         <PastHistory />
       </CollapsibleSection>
 
-      <CollapsibleSection
-        title="Social History"
-        icon={
-          <Ionicons
-            name="people-outline"
-            size={20}
-            color={COLORS.primary}
-          />
-        }
-      >
-        <SocialHistory />
-      </CollapsibleSection>
+      {!pediatric && (
+        <CollapsibleSection
+          title="Social History"
+          icon={
+            <Ionicons
+              name="people-outline"
+              size={20}
+              color={COLORS.primary}
+            />
+          }
+        >
+          <SocialHistory />
+        </CollapsibleSection>
+      )}
 
       <CollapsibleSection
         title="Drug History"

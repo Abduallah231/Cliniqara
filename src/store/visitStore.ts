@@ -8,6 +8,12 @@ import {
   PediatricHistory,
   Medication,
   Allergy,
+  Hospitalization,
+  Operation,
+  BloodTransfusion,
+  MajorTrauma,
+  ICUAdmission,
+  FamilyDisease,
 } from "@/models/VisitForm/history";
 import {
   VitalSigns,
@@ -87,12 +93,97 @@ updatePastHistoryField(
   unit?: string
 ): void;
 
-updateFamilyHistoryField(
-  fieldId: string,
-  fieldLabel: string,
-  value: DynamicValue,
-  unit?: string
-): void;
+// ======================================================
+// Past History Events
+// ======================================================
+
+addHospitalization: (
+  hospitalization: Hospitalization
+) => void;
+
+updateHospitalization: (
+  id: string,
+  updates: Partial<Hospitalization>
+) => void;
+
+removeHospitalization: (
+  id: string
+) => void;
+
+addOperation: (
+  operation: Operation
+) => void;
+
+updateOperation: (
+  id: string,
+  updates: Partial<Operation>
+) => void;
+
+removeOperation: (
+  id: string
+) => void;
+
+addBloodTransfusion: (
+  transfusion: BloodTransfusion
+) => void;
+
+updateBloodTransfusion: (
+  id: string,
+  updates: Partial<BloodTransfusion>
+) => void;
+
+removeBloodTransfusion: (
+  id: string
+) => void;
+
+addMajorTrauma: (
+  trauma: MajorTrauma
+) => void;
+
+updateMajorTrauma: (
+  id: string,
+  updates: Partial<MajorTrauma>
+) => void;
+
+removeMajorTrauma: (
+  id: string
+) => void;
+
+addICUAdmission: (
+  admission: ICUAdmission
+) => void;
+
+updateICUAdmission: (
+  id: string,
+  updates: Partial<ICUAdmission>
+) => void;
+
+removeICUAdmission: (
+  id: string
+) => void;
+
+
+// ======================================================
+// Family History
+// ======================================================
+
+
+addFamilyDisease: (
+  disease: FamilyDisease
+) => void;
+
+updateFamilyDisease: (
+  id: string,
+  updates: Partial<FamilyDisease>
+) => void;
+
+removeFamilyDisease: (
+  id: string
+) => void;
+
+// ======================================================
+// Medication History
+// ======================================================
 
 addMedication: (medication: Medication) => void;
 
@@ -123,6 +214,10 @@ updateSupplementDetails: (
   value: string
 ) => void;
 
+// ======================================================
+// Allergy History
+// ======================================================
+
 updateHasAllergy: (
     value: string
 ) => void;
@@ -140,6 +235,10 @@ removeAllergy: (
     id: string
 ) => void;
 
+// ======================================================
+// Vital Signs
+// ======================================================
+
 updateVitalSigns: (
   updates: Partial<VitalSigns>
 ) => void;
@@ -148,6 +247,10 @@ updateBloodPressure: (
   systolic: string,
   diastolic: string
 ) => void;
+
+// ======================================================
+// General Inspection
+// ======================================================
 
 updateGeneralInspection: (
   updates: Partial<GeneralInspection>
@@ -745,6 +848,7 @@ export const useVisitStore =
             history: {
               ...state.visit.history,
               pastHistory: {
+                ...state.visit.history.pastHistory,
                 fields: updatedFields,
               },
             },
@@ -752,53 +856,295 @@ export const useVisitStore =
         };
       }),
 
-    updateFamilyHistoryField: (
-        fieldId,
-        fieldLabel,
-        value,
-        unit
-      ) =>
-        set((state) => {
-          const fields =
-            state.visit.history.familyHistory.fields;
+      addHospitalization: (hospitalization) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          hospitalizations: [
+            ...state.visit.history.pastHistory.hospitalizations,
+            hospitalization,
+          ],
+        },
+      },
+    },
+  })),
 
-          const index = fields.findIndex(
-            (field) => field.fieldId === fieldId
-          );
+updateHospitalization: (id, updates) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          hospitalizations:
+            state.visit.history.pastHistory.hospitalizations.map(
+              (item) =>
+                item.id === id
+                  ? {
+                      ...item,
+                      ...updates,
+                    }
+                  : item
+            ),
+        },
+      },
+    },
+  })),
 
-          let updatedFields;
+removeHospitalization: (id) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          hospitalizations:
+            state.visit.history.pastHistory.hospitalizations.filter(
+              (item) => item.id !== id
+            ),
+        },
+      },
+    },
+  })),
 
-          if (index >= 0) {
-            updatedFields = [...fields];
-            updatedFields[index] = {
-              ...updatedFields[index],
-              value,
-              unit,
-            };
-          } else {
-            updatedFields = [
-              ...fields,
-              {
-                fieldId,
-                fieldLabel,
-                value,
-                unit,
-              },
-            ];
-          }
+  addOperation: (operation) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          operations: [
+            ...state.visit.history.pastHistory.operations,
+            operation,
+          ],
+        },
+      },
+    },
+  })),
 
-          return {
-            visit: {
-              ...state.visit,
-              history: {
-                ...state.visit.history,
-                familyHistory: {
-                  fields: updatedFields,
-                },
-              },
-            },
-          };
-        }),
+updateOperation: (id, updates) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          operations:
+            state.visit.history.pastHistory.operations.map(
+              (item) =>
+                item.id === id
+                  ? {
+                      ...item,
+                      ...updates,
+                    }
+                  : item
+            ),
+        },
+      },
+    },
+  })),
+
+removeOperation: (id) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          operations:
+            state.visit.history.pastHistory.operations.filter(
+              (item) => item.id !== id
+            ),
+        },
+      },
+    },
+  })),
+
+  addBloodTransfusion: (transfusion) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          bloodTransfusions: [
+            ...state.visit.history.pastHistory
+              .bloodTransfusions,
+            transfusion,
+          ],
+        },
+      },
+    },
+  })),
+
+updateBloodTransfusion: (id, updates) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          bloodTransfusions:
+            state.visit.history.pastHistory.bloodTransfusions.map(
+              (item) =>
+                item.id === id
+                  ? {
+                      ...item,
+                      ...updates,
+                    }
+                  : item
+            ),
+        },
+      },
+    },
+  })),
+
+removeBloodTransfusion: (id) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          bloodTransfusions:
+            state.visit.history.pastHistory.bloodTransfusions.filter(
+              (item) => item.id !== id
+            ),
+        },
+      },
+    },
+  })),
+
+  addMajorTrauma: (trauma) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          majorTraumas: [
+            ...state.visit.history.pastHistory
+              .majorTraumas,
+            trauma,
+          ],
+        },
+      },
+    },
+  })),
+
+updateMajorTrauma: (id, updates) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          majorTraumas:
+            state.visit.history.pastHistory.majorTraumas.map(
+              (item) =>
+                item.id === id
+                  ? {
+                      ...item,
+                      ...updates,
+                    }
+                  : item
+            ),
+        },
+      },
+    },
+  })),
+
+removeMajorTrauma: (id) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          majorTraumas:
+            state.visit.history.pastHistory.majorTraumas.filter(
+              (item) => item.id !== id
+            ),
+        },
+      },
+    },
+  })),
+
+  addICUAdmission: (admission) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          icuAdmissions: [
+            ...state.visit.history.pastHistory
+              .icuAdmissions,
+            admission,
+          ],
+        },
+      },
+    },
+  })),
+
+updateICUAdmission: (id, updates) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          icuAdmissions:
+            state.visit.history.pastHistory.icuAdmissions.map(
+              (item) =>
+                item.id === id
+                  ? {
+                      ...item,
+                      ...updates,
+                    }
+                  : item
+            ),
+        },
+      },
+    },
+  })),
+
+removeICUAdmission: (id) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        pastHistory: {
+          ...state.visit.history.pastHistory,
+          icuAdmissions:
+            state.visit.history.pastHistory.icuAdmissions.filter(
+              (item) => item.id !== id
+            ),
+        },
+      },
+    },
+  })),
+
+    
 
     addMedication: (medication) =>
       set((state) => ({
@@ -1015,6 +1361,67 @@ export const useVisitStore =
             },
         },
     })),
+
+    addFamilyDisease: (disease) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        familyHistory: {
+          ...state.visit.history.familyHistory,
+          familyDiseases: [
+            ...state.visit.history.familyHistory
+              .familyDiseases,
+            disease,
+          ],
+        },
+      },
+    },
+  })),
+
+  updateFamilyDisease: (
+  id,
+  updates
+) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        familyHistory: {
+          ...state.visit.history.familyHistory,
+          familyDiseases:
+            state.visit.history.familyHistory.familyDiseases.map(
+              (item) =>
+                item.id === id
+                  ? {
+                      ...item,
+                      ...updates,
+                    }
+                  : item
+            ),
+        },
+      },
+    },
+  })),
+
+  removeFamilyDisease: (id) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        familyHistory: {
+          ...state.visit.history.familyHistory,
+          familyDiseases:
+            state.visit.history.familyHistory.familyDiseases.filter(
+              (item) => item.id !== id
+            ),
+        },
+      },
+    },
+  })),
 
         updateVitalSigns: (updates) =>
       set((state) => {

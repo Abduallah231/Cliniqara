@@ -98,6 +98,56 @@ export interface MenstrualHistory {
 
 export interface PastHistory {
   fields: DynamicFieldValue[];
+
+  hospitalizations: Hospitalization[];
+
+  operations: Operation[];
+
+  bloodTransfusions: BloodTransfusion[];
+
+  majorTraumas: MajorTrauma[];
+
+  icuAdmissions: ICUAdmission[];
+}
+
+// ======================================================
+// Past History Events
+// ======================================================
+
+export interface Hospitalization {
+  id: string;
+  reason: string;
+  date: string;
+  duration: string;
+}
+
+export interface Operation {
+  id: string;
+  name: string;
+  date: string;
+  indication: string;
+}
+
+export interface BloodTransfusion {
+  id: string;
+  reason: string;
+  date: string;
+  reaction: string;
+}
+
+export interface MajorTrauma {
+  id: string;
+  type: string;
+  date: string;
+  complications: string;
+}
+
+export interface ICUAdmission {
+  id: string;
+  reason: string;
+  date: string;
+  duration: string;
+  ventilatorSupport: boolean;
 }
 
 // ======================================================
@@ -158,8 +208,18 @@ export interface AllergyHistory {
 // Family History
 // ======================================================
 
+export interface FamilyDisease {
+  id: string;
+  affectedRelative: string;
+  otherRelative: string;
+  diseases: string[];
+  alive: boolean;
+  ageAtDeath: string;
+  causeOfDeath: string;
+}
+
 export interface FamilyHistory {
-  fields: DynamicFieldValue[];
+  familyDiseases: FamilyDisease[];
 }
 
 // ======================================================
@@ -233,6 +293,16 @@ export function createEmptyHistory(): History {
 
   pastHistory: {
     fields: [],
+
+    hospitalizations: [],
+
+    operations: [],
+
+    bloodTransfusions: [],
+
+    majorTraumas: [],
+
+    icuAdmissions: [],
   },
 
   socialHistory: {
@@ -256,7 +326,7 @@ export function createEmptyHistory(): History {
   },
 
   familyHistory: {
-    fields: [],
+    familyDiseases: [],
   },
   };
 }

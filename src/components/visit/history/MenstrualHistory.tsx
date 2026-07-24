@@ -97,156 +97,10 @@ export default function MenstrualHistory() {
   return (
     <View style={styles.container}>
       {/* =========================
-          Primary Amenorrhea
+          Menarche
       ========================= */}
-
-      <SectionHeader title="Primary Amenorrhea" />
-
-      <View style={styles.row}>
-        {["No", "Yes"].map((item) => (
-          <AppChip
-            key={item}
-            label={item}
-            selected={
-              getValue(
-                "primaryAmenorrhea"
-              ) === item
-            }
-            onPress={() => {
-              updateField(
-                "primaryAmenorrhea",
-                "Primary Amenorrhea",
-                item
-              );
-
-              if (item === "Yes") {
-                [
-                  "ageAtMenarche",
-                  "cycleRegularity",
-                  "cycleLength",
-                  "bleedingDuration",
-                  "menstrualFlow",
-                  "dysmenorrhea",
-                  "painStarts",
-                  "painRelievedBy",
-                  "associatedSymptoms",
-                  "intermenstrualBleeding",
-                  "postcoitalBleeding",
-                  "pmsSymptoms",
-                  "lmp",
-                  "secondarySexualCharacteristics",
-                  "cyclicPelvicPain",
-                ].forEach((field) =>
-                  updateField(
-                    field,
-                    field,
-                    field.includes("Symptoms") ||
-                      field ===
-                        "painRelievedBy" ||
-                      field ===
-                        "associatedSymptoms"
-                      ? []
-                      : ""
-                  )
-                );
-              }
-
-              if (item === "No") {
-                updateField(
-                  "secondarySexualCharacteristics",
-                  "Secondary Sexual Characteristics",
-                  ""
-                );
-
-                updateField(
-                  "cyclicPelvicPain",
-                  "Cyclic Pelvic Pain",
-                  ""
-                );
-              }
-            }}
-          />
-        ))}
-      </View>
-
-      {getValue(
-        "primaryAmenorrhea"
-      ) !== null && <Divider />}
-
-      {getValue(
-        "primaryAmenorrhea"
-      ) === "Yes" && (
-        <>
-          <SectionHeader title="Primary Amenorrhea Assessment" />
-
-          <Text style={styles.label}>
-            Secondary Sexual Characteristics
-          </Text>
-
-          <View style={styles.row}>
-            {[
-              "Present",
-              "Absent",
-            ].map((item) => (
-              <AppChip
-                key={item}
-                label={item}
-                selected={
-                  getValue(
-                    "secondarySexualCharacteristics"
-                  ) === item
-                }
-                onPress={() =>
-                  updateField(
-                    "secondarySexualCharacteristics",
-                    "Secondary Sexual Characteristics",
-                    item
-                  )
-                }
-              />
-            ))}
-          </View>
-
-          <Divider />
-
-          <Text style={styles.label}>
-            Cyclic Pelvic Pain
-          </Text>
-
-          <View style={styles.row}>
-            {["No", "Yes"].map(
-              (item) => (
-                <AppChip
-                  key={item}
-                  label={item}
-                  selected={
-                    getValue(
-                      "cyclicPelvicPain"
-                    ) === item
-                  }
-                  onPress={() =>
-                    updateField(
-                      "cyclicPelvicPain",
-                      "Cyclic Pelvic Pain",
-                      item
-                    )
-                  }
-                />
-              )
-            )}
-          </View>
-
-          <Divider />
-        </>
-      )}
-
-      {getValue(
-        "primaryAmenorrhea"
-      ) === "No" && (
-        <>
-          <SectionHeader title="Menarche" />
-
-          <AppTextField
+      <SectionHeader title="Menarche" />
+      <AppTextField
             value={
               (getValue(
                 "ageAtMenarche"
@@ -263,7 +117,7 @@ export default function MenstrualHistory() {
             keyboardType="numeric"
           />
 
-                    {/* =========================
+          {/* =========================
               Menstrual Cycle
           ========================= */}
 
@@ -525,7 +379,7 @@ export default function MenstrualHistory() {
 
           <Divider />
 
-          {/* =========================
+{/* =========================
     Associated Symptoms
 ========================= */}
 
@@ -679,10 +533,6 @@ export default function MenstrualHistory() {
   }
   placeholder="DD/MM/YYYY"
 />
-
-</>
-)}
-
 </View>
 );
 }

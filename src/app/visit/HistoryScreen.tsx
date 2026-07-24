@@ -42,6 +42,7 @@ export default function HistoryScreen() {
 
       <View style={styles.content}>
         <HistoryTab />
+        </View>
         
         <View style={styles.navigationBar}>
         <AppButton
@@ -59,7 +60,7 @@ export default function HistoryScreen() {
           }
           />
         </View>
-      </View>
+      
     </SafeAreaView>
   );
 }
@@ -74,7 +75,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
-    paddingBottom: SPACING.lg,
+    paddingBottom: SPACING.md,
+    marginBottom: SPACING.lg,
+    
   },
 
 navigationBar: {

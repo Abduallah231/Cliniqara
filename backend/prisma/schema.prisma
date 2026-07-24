@@ -22,6 +22,296 @@ enum VerificationStatus {
   REJECTED
 }
 
+enum ClinicRole {
+  OWNER
+  DOCTOR
+  RECEPTION
+}
+
+enum MembershipStatus {
+  PENDING
+  ACTIVE
+  REMOVED
+}
+
+enum WeekDay {
+  SATURDAY
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum PatientIdentifierType {
+  NATIONAL_ID
+  BIRTH_CERTIFICATE
+  PASSPORT
+  OTHER
+  UNKNOWN
+}
+
+enum AgeUnit {
+  YEARS
+  MONTHS
+  DAYS
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum VisitStatus {
+  OPEN
+  COMPLETED
+  CANCELLED
+}
+
+enum MedicationCompliance {
+  GOOD
+  POOR
+  IRREGULAR
+}
+
+enum AllergyType {
+  DRUG
+  FOOD
+  ENVIRONMENTAL
+  OTHER
+}
+
+enum AllergySeverity {
+  MILD
+  MODERATE
+  SEVERE
+  ANAPHYLAXIS
+}
+
+enum FamilyRelation {
+  FATHER
+  MOTHER
+  BROTHER
+  SISTER
+  SON
+  DAUGHTER
+  GRANDFATHER
+  GRANDMOTHER
+  UNCLE
+  AUNT
+  COUSIN
+  OTHER
+}
+
+enum SmokingStatus {
+  NEVER
+  CURRENT
+  FORMER
+}
+
+enum AlcoholStatus {
+  NO
+  CURRENT
+  FORMER
+}
+
+enum AlcoholFrequency {
+  OCCASIONAL
+  WEEKLY
+  DAILY
+  HEAVY
+}
+
+enum LivingCondition {
+  LIVES_ALONE
+  LIVES_WITH_FAMILY
+  NURSING_HOME
+  HOMELESS
+  OTHER
+}
+
+enum PhysicalActivityLevel {
+  SEDENTARY
+  LIGHT
+  MODERATE
+  HEAVY
+}
+
+enum SleepDuration {
+  LESS_THAN_5
+  HOURS_5_TO_7
+  HOURS_7_TO_9
+  MORE_THAN_9
+}
+
+enum SocialSupportLevel {
+  GOOD
+  LIMITED
+  NO_SUPPORT
+  CAREGIVER_AVAILABLE
+}
+
+enum SexualHistoryStatus {
+  NOT_DISCUSSED
+  SEXUALLY_ACTIVE
+  NOT_ACTIVE
+}
+
+enum VaccinationStatus {
+  UP_TO_DATE
+  PARTIALLY_VACCINATED
+  UNVACCINATED
+  UNKNOWN
+}
+
+enum VaccinationReason {
+  MISSED_APPOINTMENT
+  VACCINE_UNAVAILABLE
+  MEDICAL_CONTRAINDICATION
+  PARENT_REFUSED
+  ACCESS_PROBLEMS
+  UNKNOWN
+  OTHER
+}
+
+enum ReactionSeverity {
+  MILD
+  MODERATE
+  SEVERE
+}
+
+enum CycleRegularity {
+  REGULAR
+  IRREGULAR
+  UNKNOWN
+}
+
+enum BleedingDuration {
+  LESS_THAN_3_DAYS
+  DAYS_3_TO_7
+  MORE_THAN_7_DAYS
+}
+
+enum MenstrualFlow {
+  SCANTY
+  NORMAL
+  HEAVY
+  FLOODING
+}
+
+enum DysmenorrheaSeverity {
+  NONE
+  MILD
+  MODERATE
+  SEVERE
+}
+
+enum PainStart {
+  BEFORE_MENSES
+  FIRST_DAY
+  THROUGHOUT_MENSES
+}
+
+enum AntenatalCare {
+  REGULAR
+  IRREGULAR
+  NONE
+  UNKNOWN
+}
+
+enum SmokingExposure {
+  NO
+  PASSIVE
+  MATERNAL_SMOKING
+}
+
+enum GestationalAge {
+  TERM
+  PRETERM
+  POST_TERM
+  UNKNOWN
+}
+
+enum DeliveryMode {
+  NORMAL_VAGINAL
+  CESAREAN
+  INSTRUMENTAL
+  UNKNOWN
+}
+
+enum DevelopmentStatus {
+  NORMAL
+  DELAYED
+  UNKNOWN
+}
+
+enum DelayType {
+  GROSS_MOTOR
+  FINE_MOTOR
+  SPEECH
+  SOCIAL
+  MULTIPLE
+}
+
+enum SchoolPerformance {
+  GOOD
+  AVERAGE
+  POOR
+}
+
+enum SchoolAttendance {
+  REGULAR
+  IRREGULAR
+}
+
+enum DurationUnit {
+  HOURS
+  DAYS
+  WEEKS
+  MONTHS
+  YEARS
+}
+
+enum SystemType {
+
+  GENERAL
+
+  CVS
+
+  CHEST
+
+  GIT
+
+  RENAL
+
+  NEURO
+
+  MUSCULOSKELETAL
+
+  ENDOCRINE
+
+  HEMATOLOGY
+
+  SKIN
+
+  GYNECOLOGY
+
+  OBSTETRIC
+
+  ENT
+
+  OPHTHALMOLOGY
+
+}
+
 model User {
   id                      String               @id @default(uuid())
   userCode                String               @unique
@@ -101,27 +391,7 @@ model Clinic {
   @@map("clinics")
 }
 
-enum ClinicRole {
-  OWNER
-  DOCTOR
-  RECEPTION
-}
 
-enum MembershipStatus {
-  PENDING
-  ACTIVE
-  REMOVED
-}
-
-enum WeekDay {
-  SATURDAY
-  SUNDAY
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
-}
 
 model ClinicMember {
   id                  String              @id @default(uuid())
@@ -148,32 +418,6 @@ model ClinicMember {
   @@index([clinicRole])
 
   @@map("clinic_members")
-}
-
-enum Gender {
-  MALE
-  FEMALE
-}
-
-enum PatientIdentifierType {
-  NATIONAL_ID
-  BIRTH_CERTIFICATE
-  PASSPORT
-  OTHER
-  UNKNOWN
-}
-
-enum AgeUnit {
-  YEARS
-  MONTHS
-  DAYS
-}
-
-enum MaritalStatus {
-  SINGLE
-  MARRIED
-  DIVORCED
-  WIDOWED
 }
 
 model ClinicWorkingDay {
@@ -211,11 +455,11 @@ model Patient {
 
   identifierNumber  String?
 
-  dateOfBirth DateTime?
+  dateOfBirth       DateTime?
 
   estimatedAgeValue Int?
 
-  estimatedAgeUnit AgeUnit?
+  estimatedAgeUnit  AgeUnit?
 
   maritalStatus     MaritalStatus
 
@@ -238,7 +482,37 @@ model Patient {
 
   clinic            Clinic      @relation(fields: [clinicId], references: [id])
 
-  visits Visit[]
+  // Past History
+  chronicDiseases   PatientChronicDisease[]
+  hospitalizations  PatientHospitalization[]
+  operations        PatientOperation[]
+  bloodTransfusions PatientBloodTransfusion[]
+  majorTraumas      PatientMajorTrauma[]
+  icuAdmissions     PatientICUAdmission[]
+
+  // Drug History
+  medications            PatientMedication[]
+  medicationCompliance   MedicationCompliance?
+  selfMedication         Boolean @default(false)
+  selfMedicationDetails  String?
+  takesSupplements       Boolean @default(false)
+  supplementDetails      String?
+  
+  // Allergy History
+  hasAllergy Boolean @default(false)
+
+  allergies PatientAllergy[]
+  
+  // Family History
+  familyHistory PatientFamilyHistory[]
+
+  // social History
+  socialHistory PatientSocialHistory?
+
+  // Vaccination History
+  vaccinationHistory PatientVaccinationHistory?
+
+  visits            Visit[]
 
   @@unique([clinicId, patientCode])
 
@@ -247,12 +521,6 @@ model Patient {
   @@index([phone])
 
   @@map("patients")
-}
-
-enum VisitStatus {
-  OPEN
-  COMPLETED
-  CANCELLED
 }
 
 model Visit {
@@ -275,11 +543,21 @@ model Visit {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  patient Patient @relation(fields: [patientId], references: [id])
-  clinic Clinic @relation(fields: [clinicId], references: [id])
-  createdBy User @relation(fields: [createdById], references: [id])
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  clinic      Clinic    @relation(fields: [clinicId], references: [id])
+  createdBy   User      @relation(fields: [createdById], references: [id])
 
-  complaints Complaint[]
+  chiefComplaint VisitChiefComplaint?
+
+  relatedSystems VisitRelatedSystem[]
+
+  systematicReview VisitSystematicReview[]
+
+  // Menstrual History
+  menstrualHistory VisitMenstrualHistory?
+
+  // Pediatric History
+  pediatricHistory VisitPediatricHistory?
 
   @@unique([clinicId, visitCode])
 
@@ -288,4 +566,516 @@ model Visit {
   @@index([visitDate])
 
   @@map("visits")
+}
+
+model PatientChronicDisease {
+  id          String   @id @default(uuid())
+
+  patientId   String
+
+  diseaseCode String
+  diseaseName String
+
+  notes       String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([diseaseCode])
+
+  @@map("patient_chronic_diseases")
+}
+
+model PatientHospitalization {
+  id        String   @id @default(uuid())
+
+  patientId String
+
+  reason    String
+  date      DateTime?
+  duration  String?
+
+  notes     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+
+  @@map("patient_hospitalizations")
+}
+
+model PatientOperation {
+  id            String   @id @default(uuid())
+
+  patientId     String
+
+  operationName String
+  date          DateTime?
+  indication    String?
+
+  notes         String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+
+  @@map("patient_operations")
+}
+
+model PatientBloodTransfusion {
+  id         String   @id @default(uuid())
+
+  patientId  String
+
+  reason     String?
+  date       DateTime?
+  reaction   String?
+
+  notes      String?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+
+  @@map("patient_blood_transfusions")
+}
+
+model PatientMajorTrauma {
+  id            String   @id @default(uuid())
+
+  patientId     String
+
+  traumaType    String
+  date          DateTime?
+  complications String?
+
+  notes         String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+
+  @@map("patient_major_traumas")
+}
+
+model PatientICUAdmission {
+  id                 String   @id @default(uuid())
+
+  patientId          String
+
+  reason             String
+  date               DateTime?
+  duration           String?
+  ventilatorSupport  Boolean  @default(false)
+
+  notes              String?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+
+  @@map("patient_icu_admissions")
+}
+
+model PatientMedication {
+  id            String   @id @default(uuid())
+
+  patientId     String
+
+  medicationName String
+  dose          String?
+
+  durationValue Int?
+  durationUnit  DurationUnit?
+
+  notes         String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+
+  @@map("patient_medications")
+}
+
+model PatientAllergy {
+  id          String   @id @default(uuid())
+
+  patientId   String
+
+  type        AllergyType
+  allergen    String
+  reaction    String?
+  severity    AllergySeverity
+
+  notes       String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([type])
+  @@index([allergen])
+
+  @@map("patient_allergies")
+}
+
+model PatientFamilyHistory {
+  id             String   @id @default(uuid())
+
+  patientId      String
+
+  relation       FamilyRelation
+  otherRelation  String?
+
+  diseases       String[]
+
+  alive          Boolean
+
+  ageAtDeath     Int?
+  causeOfDeath   String?
+
+  notes          String?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([relation])
+
+  @@map("patient_family_history")
+}
+
+model PatientSocialHistory {
+  id String @id @default(uuid())
+
+  patientId String @unique
+
+  smoking SmokingStatus?
+  cigarettesPerDay Int?
+  yearsSmoking Int?
+  yearsSinceQuitting Int?
+
+  alcohol AlcoholStatus?
+  alcoholFrequency AlcoholFrequency?
+  yearsSinceStopping Int?
+
+  livingCondition LivingCondition?
+  livingConditionNotes String?
+
+  substanceUse String[]
+  substanceNotes String?
+
+  physicalActivity PhysicalActivityLevel?
+  physicalActivityNotes String?
+
+  sleepDuration SleepDuration?
+  sleepNotes String?
+
+  socialSupport SocialSupportLevel?
+  socialSupportNotes String?
+
+  sexualHistory SexualHistoryStatus?
+  sexualHistoryNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("patient_social_history")
+}
+
+model PatientVaccinationHistory {
+  id String @id @default(uuid())
+
+  patientId String @unique
+
+  vaccinationStatus VaccinationStatus?
+
+  missedVaccines String[]
+
+  partialReason VaccinationReason?
+  partialOtherDetails String?
+
+  unvaccinatedReason VaccinationReason?
+  unvaccinatedOtherDetails String?
+
+  previousReaction Boolean?
+
+  reactionSeverity ReactionSeverity?
+  reactionDetails String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("patient_vaccination_history")
+}
+
+model VisitMenstrualHistory {
+  id String @id @default(uuid())
+
+  visitId String @unique
+
+  ageAtMenarche Int?
+
+  cycleRegularity CycleRegularity?
+  cycleLength Int?
+
+  bleedingDuration BleedingDuration?
+  menstrualFlow MenstrualFlow?
+
+  dysmenorrhea DysmenorrheaSeverity?
+
+  painStarts PainStart?
+  painRelievedBy String[]
+
+  associatedSymptoms String[]
+
+  intermenstrualBleeding Boolean?
+  postcoitalBleeding Boolean?
+
+  pmsSymptoms String[]
+
+  lmp String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@map("visit_menstrual_history")
+}
+
+model VisitPediatricHistory {
+  id String @id @default(uuid())
+
+  visitId String @unique
+
+  // =========================
+  // Prenatal History
+  // =========================
+
+  antenatalCare AntenatalCare?
+  antenatalCareNotes String?
+
+  maternalIllnesses String[]
+  maternalIllnessOther String?
+
+  pregnancyComplications String[]
+  pregnancyComplicationsOther String?
+
+  drugIntake Boolean?
+  drugIntakeDetails String?
+
+  smokingExposure SmokingExposure?
+
+  alcoholExposure Boolean?
+  alcoholExposureDetails String?
+
+  // =========================
+  // Birth History
+  // =========================
+
+  gestationalAge GestationalAge?
+  gestationalWeeks Int?
+
+  deliveryMode DeliveryMode?
+
+  birthWeight Int?
+
+  nicuAdmission Boolean?
+  nicuReason String?
+  nicuDuration Int?
+
+  birthComplications String[]
+  birthComplicationDetails String?
+
+  // =========================
+  // Neonatal History
+  // =========================
+
+  neonatalJaundice Boolean?
+
+  phototherapy Boolean?
+  exchangeTransfusion Boolean?
+
+  neonatalSeizures Boolean?
+
+  // =========================
+  // Feeding History
+  // =========================
+
+  feedingTypes String[]
+
+  // =========================
+  // Development History
+  // =========================
+
+  development DevelopmentStatus?
+
+  delayType DelayType?
+  delayDetails String?
+
+  // =========================
+  // School History
+  // =========================
+
+  attendsSchool Boolean?
+
+  grade String?
+
+  schoolPerformance SchoolPerformance?
+  schoolPerformanceDetails String?
+
+  schoolAttendance SchoolAttendance?
+  schoolAttendanceReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@map("visit_pediatric_history")
+}
+
+  // =========================
+  // Chief Complaint
+  // =========================
+
+model VisitChiefComplaint {
+
+  id String @id @default(uuid())
+
+  visitId String @unique
+
+  complaintCode String
+
+  complaintName String
+
+  durationValue Int?
+
+  durationUnit DurationUnit?
+
+  analysis VisitComplaintAnalysis?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit Visit
+    @relation(
+      fields: [visitId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  @@map("visit_chief_complaints")
+  @@index([complaintCode])
+}
+
+  // =========================
+  // Complaint Analysis
+  // =========================
+
+model VisitComplaintAnalysis {
+
+  id String @id @default(uuid())
+
+  chiefComplaintId String @unique
+
+  templateCode String
+
+  templateVersion Int
+
+  values Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chiefComplaint VisitChiefComplaint
+    @relation(
+      fields: [chiefComplaintId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  @@map("visit_complaint_analysis")
+
+  @@index([templateCode])
+}
+
+  // =========================
+  // Related System
+  // =========================
+
+model VisitRelatedSystem {
+
+  id String @id @default(uuid())
+
+  visitId String
+
+  system SystemType
+
+  symptoms String[]
+
+  otherFinding String?
+
+  visit Visit
+    @relation(fields:[visitId],references:[id],onDelete:Cascade)
+
+  @@unique([visitId, system])
+
+  @@index([visitId])
+
+  @@map("visit_related_systems")
+}
+
+model VisitSystematicReview {
+
+  id String @id @default(uuid())
+
+  visitId String
+
+  system SystemType
+
+  symptoms String[]
+
+  visit Visit
+    @relation(
+      fields: [visitId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  @@unique([visitId, system])
+
+  @@index([visitId])
+
+  @@map("visit_systematic_review")
 }

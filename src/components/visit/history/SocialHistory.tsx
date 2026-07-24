@@ -1,9 +1,11 @@
 import { useVisitStore } from "@/store/visitStore";
 import { StyleSheet, Text, View } from "react-native";
+
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
+
 import {
   COLORS,
   SPACING,
@@ -58,6 +60,23 @@ export default function SocialHistory() {
     }
   };
 
+  const cigarettesPerDay = Number(
+    getValue("cigarettesPerDay") ?? 0
+  );
+
+  const yearsSmoking = Number(
+    getValue("yearsSmoking") ?? 0
+  );
+
+  const packYears =
+    cigarettesPerDay > 0 &&
+    yearsSmoking > 0
+      ? (
+          (cigarettesPerDay / 20) *
+          yearsSmoking
+        ).toFixed(1)
+      : "";
+
   return (
     <View style={styles.container}>
       {/* =========================
@@ -93,6 +112,8 @@ export default function SocialHistory() {
         "Never" && (
         <View style={styles.box}>
           <AppTextField
+            placeholder="Cigarettes Per Day"
+            keyboardType="numeric"
             value={
               (getValue(
                 "cigarettesPerDay"
@@ -105,11 +126,11 @@ export default function SocialHistory() {
                 v
               )
             }
-            placeholder="Cigarettes Per Day"
-            keyboardType="numeric"
           />
 
           <AppTextField
+            placeholder="Years Smoking"
+            keyboardType="numeric"
             value={
               (getValue(
                 "yearsSmoking"
@@ -122,25 +143,30 @@ export default function SocialHistory() {
                 v
               )
             }
-            placeholder="Years Smoking"
-            keyboardType="numeric"
           />
 
           <View
             style={
               styles.readOnlySection
-            }>
+            }
+          >
             <Text style={styles.label}>
               Smoking Index
             </Text>
 
             <View
-              style={styles.readOnlyBox}>
+              style={
+                styles.readOnlyBox
+              }
+            >
               <Text
                 style={
                   styles.readOnlyText
-                }>
-                Auto Calculated
+                }
+              >
+                {packYears
+                  ? `${packYears} Pack-years`
+                  : "—"}
               </Text>
             </View>
           </View>
@@ -148,6 +174,8 @@ export default function SocialHistory() {
           {getValue("smoking") ===
             "Former" && (
             <AppTextField
+              placeholder="Years Since Quitting"
+              keyboardType="numeric"
               value={
                 (getValue(
                   "yearsSinceQuitting"
@@ -160,8 +188,6 @@ export default function SocialHistory() {
                   v
                 )
               }
-              placeholder="Years Since Quitting"
-              keyboardType="numeric"
             />
           )}
         </View>
@@ -170,562 +196,420 @@ export default function SocialHistory() {
       <Divider />
 
       {/* =========================
-    Alcohol
-========================= */}
+          Alcohol
+      ========================= */}
 
-<SectionHeader title="Alcohol" />
+            <SectionHeader title="Alcohol" />
 
-<View style={styles.row}>
-  {[
-    "No",
-    "Current",
-    "Former",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={
-        getValue("alcohol") === item
-      }
-      onPress={() =>
-        updateField(
-          "alcohol",
-          "Alcohol",
-          item
-        )
-      }
-    />
-  ))}
-</View>
+      <View style={styles.row}>
+        {[
+          "No",
+          "Current",
+          "Former",
+        ].map((item) => (
+          <AppChip
+            key={item}
+            label={item}
+            selected={
+              getValue("alcohol") === item
+            }
+            onPress={() =>
+              updateField(
+                "alcohol",
+                "Alcohol",
+                item
+              )
+            }
+          />
+        ))}
+      </View>
 
-{getValue("alcohol") !== "No" && (
-  <View style={styles.box}>
-    <Text style={styles.label}>
-      How often
-    </Text>
+      {getValue("alcohol") !== "No" && (
+        <View style={styles.box}>
+          <Text style={styles.label}>
+            How Often
+          </Text>
 
-    <View style={styles.row}>
-      {[
-        "Occasional",
-        "Weekly",
-        "Daily",
-      ].map((item) => (
-        <AppChip
-          key={item}
-          label={item}
-          selected={
-            getValue(
-              "alcoholFrequency"
-            ) === item
-          }
-          onPress={() =>
-            updateField(
-              "alcoholFrequency",
-              "Alcohol Frequency",
-              item
-            )
-          }
-        />
-      ))}
-    </View>
+          <View style={styles.row}>
+            {[
+              "Occasional",
+              "Weekly",
+              "Daily",
+              "Heavy",
+            ].map((item) => (
+              <AppChip
+                key={item}
+                label={item}
+                selected={
+                  getValue(
+                    "alcoholFrequency"
+                  ) === item
+                }
+                onPress={() =>
+                  updateField(
+                    "alcoholFrequency",
+                    "Alcohol Frequency",
+                    item
+                  )
+                }
+              />
+            ))}
+          </View>
 
-    {getValue("alcohol") ===
-      "Former" && (
+          {getValue("alcohol") ===
+            "Former" && (
+            <AppTextField
+              placeholder="Years Since Stopping"
+              keyboardType="numeric"
+              value={
+                (getValue(
+                  "yearsSinceStopping"
+                ) as string) ?? ""
+              }
+              onChangeText={(v) =>
+                updateField(
+                  "yearsSinceStopping",
+                  "Years Since Stopping",
+                  v
+                )
+              }
+            />
+          )}
+        </View>
+      )}
+
+      <Divider />
+
+      {/* =========================
+          Living Conditions
+      ========================= */}
+
+      <SectionHeader title="Living Conditions" />
+
+      <View style={styles.row}>
+        {[
+          "Lives Alone",
+          "Lives With Family",
+          "Nursing Home / Assisted Living",
+          "Homeless",
+          "Other",
+        ].map((item) => (
+          <AppChip
+            key={item}
+            label={item}
+            selected={
+              getValue(
+                "livingCondition"
+              ) === item
+            }
+            onPress={() =>
+              updateField(
+                "livingCondition",
+                "Living Condition",
+                item
+              )
+            }
+          />
+        ))}
+      </View>
+
       <AppTextField
+        placeholder="Additional Notes..."
         value={
           (getValue(
-            "yearsSinceStopping"
+            "livingConditionNotes"
           ) as string) ?? ""
         }
         onChangeText={(v) =>
           updateField(
-            "yearsSinceStopping",
-            "Years Since Stopping",
+            "livingConditionNotes",
+            "Living Condition Notes",
             v
           )
         }
-        placeholder="Years Since Stopping"
-        keyboardType="numeric"
       />
-    )}
-  </View>
-)}
 
-<Divider />
+      <Divider />
 
-{/* =========================
-    Living Conditions
-========================= */}
+      {/* =========================
+          Substance Use
+      ========================= */}
 
-<SectionHeader title="Living Conditions" />
+      <SectionHeader title="Substance Use" />
 
-<View style={styles.row}>
-  {[
-    "Lives Alone",
-    "With Family",
-    "Nursing Home",
-    "Homeless",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={
-        getValue(
-          "livingCondition"
-        ) === item
-      }
-      onPress={() =>
-        updateField(
-          "livingCondition",
-          "Living Condition",
-          item
-        )
-      }
-    />
-  ))}
-</View>
+      <View style={styles.row}>
+        {[
+          "None",
+          "Cannabis",
+          "Opioids",
+          "Cocaine",
+          "Amphetamines",
+          "Other",
+        ].map((item) => (
+          <AppChip
+            key={item}
+            label={item}
+            selected={
+              (
+                (getValue(
+                  "substanceUse"
+                ) as string[]) ?? []
+              ).includes(item)
+            }
+            onPress={() => {
+              const current =
+                (getValue("substanceUse") as string[]) ??
+                [];
 
-<AppTextField
-  value={
-    (getValue(
-      "livingConditionNotes"
-    ) as string) ?? ""
-  }
-  onChangeText={(v) =>
-    updateField(
-      "livingConditionNotes",
-      "Living Condition Notes",
-      v
-    )
-  }
-  placeholder="Additional notes..."
-/>
+              if (item === "None") {
+                updateField(
+                  "substanceUse",
+                  "Substance Use",
+                  ["None"]
+                );
+                return;
+              }
 
-<Divider />
+              let updated = current.filter(
+                (x) => x !== "None"
+              );
 
-{/* =========================
-    Substance Use
-========================= */}
+              if (updated.includes(item)) {
+                updated = updated.filter(
+                  (x) => x !== item
+                );
+              } else {
+                updated.push(item);
+              }
 
-<SectionHeader title="Substance Use" />
+              updateField(
+                "substanceUse",
+                "Substance Use",
+                updated
+              );
+            }}
+          />
+        ))}
+      </View>
 
-<View style={styles.row}>
-  {[
-    "None",
-    "Cannabis",
-    "Opioids",
-    "Cocaine",
-    "Amphetamines",
-    "Other",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={(
-        (getValue(
-          "substanceUse"
-        ) as string[]) ?? []
-      ).includes(item)}
-      onPress={() =>
-        toggleMultiSelect(
-          "substanceUse",
-          "Substance Use",
-          item
-        )
-      }
-    />
-  ))}
-</View>
+      <AppTextField
+        placeholder="Specify if needed..."
+        value={
+          (getValue(
+            "substanceNotes"
+          ) as string) ?? ""
+        }
+        onChangeText={(v) =>
+          updateField(
+            "substanceNotes",
+            "Substance Notes",
+            v
+          )
+        }
+      />
 
-<AppTextField
-  value={
-    (getValue(
-      "substanceNotes"
-    ) as string) ?? ""
-  }
-  onChangeText={(v) =>
-    updateField(
-      "substanceNotes",
-      "Substance Notes",
-      v
-    )
-  }
-  placeholder="Specify if needed..."
-/>
+      <Divider />
 
-<Divider />
+      {/* =========================
+          Physical Activity
+      ========================= */}
 
-{/* =========================
-    Diet & Nutrition
-========================= */}
+            <SectionHeader title="Physical Activity" />
 
-<SectionHeader title="Diet & Nutrition" />
+      <View style={styles.row}>
+        {[
+          "Sedentary",
+          "Light",
+          "Moderate",
+          "Heavy",
+        ].map((item) => (
+          <AppChip
+            key={item}
+            label={item}
+            selected={
+              getValue(
+                "physicalActivity"
+              ) === item
+            }
+            onPress={() =>
+              updateField(
+                "physicalActivity",
+                "Physical Activity",
+                item
+              )
+            }
+          />
+        ))}
+      </View>
 
-<View style={styles.row}>
-  {[
-    "Balanced",
-    "High Fat",
-    "High Sugar",
-    "Vegetarian",
-    "Vegan",
-    "Special Diet",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={
-        getValue("dietType") === item
-      }
-      onPress={() =>
-        updateField(
-          "dietType",
-          "Diet Type",
-          item
-        )
-      }
-    />
-  ))}
-</View>
+      <AppTextField
+        placeholder="Exercise details..."
+        value={
+          (getValue(
+            "physicalActivityNotes"
+          ) as string) ?? ""
+        }
+        onChangeText={(v) =>
+          updateField(
+            "physicalActivityNotes",
+            "Physical Activity Notes",
+            v
+          )
+        }
+      />
 
-<AppTextField
-  value={
-    (getValue("dietNotes") as string) ??
-    ""
-  }
-  onChangeText={(v) =>
-    updateField(
-      "dietNotes",
-      "Diet Notes",
-      v
-    )
-  }
-  placeholder="Diet notes..."
-/>
+      <Divider />
 
-<Divider />
+      {/* =========================
+          Sleep
+      ========================= */}
 
-{/* =========================
-    Physical Activity
-========================= */}
+      <SectionHeader title="Sleep" />
 
-<SectionHeader title="Physical Activity" />
+      <View style={styles.row}>
+        {[
+          "<5 h",
+          "5-7 h",
+          "7-9 h",
+          ">9 h",
+        ].map((item) => (
+          <AppChip
+            key={item}
+            label={item}
+            selected={
+              getValue(
+                "sleepDuration"
+              ) === item
+            }
+            onPress={() =>
+              updateField(
+                "sleepDuration",
+                "Sleep Duration",
+                item
+              )
+            }
+          />
+        ))}
+      </View>
 
-<View style={styles.row}>
-  {[
-    "Sedentary",
-    "Light",
-    "Moderate",
-    "Heavy",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={
-        getValue(
-          "physicalActivity"
-        ) === item
-      }
-      onPress={() =>
-        updateField(
-          "physicalActivity",
-          "Physical Activity",
-          item
-        )
-      }
-    />
-  ))}
-</View>
+      <AppTextField
+        placeholder="Sleep quality..."
+        value={
+          (getValue(
+            "sleepNotes"
+          ) as string) ?? ""
+        }
+        onChangeText={(v) =>
+          updateField(
+            "sleepNotes",
+            "Sleep Notes",
+            v
+          )
+        }
+      />
 
-<AppTextField
-  value={
-    (getValue(
-      "physicalActivityNotes"
-    ) as string) ?? ""
-  }
-  onChangeText={(v) =>
-    updateField(
-      "physicalActivityNotes",
-      "Physical Activity Notes",
-      v
-    )
-  }
-  placeholder="Exercise details..."
-/>
+      <Divider />
 
-<Divider />
+      {/* =========================
+          Social Support
+      ========================= */}
 
-{/* =========================
-    Sleep
-========================= */}
+      <SectionHeader title="Social Support" />
 
-<SectionHeader title="Sleep" />
+      <View style={styles.row}>
+        {[
+          "Good",
+          "Limited",
+          "No Support",
+          "Caregiver Available",
+        ].map((item) => (
+          <AppChip
+            key={item}
+            label={item}
+            selected={
+              getValue(
+                "socialSupport"
+              ) === item
+            }
+            onPress={() =>
+              updateField(
+                "socialSupport",
+                "Social Support",
+                item
+              )
+            }
+          />
+        ))}
+      </View>
 
-<View style={styles.row}>
-  {[
-    "<5 h",
-    "5-7 h",
-    "7-9 h",
-    ">9 h",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={
-        getValue(
-          "sleepDuration"
-        ) === item
-      }
-      onPress={() =>
-        updateField(
-          "sleepDuration",
-          "Sleep Duration",
-          item
-        )
-      }
-    />
-  ))}
-</View>
+      <AppTextField
+        placeholder="Support notes..."
+        value={
+          (getValue(
+            "socialSupportNotes"
+          ) as string) ?? ""
+        }
+        onChangeText={(v) =>
+          updateField(
+            "socialSupportNotes",
+            "Social Support Notes",
+            v
+          )
+        }
+      />
 
-<AppTextField
-  value={
-    (getValue("sleepNotes") as string) ??
-    ""
-  }
-  onChangeText={(v) =>
-    updateField(
-      "sleepNotes",
-      "Sleep Notes",
-      v
-    )
-  }
-  placeholder="Sleep quality..."
-/>
+      <Divider />
 
-<Divider />
+      {/* =========================
+          Sexual History (Optional)
+      ========================= */}
 
-{/* =========================
-    Sexual History
-========================= */}
+      <SectionHeader title="Sexual History (Optional)" />
 
-<SectionHeader title="Sexual History (Optional)" />
+      <View style={styles.row}>
+        {[
+          "Not Discussed",
+          "Sexually Active",
+          "Not Active",
+        ].map((item) => (
+          <AppChip
+            key={item}
+            label={item}
+            selected={
+              getValue(
+                "sexualHistory"
+              ) === item
+            }
+            onPress={() =>
+              updateField(
+                "sexualHistory",
+                "Sexual History",
+                item
+              )
+            }
+          />
+        ))}
+      </View>
 
-<View style={styles.row}>
-  {[
-    "Not Discussed",
-    "Sexually Active",
-    "Not Active",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={
-        getValue(
-          "sexualHistory"
-        ) === item
-      }
-      onPress={() =>
-        updateField(
-          "sexualHistory",
-          "Sexual History",
-          item
-        )
-      }
-    />
-  ))}
-</View>
+      <AppTextField
+        placeholder="Optional notes..."
+        value={
+          (getValue(
+            "sexualHistoryNotes"
+          ) as string) ?? ""
+        }
+        onChangeText={(v) =>
+          updateField(
+            "sexualHistoryNotes",
+            "Sexual History Notes",
+            v
+          )
+        }
+      />
 
-<AppTextField
-  value={
-    (getValue(
-      "sexualHistoryNotes"
-    ) as string) ?? ""
-  }
-  onChangeText={(v) =>
-    updateField(
-      "sexualHistoryNotes",
-      "Sexual History Notes",
-      v
-    )
-  }
-  placeholder="Optional notes..."
-/>
-
-<Divider />
-
-{/* =========================
-    Travel & Environmental Exposure
-========================= */}
-
-<SectionHeader title="Travel & Environmental Exposure" />
-
-<View style={styles.row}>
-  {[
-    "Recent Travel",
-    "Animals",
-    "Dust",
-    "Chemicals",
-    "None",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={(
-        (getValue(
-          "travelExposure"
-        ) as string[]) ?? []
-      ).includes(item)}
-      onPress={() =>
-        toggleMultiSelect(
-          "travelExposure",
-          "Travel Exposure",
-          item
-        )
-      }
-    />
-  ))}
-</View>
-
-<AppTextField
-  value={
-    (getValue(
-      "travelNotes"
-    ) as string) ?? ""
-  }
-  onChangeText={(v) =>
-    updateField(
-      "travelNotes",
-      "Travel Notes",
-      v
-    )
-  }
-  placeholder="Exposure details..."
-/>
-
-<Divider />
-
-{/* =========================
-    Social Support
-========================= */}
-
-<SectionHeader title="Social Support" />
-
-<View style={styles.row}>
-  {[
-    "Good",
-    "Limited",
-    "Lives Alone",
-    "Caregiver",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={
-        getValue(
-          "socialSupport"
-        ) === item
-      }
-      onPress={() =>
-        updateField(
-          "socialSupport",
-          "Social Support",
-          item
-        )
-      }
-    />
-  ))}
-</View>
-
-<AppTextField
-  value={
-    (getValue(
-      "socialSupportNotes"
-    ) as string) ?? ""
-  }
-  onChangeText={(v) =>
-    updateField(
-      "socialSupportNotes",
-      "Social Support Notes",
-      v
-    )
-  }
-  placeholder="Support notes..."
-/>
-
-<Divider />
-
-{/* =========================
-    Functional & Financial Status
-========================= */}
-
-<SectionHeader title="Functional & Financial Status" />
-
-<View style={styles.row}>
-  {[
-    "Independent",
-    "Needs Assistance",
-    "Dependent",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={
-        getValue(
-          "functionalStatus"
-        ) === item
-      }
-      onPress={() =>
-        updateField(
-          "functionalStatus",
-          "Functional Status",
-          item
-        )
-      }
-    />
-  ))}
-</View>
-
-<View style={styles.row}>
-  {[
-    "Financially Stable",
-    "Financial Difficulty",
-  ].map((item) => (
-    <AppChip
-      key={item}
-      label={item}
-      selected={
-        getValue(
-          "financialStatus"
-        ) === item
-      }
-      onPress={() =>
-        updateField(
-          "financialStatus",
-          "Financial Status",
-          item
-        )
-      }
-    />
-  ))}
-</View>
-
-<AppTextField
-  value={
-    (getValue(
-      "functionalNotes"
-    ) as string) ?? ""
-  }
-  onChangeText={(v) =>
-    updateField(
-      "functionalNotes",
-      "Functional Notes",
-      v
-    )
-  }
-  placeholder="Additional notes..."
-/>
-
-</View>
-);
+      <Divider />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

@@ -833,7 +833,6 @@ export default function PediatricHistory() {
       <View style={styles.row}>
         {[
           "Breastfeeding",
-          "Exclusive Breastfeeding",
           "Formula Feeding",
           "Mixed Feeding",
           "Solid Food",
