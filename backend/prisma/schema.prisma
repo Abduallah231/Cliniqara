@@ -615,7 +615,6 @@ model Visit {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
 
   patient   Patient @relation(fields: [patientId], references: [id])
   clinic    Clinic  @relation(fields: [clinicId], references: [id])
@@ -623,6 +622,8 @@ model Visit {
   doctor    User    @relation("VisitDoctor", fields: [doctorId], references: [id])
 
   chiefComplaint VisitChiefComplaint?
+
+  chiefComplaintAnswers VisitChiefComplaintAnswer[]
 
   relatedSystems VisitRelatedSystem[]
 
@@ -1113,57 +1114,30 @@ model ChiefComplaintTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chiefComplaint ChiefComplaintMaster @relation(fields: [chiefComplaintId], references: [id], onDelete: Cascade)
+  chiefComplaint ChiefComplaintMaster    @relation(fields: [chiefComplaintId], references: [id], onDelete: Cascade)
 
   @@map("chief_complaint_templates")
 }
 
-model ChiefComplaintSection {
-  id String @id @default(uuid())
+model VisitChiefComplaintAnswer {
+  id                 String   @id @default(uuid())
 
-  templateId String
+  visitId            String
+  chiefComplaintId   String
 
-  title String
+  answers            Json
 
-  order Int
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  fields ChiefComplaintField[]
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
-  template ChiefComplaintTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  @@unique([visitId, chiefComplaintId])
+  @@index([visitId])
 
-  @@unique([templateId, order])
-  @@map("chief_complaint_sections")
+  @@map("visit_chief_complaint_answers")
 }
 
-model ChiefComplaintField {
-  id String @id @default(uuid())
-
-  sectionId String
-
-  key String
-
-  label String
-
-  type String
-
-  required Boolean @default(false)
-
-  options Json?
-
-  placeholder String?
-
-  defaultValue Json?
-
-  validation Json?
-
-  order Int
-
-  section ChiefComplaintSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-
-  @@unique([sectionId, order])
-  @@index([key])
-  @@map("chief_complaint_fields")
-}
 
 // =========================
 // Complaint Analysis

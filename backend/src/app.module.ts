@@ -7,7 +7,7 @@ import { ClinicModule } from './clinic/clinic.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PatientModule } from './patient/patient.module';
 import { VisitModule } from "./visit/visit.module";
-import { ChiefComplaintModule } from "./chief-complaint/chief-complaint.module";
+import { ChiefComplaintsModule } from './chief-complaints/chief-complaints.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -19,7 +19,7 @@ import { ChiefComplaintModule } from "./chief-complaint/chief-complaint.module";
     ClinicModule,
     PatientModule,
     VisitModule,
-    ChiefComplaintModule,
+    ChiefComplaintsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

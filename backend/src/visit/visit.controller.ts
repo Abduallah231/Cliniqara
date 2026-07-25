@@ -7,8 +7,15 @@ import { CompleteVisitDto } from "./dto/complete-visit.dto";
 import { CancelVisitDto } from "./dto/cancel-visit.dto";
 import { ChangeDoctorDto } from "./dto/change-doctor.dto";
 import { GetVisitDto } from "./dto/get-visit.dto";
+import { UseGuards } from "@nestjs/common";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { AuthenticatedUser } from "../auth/interfaces/authenticated-user.interface";
+import { Param, Get } from "@nestjs/common";
+import { SaveVisitChiefComplaintDto } from "./dto/save-visit-chief-complaint.dto";
 
 @Controller("visits")
+@UseGuards(JwtAuthGuard)
 export class VisitController {
   constructor(
     private readonly visitService: VisitService,
@@ -16,12 +23,13 @@ export class VisitController {
 
   @Post("waiting")
   async createWaitingVisit(
+    @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateWaitingVisitDto,
   ) {
     return this.visitService.createWaitingVisit(
       dto,
-      "CURRENT_USER_ID",
-      AccountType.RECEPTION,
+      user.id,
+      user.accountType,
     );
   }
 
@@ -70,5 +78,25 @@ export class VisitController {
     return this.visitService.getVisit(dto);
   }
 
-  
+  @Post(":visitId/chief-complaint")
+  saveChiefComplaint(
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveVisitChiefComplaintDto,
+  ) {
+    return this.visitService.saveChiefComplaint(
+      visitId,
+      dto,
+    );
+  }
+
+  @Get(":visitId/chief-complaint/:chiefComplaintId")
+  getChiefComplaint(
+    @Param("visitId") visitId: string,
+    @Param("chiefComplaintId") chiefComplaintId: string,
+  ) {
+    return this.visitService.getChiefComplaint(
+      visitId,
+      chiefComplaintId,
+    );
+  }
 }

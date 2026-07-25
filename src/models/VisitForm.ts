@@ -23,6 +23,8 @@ import {
 // ======================================================
 
 export interface VisitForm {
+  metadata: VisitMetadata;
+
   patient: Patient;
 
   history: History;
@@ -38,6 +40,12 @@ export interface VisitForm {
 
 export function createEmptyVisitForm(): VisitForm {
   return {
+    metadata: {
+      id: "",
+      visitNumber: "",
+      status: "",
+    },
+
     patient: createEmptyPatient(),
 
     history: createEmptyHistory(),
@@ -46,4 +54,14 @@ export function createEmptyVisitForm(): VisitForm {
 
     assessment: createEmptyAssessment(),
   };
+}
+
+// ======================================================
+// Visit Metadata
+// ======================================================
+
+export interface VisitMetadata {
+  id: string;
+  visitNumber: string;
+  status: string;
 }

@@ -3,8 +3,8 @@ import AppDropdown from "@/components/common/AppDropdown";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
-import chiefComplaints from "@/data/chiefComplaints";
-import defaultQuickChiefComplaints from "@/data/defaultQuickChiefComplaints";
+import { useEffect, useState } from "react";
+import { getChiefComplaints } from "@/services/chiefComplaintApi";
 import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
@@ -21,6 +21,28 @@ export default function ChiefComplaint() {
   const { visit, updateVisit } = useVisitStore();
 
   const chiefComplaint = visit.history.chiefComplaint;
+  const [complaints, setComplaints] = useState<
+    { id: string; label: string }[]
+  >([]);
+
+  useEffect(() => {
+    async function loadComplaints() {
+      try {
+        const data = await getChiefComplaints();
+
+        setComplaints(
+          data.map((item: any) => ({
+            id: item.id,
+            label: item.name,
+          }))
+        );
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    loadComplaints();
+  }, []);
   const complaint = chiefComplaint.complaintId
   ? {
       id: chiefComplaint.complaintId,
@@ -40,17 +62,14 @@ export default function ChiefComplaint() {
       },
     });
   };
-  const quickComplaints =
-    defaultQuickChiefComplaints;
+  const quickComplaints = complaints.slice(0, 8);
 
-  const dropdownComplaints =
-    chiefComplaints.filter(
-      (complaint) =>
-        !quickComplaints.some(
-          (quick) =>
-            quick.id === complaint.id
-        )
-    );
+  const dropdownComplaints = complaints.filter(
+    (complaint) =>
+      !quickComplaints.some(
+        (quick) => quick.id === complaint.id
+      )
+  );
   return (
     <View
       style={{

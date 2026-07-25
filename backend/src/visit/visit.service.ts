@@ -11,6 +11,7 @@ import { CompleteVisitDto } from "./dto/complete-visit.dto";
 import { CreateWaitingVisitDto } from "./dto/create-waiting-visit.dto";
 import { StartVisitDto } from "./dto/start-visit.dto";
 import { GetVisitDto } from "./dto/get-visit.dto";
+import { SaveVisitChiefComplaintDto } from "./dto/save-visit-chief-complaint.dto";
 
 @Injectable()
 export class VisitService {
@@ -354,6 +355,42 @@ async startVisit(
     }
 
     return visit;
+  }
+
+  async saveChiefComplaint(
+    visitId: string,
+    dto: SaveVisitChiefComplaintDto,
+  ) {
+    return this.prisma.visitChiefComplaintAnswer.upsert({
+      where: {
+        visitId_chiefComplaintId: {
+          visitId,
+          chiefComplaintId: dto.chiefComplaintId,
+        },
+      },
+      update: {
+        answers: dto.answers,
+      },
+      create: {
+        visitId,
+        chiefComplaintId: dto.chiefComplaintId,
+        answers: dto.answers,
+      },
+    });
+  }
+
+  async getChiefComplaint(
+    visitId: string,
+    chiefComplaintId: string,
+  ) {
+    return this.prisma.visitChiefComplaintAnswer.findUnique({
+      where: {
+        visitId_chiefComplaintId: {
+          visitId,
+          chiefComplaintId,
+        },
+      },
+    });
   }
 
 }
