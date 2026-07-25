@@ -48,7 +48,7 @@ export default function PatientActions() {
         />
 
         <Text style={styles.secondaryText}>
-          Save Patient
+          Add To Waiting
         </Text>
       </Pressable>
     </View>

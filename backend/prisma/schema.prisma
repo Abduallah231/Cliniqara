@@ -72,7 +72,8 @@ enum MaritalStatus {
 }
 
 enum VisitStatus {
-  OPEN
+  WAITING
+  IN_PROGRESS
   COMPLETED
   CANCELLED
 }
@@ -423,6 +424,8 @@ model Clinic {
 
   clinicCode String @unique
 
+  nextVisitNumber Int @default(1)
+
   name String
 
   phone String
@@ -596,12 +599,23 @@ model Visit {
 
   doctorId String
 
-  visitStatus VisitStatus @default(OPEN)
+  visitStatus VisitStatus @default(WAITING)
 
   visitDate DateTime @default(now())
 
+  startedAt DateTime?
+
+  completedAt DateTime?
+
+  cancelledAt DateTime?
+
+  cancellationReason String?
+
+  notes String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
 
   patient   Patient @relation(fields: [patientId], references: [id])
   clinic    Clinic  @relation(fields: [clinicId], references: [id])
@@ -643,6 +657,7 @@ model Visit {
   @@index([doctorId])
   @@index([clinicId])
   @@index([visitDate])
+  @@index([visitStatus])
   @@map("visits")
 }
 
@@ -1043,9 +1058,7 @@ model VisitChiefComplaint {
 
   visitId String @unique
 
-  complaintCode String
-
-  complaintName String
+  chiefComplaintId String
 
   durationValue Int?
 
@@ -1058,8 +1071,98 @@ model VisitChiefComplaint {
 
   visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
-  @@index([complaintCode])
+  chiefComplaint ChiefComplaintMaster @relation(fields: [chiefComplaintId], references: [id])
+
+  @@index([chiefComplaintId])
   @@map("visit_chief_complaints")
+}
+
+// =========================
+// Chief Complaint Master
+// =========================
+
+model ChiefComplaintMaster {
+  id String @id @default(uuid())
+
+  code String @unique
+
+  name String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  template ChiefComplaintTemplate?
+
+  visitChiefComplaints VisitChiefComplaint[]
+
+  @@index([name])
+  @@map("chief_complaint_master")
+}
+
+model ChiefComplaintTemplate {
+  id String @id @default(uuid())
+
+  chiefComplaintId String @unique
+
+  version Int @default(1)
+
+  template Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chiefComplaint ChiefComplaintMaster @relation(fields: [chiefComplaintId], references: [id], onDelete: Cascade)
+
+  @@map("chief_complaint_templates")
+}
+
+model ChiefComplaintSection {
+  id String @id @default(uuid())
+
+  templateId String
+
+  title String
+
+  order Int
+
+  fields ChiefComplaintField[]
+
+  template ChiefComplaintTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, order])
+  @@map("chief_complaint_sections")
+}
+
+model ChiefComplaintField {
+  id String @id @default(uuid())
+
+  sectionId String
+
+  key String
+
+  label String
+
+  type String
+
+  required Boolean @default(false)
+
+  options Json?
+
+  placeholder String?
+
+  defaultValue Json?
+
+  validation Json?
+
+  order Int
+
+  section ChiefComplaintSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, order])
+  @@index([key])
+  @@map("chief_complaint_fields")
 }
 
 // =========================

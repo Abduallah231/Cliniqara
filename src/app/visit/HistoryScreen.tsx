@@ -53,7 +53,7 @@ export default function HistoryScreen() {
         />
 
         <AppButton
-          title="Next"
+          title="Examination"
           style={styles.nextButton}
           onPress={() =>
             router.push("/visit/ExaminationScreen")
@@ -80,48 +80,48 @@ const styles = StyleSheet.create({
     
   },
 
-navigationBar: {
-  position: "absolute",
-  left: SPACING.lg,
-  right: SPACING.lg,
-  bottom: SPACING.xl,
+  navigationBar: {
+    position: "absolute",
+    left: SPACING.lg,
+    right: SPACING.lg,
+    bottom: SPACING.xl,
 
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
 
-  
-  padding: 4,
-borderRadius: 20,
-backgroundColor: "rgba(255,255,255,0.15)",
-},
+    
+    padding: 4,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+  },
 
-backButton: {
-  width: 110,
-  borderWidth: 1.5,
-borderColor: "#FFFFFF",
-shadowColor: "#000",
-shadowOpacity: 0.15,
-shadowRadius: 10,
-shadowOffset: {
-  width: 0,
-  height: 4,
-},
-elevation: 6,
-},
+  backButton: {
+    width: 110,
+    borderWidth: 1.5,
+    borderColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    elevation: 6,
+  },
 
-nextButton: {
-  width: 110,
-  borderWidth: 1.5,
-borderColor: "#FFFFFF",
-shadowColor: "#000",
-shadowOpacity: 0.18,
-shadowRadius: 10,
-shadowOffset: {
-  width: 0,
-  height: 4,
-},
-elevation: 6,
-},
+  nextButton: {
+    width: 150,
+    borderWidth: 1.5,
+    borderColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    elevation: 6,
+  },
 
 });
