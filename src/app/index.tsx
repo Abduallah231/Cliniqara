@@ -127,6 +127,49 @@ export default function DashboardScreen() {
             }
           />
         </View>
+        <View style={styles.actionsRow}>
+  <DashboardActionCard
+    compact
+    title="Login"
+    subtitle="Authentication"
+    icon="log-in-outline"
+    style={styles.flex}
+    variant="primary"
+    onPress={() => router.push("/login")}
+  />
+
+  <DashboardActionCard
+    compact
+    title="Create Account"
+    subtitle="Register"
+    icon="person-add-outline"
+    style={styles.flex}
+    variant="success"
+    onPress={() => router.push("/create-account")}
+  />
+</View>
+
+<View style={styles.actionsRow}>
+  <DashboardActionCard
+    compact
+    title="Forgot Password"
+    subtitle="Reset password"
+    icon="key-outline"
+    style={styles.flex}
+    variant="orange"
+    onPress={() => router.push("/forgot-password")}
+  />
+
+  <DashboardActionCard
+    compact
+    title="Coming Soon"
+    subtitle="Authentication"
+    icon="shield-checkmark-outline"
+    style={styles.flex}
+    variant="cyan"
+    onPress={() => {}}
+  />
+</View>
       </ScrollView>
     </SafeAreaView>
   );

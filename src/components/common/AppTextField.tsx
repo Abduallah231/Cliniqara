@@ -21,27 +21,22 @@ import {
 
 type Props = {
   label?: string;
-
   value?: string;
-
   onChangeText?: (text: string) => void;
-
   placeholder?: string;
-
   required?: boolean;
-
   error?: string;
 
   icon?: keyof typeof Ionicons.glyphMap;
 
+  rightIcon?: keyof typeof Ionicons.glyphMap;
+  onRightIconPress?: () => void;
+
   multiline?: boolean;
-
   secureTextEntry?: boolean;
-
   keyboardType?: KeyboardTypeOptions;
 
   disabled?: boolean;
-
   editable?: boolean;
 
   style?: StyleProp<ViewStyle>;
@@ -49,7 +44,14 @@ type Props = {
   showLabel?: boolean;
 
   maxLength?: number;
+
   autoFocus?: boolean;
+
+  autoCapitalize?:
+    | "none"
+    | "sentences"
+    | "words"
+    | "characters";
 };
 
 export default function AppTextField({
@@ -66,6 +68,9 @@ export default function AppTextField({
 
   icon,
 
+  rightIcon,
+  onRightIconPress,
+
   multiline = false,
 
   secureTextEntry = false,
@@ -77,8 +82,12 @@ export default function AppTextField({
   editable = true,
 
   style,
+
   maxLength,
+
   autoFocus = false,
+
+  autoCapitalize = "sentences",
 }: Props) {
   return (
     <View style={style}>
@@ -120,13 +129,24 @@ export default function AppTextField({
           multiline={multiline}
           secureTextEntry={secureTextEntry}
           keyboardType={keyboardType}
+          autoFocus={autoFocus}
+          autoCapitalize={autoCapitalize}
+          maxLength={maxLength}
           style={[
             styles.input,
             multiline && styles.multiline,
           ]}
-          maxLength={maxLength}
-          autoFocus={autoFocus}
         />
+
+        {rightIcon && (
+          <Ionicons
+            name={rightIcon}
+            size={SIZING.iconMd}
+            color={COLORS.secondaryText}
+            style={styles.rightIcon}
+            onPress={onRightIconPress}
+          />
+        )}
       </View>
 
       {error ? (
@@ -191,5 +211,9 @@ const styles = StyleSheet.create({
     color: COLORS.danger,
     marginTop: SPACING.sm,
     fontSize: TYPOGRAPHY.small,
+  },
+
+  rightIcon: {
+    marginLeft: SPACING.md,
   },
 });

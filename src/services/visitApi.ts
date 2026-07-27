@@ -1,27 +1,37 @@
-const API_URL = "http://192.168.1.21:3000";
+import { api } from "./api";
 
 export async function saveChiefComplaint(
   visitId: string,
   chiefComplaintId: string,
   answers: Record<string, any>
 ) {
-  const response = await fetch(
-    `${API_URL}/visits/${visitId}/chief-complaint`,
+  const { data } = await api.post(
+    `/visits/${visitId}/chief-complaint`,
     {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        chiefComplaintId,
-        answers,
-      }),
+      chiefComplaintId,
+      answers,
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Failed to save complaint");
-  }
+  return data;
+}
 
-  return response.json();
+export async function createWaitingVisit(
+  patientId: string
+) {
+  const { data } = await api.post("/visits/waiting", {
+    patientId,
+  });
+
+  return data;
+}
+
+export async function getVisit(
+  visitId: string
+) {
+  const { data } = await api.get(
+    `/visits/${visitId}`
+  );
+
+  return data;
 }
