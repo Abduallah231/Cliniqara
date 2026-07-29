@@ -26,6 +26,19 @@ export async function createWaitingVisit(
   return data;
 }
 
+export async function startVisit(
+  visitId: string
+) {
+  const { data } = await api.post(
+    "/visits/start",
+    {
+      visitId,
+    }
+  );
+
+  return data;
+}
+
 export async function getVisit(
   visitId: string
 ) {

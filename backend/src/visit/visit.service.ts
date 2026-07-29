@@ -29,13 +29,29 @@ export class VisitService {
     },
   });
 
+  const membership =
+    await this.prisma.clinicMember.findFirst({
+      where: {
+        userId: currentUserId,
+        status: "ACTIVE",
+      },
+    });
+
+  if (!membership) {
+    throw new NotFoundException(
+      "Clinic not found.",
+    );
+  }
+
+  const clinicId = membership.clinicId;
+
   if (!patient) {
     throw new NotFoundException("Patient not found.");
   }
 
   const clinic = await this.prisma.clinic.findUnique({
     where: {
-      id: dto.clinicId,
+      id: clinicId,
     },
   });
 
@@ -72,7 +88,7 @@ export class VisitService {
   const openVisit = await this.prisma.visit.findFirst({
     where: {
       patientId: dto.patientId,
-      clinicId: dto.clinicId,
+      clinicId: clinicId,
       visitStatus: {
         in: [
           VisitStatus.WAITING,
@@ -91,7 +107,7 @@ export class VisitService {
   const visit = await this.prisma.$transaction(async (tx) => {
   const currentClinic = await tx.clinic.findUnique({
     where: {
-      id: dto.clinicId,
+      id: clinicId,
     },
   });
 
@@ -109,7 +125,7 @@ export class VisitService {
     data: {
       visitCode,
       patientId: dto.patientId,
-      clinicId: dto.clinicId,
+      clinicId: clinicId,
       createdById: currentUserId,
       doctorId: doctorId!,
       visitStatus: VisitStatus.WAITING,
@@ -118,7 +134,7 @@ export class VisitService {
   });
     await tx.clinic.update({
     where: {
-      id: dto.clinicId,
+      id: clinicId,
     },
     data: {
       nextVisitNumber: {

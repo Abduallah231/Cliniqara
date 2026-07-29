@@ -35,32 +35,34 @@ export class VisitController {
 
   @Post("start")
   async startVisit(
+    @CurrentUser() user: AuthenticatedUser,
     @Body() dto: StartVisitDto,
   ) {
     return this.visitService.startVisit(
       dto,
-      "CURRENT_USER_ID",
+      user.id,
     );
   }
 
   @Post("complete")
   async completeVisit(
+    @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CompleteVisitDto,
   ) {
     return this.visitService.completeVisit(
       dto,
-      "CURRENT_USER_ID",
+      user.id,
     );
   }
 
   @Post("cancel")
   async cancelVisit(
+    @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CancelVisitDto,
-        currentUserId: string,
   ) {
     return this.visitService.cancelVisit(
       dto,
-      "CURRENT_USER_ID",
+      user.id,
     );
   }
 

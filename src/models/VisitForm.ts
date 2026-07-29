@@ -42,6 +42,9 @@ export function createEmptyVisitForm(): VisitForm {
   return {
     metadata: {
       id: "",
+      patientId: "",
+      clinicId: "",
+      doctorId: "",
       visitNumber: "",
       status: "",
     },
@@ -62,6 +65,10 @@ export function createEmptyVisitForm(): VisitForm {
 
 export interface VisitMetadata {
   id: string;
+  patientId: string;
+  clinicId: string;
+  doctorId: string;
+
   visitNumber: string;
   status: string;
 }

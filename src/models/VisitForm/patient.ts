@@ -6,6 +6,7 @@ export interface Patient {
   // =========================
   // Identification
   // =========================
+  id?: string;
   identifierType: string;
   identifierNumber: string;
   documentType: string;

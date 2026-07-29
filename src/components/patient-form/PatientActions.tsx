@@ -1,5 +1,11 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
+import { Alert } from "react-native";
+import { createPatient } from "@/services/patientApi";
+import { createWaitingVisit } from "@/services/visitApi";
+import { startVisit } from "@/services/visitApi";
+import { getErrorMessage } from "@/services/errorHandler";
+import { useVisitStore } from "@/store/visitStore";
 import {
   Pressable,
   StyleSheet,
@@ -14,15 +20,91 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import { mapPatientToCreateDto } from "@/mappers/patientMapper";
 
 export default function PatientActions() {
+  const { visit, updateVisit } = useVisitStore();
+  const handleAddToWaiting = async () => {
+    try {
+
+      const dto = mapPatientToCreateDto(
+        visit.patient
+      );
+
+      const patientResponse =
+        await createPatient(dto);
+
+      const waitingVisit =
+        await createWaitingVisit(
+          patientResponse.id
+      );
+
+      updateVisit({
+        metadata: {
+          ...visit.metadata,
+          id: waitingVisit.id,
+          patientId: patientResponse.id,
+          visitNumber: waitingVisit.visitCode,
+          status: waitingVisit.visitStatus,
+        },
+      });
+
+      router.replace("/patient-overview");
+
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        getErrorMessage(error)
+      );
+    }
+  };
+
+  const handleStartVisit = async () => {
+    try {
+      const dto = mapPatientToCreateDto(
+        visit.patient
+      );
+
+      const patientResponse =
+        await createPatient(dto);
+
+      const waitingVisit =
+        await createWaitingVisit(
+          patientResponse.id
+        );
+
+      const startedVisit =
+        await startVisit(
+          waitingVisit.id
+        );
+
+      updateVisit({
+        metadata: {
+          ...visit.metadata,
+          id: startedVisit.id,
+          patientId: patientResponse.id,
+          visitNumber: startedVisit.visitCode,
+          status: startedVisit.visitStatus,
+        },
+      });
+
+      router.replace(
+        "/visit/HistoryScreen"
+      );
+
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        getErrorMessage(error)
+      );
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Pressable
         style={styles.primaryButton}
-        onPress={() =>
-          router.replace("/visit/HistoryScreen")
-        }
+        onPress={handleStartVisit}
       >
         <Ionicons
           name="play-outline"
@@ -37,9 +119,7 @@ export default function PatientActions() {
 
       <Pressable
         style={styles.secondaryButton}
-        onPress={() =>
-        router.replace("/patient-overview")
-        }
+        onPress={handleAddToWaiting}
       >
         <Ionicons
           name="save-outline"
