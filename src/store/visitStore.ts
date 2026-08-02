@@ -27,6 +27,15 @@ import {
   Referral,
   PrescriptionMedication,
 } from "@/models/VisitForm/assessment";
+
+import {
+  Clinic,
+  ClinicInformation,
+  ClinicWorkingHours,
+  Doctor,
+  Staff,
+} from "@/models/VisitForm/clinic";
+
 interface VisitStore {
   visit: VisitForm;
 
@@ -408,6 +417,56 @@ updatePrescriptionNotes: (
 
 updatePrescriptionFollowUp: (
   value: string
+) => void;
+
+// ======================================================
+// Clinic Information
+// ======================================================
+
+updateClinicInformation: (
+  updates: Partial<ClinicInformation>
+) => void;
+
+updateWorkingHours: (
+  updates: Partial<ClinicWorkingHours>
+) => void;
+
+toggleWorkingDay: (
+  day: string
+) => void;
+
+// ======================================================
+// Doctors
+// ======================================================
+
+addDoctor: (
+  doctor: Doctor
+) => void;
+
+updateDoctor: (
+  id: string,
+  updates: Partial<Doctor>
+) => void;
+
+removeDoctor: (
+  id: string
+) => void;
+
+// ======================================================
+// Staff
+// ======================================================
+
+addStaff: (
+  staff: Staff
+) => void;
+
+updateStaff: (
+  id: string,
+  updates: Partial<Staff>
+) => void;
+
+removeStaff: (
+  id: string
 ) => void;
 
   resetVisit: () => void;
@@ -2287,6 +2346,161 @@ updatePrescriptionFollowUp: (
             .prescription,
           followUp: value,
         },
+      },
+    },
+  })),
+
+  updateClinicInformation: (updates) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      clinic: {
+        ...state.visit.clinic,
+        information: {
+          ...state.visit.clinic.information,
+          ...updates,
+        },
+      },
+    },
+  })),
+
+  updateWorkingHours: (updates) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      clinic: {
+        ...state.visit.clinic,
+        workingHours: {
+          ...state.visit.clinic.workingHours,
+          ...updates,
+        },
+      },
+    },
+  })),
+
+  toggleWorkingDay: (day) =>
+  set((state) => {
+    const current =
+      state.visit.clinic.workingHours.days;
+
+    const days = current.includes(day)
+      ? current.filter((d) => d !== day)
+      : [...current, day];
+
+    return {
+      visit: {
+        ...state.visit,
+        clinic: {
+          ...state.visit.clinic,
+          workingHours: {
+            ...state.visit.clinic.workingHours,
+            days,
+          },
+        },
+      },
+    };
+  }),
+
+  addDoctor: (doctor) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      clinic: {
+        ...state.visit.clinic,
+        doctors: [
+          ...state.visit.clinic.doctors,
+          doctor,
+        ],
+      },
+    },
+  })),
+
+  updateDoctor: (
+  id,
+  updates
+) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      clinic: {
+        ...state.visit.clinic,
+        doctors:
+          state.visit.clinic.doctors.map(
+            (doctor) =>
+              doctor.id === id
+                ? {
+                    ...doctor,
+                    ...updates,
+                  }
+                : doctor
+          ),
+      },
+    },
+  })),
+
+  removeDoctor: (id) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      clinic: {
+        ...state.visit.clinic,
+        doctors:
+          state.visit.clinic.doctors.filter(
+            (doctor) =>
+              doctor.id !== id
+          ),
+      },
+    },
+  })),
+
+  addStaff: (staff) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      clinic: {
+        ...state.visit.clinic,
+        staff: [
+          ...state.visit.clinic.staff,
+          staff,
+        ],
+      },
+    },
+  })),
+
+  updateStaff: (
+  id,
+  updates
+) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      clinic: {
+        ...state.visit.clinic,
+        staff:
+          state.visit.clinic.staff.map(
+            (member) =>
+              member.id === id
+                ? {
+                    ...member,
+                    ...updates,
+                  }
+                : member
+          ),
+      },
+    },
+  })),
+
+  removeStaff: (id) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      clinic: {
+        ...state.visit.clinic,
+        staff:
+          state.visit.clinic.staff.filter(
+            (member) =>
+              member.id !== id
+          ),
       },
     },
   })),

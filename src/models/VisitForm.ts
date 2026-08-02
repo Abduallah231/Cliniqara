@@ -18,6 +18,11 @@ import {
   createEmptyAssessment,
 } from "./VisitForm/assessment";
 
+import {
+  Clinic,
+  createEmptyClinic,
+} from "./VisitForm/clinic";
+
 // ======================================================
 // Visit Form
 // ======================================================
@@ -32,6 +37,8 @@ export interface VisitForm {
   examination: Examination;
 
   assessment: Assessment;
+
+  clinic: Clinic;
 }
 
 // ======================================================
@@ -56,6 +63,8 @@ export function createEmptyVisitForm(): VisitForm {
     examination: createEmptyExamination(),
 
     assessment: createEmptyAssessment(),
+
+    clinic: createEmptyClinic(),
   };
 }
 

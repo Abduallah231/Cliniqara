@@ -127,7 +127,7 @@ export default function DashboardScreen() {
             }
           />
         </View>
-        {/* <View style={styles.actionsRow}>
+         <View style={styles.actionsRow}>
           <DashboardActionCard
             compact
             title="Login"
@@ -157,7 +157,7 @@ export default function DashboardScreen() {
             icon="key-outline"
             style={styles.flex}
             variant="orange"
-            onPress={() => router.push("/forgot-password")}
+            onPress={() => router.push("/waiting-approval")}
           />
 
           <DashboardActionCard
@@ -169,7 +169,7 @@ export default function DashboardScreen() {
             variant="cyan"
             onPress={() => {}}
           />
-        </View> */}
+        </View> 
       </ScrollView>
     </SafeAreaView>
   );

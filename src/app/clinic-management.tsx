@@ -1,86 +1,54 @@
 import DoctorCard from "@/components/clinic/DoctorCard";
 import StaffCard from "@/components/clinic/StaffCard";
+import AddDoctorDialog from "@/components/clinic/AddDoctorDialog";
+import AddStaffDialog from "@/components/clinic/AddStaffDialog";
+
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import AppTopBar from "@/components/common/AppTopBar";
+import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
-import { router } from "expo-router";
-import { useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import AddDoctorDialog from "@/components/clinic/AddDoctorDialog";
-import AddStaffDialog from "@/components/clinic/AddStaffDialog";
+
+import { useVisitStore } from "@/store/visitStore";
+
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
-type Doctor = {
-  id: string;
-  name: string;
-  specialty: string;
-  openingTime: string;
-  closingTime: string;
-  days: string[];
-};
 
-type Staff = {
-  id: string;
-  name: string;
-  role: string;
-  openingTime: string;
-  closingTime: string;
-  days: string[];
-};
+import { router } from "expo-router";
+
+import { useState } from "react";
+
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ClinicManagementScreen() {
-  const [doctors, setDoctors] =
-    useState<Doctor[]>([]);
 
-  const [staffMembers, setStaffMembers] =
-    useState<Staff[]>([]);
+  const {
+    visit,
+    updateClinicInformation,
+    updateWorkingHours,
+    addDoctor,
+    updateDoctor,
+    removeDoctor,
 
-  const [editingDoctor, setEditingDoctor] =
-    useState<Doctor | null>(null);
+    addStaff,
+    updateStaff,
+    removeStaff,
 
-  const [editingStaff, setEditingStaff] =
-    useState<Staff | null>(null);
+  } = useVisitStore();
 
-  const [clinicName, setClinicName] =
-    useState("");
-
-  const [phone, setPhone] =
-    useState("");
-
-  const [address, setAddress] =
-    useState("");
-
-  const [openingTime, setOpeningTime] =
-    useState("");
-
-  const [closingTime, setClosingTime] =
-    useState("");
-
-  const [days, setDays] = useState([
-    "Sun",
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-  ]);
-
-  const [showDoctorDialog, setShowDoctorDialog] =
-  useState(false);
-
-const [showStaffDialog, setShowStaffDialog] =
-  useState(false);
+  const clinic = visit.clinic;
 
   const workingDays = [
     "Sat",
@@ -92,15 +60,40 @@ const [showStaffDialog, setShowStaffDialog] =
     "Fri",
   ];
 
-  const toggleDay = (day: string) => {
-    if (days.includes(day)) {
-      setDays(
-        days.filter((d) => d !== day)
-      );
-    } else {
-      setDays([...days, day]);
-    }
+  const toggleWorkingDay = (
+    day: string
+  ) => {
+    const current =
+      (clinic.workingHours.days as string[]) ?? [];
+
+    const updated =
+      current.includes(day)
+        ? current.filter(
+            (item) =>
+              item !== day
+          )
+        : [...current, day];
+
+    updateWorkingHours({
+      days: updated,
+    });
   };
+
+  const [editingDoctor, setEditingDoctor] =
+    useState<any>(null);
+
+  const [editingStaff, setEditingStaff] =
+    useState<any>(null);
+
+  const [
+    showDoctorDialog,
+    setShowDoctorDialog,
+  ] = useState(false);
+
+  const [
+    showStaffDialog,
+    setShowStaffDialog,
+  ] = useState(false);
 
   return (
     <SafeAreaView
@@ -122,70 +115,124 @@ const [showStaffDialog, setShowStaffDialog] =
           false
         }
       >
-        <SectionHeader title="Clinic Information" />
+
+        <SectionHeader
+          title="Clinic Information"
+        />
 
         <AppCard>
+
           <AppTextField
             label="Clinic Name"
-            value={clinicName}
-            onChangeText={setClinicName}
+            value={
+              (clinic.information.clinicName as string) ?? ""
+            }
+            onChangeText={(v) =>
+                updateClinicInformation({
+                    clinicName: v,
+                })
+            }
           />
+
+          <Divider />
 
           <AppTextField
             label="Phone Number"
-            value={phone}
-            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            value={
+              (clinic.information.phone as string) ?? ""
+            }
+            onChangeText={(v) =>
+              updateClinicInformation({
+                  phone: v,
+              })
+            }
           />
+
+          <Divider />
 
           <AppTextField
             label="Address"
             multiline
-            value={address}
-            onChangeText={setAddress}
+            value={
+              (clinic.information.address as string) ?? ""
+            }
+            onChangeText={(v) =>
+              updateClinicInformation({
+                  address: v,
+              })
+            }
           />
+
         </AppCard>
 
-        <SectionHeader title="Clinic Working Hours" />
+        <SectionHeader
+          title="Clinic Working Hours"
+        />
 
         <AppCard>
+
           <AppTextField
             label="Opening Time"
             placeholder="08:00 AM"
-            value={openingTime}
-            onChangeText={
-              setOpeningTime
+            value={
+              (clinic.workingHours.openingTime as string) ?? ""
+            }
+            onChangeText={(v) =>
+              updateWorkingHours({
+                  openingTime: v,
+              })
             }
           />
+
+          <Divider />
 
           <AppTextField
             label="Closing Time"
             placeholder="05:00 PM"
-            value={closingTime}
-            onChangeText={
-              setClosingTime
+            value={
+              (clinic.workingHours.closingTime as string) ?? ""
+            }
+            onChangeText={(v) =>
+              updateWorkingHours({
+                  closingTime: v,
+              })
             }
           />
+
+          <Divider />
 
           <Text style={styles.label}>
             Working Days
           </Text>
 
           <View style={styles.chips}>
-            {workingDays.map((day) => (
-              <AppChip
-                key={day}
-                label={day}
-                selected={days.includes(
-                  day
-                )}
-                onPress={() =>
-                  toggleDay(day)
-                }
-              />
-            ))}
+            {workingDays.map(
+              (day) => (
+                <AppChip
+                  key={day}
+                  label={day}
+                  selected={
+                    (
+                      (clinic.workingHours.days as string[]) ??
+                      []
+                    ).includes(day)
+                  }
+                  onPress={() =>
+                    toggleWorkingDay(
+                      day
+                    )
+                  }
+                />
+              )
+            )}
           </View>
-          </AppCard>
-        {doctors.map((doctor) => (
+
+        </AppCard>
+
+                <SectionHeader title="Doctors" />
+
+        {clinic.doctors.map((doctor) => (
           <DoctorCard
             key={doctor.id}
             name={doctor.name}
@@ -197,16 +244,12 @@ const [showStaffDialog, setShowStaffDialog] =
               setShowDoctorDialog(true);
             }}
             onDelete={() =>
-              setDoctors(
-                doctors.filter(
-                  (d) => d.id !== doctor.id
-                )
-              )
+              removeDoctor(doctor.id)
             }
           />
         ))}
 
-        {doctors.length === 0 && (
+        {clinic.doctors.length === 0 && (
           <AppCard>
             <Text style={styles.emptyText}>
               No doctors added yet
@@ -223,9 +266,11 @@ const [showStaffDialog, setShowStaffDialog] =
           }}
         />
 
-        <SectionHeader title="Staff" />
+        <Divider />
 
-        {staffMembers.map((staff) => (
+        <SectionHeader title="Staff Members" />
+
+        {clinic.staff.map((staff) => (
           <StaffCard
             key={staff.id}
             name={staff.name}
@@ -237,19 +282,15 @@ const [showStaffDialog, setShowStaffDialog] =
               setShowStaffDialog(true);
             }}
             onDelete={() =>
-              setStaffMembers(
-                staffMembers.filter(
-                  (s) => s.id !== staff.id
-                )
-              )
+              removeStaff(staff.id)
             }
           />
         ))}
 
-        {staffMembers.length === 0 && (
+        {clinic.staff.length === 0 && (
           <AppCard>
             <Text style={styles.emptyText}>
-              No staff members yet
+              No staff members added yet
             </Text>
           </AppCard>
         )}
@@ -262,7 +303,7 @@ const [showStaffDialog, setShowStaffDialog] =
             setShowStaffDialog(true);
           }}
         />
-        <AddDoctorDialog
+                <AddDoctorDialog
           visible={showDoctorDialog}
           doctor={editingDoctor}
           onClose={() => {
@@ -271,25 +312,19 @@ const [showStaffDialog, setShowStaffDialog] =
           }}
           onSave={(doctor) => {
             if (editingDoctor) {
-              setDoctors(
-                doctors.map((d) =>
-                  d.id === editingDoctor.id
-                    ? {
-                        ...editingDoctor,
-                        ...doctor,
-                      }
-                    : d
-                )
+              updateDoctor(
+                editingDoctor.id,
+                doctor
               );
             } else {
-              setDoctors([
-                ...doctors,
-                {
-                  id: Date.now().toString(),
-                  ...doctor,
-                },
-              ]);
+              addDoctor({
+                id: Date.now().toString(),
+                ...doctor,
+              });
             }
+
+            setEditingDoctor(null);
+            setShowDoctorDialog(false);
           }}
         />
 
@@ -302,32 +337,25 @@ const [showStaffDialog, setShowStaffDialog] =
           }}
           onSave={(staff) => {
             if (editingStaff) {
-              setStaffMembers(
-                staffMembers.map((s) =>
-                  s.id === editingStaff.id
-                    ? {
-                        ...editingStaff,
-                        ...staff,
-                      }
-                    : s
-                )
+              updateStaff(
+                editingStaff.id,
+                staff
               );
             } else {
-              setStaffMembers([
-                ...staffMembers,
-                {
-                  id: Date.now().toString(),
-                  ...staff,
-                },
-              ]);
+              addStaff({
+                id: Date.now().toString(),
+                ...staff,
+              });
             }
+
+            setEditingStaff(null);
+            setShowStaffDialog(false);
           }}
         />
-
-              </ScrollView>
-            </SafeAreaView>
-          );
-        }
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -344,37 +372,20 @@ const styles = StyleSheet.create({
   chips: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: SPACING.sm,
-  },
-
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  left: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.md,
-  },
-
-  title: {
-    color: COLORS.text,
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "600",
+    gap: SPACING.xs,
   },
 
   label: {
-    marginBottom: SPACING.sm,
-    color: COLORS.text,
-    fontSize: TYPOGRAPHY.body,
+    fontSize: TYPOGRAPHY.small,
     fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
   },
 
   emptyText: {
-  textAlign: "center",
-  color: COLORS.secondaryText,
-  marginVertical: SPACING.md,
-},
+    textAlign: "center",
+    color: COLORS.secondaryText,
+    fontSize: TYPOGRAPHY.body,
+    paddingVertical: SPACING.md,
+  },
 });
