@@ -215,7 +215,7 @@ export default function WaitingApprovalScreen() {
               <AppButton
                 title="Go to Dashboard"
                 onPress={() =>
-                  router.replace("/")
+                  router.replace("/(app)")
                 }
               />
             )}
@@ -232,7 +232,7 @@ export default function WaitingApprovalScreen() {
             <Pressable
               style={styles.signOutButton}
               onPress={() =>
-                router.replace("/login")
+                router.replace("/(auth)/login")
               }
             >
               <Ionicons

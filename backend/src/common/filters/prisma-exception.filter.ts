@@ -28,9 +28,6 @@ export class PrismaExceptionFilter
             ? exception.meta.target.join(', ')
             : 'resource';
 
-            console.log(exception.meta);
-console.log(target);
-
         error = new ConflictException(
             `${target} already exists`,
         );

@@ -36,7 +36,7 @@ export default function HistoryScreen() {
     <SafeAreaView style={styles.container}>
       <AppTopBar
         title="Visit History"
-        onBack={() => router.replace("/")}
+        onBack={() => router.replace("/(app)")}
         onRightPress={() => router.push("/settings")}
       />
 
@@ -49,7 +49,7 @@ export default function HistoryScreen() {
           title="Back"
           variant="secondary"
           style={styles.backButton}
-          onPress={() => router.replace("/")}
+          onPress={() => router.replace("/(app)")}
         />
 
         <AppButton

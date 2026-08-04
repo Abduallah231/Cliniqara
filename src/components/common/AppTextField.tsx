@@ -54,6 +54,20 @@ type Props = {
     | "characters";
 };
 
+function convertArabicNumbers(text: string) {
+  return text
+    .replace(/٠/g, "0")
+    .replace(/١/g, "1")
+    .replace(/٢/g, "2")
+    .replace(/٣/g, "3")
+    .replace(/٤/g, "4")
+    .replace(/٥/g, "5")
+    .replace(/٦/g, "6")
+    .replace(/٧/g, "7")
+    .replace(/٨/g, "8")
+    .replace(/٩/g, "9");
+}
+
 export default function AppTextField({
   label = "",
   value = "",
@@ -122,7 +136,9 @@ export default function AppTextField({
 
         <TextInput
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={(text) =>
+            onChangeText(convertArabicNumbers(text))
+          }
           placeholder={placeholder}
           placeholderTextColor={COLORS.placeholder}
           editable={!disabled && editable}
@@ -132,6 +148,14 @@ export default function AppTextField({
           autoFocus={autoFocus}
           autoCapitalize={autoCapitalize}
           maxLength={maxLength}
+          inputMode={
+            keyboardType === "number-pad" ||
+            keyboardType === "numeric" ||
+            keyboardType === "decimal-pad"
+              ? "numeric"
+              : undefined
+          }
+          importantForAutofill="yes"
           style={[
             styles.input,
             multiline && styles.multiline,

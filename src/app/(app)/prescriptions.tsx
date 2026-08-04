@@ -50,7 +50,7 @@ const [showFolderDialog, setShowFolderDialog] =
       <AppTopBar
         title="Prescription Templates"
         onBack={() =>
-          router.replace("/")
+          router.replace("/(app)")
         }
         onRightPress={() =>
           router.push("/settings")

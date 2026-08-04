@@ -1,6 +1,14 @@
-import { AccountType, DoctorLevel } from '@prisma/client';
-import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { IsOptional } from 'class-validator';
+import { AccountType, DoctorLevel } from "@prisma/client";
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+} from "class-validator";
+
 export class RegisterDto {
   @IsEnum(AccountType)
   accountType!: AccountType;
@@ -10,17 +18,31 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty()
+  @Length(3, 100)
   fullName!: string;
 
   @IsEmail()
-  @IsNotEmpty()
   email!: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @Matches(/^[0-9]{10,15}$/)
   phone!: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @Length(8, 100)
   password!: string;
+
+  @IsOptional()
+  @Matches(/^\d{14}$/)
+  nationalId?: string;
+
+  @IsOptional()
+  @IsString()
+  medicalLicenseNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  nationalIdImage?: string;
+
+  @IsOptional()
+  @IsString()
+  medicalLicenseImage?: string;
 }

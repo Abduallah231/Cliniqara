@@ -16,8 +16,10 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import GuestBanner from "@/components/dashboard/GuestBanner";
 
 export default function DashboardScreen() {
+  const isGuest = true;
   return (
     <SafeAreaView style={styles.container}>
       <AppTopBar
@@ -28,11 +30,20 @@ export default function DashboardScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <WelcomeCard
-          doctorName={`Dr. ${currentDoctor.name}`}
-          specialty={currentDoctor.specialty}
-          clinicName={currentDoctor.clinicName}
-        />
+        
+        {isGuest ? (
+          <GuestBanner
+            onCreateAccount={() =>
+              router.push("/create-account")
+            }
+          />
+        ) : (
+          <WelcomeCard
+            doctorName={`Dr. ${currentDoctor.name}`}
+            specialty={currentDoctor.specialty}
+            clinicName={currentDoctor.clinicName}
+          />
+        )}
 
         <View style={styles.statsRow}>
           <StatCard
@@ -135,7 +146,7 @@ export default function DashboardScreen() {
             icon="log-in-outline"
             style={styles.flex}
             variant="primary"
-            onPress={() => router.push("/login")}
+            onPress={() => router.push("/(auth)/login")}
           />
 
           <DashboardActionCard

@@ -13,13 +13,16 @@ import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import AppTextField from "@/components/common/AppTextField";
-
+import { saveGuestSession } from "@/services/authStorage";
 import {
   COLORS,
   SHADOW,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import { Alert } from "react-native";
+import { login } from "@/services/authApi";
+import { getErrorMessage } from "@/services/errorHandler";
 
 export default function LoginScreen() {
   const [email, setEmail] =
@@ -33,6 +36,30 @@ export default function LoginScreen() {
 
   const [rememberMe, setRememberMe] =
     useState(true);
+
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+
+      const result = await login(
+        email.trim(),
+        password
+      );
+
+      console.log(result);
+
+      router.replace("/(app)");
+    } catch (error) {
+      Alert.alert(
+        "Login Failed",
+        getErrorMessage(error)
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -137,7 +164,11 @@ export default function LoginScreen() {
                 </Text>
               </Pressable>
 
-              <Pressable>
+              <Pressable
+                onPress={() =>
+                  router.push("/forgot-password")
+                }
+              >
                 <Text
                   style={
                     styles.forgotText
@@ -150,9 +181,17 @@ export default function LoginScreen() {
 
             <AppButton
               title="Sign In"
-              onPress={() =>
-                router.replace("/")
-              }
+              onPress={handleLogin}
+              loading={loading}
+            />
+
+            <AppButton
+              title="Continue as Guest"
+              variant="secondary"
+              onPress={async () => {
+                await saveGuestSession();
+                router.replace("/(app)");
+              }}
             />
           </View>
         </AppCard>

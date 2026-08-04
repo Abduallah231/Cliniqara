@@ -20,8 +20,10 @@ import {
   SPACING,
   TYPOGRAPHY
 } from "@/theme";
+import { logout } from "@/services/authApi";
 
 import { useState } from "react";
+import AppButton from "@/components/common/AppButton";
 
 export default function SettingsScreen() {
   const [theme, setTheme] = useState("System");
@@ -33,7 +35,10 @@ export default function SettingsScreen() {
     useState(false);
   const [biometric, setBiometric] =
     useState(false);
-
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/login");
+  };
   return (
     <SafeAreaView
       style={styles.container}
@@ -52,6 +57,12 @@ export default function SettingsScreen() {
           false
         }
       >
+
+        <AppButton
+          title="Logout"
+          variant="secondary"
+          onPress={handleLogout}
+        />
         <SectionHeader title="Doctor Profile" />
 
         <AppCard>

@@ -79,7 +79,7 @@ export default function WaitingListScreen() {
       <AppTopBar
         title="Waiting List"
         onBack={() =>
-          router.replace("/")
+          router.replace("/(app)")
         }
         onRightPress={() =>
           router.push("/settings")

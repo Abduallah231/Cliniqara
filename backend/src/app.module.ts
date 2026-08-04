@@ -3,11 +3,12 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { ClinicModule } from './clinic/clinic.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { PatientModule } from './patient/patient.module';
-import { VisitModule } from "./visit/visit.module";
 import { ChiefComplaintsModule } from './chief-complaints/chief-complaints.module';
+import { ClinicModule } from './clinic/clinic.module';
+import { PatientModule } from './patient/patient.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { UploadModule } from "./upload/upload.module";
+import { VisitModule } from "./visit/visit.module";
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,6 +21,7 @@ import { ChiefComplaintsModule } from './chief-complaints/chief-complaints.modul
     PatientModule,
     VisitModule,
     ChiefComplaintsModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

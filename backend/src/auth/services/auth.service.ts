@@ -22,6 +22,14 @@ export class AuthService {
   async register(dto: RegisterDto) {
     dto.email = dto.email.trim().toLowerCase();
 
+    dto.phone = dto.phone.trim();
+
+    dto.fullName = dto.fullName.trim();
+
+    dto.nationalId = dto.nationalId?.trim();
+
+    dto.medicalLicenseNumber = dto.medicalLicenseNumber?.trim();
+
     if (
       dto.accountType === AccountType.DOCTOR &&
       !dto.doctorLevel
@@ -33,6 +41,16 @@ export class AuthService {
 
     if (dto.accountType === AccountType.RECEPTION) {
       dto.doctorLevel = undefined;
+    }
+
+    if (
+      dto.accountType === AccountType.DOCTOR &&
+      dto.doctorLevel === "DOCTOR" &&
+      !dto.medicalLicenseNumber
+    ) {
+      throw new BadRequestException(
+        "Medical license number is required",
+      );
     }
 
     const existingUser = await this.prisma.user.findUnique({
@@ -49,6 +67,37 @@ export class AuthService {
       },
     });
 
+    if (dto.nationalId) {
+      const existingNationalId =
+        await this.prisma.user.findFirst({
+          where: {
+            nationalId: dto.nationalId,
+          },
+        });
+
+      if (existingNationalId) {
+        throw new ConflictException(
+          "National ID already exists",
+        );
+      }
+    }
+
+    if (dto.medicalLicenseNumber) {
+      const existingLicense =
+        await this.prisma.user.findFirst({
+          where: {
+            medicalLicenseNumber:
+              dto.medicalLicenseNumber,
+          },
+        });
+
+      if (existingLicense) {
+        throw new ConflictException(
+          "Medical license already exists",
+        );
+      }
+    }
+
     if (existingPhone) {
       throw new ConflictException('Phone already exists');
     }
@@ -58,12 +107,26 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: {
         userCode: crypto.randomUUID(),
+
         accountType: dto.accountType,
         doctorLevel: dto.doctorLevel,
+
         fullName: dto.fullName,
         email: dto.email,
         phone: dto.phone,
+
         passwordHash: hashedPassword,
+
+        nationalId: dto.nationalId,
+
+        medicalLicenseNumber:
+          dto.medicalLicenseNumber,
+
+        nationalIdImage:
+          dto.nationalIdImage,
+
+        medicalCardImage:
+          dto.medicalLicenseImage,
       },
     });
     const { passwordHash, ...safeUser } = user;
@@ -94,6 +157,15 @@ async login(dto: LoginDto) {
   if (!isPasswordValid) {
     throw new UnauthorizedException('Invalid email or password');
   }
+
+  await this.prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      lastLoginAt: new Date(),
+    },
+  });
 
   const payload = {
     sub: user.id,
