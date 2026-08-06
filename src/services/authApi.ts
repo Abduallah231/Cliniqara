@@ -1,5 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "./api";
+import SessionService from "./session.service";
 
 export type RegisterDto = {
   fullName: string;
@@ -33,42 +33,7 @@ export async function login(
     password,
   });
 
-  await AsyncStorage.setItem(
-    "accessToken",
-    data.accessToken
-  );
-
-  await AsyncStorage.setItem(
-    "refreshToken",
-    data.refreshToken
-  );
-
-  await AsyncStorage.setItem(
-    "user",
-    JSON.stringify(data.user)
-  );
+  await SessionService.saveAccessToken(data.accessToken);
 
   return data;
-}
-
-export async function logout() {
-  await AsyncStorage.multiRemove([
-    "accessToken",
-    "refreshToken",
-    "user",
-    "guestMode",
-  ]);
-}
-
-export async function loginAsGuest() {
-  await AsyncStorage.setItem(
-    "guestMode",
-    "true"
-  );
-
-  await AsyncStorage.multiRemove([
-    "accessToken",
-    "refreshToken",
-    "user",
-  ]);
 }

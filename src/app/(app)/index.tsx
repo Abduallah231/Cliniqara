@@ -1,10 +1,11 @@
 import AppTopBar from "@/components/common/AppTopBar";
 import SectionHeader from "@/components/common/SectionHeader";
 import DashboardActionCard from "@/components/dashboard/DashboardActionCard";
+import GuestBanner from "@/components/dashboard/GuestBanner";
 import StatCard from "@/components/dashboard/StatCard";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import dashboardStats from "@/data/dashboard";
-import { currentDoctor } from "@/data/user";
+import { useDoctorStore } from "@/store/doctorStore";
 import {
   COLORS,
   SPACING
@@ -16,14 +17,34 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import GuestBanner from "@/components/dashboard/GuestBanner";
+import { useEffect, useState } from "react";
+import SessionService from "@/services/session.service";
+import { useClinicStore } from "@/store/clinicStore";
 
 export default function DashboardScreen() {
-  const isGuest = true;
+  const doctor = useDoctorStore(
+    (state) => state.doctor
+  );
+
+  const clinic = useClinicStore(
+    (state) => state.clinic
+  );
+
+  const [isGuest, setIsGuest] = useState(
+      !doctor
+    );
+
+  useEffect(() => {
+    SessionService.isGuestMode().then(
+      setIsGuest
+    );
+  }, [doctor]);
+
+  
   return (
     <SafeAreaView style={styles.container}>
       <AppTopBar
-        onRightPress={() => router.push("/settings")}
+        onRightPress={() => router.push("/(app)/settings")}
       />
 
       <ScrollView
@@ -34,14 +55,14 @@ export default function DashboardScreen() {
         {isGuest ? (
           <GuestBanner
             onCreateAccount={() =>
-              router.push("/create-account")
+              router.push("/(auth)/create-account")
             }
           />
         ) : (
           <WelcomeCard
-            doctorName={`Dr. ${currentDoctor.name}`}
-            specialty={currentDoctor.specialty}
-            clinicName={currentDoctor.clinicName}
+            doctorName={`Dr. ${doctor?.fullName ?? ""}`}
+            specialty={doctor?.doctorLevel ?? ""}
+            clinicName={clinic?.name ?? ""}
           />
         )}
 
@@ -83,7 +104,7 @@ export default function DashboardScreen() {
           icon="time-outline"
           variant="success"
           fullWidth
-          onPress={() => router.push("/waiting-list")}
+          onPress={() => router.push("/(app)/waiting-list")}
         />
 
         <View style={styles.actionsRow}>
@@ -95,7 +116,7 @@ export default function DashboardScreen() {
             style={styles.flex}
             variant="purple"
             onPress={() =>
-              router.push("/existing-patients")
+              router.push("/(app)/existing-patients")
             }
           />
 
@@ -107,7 +128,7 @@ export default function DashboardScreen() {
             style={styles.flex}
              variant="orange"
             onPress={() =>
-              router.push("/prescriptions")
+              router.push("/(app)/prescriptions")
             }
           />
         </View>
@@ -134,11 +155,11 @@ export default function DashboardScreen() {
             style={styles.flex}
             variant="red"
             onPress={() =>
-              router.push("/clinic-management")
+              router.push("/(app)/clinic-management")
             }
           />
         </View>
-         <View style={styles.actionsRow}>
+         {/* <View style={styles.actionsRow}>
           <DashboardActionCard
             compact
             title="Login"
@@ -156,7 +177,7 @@ export default function DashboardScreen() {
             icon="person-add-outline"
             style={styles.flex}
             variant="success"
-            onPress={() => router.push("/create-account")}
+            onPress={() => router.push("/(auth)/create-account")}
           />
         </View>
 
@@ -168,7 +189,7 @@ export default function DashboardScreen() {
             icon="key-outline"
             style={styles.flex}
             variant="orange"
-            onPress={() => router.push("/waiting-approval")}
+            onPress={() => router.push("/(app)/join-clinic")}
           />
 
           <DashboardActionCard
@@ -178,9 +199,9 @@ export default function DashboardScreen() {
             icon="shield-checkmark-outline"
             style={styles.flex}
             variant="cyan"
-            onPress={() => {}}
+            onPress={() => router.push("/(app)/join-clinic")}
           />
-        </View> 
+        </View>  */}
       </ScrollView>
     </SafeAreaView>
   );

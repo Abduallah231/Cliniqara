@@ -48,9 +48,24 @@ export default function LoginScreen() {
         password
       );
 
-      console.log(result);
+      const status = result.user.verificationStatus;
 
-      router.replace("/(app)");
+      switch (status) {
+        case "APPROVED":
+          router.replace("/(app)");
+          break;
+
+        case "PENDING":
+          router.replace("/(auth)/waiting-approval");
+          break;
+
+        case "REJECTED":
+          router.replace("/(auth)/verification-failed");
+          break;
+
+        default:
+          Alert.alert("Error", "Unknown verification status");
+      }
     } catch (error) {
       Alert.alert(
         "Login Failed",
@@ -98,8 +113,8 @@ export default function LoginScreen() {
 
           <View style={styles.form}>
             <AppTextField
-              label="Email or Phone"
-              placeholder="Enter email or phone"
+              label="Email"
+              placeholder="Enter your email"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -166,7 +181,7 @@ export default function LoginScreen() {
 
               <Pressable
                 onPress={() =>
-                  router.push("/forgot-password")
+                  router.push("/(auth)/forgot-password")
                 }
               >
                 <Text
@@ -203,9 +218,7 @@ export default function LoginScreen() {
 
           <Pressable
             onPress={() =>
-              router.push(
-                "/create-account"
-              )
+              router.push("/(auth)/create-account")
             }
           >
             <Text

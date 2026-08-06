@@ -1,7 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-
 import { API_CONFIG } from "../config/apiConfig";
+import SessionService from "./session.service";
 
 export const api = axios.create({
   baseURL: API_CONFIG.BASE_URL,
@@ -13,7 +12,7 @@ export const api = axios.create({
 
 api.interceptors.request.use(async config => {
 
-  const token = await AsyncStorage.getItem("accessToken");
+  const token = await SessionService.getAccessToken();
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -21,3 +20,14 @@ api.interceptors.request.use(async config => {
 
   return config;
 });
+
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    if (error.response?.status === 401) {
+      await SessionService.clearSession();
+    }
+
+    return Promise.reject(error);
+  }
+);

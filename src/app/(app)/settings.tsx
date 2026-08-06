@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { useDoctorStore } from "@/store/doctorStore";
 import AppCard from "@/components/common/AppCard";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
@@ -20,7 +20,7 @@ import {
   SPACING,
   TYPOGRAPHY
 } from "@/theme";
-import { logout } from "@/services/authApi";
+import SessionService from "@/services/session.service";
 
 import { useState } from "react";
 import AppButton from "@/components/common/AppButton";
@@ -35,9 +35,18 @@ export default function SettingsScreen() {
     useState(false);
   const [biometric, setBiometric] =
     useState(false);
+
+  const doctor = useDoctorStore(
+    (state) => state.doctor
+  );
   const handleLogout = async () => {
-    await logout();
-    router.replace("/login");
+    await SessionService.clearSession();
+
+    useDoctorStore
+      .getState()
+      .clearDoctor();
+
+    router.replace("/(auth)/login");
   };
   return (
     <SafeAreaView
@@ -68,13 +77,13 @@ export default function SettingsScreen() {
         <AppCard>
           <AppTextField
             label="Full Name"
-            value="Dr. Abdullah"
+            value={doctor?.fullName ?? ""}
             editable={false}
           />
 
           <AppTextField
             label="Specialty"
-            value="Family Medicine"
+            value={doctor?.doctorLevel ?? ""}
             editable={false}
           />
 

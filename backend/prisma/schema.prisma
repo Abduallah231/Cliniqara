@@ -394,7 +394,7 @@ model User {
   medicalLicenseNumber String? @unique
 
   nationalIdImage  String?
-  medicalCardImage String?
+  medicalLicenseImage String?
 
   emailVerified Boolean @default(false)
   phoneVerified Boolean @default(false)

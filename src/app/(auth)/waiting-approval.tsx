@@ -1,7 +1,5 @@
-import { useState } from "react";
 import { router } from "expo-router";
 import {
-  Pressable,
   StyleSheet,
   Text,
   View,
@@ -13,6 +11,8 @@ import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 
+import { saveGuestSession } from "@/services/authStorage";
+
 import {
   COLORS,
   SHADOW,
@@ -20,20 +20,7 @@ import {
   TYPOGRAPHY,
 } from "@/theme";
 
-type ApprovalStatus =
-  | "pending"
-  | "approved"
-  | "rejected";
-
 export default function WaitingApprovalScreen() {
-  const [status, setStatus] =
-    useState<ApprovalStatus>(
-      "pending"
-    );
-
-  const [loading, setLoading] =
-    useState(false);
-
   return (
     <SafeAreaView style={styles.container}>
       <AppKeyboardAwareScrollView
@@ -45,117 +32,47 @@ export default function WaitingApprovalScreen() {
         <View style={styles.header}>
           <View style={styles.logo}>
             <Ionicons
-              name={
-                status === "approved"
-                  ? "checkmark-circle"
-                  : status === "rejected"
-                  ? "close-circle"
-                  : "time"
-              }
+              name="time"
               size={46}
-              color={
-                status === "approved"
-                  ? "#16A34A"
-                  : status === "rejected"
-                  ? COLORS.danger
-                  : "#F59E0B"
-              }
+              color={COLORS.warning}
             />
           </View>
 
           <Text style={styles.title}>
-            {status === "approved"
-              ? "Approved"
-              : status === "rejected"
-              ? "Request Rejected"
-              : "Waiting for Approval"}
+            Verification Under Review
           </Text>
 
           <Text style={styles.subtitle}>
-            {status === "approved"
-              ? "Your account is now active."
-              : status === "rejected"
-              ? "Your request has been rejected."
-              : "Your request has been sent successfully."}
+            Your verification request has been received and is currently under review.
           </Text>
         </View>
 
         <AppCard style={styles.card}>
           <View style={styles.form}>
-                        <Text style={styles.sectionTitle}>
-              Requested Clinic
-            </Text>
-
-            <View style={styles.clinicCard}>
-              <Ionicons
-                name="business"
-                size={28}
-                color={COLORS.primary}
-              />
-
-              <View style={styles.clinicInfo}>
-                <Text style={styles.clinicName}>
-                  El Salam Pediatric Clinic
-                </Text>
-
-                <Text style={styles.clinicAddress}>
-                  Alexandria, Egypt
-                </Text>
-              </View>
-            </View>
-
             <Text style={styles.sectionTitle}>
-              Current Status
+              Verification Status
             </Text>
 
-            <View
-              style={[
-                styles.statusCard,
-                status === "approved" &&
-                  styles.statusApproved,
-                status === "rejected" &&
-                  styles.statusRejected,
-              ]}
-            >
+            <View style={styles.statusCard}>
               <Ionicons
-                name={
-                  status === "approved"
-                    ? "checkmark-circle"
-                    : status === "rejected"
-                    ? "close-circle"
-                    : "time"
-                }
+                name="time"
                 size={24}
-                color={
-                  status === "approved"
-                    ? "#16A34A"
-                    : status === "rejected"
-                    ? COLORS.danger
-                    : "#F59E0B"
-                }
+                color={COLORS.warning}
               />
 
-              <Text
-                style={styles.statusText}
-              >
-                {status === "approved"
-                  ? "Approved"
-                  : status === "rejected"
-                  ? "Rejected"
-                  : "Pending Approval"}
+              <Text style={styles.statusText}>
+                Pending Review
               </Text>
             </View>
 
             <Text style={styles.description}>
-              {status === "approved"
-                ? "Your account has been activated successfully. You can now access your clinic."
-                : status === "rejected"
-                ? "Your request was rejected by the clinic administrator. Please contact your administrator or submit another clinic code."
-                : "The clinic administrator must approve your request before you can access patients and clinic data."}
+              Your account is currently being reviewed by our verification team.
+              Once approved, you will be able to use all Cliniqara features.
             </Text>
-                        <AppCard style={styles.infoCard}>
+
+            <AppCard style={styles.infoCard}>
               <Text style={styles.infoTitle}>
-                What happens next?
+                While you wait
               </Text>
 
               <View style={styles.infoItem}>
@@ -164,8 +81,9 @@ export default function WaitingApprovalScreen() {
                   size={20}
                   color={COLORS.primary}
                 />
+
                 <Text style={styles.infoText}>
-                  Your request has been sent successfully.
+                  You can continue using Cliniqara in Guest Mode.
                 </Text>
               </View>
 
@@ -175,77 +93,28 @@ export default function WaitingApprovalScreen() {
                   size={20}
                   color={COLORS.primary}
                 />
-                <Text style={styles.infoText}>
-                  The clinic administrator will review your request.
-                </Text>
-              </View>
 
-              <View style={styles.infoItem}>
-                <Ionicons
-                  name="checkmark-circle-outline"
-                  size={20}
-                  color={COLORS.primary}
-                />
                 <Text style={styles.infoText}>
-                  Once approved, your account will be activated automatically.
-                </Text>
-              </View>
-
-              <View style={styles.infoItem}>
-                <Ionicons
-                  name="notifications-outline"
-                  size={20}
-                  color={COLORS.primary}
-                />
-                <Text style={styles.infoText}>
-                  You will receive a notification after approval.
+                  Your account will unlock automatically after approval.
                 </Text>
               </View>
             </AppCard>
 
-            {status === "pending" && (
-              <AppButton
-                title="Refresh Status"
-                loading={loading}
-                onPress={() => {}}
-              />
-            )}
+            <AppButton
+              title="Continue as Guest"
+              onPress={async () => {
+                await saveGuestSession();
+                router.replace("/(app)");
+              }}
+            />
 
-            {status === "approved" && (
-              <AppButton
-                title="Go to Dashboard"
-                onPress={() =>
-                  router.replace("/(app)")
-                }
-              />
-            )}
-
-            {status === "rejected" && (
-              <AppButton
-                title="Join Another Clinic"
-                onPress={() =>
-                  router.replace("/join-clinic")
-                }
-              />
-            )}
-
-            <Pressable
-              style={styles.signOutButton}
+            <AppButton
+              title="Logout"
+              variant="secondary"
               onPress={() =>
                 router.replace("/(auth)/login")
               }
-            >
-              <Ionicons
-                name="log-out-outline"
-                size={20}
-                color={COLORS.danger}
-              />
-
-              <Text style={styles.signOutText}>
-                Sign Out
-              </Text>
-            </Pressable>
-
+            />
           </View>
         </AppCard>
       </AppKeyboardAwareScrollView>
@@ -278,7 +147,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: "#EEF6FF",
+    backgroundColor: COLORS.primaryLight,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: SPACING.md,
@@ -289,12 +158,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "700",
     color: COLORS.text,
+    textAlign: "center",
   },
 
   subtitle: {
     marginTop: SPACING.sm,
-    color: COLORS.secondaryText,
     textAlign: "center",
+    color: COLORS.secondaryText,
     fontSize: TYPOGRAPHY.body,
     lineHeight: 22,
   },
@@ -313,51 +183,15 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
 
-  clinicCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.md,
-    padding: SPACING.md,
-    borderRadius: 14,
-    backgroundColor: "#F8FBFF",
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-
-  clinicInfo: {
-    flex: 1,
-  },
-
-  clinicName: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  clinicAddress: {
-    color: COLORS.secondaryText,
-    marginTop: 2,
-  },
-
   statusCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: SPACING.sm,
     padding: SPACING.md,
     borderRadius: 14,
-    backgroundColor: "#FFF8E7",
+    backgroundColor: COLORS.primaryLight,
     borderWidth: 1,
-    borderColor: "#FCD34D",
-  },
-
-  statusApproved: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#16A34A",
-  },
-
-  statusRejected: {
-    backgroundColor: "#FEF2F2",
-    borderColor: COLORS.danger,
+    borderColor: COLORS.border,
   },
 
   statusText: {
@@ -372,7 +206,7 @@ const styles = StyleSheet.create({
   },
 
   infoCard: {
-    backgroundColor: "#F8FBFF",
+    backgroundColor: COLORS.card,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.primary,
     gap: SPACING.md,
@@ -395,18 +229,4 @@ const styles = StyleSheet.create({
     color: COLORS.secondaryText,
     lineHeight: 22,
   },
-
-  signOutButton: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: SPACING.sm,
-    paddingVertical: SPACING.md,
-  },
-
-  signOutText: {
-    color: COLORS.danger,
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-  },
-});
+});            

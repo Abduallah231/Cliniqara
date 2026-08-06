@@ -125,7 +125,7 @@ export class AuthService {
         nationalIdImage:
           dto.nationalIdImage,
 
-        medicalCardImage:
+        medicalLicenseImage:
           dto.medicalLicenseImage,
       },
     });

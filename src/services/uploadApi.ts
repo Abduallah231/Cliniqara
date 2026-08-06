@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const API_URL = "http://10.208.136.214:3000";
+import { api } from "./api";
 
 export async function uploadImage(uri: string) {
   const formData = new FormData();
@@ -13,8 +11,8 @@ export async function uploadImage(uri: string) {
     type: "image/jpeg",
   } as any);
 
-  const response = await axios.post(
-    `${API_URL}/upload/image`,
+  const response = await api.post(
+    "/upload/image",
     formData,
     {
       headers: {

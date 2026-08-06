@@ -1,10 +1,13 @@
-import { useEffect } from "react";
+import SessionService from "@/services/session.service";
 import { router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect } from "react";
+import AuthService from "@/services/auth.service";
 import {
   ActivityIndicator,
   View,
 } from "react-native";
+import { loadDoctorProfile } from "@/services/doctorApi";
+import { loadClinic } from "@/services/clinicApi";
 
 export default function SplashScreen() {
   useEffect(() => {
@@ -12,31 +15,60 @@ export default function SplashScreen() {
   }, []);
 
   async function checkSession() {
-    const guest = await AsyncStorage.getItem("guestMode");
-    const token = await AsyncStorage.getItem("accessToken");
+  const isGuest = await SessionService.isGuestMode();
 
-    if (guest === "true") {
-      router.replace("/");
-      return;
-    }
-
-    if (token) {
-      router.replace("/");
-      return;
-    }
-
-    router.replace("/login");
+  if (isGuest) {
+    router.replace("/(app)");
+    return;
   }
 
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <ActivityIndicator size="large" />
-    </View>
-  );
+  const token = await SessionService.getAccessToken();
+
+  if (!token) {
+    router.replace("/(auth)/login");
+    return;
+  }
+
+  try {
+    const user = await AuthService.me();
+
+    await loadDoctorProfile();
+    await loadClinic();
+
+    switch (user.verificationStatus) {
+      case "APPROVED":
+        router.replace("/(app)");
+        return;
+
+      case "PENDING":
+        router.replace("/(auth)/waiting-approval");
+        return;
+
+      case "REJECTED":
+        router.replace("/(auth)/verification-failed");
+        return;
+
+      default:
+        await SessionService.clearSession();
+        router.replace("/(auth)/login");
+        return;
+    }
+  } catch {
+    await SessionService.clearSession();
+    router.replace("/(auth)/login");
+  }
+}
+
+return (
+  <View
+    style={{
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <ActivityIndicator size="large" />
+  </View>
+);
+
 }
