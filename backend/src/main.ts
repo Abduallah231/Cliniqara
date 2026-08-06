@@ -13,6 +13,12 @@ async function bootstrap() {
     await NestFactory.create<NestExpressApplication>(
       AppModule,
     );
+
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
   const uploadPath = join(
     process.cwd(),
     "uploads",
@@ -27,7 +33,7 @@ async function bootstrap() {
   app.use(
     "/uploads",
     express.static(uploadPath),
-  );  
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -42,9 +48,9 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Cliniqara API')
-    .setDescription('Backend API for Cliniqara')
-    .setVersion('1.0')
+    .setTitle("Cliniqara API")
+    .setDescription("Backend API for Cliniqara")
+    .setVersion("1.0")
     .addBearerAuth()
     .build();
 
@@ -54,11 +60,15 @@ async function bootstrap() {
   );
 
   SwaggerModule.setup(
-    'api',
+    "api",
     app,
     document,
   );
 
-  await app.listen(process.env.PORT ?? 3000, "0.0.0.0");
+  await app.listen(
+    process.env.PORT ?? 3000,
+    "0.0.0.0",
+  );
 }
+
 bootstrap();
