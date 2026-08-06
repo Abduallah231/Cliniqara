@@ -20,11 +20,11 @@ export default function RootLayout() {
     const inAuthGroup = segments[0] === "(auth)";
 
     if ((token || guest === "true") && inAuthGroup) {
-      router.replace("/(app)");
+      router.replace("/splash");
     }
 
     if (!token && guest !== "true" && !inAuthGroup) {
-      router.replace("/(auth)/login");
+      router.replace("/splash");
     }
 
     setLoading(false);

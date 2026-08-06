@@ -46,7 +46,7 @@ export default function SettingsScreen() {
       .getState()
       .clearDoctor();
 
-    router.replace("/(auth)/login");
+    router.replace("/splash");
   };
   return (
     <SafeAreaView
@@ -75,6 +75,7 @@ export default function SettingsScreen() {
         <SectionHeader title="Doctor Profile" />
 
         <AppCard>
+
           <AppTextField
             label="Full Name"
             value={doctor?.fullName ?? ""}
@@ -82,12 +83,49 @@ export default function SettingsScreen() {
           />
 
           <AppTextField
-            label="Specialty"
+            label="Email"
+            value={doctor?.email ?? ""}
+            editable={false}
+          />
+
+          <AppTextField
+            label="Phone Number"
+            value={doctor?.phone ?? ""}
+            editable={false}
+          />
+
+          <AppTextField
+            label="National ID"
+            value={doctor?.nationalId ?? ""}
+            editable={false}
+          />
+
+          <AppTextField
+            label="Medical License Number"
+            value={doctor?.medicalLicenseNumber ?? ""}
+            editable={false}
+          />
+
+          <AppTextField
+            label="Doctor Level"
             value={doctor?.doctorLevel ?? ""}
             editable={false}
           />
 
+          <AppTextField
+            label="Verification Status"
+            value={doctor?.verificationStatus ?? ""}
+            editable={false}
+          />
+
         </AppCard>
+
+        <AppButton
+          title="Edit Doctor Profile"
+          onPress={() =>
+            router.push("/(app)/edit-profile")
+          }
+        />
 
         <SectionHeader title="Clinic" />
 

@@ -52,7 +52,7 @@ export default function LoginScreen() {
 
       switch (status) {
         case "APPROVED":
-          router.replace("/(app)");
+          router.replace("/splash");
           break;
 
         case "PENDING":
@@ -205,7 +205,7 @@ export default function LoginScreen() {
               variant="secondary"
               onPress={async () => {
                 await saveGuestSession();
-                router.replace("/(app)");
+                router.replace("/splash");
               }}
             />
           </View>
