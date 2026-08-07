@@ -10,6 +10,8 @@ export async function updateDoctorProfile(
   body: {
     fullName: string;
     phone: string;
+    specialty?: string;
+    professionalTitle?: string;
   }
 ) {
   const { data } = await api.put(

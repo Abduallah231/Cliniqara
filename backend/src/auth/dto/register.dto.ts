@@ -7,6 +7,7 @@ import {
   IsString,
   Length,
   Matches,
+  MaxLength,
 } from "class-validator";
 
 export class RegisterDto {
@@ -45,4 +46,14 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   medicalLicenseImage?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  specialty?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  professionalTitle?: string;
 }

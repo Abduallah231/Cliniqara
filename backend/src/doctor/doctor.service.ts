@@ -1,10 +1,9 @@
-import { Injectable } from "@nestjs/common";
-import { UpdateProfileDto } from "./dto/update-profile.dto";
-import { PrismaService } from "../prisma/prisma.service";
 import {
   BadRequestException,
-  ConflictException,
+  ConflictException, Injectable
 } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { UpgradeDoctorDto } from "./dto/upgrade-doctor.dto";
 
 @Injectable()
@@ -31,6 +30,8 @@ export class DoctorService {
         medicalLicenseNumber: true,
         nationalIdImage: true,
         medicalLicenseImage: true,
+        specialty: true,
+        professionalTitle: true,
       },
     });
   }
@@ -72,6 +73,8 @@ export class DoctorService {
       data: {
         fullName: dto.fullName,
         phone: dto.phone,
+        specialty: dto.specialty,
+        professionalTitle: dto.professionalTitle,
       },
       select: {
         id: true,
@@ -80,8 +83,11 @@ export class DoctorService {
         phone: true,
         accountType: true,
         doctorLevel: true,
+        specialty: true,
+        professionalTitle: true,
         verificationStatus: true,
       },
+      
     });
   }
 

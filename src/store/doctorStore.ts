@@ -19,6 +19,10 @@ export interface DoctorProfile {
 
   medicalLicenseImage: string | null;
 
+  specialty: string | null;
+
+  professionalTitle: string | null;
+
   accountType: "DOCTOR" | "RECEPTION";
 
   doctorLevel: "INTERN" | "DOCTOR";

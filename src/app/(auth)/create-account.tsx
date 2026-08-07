@@ -22,6 +22,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { uploadImage } from "@/services/uploadApi";
+import AppDropdown from "@/components/common/AppDropdown";
+import { SelectionOption } from "@/models/selection";
+
+import {
+  SPECIALTIES,
+  PROFESSIONAL_TITLES,
+} from "@/data/doctorOptions";
 
 type UserRole = "DOCTOR" | "RECEPTION";
 type DoctorLevel = "INTERN" | "DOCTOR";
@@ -73,6 +80,12 @@ export default function CreateAccountScreen() {
     licenseNumber,
     setLicenseNumber,
   ] = useState("");
+
+  const [selectedSpecialty, setSelectedSpecialty] =
+    useState<SelectionOption | undefined>();
+
+  const [selectedTitle, setSelectedTitle] =
+    useState<SelectionOption | undefined>();
 
   const [loading, setLoading] =
   useState(false);
@@ -178,6 +191,30 @@ export default function CreateAccountScreen() {
       valid = false;
     }
 
+    if (
+      role === "DOCTOR" &&
+      doctorLevel === "DOCTOR" &&
+      !selectedSpecialty
+    ) {
+      Alert.alert(
+        "Validation",
+        "Please select your specialty."
+      );
+      return false;
+    }
+
+    if (
+      role === "DOCTOR" &&
+      doctorLevel === "DOCTOR" &&
+      !selectedTitle
+    ) {
+      Alert.alert(
+        "Validation",
+        "Please select your professional title."
+      );
+      return false;
+    }
+
     setErrors(newErrors);
 
     return valid;
@@ -259,10 +296,22 @@ export default function CreateAccountScreen() {
 
       medicalLicenseImage:
         uploadedMedicalLicenseImage,
+
+      specialty:
+        selectedSpecialty?.label,
+
+      professionalTitle:
+        selectedTitle?.label,
     });
 
     router.replace("/(auth)/login");
 
+} catch (error: any) {
+  Alert.alert(
+    "Registration Failed",
+    error.response?.data?.message ??
+      "Something went wrong."
+  );
 
 } finally {
     setLoading(false);
@@ -695,6 +744,20 @@ export default function CreateAccountScreen() {
                       color={COLORS.primary}
                     />
                   </Pressable>
+
+                  <AppDropdown
+                    label="Specialty"
+                    options={SPECIALTIES}
+                    selected={selectedSpecialty}
+                    onChange={(option) => setSelectedSpecialty(option) }
+                  />
+
+                  <AppDropdown
+                    label="Professional Title"
+                    options={PROFESSIONAL_TITLES}
+                    selected={selectedTitle}
+                    onChange={(option) => setSelectedTitle(option) }
+                  />
                 </>
               )}
 
@@ -796,6 +859,30 @@ export default function CreateAccountScreen() {
                     </View>
                   </>
                 )}
+
+                <View style={styles.reviewRow}>
+                  <Text style={styles.reviewLabel}>
+                    Specialty
+                  </Text>
+
+                  <Text style={styles.reviewValue}>
+                    {doctorLevel === "DOCTOR"
+                      ? selectedSpecialty?.label
+                      : "-"}
+                  </Text>
+                </View>
+
+                <View style={styles.reviewRow}>
+                  <Text style={styles.reviewLabel}>
+                    Professional Title
+                  </Text>
+
+                  <Text style={styles.reviewValue}>
+                    {doctorLevel === "DOCTOR"
+                      ? selectedTitle?.label
+                      : "-"}
+                  </Text>
+                </View>
 
               </AppCard>
 

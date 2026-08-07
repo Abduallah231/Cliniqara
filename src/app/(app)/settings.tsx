@@ -95,20 +95,20 @@ export default function SettingsScreen() {
           />
 
           <AppTextField
-            label="National ID"
-            value={doctor?.nationalId ?? ""}
-            editable={false}
-          />
-
-          <AppTextField
-            label="Medical License Number"
-            value={doctor?.medicalLicenseNumber ?? ""}
-            editable={false}
-          />
-
-          <AppTextField
             label="Doctor Level"
             value={doctor?.doctorLevel ?? ""}
+            editable={false}
+          />
+
+          <AppTextField
+            label="Specialty"
+            value={doctor?.specialty ?? ""}
+            editable={false}
+          />
+
+          <AppTextField
+            label="Professional Title"
+            value={doctor?.professionalTitle ?? ""}
             editable={false}
           />
 

@@ -53,6 +53,26 @@ export class AuthService {
       );
     }
 
+    if (
+      dto.accountType === AccountType.DOCTOR &&
+      dto.doctorLevel === "DOCTOR" &&
+      !dto.specialty
+    ) {
+      throw new BadRequestException(
+        "Specialty is required",
+      );
+    }
+
+    if (
+      dto.accountType === AccountType.DOCTOR &&
+      dto.doctorLevel === "DOCTOR" &&
+      !dto.professionalTitle
+    ) {
+      throw new BadRequestException(
+        "Professional title is required",
+      );
+    }
+
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -127,6 +147,11 @@ export class AuthService {
 
         medicalLicenseImage:
           dto.medicalLicenseImage,
+
+        specialty: dto.specialty,
+
+        professionalTitle:
+          dto.professionalTitle,
       },
     });
     const { passwordHash, ...safeUser } = user;

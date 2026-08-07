@@ -5,21 +5,21 @@ import GuestBanner from "@/components/dashboard/GuestBanner";
 import StatCard from "@/components/dashboard/StatCard";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import dashboardStats from "@/data/dashboard";
+import SessionService from "@/services/session.service";
+import { useClinicStore } from "@/store/clinicStore";
 import { useDoctorStore } from "@/store/doctorStore";
 import {
   COLORS,
   SPACING
 } from "@/theme";
 import { router } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useEffect, useState } from "react";
-import SessionService from "@/services/session.service";
-import { useClinicStore } from "@/store/clinicStore";
 
 export default function DashboardScreen() {
   const doctor = useDoctorStore(
@@ -39,8 +39,7 @@ export default function DashboardScreen() {
       setIsGuest
     );
   }, [doctor]);
-
-  
+ 
   return (
     <SafeAreaView style={styles.container}>
       <AppTopBar
@@ -61,7 +60,12 @@ export default function DashboardScreen() {
         ) : (
           <WelcomeCard
             doctorName={`Dr. ${doctor?.fullName ?? ""}`}
-            specialty={doctor?.doctorLevel ?? ""}
+            specialty={
+              doctor?.specialty ??
+              (doctor?.doctorLevel === "INTERN"
+                ? "Intern"
+                : "")
+            }
             clinicName={clinic?.name ?? ""}
           />
         )}

@@ -17,6 +17,9 @@ export type RegisterDto = {
   nationalIdImage?: string;
 
   medicalLicenseImage?: string;
+  specialty?: string;
+
+  professionalTitle?: string;
 };
 
 export async function register(dto: RegisterDto) {

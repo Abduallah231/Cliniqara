@@ -18,4 +18,14 @@ export class UpdateProfileDto {
 
   @IsOptional()
   doctorLevel?: DoctorLevel;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  specialty?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  professionalTitle?: string;
 }

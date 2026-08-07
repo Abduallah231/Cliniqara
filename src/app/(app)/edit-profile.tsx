@@ -10,6 +10,12 @@ import AppButton from "@/components/common/AppButton";
 
 import { useDoctorStore } from "@/store/doctorStore";
 import { updateDoctorProfile } from "@/services/doctorApi";
+import AppDropdown from "@/components/common/AppDropdown";
+import { SelectionOption } from "@/models/selection";
+import {
+  SPECIALTIES,
+  PROFESSIONAL_TITLES,
+} from "@/data/doctorOptions";
 
 export default function EditProfileScreen() {
   const doctor = useDoctorStore(
@@ -22,6 +28,26 @@ export default function EditProfileScreen() {
   const [phone, setPhone] =
     useState(doctor?.phone ?? "");
 
+  const [selectedSpecialty, setSelectedSpecialty] =
+    useState<SelectionOption | undefined>(
+      doctor?.specialty
+        ? SPECIALTIES.find(
+            (x) => x.label === doctor.specialty
+          )
+        : undefined
+    );
+
+  const [selectedTitle, setSelectedTitle] =
+    useState<SelectionOption | undefined>(
+      doctor?.professionalTitle
+        ? PROFESSIONAL_TITLES.find(
+            (x) =>
+              x.label ===
+              doctor.professionalTitle
+          )
+        : undefined
+    );
+
   const [loading, setLoading] =
   useState(false); 
 
@@ -29,11 +55,13 @@ export default function EditProfileScreen() {
     if (!doctor) return;
 
     if (
-        fullName === doctor.fullName &&
-        phone === doctor.phone
+      fullName === doctor.fullName &&
+      phone === doctor.phone &&
+      selectedSpecialty?.label === doctor.specialty &&
+      selectedTitle?.label === doctor.professionalTitle
     ) {
-        router.back();
-        return;
+      router.back();
+      return;
     }
 
     if (!fullName.trim()) {
@@ -56,8 +84,10 @@ export default function EditProfileScreen() {
         setLoading(true);
 
         await updateDoctorProfile({
-        fullName,
-        phone,
+          fullName,
+          phone,
+          specialty: selectedSpecialty?.label,
+          professionalTitle: selectedTitle?.label,
         });
 
         Alert.alert(
@@ -100,13 +130,27 @@ export default function EditProfileScreen() {
             keyboardType="phone-pad"
           />
 
-          <AppButton
-            title="Save Changes"
-            loading={loading}
-            onPress={handleSave}
-            />
+          <AppDropdown
+            label="Specialty"
+            options={SPECIALTIES}
+            selected={selectedSpecialty}
+            onChange={setSelectedSpecialty}
+          />
+
+          <AppDropdown
+            label="Professional Title"
+            options={PROFESSIONAL_TITLES}
+            selected={selectedTitle}
+            onChange={setSelectedTitle}
+          />
 
         </AppCard>
+
+        <AppButton
+          title="Save Changes"
+          loading={loading}
+          onPress={handleSave}
+        />
 
       </AppKeyboardAwareScrollView>
     </SafeAreaView>
