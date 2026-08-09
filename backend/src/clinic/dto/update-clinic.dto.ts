@@ -4,6 +4,12 @@ import {
     IsPhoneNumber,
     IsString,
 } from 'class-validator';
+import {
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import { WorkingDayDto } from './working-day.dto';
 
 export class UpdateClinicDto {
   @IsOptional()
@@ -29,4 +35,10 @@ export class UpdateClinicDto {
   @IsOptional()
   @IsString()
   city?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => WorkingDayDto)
+  workingDays?: WorkingDayDto[];
 }

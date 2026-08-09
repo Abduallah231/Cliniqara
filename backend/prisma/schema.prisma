@@ -411,7 +411,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  createdClinics    Clinic[]       @relation("ClinicOwner")
+  createdClinics    Clinic[]       @relation("ClinicCreator")
   clinicMemberships ClinicMember[]
   createdVisits     Visit[]        @relation("VisitCreatedBy")
 
@@ -447,7 +447,7 @@ model Clinic {
 
   createdById String
 
-  createdBy User @relation("ClinicOwner", fields: [createdById], references: [id])
+  createdBy User @relation("ClinicCreator", fields: [createdById], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -455,6 +455,7 @@ model Clinic {
   members  ClinicMember[]
   patients Patient[]
   visits   Visit[]
+  joinCodes ClinicJoinCode[]
 
   @@index([createdById])
   @@index([city])
@@ -504,6 +505,24 @@ model ClinicWorkingDay {
   @@unique([clinicId, day])
   @@index([clinicId])
   @@map("clinic_working_days")
+}
+
+model ClinicJoinCode {
+  id String @id @default(uuid())
+
+  clinicId String
+
+  code String @unique
+
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId])
+  @@index([expiresAt])
+  @@map("clinic_join_codes")
 }
 
 model Patient {
