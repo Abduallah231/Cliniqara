@@ -16,10 +16,29 @@ import {
   TYPOGRAPHY,
   SHADOW,
 } from "@/theme";
+import type { ClinicRole } from "@/types/clinic";
 
 type Props = {
   onCreateClinic: () => void;
   onJoinClinic: () => void;
+};
+
+const getRoleLabel = (
+  role: ClinicRole,
+) => {
+  switch (role) {
+    case "OWNER":
+      return "Owner";
+
+    case "DOCTOR":
+      return "Doctor";
+
+    case "RECEPTION":
+      return "Assistant";
+
+    default:
+      return role;
+  }
 };
 
 export default function ClinicSelector({
@@ -76,9 +95,11 @@ export default function ClinicSelector({
                     {item.clinic.name}
                   </Text>
 
-                  <Text style={styles.role}>
-                    {item.role}
-                  </Text>
+                  <View style={styles.roleBadge}>
+                    <Text style={styles.roleBadgeText}>
+                      {getRoleLabel(item.role)}
+                    </Text>
+                  </View>
                 </View>
 
                 {selected && (
@@ -195,10 +216,19 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
 
-  role: {
-    marginTop: 3,
-    fontSize: TYPOGRAPHY.small,
-    color: COLORS.secondaryText,
+  roleBadge: {
+    alignSelf: "flex-start",
+    marginTop: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: COLORS.background,
+  },
+
+  roleBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: COLORS.primary,
   },
 
   emptyState: {

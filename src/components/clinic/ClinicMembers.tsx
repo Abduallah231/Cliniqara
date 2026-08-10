@@ -4,7 +4,7 @@ import {
   Text,
   View,
 } from "react-native";
-
+import { Ionicons } from "@expo/vector-icons";
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 
@@ -63,6 +63,24 @@ export default function ClinicMembers({
     );
   };
 
+  const getRoleLabel = (
+    role: ClinicMember["clinicRole"],
+  ) => {
+    switch (role) {
+      case "OWNER":
+        return "Owner";
+
+      case "DOCTOR":
+        return "Doctor";
+
+      case "RECEPTION":
+        return "Assistant";
+
+      default:
+        return role;
+    }
+  };
+
   if (members.length === 0) {
     return (
       <AppCard>
@@ -95,32 +113,67 @@ export default function ClinicMembers({
 
         return (
           <AppCard key={member.id}>
-            <Text style={styles.memberName}>
-              {member.user.fullName}
-            </Text>
+            <View style={styles.memberHeader}>
+              <View style={styles.memberIdentity}>
+                <Text style={styles.memberName}>
+                  {member.user.fullName}
+                </Text>
 
-            <Text style={styles.memberInfo}>
-              {member.clinicRole}
-              {" • "}
-              {member.user.accountType}
-            </Text>
+                <View style={styles.roleRow}>
+                  <View style={styles.roleBadge}>
+                    <Text style={styles.roleBadgeText}>
+                      {getRoleLabel(
+                        member.clinicRole,
+                      )}
+                    </Text>
+                  </View>
 
-            {member.user.specialty && (
-              <Text style={styles.memberInfo}>
-                {member.user.specialty}
-              </Text>
-            )}
+                  {member.clinicRole === "DOCTOR" &&
+                    member.user.doctorLevel && (
+                      <View style={styles.levelBadge}>
+                        <Text style={styles.levelBadgeText}>
+                          {member.user.doctorLevel ===
+                          "DOCTOR"
+                            ? "Doctor"
+                            : "Intern"}
+                        </Text>
+                      </View>
+                    )}
+                </View>
+              </View>
+            </View>
 
-            {member.user
-              .professionalTitle && (
-              <Text
-                style={styles.memberInfo}
-              >
-                {
-                  member.user
-                    .professionalTitle
-                }
-              </Text>
+            {(member.user.specialty ||
+              member.user.professionalTitle) && (
+              <View style={styles.professionalInfo}>
+                {member.user.specialty && (
+                  <View style={styles.infoRow}>
+                    <Ionicons
+                      name="medical-outline"
+                      size={17}
+                      color={COLORS.secondaryText}
+                    />
+
+                    <Text style={styles.infoText}>
+                      {member.user.specialty}
+                    </Text>
+                  </View>
+                )}
+
+                {member.user.professionalTitle && (
+                  <View style={styles.infoRow}>
+                    <Ionicons
+                      name="briefcase-outline"
+                      size={17}
+                      color={COLORS.secondaryText}
+                    />
+
+                    <Text style={styles.infoText}>
+                      {member.user.professionalTitle}
+                    </Text>
+                  </View>
+                )}
+              </View>
             )}
 
             {isOwner &&
@@ -130,9 +183,7 @@ export default function ClinicMembers({
                   <AppButton
                     title="Remove"
                     onPress={() =>
-                      onRemoveMember(
-                        member.id,
-                      )
+                      onRemoveMember(member.id)
                     }
                   />
 
@@ -174,24 +225,77 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
 
-  memberName: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginBottom: 4,
+  memberHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
   },
 
-  memberInfo: {
+  memberIdentity: {
+    flex: 1,
+  },
+
+  memberName: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+  },
+
+  roleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: SPACING.xs,
+  },
+
+  roleBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: "#EEF6FF",
+  },
+
+  roleBadgeText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: COLORS.primary,
+  },
+
+  levelBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: "#F3F4F6",
+  },
+
+  levelBadgeText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: COLORS.secondaryText,
+  },
+
+  professionalInfo: {
+    marginTop: SPACING.md,
+    gap: SPACING.sm,
+  },
+
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  infoText: {
+    flex: 1,
     color: COLORS.secondaryText,
     fontSize: TYPOGRAPHY.body,
-    marginBottom: 4,
   },
 
   actionRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.sm,
-    marginTop: SPACING.md,
+    marginTop: SPACING.lg,
   },
 
   emptyText: {
