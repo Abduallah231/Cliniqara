@@ -3,13 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { randomBytes, randomUUID } from 'crypto';
 import {
   AccountType,
   ClinicRole,
   DoctorLevel,
   MembershipStatus,
 } from '@prisma/client';
+import { randomBytes, randomUUID } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateClinicDto } from '../dto/create-clinic.dto';
 import { JoinClinicDto } from '../dto/join-clinic.dto';
@@ -78,34 +78,7 @@ export class ClinicService {
           'Only approved doctors can create a clinic',
         );
       }
-      const phoneExists =
-        await tx.clinic.findFirst({
-          where: {
-            phone: dto.phone,
-          },
-        });
-
-      if (phoneExists) {
-        throw new ConflictException(
-          'Clinic phone already exists',
-        );
-      }
-
-      if (dto.email) {
-        const emailExists =
-          await tx.clinic.findFirst({
-            where: {
-              email: dto.email,
-            },
-          });
-
-        if (emailExists) {
-          throw new ConflictException(
-            'Clinic email already exists',
-          );
-        }
-      }
-
+      
       const clinic = await tx.clinic.create({
         data: {
           clinicCode: randomUUID(),
@@ -125,6 +98,7 @@ export class ClinicService {
               startTime: day.startTime ?? '',
               endTime: day.endTime ?? '',
               isClosed: day.isClosed,
+              is24Hours: day.is24Hours,
             })),
           },
         },
@@ -285,42 +259,6 @@ export class ClinicService {
       throw new ConflictException(
         'Clinic is inactive',
       );
-    }
-
-    if (dto.phone) {
-      const phoneExists =
-        await this.prisma.clinic.findFirst({
-          where: {
-            phone: dto.phone,
-            NOT: {
-              id: membership.clinicId,
-            },
-          },
-        });
-
-      if (phoneExists) {
-        throw new ConflictException(
-          'Clinic phone already exists',
-        );
-      }
-    }
-
-    if (dto.email) {
-      const emailExists =
-        await this.prisma.clinic.findFirst({
-          where: {
-            email: dto.email,
-            NOT: {
-              id: membership.clinicId,
-            },
-          },
-        });
-
-      if (emailExists) {
-        throw new ConflictException(
-          'Clinic email already exists',
-        );
-      }
     }
 
     const updatedClinic =

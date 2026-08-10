@@ -116,7 +116,6 @@ export class DoctorService {
         id: userId,
       },
       data: {
-        doctorLevel: "DOCTOR",
         medicalLicenseNumber:
           dto.medicalLicenseNumber,
         medicalLicenseImage:
@@ -124,5 +123,5 @@ export class DoctorService {
         verificationStatus: "PENDING",
       },
     });
-      }
+  }
 }

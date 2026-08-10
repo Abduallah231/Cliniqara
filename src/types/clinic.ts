@@ -5,30 +5,41 @@ export type ClinicRole =
 
 export type MembershipStatus =
   | "PENDING"
-  | "APPROVED"
-  | "REJECTED"
+  | "ACTIVE"
   | "REMOVED";
+
+export type WeekDay =
+  | "SATURDAY"
+  | "SUNDAY"
+  | "MONDAY"
+  | "TUESDAY"
+  | "WEDNESDAY"
+  | "THURSDAY"
+  | "FRIDAY";
 
 export type WorkingDay = {
   id: string;
-  day: string;
-  startTime: string | null;
-  endTime: string | null;
+  day: WeekDay;
+  startTime: string;
+  endTime: string;
   isClosed: boolean;
 };
 
 export type ClinicMember = {
   id: string;
+  clinicId: string;
+  userId: string;
   clinicRole: ClinicRole;
   status: MembershipStatus;
-  joinedAt: string | null;
+  joinedAt: string;
   removedAt: string | null;
 
   user: {
     id: string;
-    fullName: string;
+    userCode: string;
     accountType: "DOCTOR" | "RECEPTION";
     doctorLevel: "INTERN" | "DOCTOR" | null;
+    fullName: string;
     specialty: string | null;
     professionalTitle: string | null;
   };
@@ -38,14 +49,49 @@ export type Clinic = {
   id: string;
   clinicCode: string;
   name: string;
-  phone: string | null;
+  phone: string;
   email: string | null;
-  address: string | null;
-  country: string | null;
-  city: string | null;
+  address: string;
+  country: string;
+  city: string;
   isActive: boolean;
   createdById: string;
-
+  createdAt: string;
+  updatedAt: string;
   workingDays: WorkingDay[];
-  members: ClinicMember[];
+};
+
+export type MyClinic = {
+  membershipId: string;
+  role: ClinicRole;
+  clinic: Clinic;
+};
+
+export type JoinCode = {
+  id: string;
+  clinicId: string;
+  code: string;
+  expiresAt: string;
+  createdAt: string;
+};
+
+export type CreateClinicDto = {
+  name: string;
+  phone: string;
+  email?: string;
+  address: string;
+  country: string;
+  city: string;
+  workingDays: {
+    day: WeekDay;
+    startTime?: string;
+    endTime?: string;
+    isClosed: boolean;
+  }[];
+};
+
+export type UpdateClinicDto = Partial<
+  Omit<CreateClinicDto, "workingDays">
+> & {
+  workingDays?: CreateClinicDto["workingDays"];
 };

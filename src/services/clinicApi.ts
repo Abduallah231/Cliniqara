@@ -1,21 +1,142 @@
 import { api } from "./api";
+import type {
+  ClinicMember,
+  CreateClinicDto,
+  JoinCode,
+  MyClinic,
+  UpdateClinicDto,
+} from "@/types/clinic";
 import { useClinicStore } from "@/store/clinicStore";
 
-export async function getMyClinic() {
-  const { data } = await api.get("/clinic/my");
+export async function getMyClinics(): Promise<MyClinic[]> {
+  const { data } = await api.get("/clinics/me");
   return data;
 }
 
-export async function loadClinic() {
-  try {
-    const clinic = await getMyClinic();
+export async function createClinic(dto: CreateClinicDto) {
+  const { data } = await api.post("/clinics", dto);
+  return data;
+}
 
-    useClinicStore
-      .getState()
-      .setClinic(clinic);
+export async function updateClinic(
+  clinicId: string,
+  dto: UpdateClinicDto,
+) {
+  const { data } = await api.patch(
+    `/clinics/${clinicId}`,
+    dto,
+  );
+  return data;
+}
 
-    return clinic;
-  } catch {
-    return null;
-  }
+export async function createJoinCode(
+  clinicId: string,
+): Promise<JoinCode> {
+  const { data } = await api.post(
+    `/clinics/${clinicId}/join-code`,
+  );
+  return data;
+}
+
+export async function joinClinic(joinCode: string) {
+  const { data } = await api.post("/clinics/join", {
+    joinCode: joinCode.trim().toUpperCase(),
+  });
+  return data;
+}
+
+export async function getClinicMembers(
+  clinicId: string,
+): Promise<ClinicMember[]> {
+  const { data } = await api.get(
+    `/clinics/${clinicId}/members`,
+  );
+  return data;
+}
+
+export async function getMembershipRequests(
+  clinicId: string,
+): Promise<ClinicMember[]> {
+  const { data } = await api.get(
+    `/clinics/${clinicId}/membership-requests`,
+  );
+  return data;
+}
+
+export async function approveMembership(
+  clinicId: string,
+  membershipId: string,
+) {
+  const { data } = await api.patch(
+    `/clinics/${clinicId}/members/${membershipId}/approve`,
+  );
+  return data;
+}
+
+export async function rejectMembership(
+  clinicId: string,
+  membershipId: string,
+) {
+  const { data } = await api.patch(
+    `/clinics/${clinicId}/members/${membershipId}/reject`,
+  );
+  return data;
+}
+
+export async function removeMember(
+  clinicId: string,
+  membershipId: string,
+) {
+  const { data } = await api.patch(
+    `/clinics/${clinicId}/members/${membershipId}/remove`,
+  );
+  return data;
+}
+
+export async function leaveClinic(
+  membershipId: string,
+) {
+  const { data } = await api.patch(
+    `/clinics/members/${membershipId}/leave`,
+  );
+  return data;
+}
+
+export async function transferOwnership(
+  clinicId: string,
+  membershipId: string,
+) {
+  const { data } = await api.patch(
+    `/clinics/${clinicId}/transfer-ownership`,
+    { membershipId },
+  );
+  return data;
+}
+
+export async function deactivateClinic(
+  clinicId: string,
+) {
+  const { data } = await api.patch(
+    `/clinics/${clinicId}/deactivate`,
+  );
+  return data;
+}
+
+export async function reactivateClinic(
+  clinicId: string,
+) {
+  const { data } = await api.patch(
+    `/clinics/${clinicId}/reactivate`,
+  );
+  return data;
+}
+
+export async function loadClinics(): Promise<MyClinic[]> {
+  const memberships = await getMyClinics();
+
+  useClinicStore
+    .getState()
+    .setClinics(memberships);
+
+  return memberships;
 }

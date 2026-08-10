@@ -7,7 +7,7 @@ import {
   View,
 } from "react-native";
 import { loadDoctorProfile } from "@/services/doctorApi";
-import { loadClinic } from "@/services/clinicApi";
+import { loadClinics } from "@/services/clinicApi";
 
 export default function SplashScreen() {
   useEffect(() => {
@@ -32,11 +32,11 @@ export default function SplashScreen() {
   try {
     const user = await AuthService.me();
 
-    await loadDoctorProfile();
-    await loadClinic();
-
     switch (user.verificationStatus) {
       case "APPROVED":
+        await loadDoctorProfile();
+        await loadClinics();
+
         router.replace("/(app)");
         return;
 

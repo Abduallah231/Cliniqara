@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { router } from "expo-router";
 import {
+  Alert,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -13,6 +15,10 @@ import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import AppTextField from "@/components/common/AppTextField";
+
+import { joinClinic } from "@/services/clinicApi";
+import SessionService from "@/services/session.service";
+import ClinicQrScanner from "@/components/clinic/ClinicQrScanner";
 
 import {
   COLORS,
@@ -25,11 +31,9 @@ export default function JoinClinicScreen() {
   const [clinicCode, setClinicCode] =
     useState("");
 
-  const [loading, setLoading] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showScanner, setShowScanner] = useState(false);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -87,7 +91,37 @@ export default function JoinClinicScreen() {
             <AppButton
               title="Join Clinic"
               loading={loading}
-              onPress={() => {}}
+              onPress={async () => {
+                if (!clinicCode.trim()) {
+                  setError("Enter the clinic code");
+                  return;
+                }
+
+                try {
+                  setLoading(true);
+                  setError("");
+
+                  await joinClinic(clinicCode);
+
+                  Alert.alert(
+                    "Request Sent",
+                    "Your request to join the clinic is pending approval.",
+                    [
+                      {
+                        text: "OK",
+                        onPress: () => setClinicCode(""),
+                      },
+                    ],
+                  );
+                } catch (error: any) {
+                  setError(
+                    error?.response?.data?.message ??
+                      "Unable to join the clinic.",
+                  );
+                } finally {
+                  setLoading(false);
+                }
+              }}
             />
 
             <View style={styles.divider}>
@@ -108,7 +142,10 @@ export default function JoinClinicScreen() {
 
             <Pressable
               style={styles.qrCard}
-              onPress={() => {}}
+              onPress={() => {
+                setShowScanner(true);
+                setError("");
+              }}
             >
               <Ionicons
                 name="qr-code-outline"
@@ -129,6 +166,39 @@ export default function JoinClinicScreen() {
                 your clinic.
               </Text>
             </Pressable>
+
+            {showScanner && (
+              <ClinicQrScanner
+                onCodeScanned={async (code) => {
+                  setShowScanner(false);
+
+                  if (!code.trim()) {
+                    setError("Invalid QR code");
+                    return;
+                  }
+
+                  try {
+                    setLoading(true);
+                    setError("");
+
+                    await joinClinic(code);
+
+                    Alert.alert(
+                      "Request Sent",
+                      "Your request to join the clinic is pending approval.",
+                    );
+                  } catch (error: any) {
+                    setError(
+                      error?.response?.data?.message ??
+                        "Unable to join the clinic.",
+                    );
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              />
+            )}
+
             <AppCard style={styles.infoCard}>
               <View style={styles.infoRow}>
                 <Ionicons
@@ -160,10 +230,9 @@ export default function JoinClinicScreen() {
 
             <Pressable
             style={styles.signOutButton}
-            onPress={() => {
-                // TODO:
-                // Clear session
-                // Navigate to Login
+            onPress={async () => {
+              await SessionService.logout();
+              router.replace("/login");
             }}
             >
             <Ionicons

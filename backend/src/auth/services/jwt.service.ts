@@ -8,14 +8,35 @@ export class JwtService {
   ) {}
 
   generateAccessToken(payload: object) {
-    return this.jwtService.sign(payload, {
-      expiresIn: '15m',
-    });
+    return this.jwtService.sign(
+      {
+        ...payload,
+        tokenType: 'ACCESS',
+      },
+      {
+        expiresIn: '15m',
+      },
+    );
   }
 
   generateRefreshToken(payload: object) {
-    return this.jwtService.sign(payload, {
-      expiresIn: '30d',
-    });
+    return this.jwtService.sign(
+      {
+        ...payload,
+        tokenType: 'REFRESH',
+      },
+      {
+        expiresIn: '30d',
+      },
+    );
+  }
+
+  verifyRefreshToken(token: string) {
+    return this.jwtService.verify<{
+      sub: string;
+      accountType: string;
+      doctorLevel?: string | null;
+      tokenType: string;
+    }>(token);
   }
 }

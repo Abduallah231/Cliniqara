@@ -3,19 +3,32 @@ import { useDoctorStore } from "@/store/doctorStore";
 import { useClinicStore } from "@/store/clinicStore";
 const ACCESS_TOKEN_KEY = "accessToken";
 const GUEST_MODE_KEY = "guestMode";
-
+const REFRESH_TOKEN_KEY = "refreshToken";
 class SessionService {
-  async saveAccessToken(token: string): Promise<void> {
-    await AsyncStorage.setItem(ACCESS_TOKEN_KEY, token);
+  async saveTokens(accessToken: string, refreshToken: string): Promise<void> {
+    await AsyncStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    await AsyncStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   }
 
   async getAccessToken(): Promise<string | null> {
     return AsyncStorage.getItem(ACCESS_TOKEN_KEY);
   }
 
+  async getRefreshToken(): Promise<string | null> {
+    return AsyncStorage.getItem(REFRESH_TOKEN_KEY);
+  }
+
+  async saveAccessToken(token: string): Promise<void> {
+    await AsyncStorage.setItem(
+      ACCESS_TOKEN_KEY,
+      token,
+    );
+  }
+
   async clearSession(): Promise<void> {
     await AsyncStorage.multiRemove([
       ACCESS_TOKEN_KEY,
+      REFRESH_TOKEN_KEY,
       GUEST_MODE_KEY,
     ]);
 
@@ -25,7 +38,7 @@ class SessionService {
 
     useClinicStore
       .getState()
-      .clearClinic();
+      .clearClinics();
   }
   async enableGuestMode(): Promise<void> {
     await AsyncStorage.setItem(GUEST_MODE_KEY, "true");
@@ -40,7 +53,7 @@ class SessionService {
     return value === "true";
   }
 
-  async logout() {
+  async logout(): Promise<void> {
     await this.clearSession();
   }
 }

@@ -36,7 +36,10 @@ export async function login(
     password,
   });
 
-  await SessionService.saveAccessToken(data.accessToken);
+  await SessionService.saveTokens(
+    data.accessToken,
+    data.refreshToken,
+  );
 
   return data;
 }

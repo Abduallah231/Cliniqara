@@ -211,4 +211,55 @@ async login(dto: LoginDto) {
     user: safeUser,
   };
 }
+
+async refresh(refreshToken: string) {
+  let payload;
+
+  try {
+    payload =
+      this.jwtService.verifyRefreshToken(
+        refreshToken,
+      );
+  } catch {
+    throw new UnauthorizedException(
+      'Invalid or expired refresh token',
+    );
+  }
+
+  if (payload.tokenType !== 'REFRESH') {
+    throw new UnauthorizedException(
+      'Invalid refresh token',
+    );
+  }
+
+  const user = await this.prisma.user.findUnique({
+    where: {
+      id: payload.sub,
+    },
+    select: {
+      id: true,
+      accountType: true,
+      doctorLevel: true,
+      isActive: true,
+    },
+  });
+
+  if (!user || !user.isActive) {
+    throw new UnauthorizedException(
+      'Account is inactive',
+    );
+  }
+
+  const accessToken =
+    this.jwtService.generateAccessToken({
+      sub: user.id,
+      accountType: user.accountType,
+      doctorLevel: user.doctorLevel,
+    });
+
+  return {
+    accessToken,
+  };
+}
+
 }

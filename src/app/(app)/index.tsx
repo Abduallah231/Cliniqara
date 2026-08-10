@@ -20,15 +20,18 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ClinicSelector from "@/components/clinic/ClinicSelector";
 
 export default function DashboardScreen() {
   const doctor = useDoctorStore(
     (state) => state.doctor
   );
 
-  const clinic = useClinicStore(
-    (state) => state.clinic
+  const currentClinic = useClinicStore(
+    (state) => state.currentClinic
   );
+
+  const clinic = currentClinic?.clinic ?? null;
 
   const [isGuest, setIsGuest] = useState(
       !doctor
@@ -67,6 +70,14 @@ export default function DashboardScreen() {
                 : "")
             }
             clinicName={clinic?.name ?? ""}
+          />
+        )}
+
+        {!isGuest && (
+          <ClinicSelector
+            onCreateClinic={() =>
+              router.push("/(app)/create-clinic")
+            }
           />
         )}
 
@@ -145,7 +156,6 @@ export default function DashboardScreen() {
             icon="bar-chart-outline"
             style={styles.flex}
             variant="cyan"
-
             onPress={() =>
               router.push("/statistics")
             }
@@ -154,13 +164,21 @@ export default function DashboardScreen() {
           <DashboardActionCard
             compact
             title="Clinic"
-            subtitle="Management"
+            subtitle={
+              clinic
+                ? "Management"
+                : "Create or join a clinic"
+            }
             icon="business-outline"
             style={styles.flex}
             variant="red"
-            onPress={() =>
-              router.push("/(app)/clinic-management")
-            }
+            onPress={() => {
+              if (clinic) {
+                router.push("/(app)/clinic-management");
+              } else {
+                router.push("/(app)/create-clinic");
+              }
+            }}
           />
         </View>
          {/* <View style={styles.actionsRow}>
