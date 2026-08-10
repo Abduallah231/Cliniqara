@@ -1,57 +1,72 @@
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import ClinicStatus from "@/components/clinic/ClinicStatus";
+import {
+  getApiError,
+} from "@/utils/apiError";
 
 import AppButton from "@/components/common/AppButton";
-import AppCard from "@/components/common/AppCard";
-import AppTextField from "@/components/common/AppTextField";
 import AppTopBar from "@/components/common/AppTopBar";
-import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
-import JoinCodeCard from "@/components/clinic/JoinCodeCard";
+
 import ClinicSelector from "@/components/clinic/ClinicSelector";
+
+import ClinicInformationForm, {
+  type ClinicInformation,
+} from "@/components/clinic/ClinicInformationForm";
+
+import ClinicWorkingDays, {
+  DAYS,
+  type WorkingDay,
+} from "@/components/clinic/ClinicWorkingDays";
+
+import ClinicJoinAccess from "@/components/clinic/ClinicJoinAccess";
+
+import ClinicMembershipRequests from "@/components/clinic/ClinicMembershipRequests";
+
+import ClinicMembers from "@/components/clinic/ClinicMembers";
+
+import {
+  validateWorkingDays,
+} from "@/components/clinic/ClinicWorkingDaysValidation";
+
 import {
   approveMembership,
   createJoinCode,
+  deactivateClinic,
   getClinicMembers,
   getMembershipRequests,
+  leaveClinic,
+  loadClinics,
+  reactivateClinic,
   rejectMembership,
+  removeMember,
+  transferOwnership,
   updateClinic,
 } from "@/services/clinicApi";
 
 import { useClinicStore } from "@/store/clinicStore";
+
 import type {
   ClinicMember,
   JoinCode,
-  WeekDay,
 } from "@/types/clinic";
 
 import {
   COLORS,
   SPACING,
-  TYPOGRAPHY,
 } from "@/theme";
-
-const DAYS: WeekDay[] = [
-  "SATURDAY",
-  "SUNDAY",
-  "MONDAY",
-  "TUESDAY",
-  "WEDNESDAY",
-  "THURSDAY",
-  "FRIDAY",
-];
-
-const DAY_LABELS: Record<WeekDay, string> = {
-  SATURDAY: "Saturday",
-  SUNDAY: "Sunday",
-  MONDAY: "Monday",
-  TUESDAY: "Tuesday",
-  WEDNESDAY: "Wednesday",
-  THURSDAY: "Thursday",
-  FRIDAY: "Friday",
-};
 
 export default function ClinicManagementScreen() {
   const {
@@ -59,91 +74,154 @@ export default function ClinicManagementScreen() {
     setCurrentClinic,
   } = useClinicStore();
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [country, setCountry] = useState("");
-  const [city, setCity] = useState("");
+  const [clinicInformation, setClinicInformation] =
+    useState<ClinicInformation>({
+      name: "",
+      phone: "",
+      email: "",
+      address: "",
+      country: "Egypt",
+      city: "",
+    });
 
-  const [workingDays, setWorkingDays] = useState<
-    {
-      day: WeekDay;
-      startTime: string;
-      endTime: string;
-      isClosed: boolean;
-    }[]
-  >([]);
+  const [workingDays, setWorkingDays] =
+    useState<WorkingDay[]>(
+      DAYS.map((day) => ({
+        day,
+        isClosed: true,
+        is24Hours: false,
+        shifts: [],
+      })),
+    );
 
-  const [members, setMembers] = useState<ClinicMember[]>([]);
-  const [requests, setRequests] = useState<ClinicMember[]>([]);
+  const [members, setMembers] =
+    useState<ClinicMember[]>([]);
+
+  const [requests, setRequests] =
+    useState<ClinicMember[]>([]);
 
   const [joinCode, setJoinCode] =
     useState<JoinCode | null>(null);
 
-  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    setJoinCode(null);
+  }, [currentClinic?.clinic.id]);
+
+  const [saving, setSaving] =
+    useState(false);
+
   const [loadingMembers, setLoadingMembers] =
     useState(false);
+
   const [loadingCode, setLoadingCode] =
     useState(false);
 
-  if (!currentClinic) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <AppTopBar
-          title="Clinic Management"
-          onBack={() => router.back()}
-        />
+  const [refreshing, setRefreshing] =
+    useState(false);
 
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>
-            No clinic selected.
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  /*
+   * =========================
+   * Current Clinic
+   * =========================
+   */
 
-  const clinic = currentClinic.clinic;
-  const isOwner = currentClinic.role === "OWNER";
+  const clinic =
+    currentClinic?.clinic ?? null;
+
+  const isOwner =
+    currentClinic?.role === "OWNER";
+
+  /*
+   * =========================
+   * Load Clinic Data
+   * =========================
+   */
 
   useEffect(() => {
-    setName(clinic.name);
-    setPhone(clinic.phone);
-    setEmail(clinic.email ?? "");
-    setAddress(clinic.address);
-    setCountry(clinic.country);
-    setCity(clinic.city);
+    if (!clinic) {
+      return;
+    }
+
+    setClinicInformation({
+      name: clinic.name,
+      phone: clinic.phone,
+      email: clinic.email ?? "",
+      address: clinic.address,
+      country: clinic.country,
+      city: clinic.city,
+    });
 
     setWorkingDays(
       DAYS.map((day) => {
         const existing =
           clinic.workingDays.find(
-            (item) => item.day === day,
+            (item) =>
+              item.day === day,
           );
 
         return {
           day,
-          startTime: existing?.startTime ?? "",
-          endTime: existing?.endTime ?? "",
+
           isClosed:
-            existing?.isClosed ?? true,
+            existing?.isClosed ??
+            true,
+
+          is24Hours:
+            existing?.is24Hours ??
+            false,
+
+          shifts:
+            existing?.isClosed ||
+            existing?.is24Hours
+              ? []
+              : existing?.shifts?.length
+                ? existing.shifts.map(
+                    (shift) => ({
+                      startTime:
+                        shift.startTime ??
+                        "",
+                      endTime:
+                        shift.endTime ??
+                        "",
+                    }),
+                  )
+                : [
+                    {
+                      startTime: "",
+                      endTime: "",
+                    },
+                  ],
         };
       }),
     );
-  }, [clinic.id]);
+  }, [clinic?.id]);
+
+  /*
+   * =========================
+   * Load Members
+   * =========================
+   */
 
   useEffect(() => {
+    if (!clinic) {
+      return;
+    }
+
     loadMembers();
-  }, [clinic.id]);
+  }, [clinic?.id]);
 
   const loadMembers = async () => {
+    if (!clinic) {
+      return;
+    }
+
     try {
       setLoadingMembers(true);
 
-      const data = await getClinicMembers(
-        clinic.id,
-      );
+      const data =
+        await getClinicMembers(
+          clinic.id,
+        );
 
       setMembers(data);
 
@@ -154,6 +232,8 @@ export default function ClinicManagementScreen() {
           );
 
         setRequests(pending);
+      } else {
+        setRequests([]);
       }
     } catch (error: any) {
       Alert.alert(
@@ -166,318 +246,586 @@ export default function ClinicManagementScreen() {
     }
   };
 
-  const handleSaveClinic = async () => {
-    try {
-      setSaving(true);
+  const handleRefresh = async () => {
+    if (!clinic || refreshing) {
+      return;
+    }
 
-      const updated = await updateClinic(
-        clinic.id,
-        {
-          name,
-          phone,
-          email: email || undefined,
-          address,
-          country,
-          city,
+    try {
+      setRefreshing(true);
+      await loadMembers();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  /*
+   * =========================
+   * Save Clinic
+   * =========================
+   */
+
+  const handleSaveClinic =
+    async () => {
+      if (!clinic || !isOwner) {
+        return;
+      }
+
+      /*
+       * Clinic Information
+       */
+
+      if (
+        !clinicInformation.name.trim()
+      ) {
+        Alert.alert(
+          "Required",
+          "Enter the clinic name.",
+        );
+        return;
+      }
+
+      if (
+        !clinicInformation.phone.trim()
+      ) {
+        Alert.alert(
+          "Required",
+          "Enter the clinic phone number.",
+        );
+        return;
+      }
+
+      if (
+        !clinicInformation.city.trim()
+      ) {
+        Alert.alert(
+          "Required",
+          "Enter the clinic city/governorate.",
+        );
+        return;
+      }
+
+      if (
+        !clinicInformation.address.trim()
+      ) {
+        Alert.alert(
+          "Required",
+          "Enter the clinic address.",
+        );
+        return;
+      }
+
+      /*
+       * Working Days Validation
+       */
+
+      const validation =
+        validateWorkingDays(
           workingDays,
-        },
-      );
+        );
 
-      setCurrentClinic({
-        ...currentClinic,
-        clinic: updated,
-      });
+      if (!validation.valid) {
+        switch (
+          validation.type
+        ) {
+          case "EMPTY_SHIFTS":
+            Alert.alert(
+              "Required",
+              `Add at least one shift for ${validation.day}.`,
+            );
+            return;
 
-      Alert.alert(
-        "Saved",
-        "Clinic information updated successfully.",
-      );
-    } catch (error: any) {
-      Alert.alert(
-        "Unable to Save",
-        error?.response?.data?.message ??
-          "Unable to update clinic.",
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
+          case "EMPTY_TIME":
+            Alert.alert(
+              "Required",
+              `Select opening and closing time for Shift ${
+                (validation.shiftIndex ??
+                  0) + 1
+              } on ${validation.day}.`,
+            );
+            return;
 
-  const handleGenerateJoinCode = async () => {
-    try {
-      setLoadingCode(true);
+          case "INVALID_TIME":
+            Alert.alert(
+              "Invalid Time",
+              `Invalid time for Shift ${
+                (validation.shiftIndex ??
+                  0) + 1
+              } on ${validation.day}.`,
+            );
+            return;
 
-      const code = await createJoinCode(
-        clinic.id,
-      );
-
-      setJoinCode(code);
-    } catch (error: any) {
-      Alert.alert(
-        "Unable to Generate Code",
-        error?.response?.data?.message ??
-          "Unable to generate clinic join code.",
-      );
-    } finally {
-      setLoadingCode(false);
-    }
-  };
-
-  const handleApprove = async (
-    membershipId: string,
-  ) => {
-    try {
-      await approveMembership(
-        clinic.id,
-        membershipId,
-      );
-
-      await loadMembers();
-    } catch (error: any) {
-      Alert.alert(
-        "Unable to Approve",
-        error?.response?.data?.message ??
-          "Unable to approve membership.",
-      );
-    }
-  };
-
-  const handleReject = async (
-    membershipId: string,
-  ) => {
-    try {
-      await rejectMembership(
-        clinic.id,
-        membershipId,
-      );
-
-      await loadMembers();
-    } catch (error: any) {
-      Alert.alert(
-        "Unable to Reject",
-        error?.response?.data?.message ??
-          "Unable to reject membership.",
-      );
-    }
-  };
-
-  const toggleDay = (day: WeekDay) => {
-    setWorkingDays((current) =>
-      current.map((item) =>
-        item.day === day
-          ? {
-              ...item,
-              isClosed: !item.isClosed,
+          case "OVERLAPPING_SHIFTS":
+            if (
+              validation.first &&
+              validation.second
+            ) {
+              Alert.alert(
+                "Overlapping Shifts",
+                `Shifts cannot overlap. Please check ${
+                  validation.first.day
+                } Shift ${
+                  validation.first
+                    .shiftIndex + 1
+                } and ${
+                  validation.second.day
+                } Shift ${
+                  validation.second
+                    .shiftIndex + 1
+                }.`,
+              );
             }
-          : item,
-      ),
-    );
-  };
 
-  const updateDay = (
-    day: WeekDay,
-    field: "startTime" | "endTime",
-    value: string,
-  ) => {
-    setWorkingDays((current) =>
-      current.map((item) =>
-        item.day === day
-          ? {
-              ...item,
-              [field]: value,
+            return;
+        }
+      }
+
+      /*
+       * Prepare API payload
+       */
+
+      const clinicWorkingDays =
+        workingDays.map(
+          (day) => ({
+            day: day.day,
+            isClosed:
+              day.isClosed,
+            is24Hours:
+              day.is24Hours,
+
+            shifts:
+              day.isClosed ||
+              day.is24Hours
+                ? []
+                : day.shifts,
+          }),
+        );
+
+      try {
+        setSaving(true);
+
+        const updated =
+          await updateClinic(
+            clinic.id,
+            {
+              name:
+                clinicInformation.name.trim(),
+
+              phone:
+                clinicInformation.phone.trim(),
+
+              email:
+                clinicInformation.email.trim() ||
+                undefined,
+
+              address:
+                clinicInformation.address.trim(),
+
+              country:
+                clinicInformation.country,
+
+              city:
+                clinicInformation.city.trim(),
+
+              workingDays:
+                clinicWorkingDays,
+            },
+          );
+
+        setCurrentClinic({
+          ...currentClinic,
+          clinic: updated,
+        });
+
+        Alert.alert(
+          "Saved",
+          "Clinic information updated successfully.",
+        );
+      } catch (error: any) {
+        console.log(
+          "UPDATE CLINIC ERROR:",
+          error?.response?.status,
+          error?.response?.data,
+        );
+
+        const apiError = getApiError(
+          error,
+          {
+            title: "Unable to Save",
+            message:
+              "We couldn't save the clinic information. Please check the entered information and try again.",
+          },
+        );
+
+        Alert.alert(
+          apiError.title,
+          apiError.message,
+        );
+      } finally {
+        setSaving(false);
+      }
+    };
+
+  /*
+   * =========================
+   * Join Code
+   * =========================
+   */
+
+  const handleGenerateJoinCode =
+    async () => {
+      if (!clinic) {
+        return;
+      }
+
+      try {
+        setLoadingCode(true);
+
+        const code =
+          await createJoinCode(
+            clinic.id,
+          );
+
+        setJoinCode(code);
+      } catch (error: any) {
+        Alert.alert(
+          "Unable to Generate Code",
+          error?.response?.data?.message ??
+            "Unable to generate clinic join code.",
+        );
+      } finally {
+        setLoadingCode(false);
+      }
+    };
+
+  /*
+   * =========================
+   * Membership
+   * =========================
+   */
+
+  const handleApprove =
+    async (
+      membershipId: string,
+    ) => {
+      if (!clinic) {
+        return;
+      }
+
+      try {
+        await approveMembership(
+          clinic.id,
+          membershipId,
+        );
+
+        await loadMembers();
+      } catch (error: any) {
+        Alert.alert(
+          "Unable to Approve",
+          error?.response?.data?.message ??
+            "Unable to approve membership.",
+        );
+      }
+    };
+
+  const handleReject =
+    async (
+      membershipId: string,
+    ) => {
+      if (!clinic) {
+        return;
+      }
+
+      try {
+        await rejectMembership(
+          clinic.id,
+          membershipId,
+        );
+
+        await loadMembers();
+      } catch (error: any) {
+        Alert.alert(
+          "Unable to Reject",
+          error?.response?.data?.message ??
+            "Unable to reject membership.",
+        );
+      }
+    };
+
+    const handleRemoveMember = async (
+      membershipId: string,
+    ) => {
+      if (!clinic) return;
+
+      Alert.alert(
+        "Remove Member",
+        "Are you sure you want to remove this member from the clinic?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Remove",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await removeMember(
+                  clinic.id,
+                  membershipId,
+                );
+
+                await loadMembers();
+              } catch (error: any) {
+                Alert.alert(
+                  "Unable to Remove",
+                  error?.response?.data?.message ??
+                    "Unable to remove this member.",
+                );
+              }
+            },
+          },
+        ],
+      );
+    };
+
+    const handleLeaveClinic = async () => {
+      if (!currentClinic || isOwner) return;
+
+      Alert.alert(
+        "Leave Clinic",
+        "Are you sure you want to leave this clinic?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Leave",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await leaveClinic(
+                  currentClinic.membershipId,
+                );
+
+                await loadClinics();
+
+                router.back();
+              } catch (error: any) {
+                Alert.alert(
+                  "Unable to Leave",
+                  error?.response?.data?.message ??
+                    "Unable to leave this clinic.",
+                );
+              }
+            },
+          },
+        ],
+      );
+    };
+
+    const handleTransferOwnership = async (
+      membershipId: string,
+    ) => {
+      if (!clinic || !isOwner) return;
+
+      Alert.alert(
+        "Transfer Ownership",
+        "Are you sure you want to transfer ownership to this doctor?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Transfer",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await transferOwnership(
+                  clinic.id,
+                  membershipId,
+                );
+
+                await loadClinics();
+                await loadMembers();
+
+                Alert.alert(
+                  "Ownership Transferred",
+                  "Clinic ownership has been transferred successfully.",
+                );
+              } catch (error: any) {
+                Alert.alert(
+                  "Unable to Transfer",
+                  error?.response?.data?.message ??
+                    "Unable to transfer ownership.",
+                );
+              }
+            },
+          },
+        ],
+      );
+    };
+
+    const handleDeactivateClinic = async () => {
+      if (!clinic || !isOwner) return;
+
+      Alert.alert(
+        "Deactivate Clinic",
+        "Are you sure you want to deactivate this clinic?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Deactivate",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                const updated =
+                  await deactivateClinic(
+                    clinic.id,
+                  );
+
+                setCurrentClinic({
+                  ...currentClinic,
+                  clinic: updated,
+                });
+
+                setJoinCode(null);
+
+                Alert.alert(
+                  "Clinic Deactivated",
+                  "The clinic has been deactivated.",
+                );
+              } catch (error: any) {
+                Alert.alert(
+                  "Unable to Deactivate",
+                  error?.response?.data?.message ??
+                    "Unable to deactivate clinic.",
+                );
+              }
+            },
+          },
+        ],
+      );
+    };
+
+    const handleReactivateClinic = async () => {
+      if (!clinic || !isOwner) return;
+
+      try {
+        const updated =
+          await reactivateClinic(
+            clinic.id,
+          );
+
+        setCurrentClinic({
+          ...currentClinic,
+          clinic: updated,
+        });
+
+        Alert.alert(
+          "Clinic Reactivated",
+          "The clinic is active again.",
+        );
+      } catch (error: any) {
+        Alert.alert(
+          "Unable to Reactivate",
+          error?.response?.data?.message ??
+            "Unable to reactivate clinic.",
+        );
+      }
+    };
+
+  /*
+   * =========================
+   * No Clinic
+   * =========================
+   */
+
+  if (!clinic) {
+    return (
+      <SafeAreaView
+        style={styles.container}
+      >
+        <AppTopBar
+          title="Clinic Management"
+          onBack={() =>
+            router.back()
+          }
+        />
+
+        <View
+          style={styles.center}
+        >
+          <Text
+            style={
+              styles.emptyText
             }
-          : item,
-      ),
+          >
+            No clinic selected.
+          </Text>
+        </View>
+      </SafeAreaView>
     );
-  };
+  }
+
+  /*
+   * =========================
+   * Screen
+   * =========================
+   */
 
   return (
     <SafeAreaView
       style={styles.container}
-      edges={["top", "bottom"]}
+      edges={[
+        "top",
+        "bottom",
+      ]}
     >
       <AppTopBar
         title="Clinic Management"
-        onBack={() => router.back()}
+        onBack={() =>
+          router.back()
+        }
       />
 
       <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={
+          styles.content
+        }
+        showsVerticalScrollIndicator={
+          false
+        }
       >
-
         <ClinicSelector
           onCreateClinic={() =>
             router.push("/(app)/create-clinic")
           }
+          onJoinClinic={() =>
+            router.push("/(app)/join-clinic")
+          }
         />
 
-        {/* Clinic Information */}
+        {/* Join Code */}
 
-        <SectionHeader title="Clinic Information" />
-
-        <AppCard>
-          <AppTextField
-            label="Clinic Name"
-            value={name}
-            editable={isOwner}
-            onChangeText={setName}
-          />
-
-          <Divider />
-
-          <AppTextField
-            label="Phone Number"
-            value={phone}
-            editable={isOwner}
-            keyboardType="phone-pad"
-            onChangeText={setPhone}
-          />
-
-          <Divider />
-
-          <AppTextField
-            label="Email"
-            value={email}
-            editable={isOwner}
-            keyboardType="email-address"
-            onChangeText={setEmail}
-          />
-
-          <Divider />
-
-          <AppTextField
-            label="Address"
-            value={address}
-            editable={isOwner}
-            multiline
-            onChangeText={setAddress}
-          />
-
-          <Divider />
-
-          <AppTextField
-            label="Country"
-            value={country}
-            editable={isOwner}
-            onChangeText={setCountry}
-          />
-
-          <Divider />
-
-          <AppTextField
-            label="City"
-            value={city}
-            editable={isOwner}
-            onChangeText={setCity}
-          />
-
-          {isOwner && (
-            <AppButton
-              title="Save Clinic Information"
-              loading={saving}
-              onPress={handleSaveClinic}
-            />
-          )}
-        </AppCard>
-
-        {/* Working Days */}
-
-        <SectionHeader title="Working Days" />
-
-        <AppCard>
-          {workingDays.map((item) => (
-            <View key={item.day}>
-              <View style={styles.dayHeader}>
-                <Text style={styles.dayName}>
-                  {DAY_LABELS[item.day]}
-                </Text>
-
-                {isOwner && (
-                  <AppButton
-                    title={
-                      item.isClosed
-                        ? "Closed"
-                        : "Open"
-                    }
-                    onPress={() =>
-                      toggleDay(item.day)
-                    }
-                  />
-                )}
-              </View>
-
-              {!item.isClosed && (
-                <View style={styles.timeRow}>
-                  <View style={styles.timeField}>
-                    <AppTextField
-                      label="Opening"
-                      value={item.startTime}
-                      editable={isOwner}
-                      placeholder="08:00"
-                      onChangeText={(value) =>
-                        updateDay(
-                          item.day,
-                          "startTime",
-                          value,
-                        )
-                      }
-                    />
-                  </View>
-
-                  <View style={styles.timeField}>
-                    <AppTextField
-                      label="Closing"
-                      value={item.endTime}
-                      editable={isOwner}
-                      placeholder="17:00"
-                      onChangeText={(value) =>
-                        updateDay(
-                          item.day,
-                          "endTime",
-                          value,
-                        )
-                      }
-                    />
-                  </View>
-                </View>
-              )}
-
-              <Divider />
-            </View>
-          ))}
-        </AppCard>
-
-        {/* Join Code / QR */}
-
-        {isOwner && (
+        {isOwner && clinic.isActive && (
           <>
-            <SectionHeader title="Clinic Join Access" />
+            <SectionHeader
+              title="Clinic Join Access"
+            />
 
-            <AppCard>
-              <Text style={styles.description}>
-                Generate a temporary code that doctors
-                or reception staff can use to request
-                access to this clinic.
-              </Text>
-
-              <AppButton
-                title={
-                  joinCode
-                    ? "Generate New Join Code"
-                    : "Generate Join Code"
-                }
-                loading={loadingCode}
-                onPress={handleGenerateJoinCode}
-              />
-
-              {joinCode && (
-                <JoinCodeCard
-                  code={joinCode.code}
-                  expiresAt={joinCode.expiresAt}
-                />
-              )}
-            </AppCard>
+            <ClinicJoinAccess
+              joinCode={joinCode}
+              loading={loadingCode}
+              onGenerate={
+                handleGenerateJoinCode
+              }
+            />
           </>
         )}
 
@@ -489,174 +837,186 @@ export default function ClinicManagementScreen() {
               title="Membership Requests"
             />
 
-            {requests.length === 0 ? (
-              <AppCard>
-                <Text style={styles.emptyText}>
-                  No pending membership requests.
-                </Text>
-              </AppCard>
-            ) : (
-              requests.map((request) => (
-                <AppCard key={request.id}>
-                  <Text style={styles.memberName}>
-                    {request.user.fullName}
-                  </Text>
-
-                  <Text style={styles.memberInfo}>
-                    {request.user.accountType}
-                    {request.user.specialty
-                      ? ` • ${request.user.specialty}`
-                      : ""}
-                  </Text>
-
-                  <View style={styles.actionRow}>
-                    <AppButton
-                      title="Approve"
-                      onPress={() =>
-                        handleApprove(
-                          request.id,
-                        )
-                      }
-                    />
-
-                    <AppButton
-                      title="Reject"
-                      onPress={() =>
-                        handleReject(
-                          request.id,
-                        )
-                      }
-                    />
-                  </View>
-                </AppCard>
-              ))
-            )}
+            <ClinicMembershipRequests
+              requests={requests}
+              onApprove={
+                handleApprove
+              }
+              onReject={
+                handleReject
+              }
+            />
           </>
         )}
 
-        {/* Active Members */}
+        {/* Clinic Members */}
 
-        <SectionHeader title="Clinic Members" />
+        <SectionHeader
+          title="Clinic Members"
+        />
 
-        {members.length === 0 ? (
-          <AppCard>
-            <Text style={styles.emptyText}>
-              No active members.
-            </Text>
-          </AppCard>
-        ) : (
-          members.map((member) => (
-            <AppCard key={member.id}>
-              <Text style={styles.memberName}>
-                {member.user.fullName}
-              </Text>
+        <ClinicMembers
+          members={members}
+          loading={loadingMembers}
+          isOwner={isOwner}
+          currentMembershipId={
+            currentClinic?.membershipId ?? ""
+          }
+          onRemoveMember={
+            handleRemoveMember
+          }
+          onTransferOwnership={
+            handleTransferOwnership
+          }
+          onLeaveClinic={
+            handleLeaveClinic
+          }
+        />
 
-              <Text style={styles.memberInfo}>
-                {member.clinicRole}
-                {" • "}
-                {member.user.accountType}
-              </Text>
+        {/* Clinic Information */}
 
-              {member.user.specialty && (
-                <Text style={styles.memberInfo}>
-                  {member.user.specialty}
-                </Text>
-              )}
+        <SectionHeader
+          title="Clinic Information"
+        />
 
-              {member.user.professionalTitle && (
-                <Text style={styles.memberInfo}>
-                  {member.user.professionalTitle}
-                </Text>
-              )}
-            </AppCard>
-          ))
+        <ClinicInformationForm
+          value={
+            clinicInformation
+          }
+          onChange={
+            isOwner
+              ? setClinicInformation
+              : () => {}
+          }
+        />
+
+        {isOwner && (
+          <AppButton
+            title="Save Clinic Information"
+            loading={saving}
+            onPress={
+              handleSaveClinic
+            }
+          />
         )}
 
-        {loadingMembers && (
-          <Text style={styles.loadingText}>
-            Updating members...
-          </Text>
+        {/* Working Days */}
+
+        <SectionHeader
+          title="Working Days"
+        />
+
+        <ClinicWorkingDays
+          value={workingDays}
+          onChange={
+            isOwner
+              ? setWorkingDays
+              : () => {}
+          }
+        />
+
+        {isOwner && (
+          <AppButton
+            title="Save Working Hours"
+            loading={saving}
+            onPress={
+              handleSaveClinic
+            }
+          />
         )}
+
+        {/* Clinic Status */}
+
+        <SectionHeader title="Clinic Status" />
+
+        <ClinicStatus
+          isActive={clinic.isActive}
+          isOwner={isOwner}
+          onDeactivate={handleDeactivateClinic}
+          onReactivate={handleReactivateClinic}
+        />
       </ScrollView>
+
+      <Pressable
+        style={styles.refreshButton}
+        onPress={handleRefresh}
+        disabled={refreshing}
+        hitSlop={8}
+      >
+        {refreshing ? (
+          <ActivityIndicator
+            size="small"
+            color="#FFFFFF"
+          />
+        ) : (
+          <Ionicons
+            name="refresh"
+            size={22}
+            color="#FFFFFF"
+          />
+        )}
+      </Pressable>
+
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
+const styles =
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor:
+        COLORS.background,
+    },
 
-  content: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.xxl,
-    gap: SPACING.lg,
-  },
+    content: {
+      padding: SPACING.md,
+      paddingBottom:
+        SPACING.xxl,
+      gap: SPACING.lg,
+    },
 
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    center: {
+      flex: 1,
+      justifyContent:
+        "center",
+      alignItems: "center",
+    },
 
-  dayHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: SPACING.sm,
-  },
+    emptyText: {
+      textAlign:
+        "center",
+      color:
+        COLORS.secondaryText,
+      fontSize: 16,
+      paddingVertical:
+        SPACING.md,
+    },
 
-  dayName: {
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
+    refreshButton: {
+      position: "absolute",
+      right: 20,
+      bottom: 24,
 
-  timeRow: {
-    flexDirection: "row",
-    gap: SPACING.md,
-  },
+      width: 50,
+      height: 50,
+      borderRadius: 25,
 
-  timeField: {
-    flex: 1,
-  },
+      backgroundColor: COLORS.primary,
 
-  description: {
-    color: COLORS.secondaryText,
-    fontSize: TYPOGRAPHY.body,
-    lineHeight: 22,
-    marginBottom: SPACING.md,
-  },
+      justifyContent: "center",
+      alignItems: "center",
 
-  memberName: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginBottom: 4,
-  },
+      elevation: 6,
 
-  memberInfo: {
-    color: COLORS.secondaryText,
-    fontSize: TYPOGRAPHY.body,
-    marginBottom: 4,
-  },
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
 
-  actionRow: {
-    flexDirection: "row",
-    gap: SPACING.md,
-    marginTop: SPACING.md,
-  },
+      shadowOpacity: 0.25,
+      shadowRadius: 5,
 
-  emptyText: {
-    textAlign: "center",
-    color: COLORS.secondaryText,
-    fontSize: TYPOGRAPHY.body,
-    paddingVertical: SPACING.md,
-  },
-
-  loadingText: {
-    textAlign: "center",
-    color: COLORS.secondaryText,
-  },
-});
+      zIndex: 100,
+    },
+  });

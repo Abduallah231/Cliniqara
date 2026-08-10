@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -28,11 +29,24 @@ export class PatientService {
           userId,
           status: MembershipStatus.ACTIVE,
         },
+        include: {
+          clinic: {
+            select: {
+              isActive: true,
+            },
+          },
+        },
       });
 
     if (!membership) {
       throw new NotFoundException(
         'Clinic not found',
+      );
+    }
+
+    if (!membership.clinic.isActive) {
+      throw new ConflictException(
+        'Clinic is inactive',
       );
     }
 

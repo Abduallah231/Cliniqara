@@ -87,6 +87,15 @@ export class ClinicController {
     );
   }
 
+  @Get('my-membership-requests')
+  getMyMembershipRequests(
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.clinicService.getMyMembershipRequests(
+      user.id,
+    );
+  }
+
   @Get(':clinicId/membership-requests')
   @Roles(AccountType.DOCTOR)
   getMembershipRequests(

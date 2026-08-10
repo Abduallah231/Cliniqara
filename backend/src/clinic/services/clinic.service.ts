@@ -95,16 +95,36 @@ export class ClinicService {
           workingDays: {
             create: dto.workingDays.map((day) => ({
               day: day.day,
-              startTime: day.startTime ?? '',
-              endTime: day.endTime ?? '',
               isClosed: day.isClosed,
               is24Hours: day.is24Hours,
+
+              shifts: {
+                create:
+                  day.isClosed || day.is24Hours
+                    ? []
+                    : day.shifts.map((shift, index) => ({
+                        startTime: shift.startTime,
+                        endTime: shift.endTime,
+                        sortOrder: index,
+                      })),
+              },
             })),
           },
         },
 
         include: {
-          workingDays: true,
+          workingDays: {
+            include: {
+              shifts: {
+                orderBy: {
+                  sortOrder: 'asc',
+                },
+              },
+            },
+            orderBy: {
+              day: 'asc',
+            },
+          },
         },
       });
       await tx.clinicMember.create({
@@ -139,7 +159,18 @@ export class ClinicService {
         include: {
           clinic: {
             include: {
-              workingDays: true,
+              workingDays: {
+                include: {
+                  shifts: {
+                    orderBy: {
+                      sortOrder: 'asc',
+                    },
+                  },
+                },
+                orderBy: {
+                  day: 'asc',
+                },
+              },
             },
           },
         },
@@ -264,6 +295,8 @@ export class ClinicService {
     const updatedClinic =
       await this.prisma.$transaction(async (tx) => {
         if (dto.workingDays) {
+          const workingDays = dto.workingDays;
+
           await tx.clinicWorkingDay.deleteMany({
             where: {
               clinicId: membership.clinicId,
@@ -271,14 +304,52 @@ export class ClinicService {
           });
 
           await tx.clinicWorkingDay.createMany({
-            data: dto.workingDays.map((day) => ({
+            data: workingDays.map((day) => ({
               clinicId: membership.clinicId,
               day: day.day,
-              startTime: day.startTime ?? '',
-              endTime: day.endTime ?? '',
               isClosed: day.isClosed,
+              is24Hours: day.is24Hours,
             })),
           });
+
+          const createdWorkingDays =
+            await tx.clinicWorkingDay.findMany({
+              where: {
+                clinicId: membership.clinicId,
+              },
+              select: {
+                id: true,
+                day: true,
+              },
+            });
+
+          const shiftsToCreate =
+            createdWorkingDays.flatMap((workingDay) => {
+              const dtoDay = workingDays.find(
+                (day) => day.day === workingDay.day,
+              );
+
+              if (!dtoDay) {
+                return [];
+              }
+
+              if (dtoDay.isClosed || dtoDay.is24Hours) {
+                return [];
+              }
+
+              return dtoDay.shifts.map((shift, index) => ({
+                workingDayId: workingDay.id,
+                startTime: shift.startTime,
+                endTime: shift.endTime,
+                sortOrder: index,
+              }));
+            });
+
+          if (shiftsToCreate.length > 0) {
+            await tx.clinicWorkingShift.createMany({
+              data: shiftsToCreate,
+            });
+          }
         }
 
         return tx.clinic.update({
@@ -306,7 +377,18 @@ export class ClinicService {
             }),
           },
           include: {
-            workingDays: true,
+            workingDays: {
+              include: {
+                shifts: {
+                  orderBy: {
+                    sortOrder: 'asc',
+                  },
+                },
+              },
+              orderBy: {
+                day: 'asc',
+              },
+            },
           },
         });
       });
@@ -962,6 +1044,35 @@ export class ClinicService {
       },
       data: {
         isActive: true,
+      },
+    });
+  }
+
+  async getMyMembershipRequests(userId: string) {
+    return this.prisma.clinicMember.findMany({
+      where: {
+        userId,
+        status: MembershipStatus.PENDING,
+        clinic: {
+          isActive: true,
+        },
+      },
+      select: {
+        id: true,
+        clinicId: true,
+        status: true,
+        createdAt: true,
+        clinic: {
+          select: {
+            id: true,
+            clinicCode: true,
+            name: true,
+            city: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
   }

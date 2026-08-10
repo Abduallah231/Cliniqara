@@ -487,6 +487,23 @@ model ClinicMember {
   @@map("clinic_members")
 }
 
+model ClinicWorkingShift {
+  id String @id @default(uuid())
+
+  workingDayId String
+
+  startTime String
+  endTime String
+
+  sortOrder Int @default(0)
+
+  workingDay ClinicWorkingDay @relation(fields: [workingDayId], references: [id], onDelete: Cascade)
+
+  @@unique([workingDayId, sortOrder])
+  @@index([workingDayId])
+  @@map("clinic_working_shifts")
+}
+
 model ClinicWorkingDay {
   id String @id @default(uuid())
 
@@ -494,15 +511,12 @@ model ClinicWorkingDay {
 
   day WeekDay
 
-  startTime String
-
-  endTime String
-
   isClosed Boolean @default(false)
-
   is24Hours Boolean @default(false)
 
-  clinic Clinic @relation(fields: [clinicId], references: [id])
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  shifts ClinicWorkingShift[]
 
   @@unique([clinicId, day])
   @@index([clinicId])

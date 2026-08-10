@@ -1,24 +1,29 @@
-import { useState } from "react";
-import { router } from "expo-router";
+import { useCallback, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
 import {
+  ActivityIndicator,
   Alert,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-
+import ClinicQrScanner from "@/components/clinic/ClinicQrScanner";
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import AppTextField from "@/components/common/AppTextField";
 
-import { joinClinic } from "@/services/clinicApi";
+import {
+  getMyMembershipRequests,
+  joinClinic,
+} from "@/services/clinicApi";
+
 import SessionService from "@/services/session.service";
-import ClinicQrScanner from "@/components/clinic/ClinicQrScanner";
+
+import type { MyMembershipRequest } from "@/types/clinic";
 
 import {
   COLORS,
@@ -28,12 +33,93 @@ import {
 } from "@/theme";
 
 export default function JoinClinicScreen() {
-  const [clinicCode, setClinicCode] =
-    useState("");
-
+  const [clinicCode, setClinicCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingRequests, setLoadingRequests] =
+    useState(false);
+  const [refreshing, setRefreshing] =
+  useState(false);
   const [error, setError] = useState("");
-  const [showScanner, setShowScanner] = useState(false);
+
+  const [showScanner, setShowScanner] =
+    useState(false);
+
+  const [pendingRequests, setPendingRequests] =
+    useState<MyMembershipRequest[]>([]);
+
+  const loadPendingRequests = useCallback(
+    async () => {
+      try {
+        setLoadingRequests(true);
+
+        const requests =
+          await getMyMembershipRequests();
+
+        setPendingRequests(requests);
+      } catch {
+        setPendingRequests([]);
+      } finally {
+        setLoadingRequests(false);
+      }
+    },
+    [],
+  );
+
+  const handleRefresh = async () => {
+    if (refreshing) {
+      return;
+    }
+
+    try {
+      setRefreshing(true);
+      await loadPendingRequests();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadPendingRequests();
+    }, [loadPendingRequests]),
+  );
+
+  const handleJoinRequest = async () => {
+    const code = clinicCode.trim();
+
+    if (!code) {
+      setError("Enter the clinic join code.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      await joinClinic(code);
+
+      await loadPendingRequests();
+
+      setClinicCode("");
+
+      Alert.alert(
+        "Request Sent",
+        "Your request to join the clinic is now pending approval.",
+      );
+    } catch (error: any) {
+      setError(
+        error?.response?.data?.message ??
+          "Unable to send your join request.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await SessionService.logout();
+    router.replace("/login");
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -57,29 +143,27 @@ export default function JoinClinicScreen() {
           </Text>
 
           <Text style={styles.subtitle}>
-            Enter the clinic code provided by
-            your clinic administrator.
+            Enter the temporary join code provided
+            by your clinic administrator.
           </Text>
         </View>
 
         <AppCard style={styles.card}>
           <View style={styles.form}>
-
             <Text style={styles.sectionTitle}>
-              Clinic Code
+              Clinic Join Code
             </Text>
 
             <AppTextField
-              label="Clinic Code"
+              label="Join Code"
               placeholder="Example: CLN-4A92XZ"
               value={clinicCode}
               onChangeText={(text) => {
-                setClinicCode(
-                  text.toUpperCase()
-                );
+                setClinicCode(text.toUpperCase());
                 setError("");
               }}
               autoCapitalize="characters"
+              editable={!loading}
             />
 
             {error ? (
@@ -89,81 +173,27 @@ export default function JoinClinicScreen() {
             ) : null}
 
             <AppButton
-              title="Join Clinic"
+              title="Request to Join"
               loading={loading}
-              onPress={async () => {
-                if (!clinicCode.trim()) {
-                  setError("Enter the clinic code");
-                  return;
-                }
-
-                try {
-                  setLoading(true);
-                  setError("");
-
-                  await joinClinic(clinicCode);
-
-                  Alert.alert(
-                    "Request Sent",
-                    "Your request to join the clinic is pending approval.",
-                    [
-                      {
-                        text: "OK",
-                        onPress: () => setClinicCode(""),
-                      },
-                    ],
-                  );
-                } catch (error: any) {
-                  setError(
-                    error?.response?.data?.message ??
-                      "Unable to join the clinic.",
-                  );
-                } finally {
-                  setLoading(false);
-                }
-              }}
+              onPress={handleJoinRequest}
             />
 
-            <View style={styles.divider}>
-              <View
-                style={styles.dividerLine}
-              />
-
-              <Text
-                style={styles.dividerText}
-              >
-                OR
-              </Text>
-
-              <View
-                style={styles.dividerLine}
-              />
-            </View>
-
             <Pressable
-              style={styles.qrCard}
+              style={styles.scanButton}
               onPress={() => {
-                setShowScanner(true);
                 setError("");
+                setShowScanner(true);
               }}
+              disabled={loading}
             >
               <Ionicons
                 name="qr-code-outline"
-                size={64}
+                size={22}
                 color={COLORS.primary}
               />
 
-              <Text
-                style={styles.qrTitle}
-              >
+              <Text style={styles.scanButtonText}>
                 Scan QR Code
-              </Text>
-
-              <Text
-                style={styles.qrSubtitle}
-              >
-                Scan the QR code provided by
-                your clinic.
               </Text>
             </Pressable>
 
@@ -172,8 +202,11 @@ export default function JoinClinicScreen() {
                 onCodeScanned={async (code) => {
                   setShowScanner(false);
 
-                  if (!code.trim()) {
-                    setError("Invalid QR code");
+                  const scannedCode =
+                    code.trim().toUpperCase();
+
+                  if (!scannedCode) {
+                    setError("Invalid QR code.");
                     return;
                   }
 
@@ -181,16 +214,18 @@ export default function JoinClinicScreen() {
                     setLoading(true);
                     setError("");
 
-                    await joinClinic(code);
+                    await joinClinic(scannedCode);
+
+                    await loadPendingRequests();
 
                     Alert.alert(
                       "Request Sent",
-                      "Your request to join the clinic is pending approval.",
+                      "Your request to join the clinic is now pending approval.",
                     );
                   } catch (error: any) {
                     setError(
                       error?.response?.data?.message ??
-                        "Unable to join the clinic.",
+                        "Unable to send your join request.",
                     );
                   } finally {
                     setLoading(false);
@@ -199,56 +234,124 @@ export default function JoinClinicScreen() {
               />
             )}
 
-            <AppCard style={styles.infoCard}>
-              <View style={styles.infoRow}>
-                <Ionicons
-                  name="information-circle"
-                  size={26}
-                  color={COLORS.primary}
-                />
-
-                <View style={styles.infoContent}>
-                  <Text style={styles.infoTitle}>
-                    What happens next?
-                  </Text>
-
-                  <Text style={styles.infoText}>
-                    After submitting your
-                    request, the clinic
-                    administrator will review
-                    and approve your access.
-                  </Text>
-
-                  <Text style={styles.infoText}>
-                    You cannot access patient
-                    records until your request
-                    is approved.
-                  </Text>
-                </View>
-              </View>
-            </AppCard>
-
             <Pressable
-            style={styles.signOutButton}
-            onPress={async () => {
-              await SessionService.logout();
-              router.replace("/login");
-            }}
+              style={styles.continueButton}
+              onPress={() => router.replace("/")}
             >
-            <Ionicons
-                name="log-out-outline"
-                size={18}
-                color={COLORS.danger}
-            />
+              <Ionicons
+                name="arrow-forward-circle-outline"
+                size={20}
+                color={COLORS.primary}
+              />
 
-            <Text style={styles.signOutText}>
-                Sign Out
-            </Text>
+              <Text style={styles.continueText}>
+                Continue to App
+              </Text>
             </Pressable>
-
           </View>
         </AppCard>
+
+        {pendingRequests.length > 0 && (
+          <View style={styles.pendingSection}>
+            <Text style={styles.pendingSectionTitle}>
+              Pending Requests
+            </Text>
+
+            {pendingRequests.map((request) => (
+              <AppCard
+                key={request.id}
+                style={styles.pendingCard}
+              >
+                <View style={styles.pendingRow}>
+                  <View style={styles.pendingIcon}>
+                    <Ionicons
+                      name="business-outline"
+                      size={24}
+                      color={COLORS.primary}
+                    />
+                  </View>
+
+                  <View style={styles.pendingInfo}>
+                    <Text style={styles.clinicName}>
+                      {request.clinic.name}
+                    </Text>
+
+                    <Text style={styles.clinicLocation}>
+                      {request.clinic.city}
+                    </Text>
+
+                    <Text style={styles.pendingStatus}>
+                      Pending approval
+                    </Text>
+                  </View>
+                </View>
+              </AppCard>
+            ))}
+          </View>
+        )}
+
+        <AppCard style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <Ionicons
+              name="information-circle"
+              size={26}
+              color={COLORS.primary}
+            />
+
+            <View style={styles.infoContent}>
+              <Text style={styles.infoTitle}>
+                What happens next?
+              </Text>
+
+              <Text style={styles.infoText}>
+                Your request will be sent to the
+                clinic administrator for approval.
+              </Text>
+
+              <Text style={styles.infoText}>
+                You cannot access clinic records
+                until your request is approved.
+              </Text>
+            </View>
+          </View>
+        </AppCard>
+
+        <Pressable
+          style={styles.signOutButton}
+          onPress={handleSignOut}
+        >
+          <Ionicons
+            name="log-out-outline"
+            size={18}
+            color={COLORS.danger}
+          />
+
+          <Text style={styles.signOutText}>
+            Sign Out
+          </Text>
+        </Pressable>
       </AppKeyboardAwareScrollView>
+
+      <Pressable
+        style={styles.refreshButton}
+        onPress={handleRefresh}
+        disabled={refreshing}
+        hitSlop={8}
+      >
+        {refreshing ? (
+          <ActivityIndicator
+            size="small"
+            color="#FFFFFF"
+          />
+        ) : (
+          <Ionicons
+            name="refresh"
+            size={22}
+            color="#FFFFFF"
+          />
+        )}
+      </Pressable>
+
     </SafeAreaView>
   );
 }
@@ -266,12 +369,14 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: SPACING.lg,
+    paddingBottom: SPACING.xxl,
     justifyContent: "center",
+    gap: SPACING.lg,
   },
 
   header: {
     alignItems: "center",
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.sm,
   },
 
   logo: {
@@ -297,6 +402,7 @@ const styles = StyleSheet.create({
     color: COLORS.secondaryText,
     fontSize: TYPOGRAPHY.body,
     lineHeight: 22,
+    paddingHorizontal: SPACING.md,
   },
 
   card: {
@@ -318,46 +424,70 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-  divider: {
+  continueButton: {
     flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
-    marginVertical: SPACING.sm,
+    gap: 8,
+    paddingVertical: SPACING.md,
   },
 
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: COLORS.border,
+  continueText: {
+    color: COLORS.primary,
+    fontWeight: "700",
+    fontSize: TYPOGRAPHY.body,
   },
 
-  dividerText: {
-    marginHorizontal: SPACING.md,
-    color: COLORS.secondaryText,
-    fontWeight: "600",
+  pendingSection: {
+    gap: SPACING.sm,
   },
 
-  qrCard: {
-    borderWidth: 2,
-    borderStyle: "dashed",
-    borderColor: COLORS.primary,
-    borderRadius: 20,
-    paddingVertical: 36,
-    alignItems: "center",
-    gap: SPACING.md,
-  },
-
-  qrTitle: {
+  pendingSectionTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: COLORS.text,
   },
 
-  qrSubtitle: {
-    textAlign: "center",
+  pendingCard: {
+    ...SHADOW,
+  },
+
+  pendingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  pendingIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#EEF6FF",
+  },
+
+  pendingInfo: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+
+  clinicName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
+  clinicLocation: {
+    marginTop: 3,
     color: COLORS.secondaryText,
-    fontSize: TYPOGRAPHY.body,
-    lineHeight: 22,
-    paddingHorizontal: SPACING.lg,
+    fontSize: TYPOGRAPHY.small,
+  },
+
+  pendingStatus: {
+    marginTop: 5,
+    color: COLORS.primary,
+    fontSize: TYPOGRAPHY.small,
+    fontWeight: "600",
   },
 
   infoCard: {
@@ -395,11 +525,55 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: SPACING.md,
     gap: 8,
-    },
+  },
 
-    signOutText: {
+  signOutText: {
     color: COLORS.danger,
     fontWeight: "700",
     fontSize: TYPOGRAPHY.body,
+  },
+
+  refreshButton: {
+    position: "absolute",
+    right: 20,
+    bottom: 24,
+
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+
+    backgroundColor: COLORS.primary,
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    elevation: 6,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
     },
+
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+
+    zIndex: 100,
+  },
+
+  scanButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 12,
+  },
+
+  scanButtonText: {
+    color: COLORS.primary,
+    fontWeight: "700",
+    fontSize: TYPOGRAPHY.body,
+  },
 });

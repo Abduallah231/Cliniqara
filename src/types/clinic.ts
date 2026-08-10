@@ -17,13 +17,17 @@ export type WeekDay =
   | "THURSDAY"
   | "FRIDAY";
 
-export type WorkingDay = {
-  id: string;
-  day: WeekDay;
+export interface WorkingShift {
   startTime: string;
   endTime: string;
+}
+
+export interface WorkingDay {
+  day: WeekDay;
   isClosed: boolean;
-};
+  is24Hours: boolean;
+  shifts: WorkingShift[];
+}
 
 export type ClinicMember = {
   id: string;
@@ -94,4 +98,17 @@ export type UpdateClinicDto = Partial<
   Omit<CreateClinicDto, "workingDays">
 > & {
   workingDays?: CreateClinicDto["workingDays"];
+};
+
+export type MyMembershipRequest = {
+  id: string;
+  clinicId: string;
+  status: MembershipStatus;
+  createdAt: string;
+  clinic: {
+    id: string;
+    clinicCode: string;
+    name: string;
+    city: string;
+  };
 };

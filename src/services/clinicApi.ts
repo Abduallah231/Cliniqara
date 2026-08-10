@@ -5,6 +5,7 @@ import type {
   JoinCode,
   MyClinic,
   UpdateClinicDto,
+  MyMembershipRequest,
 } from "@/types/clinic";
 import { useClinicStore } from "@/store/clinicStore";
 
@@ -139,4 +140,14 @@ export async function loadClinics(): Promise<MyClinic[]> {
     .setClinics(memberships);
 
   return memberships;
+}
+
+export async function getMyMembershipRequests(): Promise<
+  MyMembershipRequest[]
+> {
+  const { data } = await api.get(
+    "/clinics/my-membership-requests",
+  );
+
+  return data;
 }

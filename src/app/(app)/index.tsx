@@ -1,3 +1,5 @@
+import ClinicSelector from "@/components/clinic/ClinicSelector";
+import { loadClinics } from "@/services/clinicApi";
 import AppTopBar from "@/components/common/AppTopBar";
 import SectionHeader from "@/components/common/SectionHeader";
 import DashboardActionCard from "@/components/dashboard/DashboardActionCard";
@@ -12,15 +14,17 @@ import {
   COLORS,
   SPACING
 } from "@/theme";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import {
+  router,
+  useFocusEffect,
+} from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ClinicSelector from "@/components/clinic/ClinicSelector";
 
 export default function DashboardScreen() {
   const doctor = useDoctorStore(
@@ -42,6 +46,16 @@ export default function DashboardScreen() {
       setIsGuest
     );
   }, [doctor]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!doctor) {
+        return;
+      }
+
+      loadClinics().catch(() => {});
+    }, [doctor]),
+  );
  
   return (
     <SafeAreaView style={styles.container}>
@@ -77,6 +91,9 @@ export default function DashboardScreen() {
           <ClinicSelector
             onCreateClinic={() =>
               router.push("/(app)/create-clinic")
+            }
+            onJoinClinic={() =>
+              router.push("/(app)/join-clinic")
             }
           />
         )}
