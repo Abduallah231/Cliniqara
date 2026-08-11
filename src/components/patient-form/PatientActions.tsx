@@ -12,7 +12,7 @@ import {
   Text,
   View,
 } from "react-native";
-
+import { usePatientStore } from "@/store/patientStore";
 import {
   COLORS,
   RADIUS,
@@ -24,6 +24,7 @@ import { mapPatientToCreateDto } from "@/mappers/patientMapper";
 
 export default function PatientActions() {
   const { visit, updateVisit } = useVisitStore();
+  const { addPatient } = usePatientStore();
   const handleAddToWaiting = async () => {
     try {
 
@@ -34,10 +35,12 @@ export default function PatientActions() {
       const patientResponse =
         await createPatient(dto);
 
+      addPatient(patientResponse);
+
       const waitingVisit =
         await createWaitingVisit(
           patientResponse.id
-      );
+        );
 
       updateVisit({
         metadata: {
@@ -67,6 +70,8 @@ export default function PatientActions() {
 
       const patientResponse =
         await createPatient(dto);
+
+      addPatient(patientResponse);
 
       const waitingVisit =
         await createWaitingVisit(

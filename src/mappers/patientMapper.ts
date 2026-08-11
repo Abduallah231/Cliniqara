@@ -1,82 +1,87 @@
-import { Patient } from "@/models/VisitForm/patient";
+import type { CreatePatientInput } from "@/types/patient";
 
-export function mapPatientToCreateDto(patient: Patient) {
-  return {
-    identifierType: mapIdentifierType(patient.identifierType),
+export function mapPatientToCreateDto(
+  patient: any,
+): CreatePatientInput {
+  const identifierTypeMap = {
+    "National ID": "NATIONAL_ID",
+    "Birth Certificate": "BIRTH_CERTIFICATE",
+    Passport: "PASSPORT",
+    Other: "OTHER",
+    Unknown: "UNKNOWN",
+  } as const;
 
-    identifierNumber:
-      patient.identifierType === "Unknown"
-        ? undefined
-        : patient.identifierNumber,
+  const genderMap = {
+    male: "MALE",
+    female: "FEMALE",
+  } as const;
+
+  const maritalStatusMap = {
+    Single: "SINGLE",
+    Married: "MARRIED",
+    Divorced: "DIVORCED",
+    Widowed: "WIDOWED",
+  } as const;
+
+  const ageUnitMap = {
+    Years: "YEARS",
+    Months: "MONTHS",
+    Days: "DAYS",
+  } as const;
+
+  const dto: CreatePatientInput = {
+    identifierType:
+      identifierTypeMap[patient.identifierType as keyof typeof identifierTypeMap],
 
     fullName: patient.fullName.trim(),
 
-    estimatedAgeValue:
-      patient.age === ""
-        ? undefined
-        : Number(patient.age),
+    maritalStatus:
+      maritalStatusMap[
+        patient.maritalStatus as keyof typeof maritalStatusMap
+      ],
 
-    estimatedAgeUnit: mapAgeUnit(patient.ageUnit),
-
-    gender: patient.gender.toUpperCase(),
-
-    maritalStatus: patient.maritalStatus.toUpperCase(),
-
-    phone: patient.phone || undefined,
-
+    phone: patient.phone?.trim() || undefined,
     occupation:
-      patient.occupation === "Other"
-        ? patient.otherOccupation
-        : patient.occupation || undefined,
+      patient.occupation?.trim() || undefined,
 
     governorate:
-      patient.governorate || undefined,
+      patient.governorate?.trim() || undefined,
 
     city:
-      patient.city || undefined,
+      patient.city?.trim() || undefined,
 
     district:
-      patient.district || undefined,
+      patient.district?.trim() || undefined,
 
     streetAddress:
-      patient.street || undefined,
+      patient.street?.trim() || undefined,
   };
-}
 
-function mapIdentifierType(type: string) {
-  switch (type) {
-    case "National ID":
-      return "NATIONAL_ID";
-
-    case "Birth Certificate":
-      return "BIRTH_CERTIFICATE";
-
-    case "Passport":
-      return "PASSPORT";
-
-    case "Other":
-      return "OTHER";
-
-    case "Unknown":
-      return "UNKNOWN";
-
-    default:
-      return "UNKNOWN";
+  if (patient.identifierNumber?.trim()) {
+    dto.identifierNumber =
+      patient.identifierNumber.trim();
   }
-}
 
-function mapAgeUnit(unit: string) {
-  switch (unit) {
-    case "Years":
-      return "YEARS";
+  if (patient.age?.trim()) {
+    dto.estimatedAgeValue =
+      Number(patient.age);
 
-    case "Months":
-      return "MONTHS";
-
-    case "Days":
-      return "DAYS";
-
-    default:
-      return "YEARS";
+    dto.estimatedAgeUnit =
+      ageUnitMap[
+        patient.ageUnit as keyof typeof ageUnitMap
+      ];
   }
+
+  // Backend extracts gender from Egyptian National ID.
+  if (
+    patient.identifierType !== "National ID" &&
+    patient.gender
+  ) {
+    dto.gender =
+      genderMap[
+        patient.gender as keyof typeof genderMap
+      ];
+  }
+
+  return dto;
 }

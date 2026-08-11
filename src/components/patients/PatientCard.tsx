@@ -21,23 +21,23 @@ import {
 type Props = {
   patient: PatientSummary;
 
+  patientCode?: string;
+
   onPress?: (patient: PatientSummary) => void;
 
   onViewPatient?: (patient: PatientSummary) => void;
 
   onStartVisit?: (patient: PatientSummary) => void;
 
-  onToggleFavorite?: (patient: PatientSummary) => void;
-
   style?: StyleProp<ViewStyle>;
 };
 
 export default function PatientCard({
   patient,
+  patientCode,
   onPress,
   onViewPatient,
   onStartVisit,
-  onToggleFavorite,
   style,
 }: Props) {
   return (
@@ -47,7 +47,7 @@ export default function PatientCard({
       <AppCard style={style}>
         <PatientHeader
           patient={patient}
-          onToggleFavorite={onToggleFavorite}
+          patientCode={patientCode}
         />
 
         <AppDivider />

@@ -544,7 +544,7 @@ model ClinicJoinCode {
 model Patient {
   id String @id @default(uuid())
 
-  patientCode String
+  patientCode String @unique
 
   clinicId String
 
@@ -615,7 +615,6 @@ model Patient {
 
   visits Visit[]
 
-  @@unique([clinicId, patientCode])
   @@index([clinicId])
   @@index([fullName])
   @@index([phone])
@@ -1458,4 +1457,12 @@ model VisitPrescriptionMedication {
 
   @@index([prescriptionId])
   @@map("visit_prescription_medications")
+}
+
+model SystemCounter {
+  id        String   @id
+  value     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@map("system_counters")
 }

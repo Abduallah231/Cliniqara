@@ -1,21 +1,323 @@
-import { ScrollView, StyleSheet } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+
+import AppCard from "@/components/common/AppCard";
 
 import ClinicalSnapshot from "./ClinicalSnapshot";
 import LatestVisitCard from "./LatestVisitCard";
 
-import { SPACING } from "@/theme";
+import type { Patient } from "@/types/patient";
 
+import {
+  COLORS,
+  SHADOW,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/theme";
 
-export default function OverviewTab() {
+type Props = {
+  patient: Patient;
+};
+
+type InfoItemProps = {
+  label: string;
+  value: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  width: number;
+};
+
+function formatDate(
+  date: string | null | undefined,
+) {
+  if (!date) {
+    return "Not available";
+  }
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Not available";
+  }
+
+  return parsedDate.toLocaleDateString(
+    "en-GB",
+  );
+}
+
+function formatGender(
+  gender: Patient["gender"],
+) {
+  return gender === "MALE"
+    ? "Male"
+    : "Female";
+}
+
+function formatMaritalStatus(
+  status: Patient["maritalStatus"],
+) {
+  return status
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (char) =>
+      char.toUpperCase(),
+    );
+}
+
+function formatAge(
+  patient: Patient,
+) {
+  if (
+    patient.estimatedAgeValue != null &&
+    patient.estimatedAgeUnit
+  ) {
+    const units: Record<
+      Patient["estimatedAgeUnit"] &
+        string,
+      string
+    > = {
+      YEARS: "Years",
+      MONTHS: "Months",
+      DAYS: "Days",
+    };
+
+    return `${patient.estimatedAgeValue} ${
+      units[
+        patient.estimatedAgeUnit
+      ] ??
+      patient.estimatedAgeUnit
+    }`;
+  }
+
+  if (patient.dateOfBirth) {
+    const birthDate =
+      new Date(patient.dateOfBirth);
+
+    const today = new Date();
+
+    let age =
+      today.getFullYear() -
+      birthDate.getFullYear();
+
+    const monthDifference =
+      today.getMonth() -
+      birthDate.getMonth();
+
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 &&
+        today.getDate() <
+          birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return `${age} Years`;
+  }
+
+  return "Not available";
+}
+
+function formatAddress(
+  patient: Patient,
+) {
+  return [
+    patient.streetAddress,
+    patient.district,
+    patient.city,
+    patient.governorate,
+  ]
+    .filter(Boolean)
+    .join(", ") || "Not available";
+}
+
+function InfoItem({
+  label,
+  value,
+  icon,
+  width,
+}: InfoItemProps) {
+  return (
+    <View
+      style={[
+        styles.infoItem,
+        { width },
+      ]}
+    >
+      <View style={styles.iconContainer}>
+        <Ionicons
+          name={icon}
+          size={20}
+          color={COLORS.primary}
+        />
+      </View>
+
+      <View style={styles.infoContent}>
+        <Text style={styles.label}>
+          {label}
+        </Text>
+
+        <Text
+          style={styles.value}
+          numberOfLines={2}
+        >
+          {value}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+export default function OverviewTab({
+  patient,
+}: Props) {
+  const { width: screenWidth } =
+    useWindowDimensions();
+
+  const horizontalPadding =
+    SPACING.md * 2;
+
+  const availableWidth =
+    screenWidth - horizontalPadding;
+
+  /*
+   * Minimum width that keeps the
+   * information cards comfortable.
+   *
+   * Tablet:
+   * 3–4 cards per row depending
+   * on available width.
+   *
+   * Phone:
+   * 1–2 cards per row.
+   */
+  const minItemWidth = 150;
+
+  const columns = Math.max(
+    1,
+    Math.floor(
+      availableWidth /
+        (minItemWidth + SPACING.sm),
+    ),
+  );
+
+  const gap =
+    SPACING.sm * (columns - 1);
+
+  const itemWidth =
+    (availableWidth - gap) /
+    columns;
+
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={
+        styles.content
+      }
       showsVerticalScrollIndicator={false}
     >
+      <AppCard style={styles.card}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>
+              Patient Information
+            </Text>
 
+            <Text style={styles.subtitle}>
+              Basic patient details
+            </Text>
+          </View>
 
-      <ClinicalSnapshot />
+          <View style={styles.headerIcon}>
+            <Ionicons
+              name="person-outline"
+              size={22}
+              color={COLORS.primary}
+            />
+          </View>
+        </View>
+
+        <View style={styles.grid}>
+          <InfoItem
+            label="Patient Code"
+            value={
+              patient.patientCode
+            }
+            icon="card-outline"
+            width={itemWidth}
+          />
+
+          <InfoItem
+            label="Date of Birth"
+            value={formatDate(
+              patient.dateOfBirth,
+            )}
+            icon="calendar-outline"
+            width={itemWidth}
+          />
+
+          <InfoItem
+            label="Age"
+            value={formatAge(patient)}
+            icon="hourglass-outline"
+            width={itemWidth}
+          />
+
+          <InfoItem
+            label="Gender"
+            value={formatGender(
+              patient.gender,
+            )}
+            icon="male-female-outline"
+            width={itemWidth}
+          />
+
+          <InfoItem
+            label="Marital Status"
+            value={formatMaritalStatus(
+              patient.maritalStatus,
+            )}
+            icon="heart-outline"
+            width={itemWidth}
+          />
+
+          <InfoItem
+            label="Phone"
+            value={
+              patient.phone ??
+              "Not available"
+            }
+            icon="call-outline"
+            width={itemWidth}
+          />
+
+          <InfoItem
+            label="Occupation"
+            value={
+              patient.occupation ??
+              "Not available"
+            }
+            icon="briefcase-outline"
+            width={itemWidth}
+          />
+
+          <InfoItem
+            label="Address"
+            value={formatAddress(patient)}
+            icon="location-outline"
+            width={itemWidth}
+          />
+        </View>
+      </AppCard>
+
+      <ClinicalSnapshot
+        patient={patient}
+      />
 
       <LatestVisitCard />
     </ScrollView>
@@ -31,5 +333,82 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     paddingBottom: 120,
     gap: SPACING.md,
+  },
+
+  card: {
+    ...SHADOW,
+  },
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: SPACING.md,
+  },
+
+  title: {
+    fontSize: TYPOGRAPHY.heading,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
+  subtitle: {
+    marginTop: 3,
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.secondaryText,
+  },
+
+  headerIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.background,
+  },
+
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: SPACING.sm,
+  },
+
+  infoItem: {
+    minHeight: 78,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: SPACING.sm,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.background,
+  },
+
+  iconContainer: {
+    width: 38,
+    height: 38,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.card,
+    marginRight: SPACING.sm,
+  },
+
+  infoContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  label: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: COLORS.secondaryText,
+    marginBottom: 4,
+  },
+
+  value: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.text,
   },
 });

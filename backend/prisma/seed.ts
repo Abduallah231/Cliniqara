@@ -29,6 +29,17 @@ async function main() {
     });
   }
 
+  await prisma.systemCounter.upsert({
+    where: {
+      id: "PATIENT_CODE",
+    },
+    update: {},
+    create: {
+      id: "PATIENT_CODE",
+      value: 0,
+    },
+  });
+
   console.log('✅ Chief Complaints Seeded');
 }
 

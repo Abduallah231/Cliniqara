@@ -1,4 +1,7 @@
-import { useState } from "react";
+import {
+  useCallback,
+  useState,
+} from "react";
 
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 
@@ -20,8 +23,13 @@ import PatientOverviewTabs, {
   PatientOverviewTab,
 } from "@/components/patient-overview/PatientOverviewTabs";
 import VisitsTab from "@/components/patient-overview/VisitsTab";
+import {
+  getPatient,
+} from "@/services/patientApi";
 
-import { patientsData } from "@/data/patients";
+import {
+  usePatientStore,
+} from "@/store/patientStore";
 import {
   COLORS,
   SPACING,
@@ -42,15 +50,57 @@ export default function PatientOverviewScreen() {
   return () => subscription.remove();
 });
   const { patientId } =
-    useLocalSearchParams();
-  const patient =
-  patientsData.find(
-    (p) => p.id === patientId
-  ) ?? patientsData[0];
+    useLocalSearchParams<{
+      patientId: string;
+    }>();
+
+  const {
+    currentPatient,
+    setCurrentPatient,
+  } = usePatientStore();
+
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+
+      const loadPatient = async () => {
+        if (!patientId) {
+          return;
+        }
+
+        try {
+          const patient =
+            await getPatient(patientId);
+
+          if (mounted) {
+            setCurrentPatient(patient);
+          }
+        } catch (error) {
+          console.error(
+            "Failed to load patient:",
+            error,
+          );
+        }
+      };
+
+      loadPatient();
+
+      return () => {
+        mounted = false;
+      };
+    }, [
+      patientId,
+      setCurrentPatient,
+    ]),
+  );
   const [activeTab, setActiveTab] =
     useState<PatientOverviewTab>(
       "overview"
     );
+
+  if (!currentPatient) {
+    return null;
+  }
 
   return (
     <SafeAreaView
@@ -60,8 +110,8 @@ export default function PatientOverviewScreen() {
       <AppTopBar
         title="Patient Overview"
         onBack={() =>
-  router.replace("/existing-patients")
-}
+          router.replace("/existing-patients")
+        }
         onRightPress={() =>
           router.push("/settings")
         }
@@ -69,8 +119,8 @@ export default function PatientOverviewScreen() {
         <ScrollView>
               <View style={styles.content}>
                 <PatientOverviewHeader
-          patient={patient}
-        />
+                  patient={currentPatient}
+                />
 
         <PatientOverviewTabs
           activeTab={activeTab}
@@ -80,7 +130,7 @@ export default function PatientOverviewScreen() {
         <View style={styles.body}>
           {activeTab ===
           "overview" ? (
-            <OverviewTab />
+            <OverviewTab patient={currentPatient} />
           ) : (
             <VisitsTab />
           )}

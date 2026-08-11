@@ -1,5 +1,4 @@
 import {
-  IsEmail,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -7,11 +6,6 @@ import {
 } from 'class-validator';
 
 export class UpdatePatientDto {
-  @IsOptional()
-  @IsString()
-  @MaxLength(200)
-  fullName?: string;
-
   @IsOptional()
   @IsPhoneNumber('EG')
   phone?: string;
