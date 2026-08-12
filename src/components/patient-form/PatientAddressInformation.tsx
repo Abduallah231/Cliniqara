@@ -1,6 +1,5 @@
 import {
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 
@@ -10,11 +9,10 @@ import AppTextField from "@/components/common/AppTextField";
 import SectionHeader from "@/components/common/SectionHeader";
 
 import governorates from "@/data/governorates";
+import citiesByGovernorate from "@/data/cities";
 
 import {
-  COLORS,
   SPACING,
-  TYPOGRAPHY,
 } from "@/theme";
 
 type Props = {
@@ -38,9 +36,11 @@ type Props = {
   onStreetChange: (
     value: string,
   ) => void;
+
+  title?: string;
 };
 
-export default function PatientAddressInformation({
+export default function AddressInformation({
   governorate,
   city,
   district,
@@ -49,105 +49,166 @@ export default function PatientAddressInformation({
   onCityChange,
   onDistrictChange,
   onStreetChange,
+  title = "Residential Address",
 }: Props) {
+  /*
+   * =========================
+   * Selected Governorate
+   * =========================
+   */
+  const selectedGovernorate =
+    governorates.find(
+      (item) =>
+        item.label === governorate,
+    );
+
+  /*
+   * =========================
+   * Cities / Markaz
+   * =========================
+   *
+   * The available cities depend
+   * entirely on the selected
+   * governorate.
+   */
+  const cityOptions =
+    selectedGovernorate
+      ? citiesByGovernorate[
+          selectedGovernorate.id
+        ] ?? []
+      : [];
+
+  /*
+   * =========================
+   * Governorate Change
+   * =========================
+   *
+   * Changing governorate makes
+   * the previously selected city
+   * invalid.
+   */
+  const handleGovernorateChange =
+    (option: {
+      id: string;
+      label: string;
+    }) => {
+      onGovernorateChange(
+        option.label,
+      );
+      
+      /*
+       * Reset City / Markaz
+       */
+      onCityChange("");
+    };
+
+  /*
+   * =========================
+   * Screen
+   * =========================
+   */
   return (
-    <AppCard style={styles.card}>
-      <SectionHeader title="Residential Address" />
+    <AppCard
+      style={styles.card}
+    >
+      <SectionHeader
+        title={title}
+      />
 
-      <View style={styles.addressContainer}>
-        <View style={styles.addressRow}>
-          <View style={styles.addressField}>
-            <AppDropdown
-              label="Governorate"
-              selected={governorates.find(
-                (item) =>
-                  item.label ===
-                  governorate,
-              )}
-              options={governorates}
-              onChange={(option) =>
-                onGovernorateChange(
-                  option.label,
-                )
-              }
-            />
-          </View>
-
-          <View style={styles.addressField}>
-            <Text style={styles.label}>
-              City / Markaz
-            </Text>
-
-            <AppTextField
-              value={city}
-              onChangeText={onCityChange}
-              placeholder="Enter city"
-            />
-          </View>
+      {/* =========================
+          Governorate + City
+          ========================= */}
+      <View
+        style={styles.addressRow}
+      >
+        <View
+          style={styles.addressField}
+        >
+          <AppDropdown
+            label="Governorate"
+            selected={
+              selectedGovernorate
+            }
+            options={
+              governorates
+            }
+            onChange={
+              handleGovernorateChange
+            }
+          />
         </View>
 
-        <View style={styles.addressRow}>
-          <View style={styles.addressField}>
-            <Text style={styles.label}>
-              District / Village
-            </Text>
+        <View
+          style={styles.addressField}
+        >
+          <AppDropdown
+            label="City / Markaz"
+            selected={cityOptions.find(
+              (item) =>
+                item.label === city,
+            )}
+            options={cityOptions}
+            onChange={(option) =>
+              onCityChange(
+                option.label,
+              )
+            }
+          />
+        </View>
+      </View>
 
-            <AppTextField
-              value={district}
-              onChangeText={
-                onDistrictChange
-              }
-              placeholder="Enter district"
-            />
-          </View>
+      {/* =========================
+          District + Street
+          ========================= */}
+      <View
+        style={styles.addressRow}
+      >
+        <View
+          style={styles.addressField}
+        >
+          <AppTextField
+            label="District / Village"
+            value={district}
+            onChangeText={
+              onDistrictChange
+            }
+            placeholder="Enter district"
+          />
+        </View>
 
-          <View style={styles.addressField}>
-            <Text style={styles.label}>
-              Street / Building
-            </Text>
-
-            <AppTextField
-              value={street}
-              onChangeText={onStreetChange}
-              placeholder="Enter Street"
-            />
-          </View>
+        <View
+          style={styles.addressField}
+        >
+          <AppTextField
+            label="Street / Building"
+            value={street}
+            onChangeText={
+              onStreetChange
+            }
+            placeholder="Enter street"
+          />
         </View>
       </View>
     </AppCard>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    marginTop: SPACING.xs,
-  },
+const styles =
+  StyleSheet.create({
+    card: {
+      marginTop:
+        SPACING.xs,
+      marginBottom:
+        SPACING.xs,
+    },
 
-  addressContainer: {
-    gap: SPACING.xs,
-    paddingHorizontal: SPACING.xs,
-    paddingVertical: 1,
-    borderRadius: 20,
-    backgroundColor: COLORS.background,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    marginTop: SPACING.xs,
-  },
+    addressRow: {
+      flexDirection:
+        "row",
+      gap: SPACING.md,
+    },
 
-  addressRow: {
-    flexDirection: "row",
-    gap: SPACING.md,
-  },
-
-  addressField: {
-    flex: 1,
-  },
-
-  label: {
-    marginTop: SPACING.sm,
-    marginBottom: 1,
-    fontSize: TYPOGRAPHY.small,
-    fontWeight: "600",
-    color: COLORS.secondaryText,
-  },
-});
+    addressField: {
+      flex: 1,
+    },
+  });

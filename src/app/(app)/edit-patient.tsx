@@ -24,6 +24,7 @@ import {
   COLORS,
   SPACING,
 } from "@/theme";
+import AppTextField from "@/components/common/AppTextField";
 
 export default function EditPatientScreen() {
   const { patientId } =
@@ -44,6 +45,13 @@ export default function EditPatientScreen() {
   const [occupation, setOccupation] =
     useState(
       currentPatient?.occupation ?? "",
+    );
+
+  const [childrenCount, setChildrenCount] =
+    useState(
+      currentPatient?.childrenCount != null
+        ? String(currentPatient.childrenCount)
+        : "",
     );
 
   const [governorate, setGovernorate] =
@@ -86,6 +94,11 @@ export default function EditPatientScreen() {
             occupation:
               occupation.trim() ||
               undefined,
+
+            childrenCount:
+              childrenCount.trim() === ""
+                ? undefined
+                : Number(childrenCount),
 
             governorate:
               governorate.trim() ||
@@ -158,6 +171,13 @@ export default function EditPatientScreen() {
           onOccupationChange={
             setOccupation
           }
+        />
+
+        <AppTextField
+          label="Number of Children"
+          keyboardType="numeric"
+          value={childrenCount}
+          onChangeText={setChildrenCount}
         />
 
         <PatientAddressInformation

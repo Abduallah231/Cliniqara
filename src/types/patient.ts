@@ -1,6 +1,5 @@
 export type PatientIdentifierType =
   | "NATIONAL_ID"
-  | "BIRTH_CERTIFICATE"
   | "PASSPORT"
   | "OTHER"
   | "UNKNOWN";
@@ -29,6 +28,7 @@ export type Patient = {
 
   identifierType: PatientIdentifierType;
   identifierNumber: string | null;
+  documentType: string | null;
 
   dateOfBirth: string | null;
 
@@ -36,6 +36,7 @@ export type Patient = {
   estimatedAgeUnit: AgeUnit | null;
 
   maritalStatus: MaritalStatus;
+  childrenCount: number | null;
 
   governorate: string | null;
   city: string | null;
@@ -56,6 +57,7 @@ export type Patient = {
 export type CreatePatientInput = {
   identifierType: PatientIdentifierType;
   identifierNumber?: string;
+  documentType?: string;
 
   fullName: string;
 
@@ -66,6 +68,7 @@ export type CreatePatientInput = {
   gender?: Gender;
 
   maritalStatus: MaritalStatus;
+  childrenCount?: number;
 
   phone?: string;
   occupation?: string;
@@ -79,6 +82,7 @@ export type CreatePatientInput = {
 export type UpdatePatientInput = {
   phone?: string;
   occupation?: string;
+  childrenCount?: number;
 
   governorate?: string;
   city?: string;

@@ -9,7 +9,7 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common';
-
+import { VerifyNationalIdDto } from '../dto/verify-national-id.dto';
 import { AccountType } from '@prisma/client';
 
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -72,6 +72,20 @@ export class PatientController {
     );
   }
 
+  @Post('verify-national-id')
+  @Roles(AccountType.DOCTOR, AccountType.RECEPTION)
+  verifyNationalId(
+    @CurrentUser() user: AuthenticatedUser,
+    @Headers('x-clinic-id') clinicId: string,
+    @Body() dto: VerifyNationalIdDto,
+  ) {
+    return this.patientService.verifyNationalId(
+      user.id,
+      clinicId,
+      dto,
+    );
+  }
+
   @Get(':id')
   @Roles(AccountType.DOCTOR, AccountType.RECEPTION)
   getById(
@@ -99,34 +113,6 @@ export class PatientController {
       clinicId,
       id,
       dto,
-    );
-  }
-
-  @Roles(AccountType.DOCTOR)
-  @Patch(':id/deactivate')
-  deactivate(
-    @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-clinic-id') clinicId: string,
-    @Param('id') id: string,
-  ) {
-    return this.patientService.deactivate(
-      user.id,
-      clinicId,
-      id,
-    );
-  }
-
-  @Roles(AccountType.DOCTOR)
-  @Patch(':id/reactivate')
-  reactivate(
-    @CurrentUser() user: AuthenticatedUser,
-    @Headers('x-clinic-id') clinicId: string,
-    @Param('id') id: string,
-  ) {
-    return this.patientService.reactivate(
-      user.id,
-      clinicId,
-      id,
     );
   }
 }

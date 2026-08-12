@@ -86,9 +86,10 @@ export class ClinicService {
           name: dto.name,
           phone: dto.phone,
           email: dto.email,
-          address: dto.address,
-          country: dto.country,
+          governorate: dto.governorate,
           city: dto.city,
+          district: dto.district,
+          streetAddress: dto.streetAddress,
 
           createdById: userId,
 
@@ -366,14 +367,17 @@ export class ClinicService {
             ...(dto.email !== undefined && {
               email: dto.email,
             }),
-            ...(dto.address !== undefined && {
-              address: dto.address,
-            }),
-            ...(dto.country !== undefined && {
-              country: dto.country,
+            ...(dto.governorate !== undefined && {
+              governorate: dto.governorate,
             }),
             ...(dto.city !== undefined && {
               city: dto.city,
+            }),
+            ...(dto.district !== undefined && {
+              district: dto.district,
+            }),
+            ...(dto.streetAddress !== undefined && {
+              streetAddress: dto.streetAddress,
             }),
           },
           include: {

@@ -1,11 +1,9 @@
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   StyleSheet,
   View,
 } from "react-native";
-
 import {
   SPACING,
 } from "@/theme";
@@ -13,10 +11,20 @@ import {
 type Props = {
   age: string;
   setAge: (value: string) => void;
-  ageUnit: string;
+
+  ageUnit:
+    | "Years"
+    | "Months"
+    | "Days";
+
   setAgeUnit: (
-    value: "Years" | "Months" | "Days"
+    value:
+      | "Years"
+      | "Months"
+      | "Days",
   ) => void;
+
+  disabled?: boolean;
 };
 
 const AGE_UNITS = [
@@ -30,23 +38,47 @@ export default function AgeField({
   setAge,
   ageUnit,
   setAgeUnit,
+  disabled = false,
 }: Props) {
   return (
     <View style={styles.container}>
-      <AppTextField
+      {/* Age Value */}
+      <View
+        pointerEvents={
+          disabled ? "none" : "auto"
+        }
+        style={
+          disabled
+            ? styles.disabledField
+            : undefined
+        }
+      >
+        <AppTextField
+          placeholder="Enter age"
+          value={age}
+          onChangeText={setAge}
+          keyboardType="numeric"
+        />
+      </View>
 
-        placeholder="Enter age"
-        value={age}
-        onChangeText={setAge}
-        keyboardType="numeric"
-      />
-
-      <View style={styles.row}>
+      {/* Age Unit */}
+      <View
+        style={[
+          styles.row,
+          disabled &&
+            styles.disabledUnits,
+        ]}
+        pointerEvents={
+          disabled ? "none" : "auto"
+        }
+      >
         {AGE_UNITS.map((unit) => (
           <AppChip
             key={unit}
             label={unit}
-            selected={ageUnit === unit}
+            selected={
+              ageUnit === unit
+            }
             onPress={() =>
               setAgeUnit(unit)
             }
@@ -66,5 +98,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: SPACING.sm,
+  },
+
+  disabledField: {
+    opacity: 0.65,
+  },
+
+  disabledUnits: {
+    opacity: 0.65,
   },
 });

@@ -25,7 +25,59 @@ import { mapPatientToCreateDto } from "@/mappers/patientMapper";
 export default function PatientActions() {
   const { visit, updateVisit } = useVisitStore();
   const { addPatient } = usePatientStore();
+  const validatePatient = () => {
+    const patient = visit.patient;
+
+    if (!patient.fullName.trim()) {
+      Alert.alert(
+        "Missing Information",
+        "Please enter the patient's full name.",
+      );
+      return false;
+    }
+
+    if (
+      patient.identifierType === "Other" &&
+      !patient.documentType?.trim()
+    ) {
+      Alert.alert(
+        "Missing Information",
+        "Please enter the document type.",
+      );
+      return false;
+    }
+
+    if (
+      patient.identifierType !== "Unknown" &&
+      !patient.identifierNumber?.trim()
+    ) {
+      Alert.alert(
+        "Missing Information",
+        "Please enter the document number.",
+      );
+      return false;
+    }
+
+    if (
+      patient.childrenCount !== undefined &&
+      patient.childrenCount !== "" &&
+      (!Number.isInteger(
+        Number(patient.childrenCount),
+      ) ||
+        Number(patient.childrenCount) < 0)
+    ) {
+      Alert.alert(
+        "Invalid Information",
+        "Children count must be a valid number.",
+      );
+      return false;
+    }
+
+    return true;
+  };
   const handleAddToWaiting = async () => {
+    if (!validatePatient()) return;
+
     try {
 
       const dto = mapPatientToCreateDto(
@@ -63,6 +115,8 @@ export default function PatientActions() {
   };
 
   const handleStartVisit = async () => {
+    if (!validatePatient()) return;
+
     try {
       const dto = mapPatientToCreateDto(
         visit.patient
@@ -142,7 +196,8 @@ export default function PatientActions() {
 
 const styles = StyleSheet.create({
   container: {
-    gap: SPACING.md,
+    gap: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
 
   primaryButton: {

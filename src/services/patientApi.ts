@@ -2,6 +2,7 @@ import { useClinicStore } from "@/store/clinicStore";
 import type {
   CreatePatientInput,
   Patient,
+  Gender,
   UpdatePatientInput,
 } from "@/types/patient";
 import { api } from "./api";
@@ -81,6 +82,34 @@ export async function updatePatient(
   const { data } = await api.patch(
     `/patients/${patientId}`,
     dto,
+    {
+      headers: clinicHeaders(),
+    },
+  );
+
+  return data;
+}
+
+export type VerifyNationalIdResponse = {
+  valid: boolean;
+  alreadyExists: boolean;
+  existingPatient: {
+    id: string;
+    patientCode: string;
+    fullName: string;
+  } | null;
+  dateOfBirth: string;
+  gender: "MALE" | "FEMALE";
+};
+
+export async function verifyNationalId(
+  nationalId: string,
+): Promise<VerifyNationalIdResponse> {
+  const { data } = await api.post(
+    "/patients/verify-national-id",
+    {
+      nationalId: nationalId.trim(),
+    },
     {
       headers: clinicHeaders(),
     },

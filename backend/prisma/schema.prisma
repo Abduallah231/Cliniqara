@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// =========================
+// Account & Clinic
+// =========================
+
 enum AccountType {
   DOCTOR
   RECEPTION
@@ -45,6 +49,10 @@ enum WeekDay {
   FRIDAY
 }
 
+// =========================
+// Patient
+// =========================
+
 enum Gender {
   MALE
   FEMALE
@@ -52,7 +60,6 @@ enum Gender {
 
 enum PatientIdentifierType {
   NATIONAL_ID
-  BIRTH_CERTIFICATE
   PASSPORT
   OTHER
   UNKNOWN
@@ -71,12 +78,28 @@ enum MaritalStatus {
   WIDOWED
 }
 
+// =========================
+// Visit
+// =========================
+
 enum VisitStatus {
   WAITING
   IN_PROGRESS
   COMPLETED
   CANCELLED
 }
+
+enum DurationUnit {
+  HOURS
+  DAYS
+  WEEKS
+  MONTHS
+  YEARS
+}
+
+// =========================
+// Patient History
+// =========================
 
 enum MedicationCompliance {
   GOOD
@@ -190,37 +213,9 @@ enum ReactionSeverity {
   SEVERE
 }
 
-enum CycleRegularity {
-  REGULAR
-  IRREGULAR
-  UNKNOWN
-}
-
-enum BleedingDuration {
-  LESS_THAN_3_DAYS
-  DAYS_3_TO_7
-  MORE_THAN_7_DAYS
-}
-
-enum MenstrualFlow {
-  SCANTY
-  NORMAL
-  HEAVY
-  FLOODING
-}
-
-enum DysmenorrheaSeverity {
-  NONE
-  MILD
-  MODERATE
-  SEVERE
-}
-
-enum PainStart {
-  BEFORE_MENSES
-  FIRST_DAY
-  THROUGHOUT_MENSES
-}
+// =========================
+// Pediatric & Obstetric
+// =========================
 
 enum AntenatalCare {
   REGULAR
@@ -274,13 +269,45 @@ enum SchoolAttendance {
   IRREGULAR
 }
 
-enum DurationUnit {
-  HOURS
-  DAYS
-  WEEKS
-  MONTHS
-  YEARS
+// =========================
+// Menstrual History
+// =========================
+
+enum CycleRegularity {
+  REGULAR
+  IRREGULAR
+  UNKNOWN
 }
+
+enum BleedingDuration {
+  LESS_THAN_3_DAYS
+  DAYS_3_TO_7
+  MORE_THAN_7_DAYS
+}
+
+enum MenstrualFlow {
+  SCANTY
+  NORMAL
+  HEAVY
+  FLOODING
+}
+
+enum DysmenorrheaSeverity {
+  NONE
+  MILD
+  MODERATE
+  SEVERE
+}
+
+enum PainStart {
+  BEFORE_MENSES
+  FIRST_DAY
+  THROUGHOUT_MENSES
+}
+
+// =========================
+// Clinical Examination
+// =========================
 
 enum SystemType {
   GENERAL
@@ -378,15 +405,17 @@ enum InvestigationStatus {
 }
 
 model User {
-  id          String       @id @default(uuid())
-  userCode    String       @unique
+  id String @id @default(uuid())
+
+  userCode String @unique
+
   accountType AccountType
   doctorLevel DoctorLevel?
-  specialty           String?
-
-  professionalTitle   String?
 
   fullName String
+
+  specialty         String?
+  professionalTitle String?
 
   email String @unique
   phone String @unique
@@ -396,7 +425,7 @@ model User {
   nationalId           String?
   medicalLicenseNumber String? @unique
 
-  nationalIdImage  String?
+  nationalIdImage     String?
   medicalLicenseImage String?
 
   emailVerified Boolean @default(false)
@@ -413,9 +442,9 @@ model User {
 
   createdClinics    Clinic[]       @relation("ClinicCreator")
   clinicMemberships ClinicMember[]
-  createdVisits     Visit[]        @relation("VisitCreatedBy")
 
-  doctorVisits Visit[] @relation("VisitDoctor")
+  createdVisits Visit[] @relation("VisitCreatedBy")
+  doctorVisits  Visit[] @relation("VisitDoctor")
 
   @@index([accountType])
   @@index([verificationStatus])
@@ -427,19 +456,17 @@ model Clinic {
 
   clinicCode String @unique
 
-  nextVisitNumber Int @default(1)
-
   name String
 
   phone String
-
   email String?
 
-  address String
+  governorate   String?
+  city          String?
+  district      String?
+  streetAddress String?
 
-  country String
-
-  city String
+  nextVisitNumber Int @default(1)
 
   workingDays ClinicWorkingDay[]
 
@@ -447,14 +474,14 @@ model Clinic {
 
   createdById String
 
-  createdBy User @relation("ClinicCreator", fields: [createdById], references: [id])
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members  ClinicMember[]
-  patients Patient[]
-  visits   Visit[]
+  createdBy User @relation("ClinicCreator", fields: [createdById], references: [id])
+
+  members   ClinicMember[]
+  patients  Patient[]
+  visits    Visit[]
   joinCodes ClinicJoinCode[]
 
   @@index([createdById])
@@ -493,7 +520,7 @@ model ClinicWorkingShift {
   workingDayId String
 
   startTime String
-  endTime String
+  endTime   String
 
   sortOrder Int @default(0)
 
@@ -511,7 +538,7 @@ model ClinicWorkingDay {
 
   day WeekDay
 
-  isClosed Boolean @default(false)
+  isClosed  Boolean @default(false)
   is24Hours Boolean @default(false)
 
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
@@ -550,31 +577,25 @@ model Patient {
 
   fullName String
 
-  identifierType PatientIdentifierType
-
+  identifierType   PatientIdentifierType
   identifierNumber String?
+  documentType     String?
 
-  dateOfBirth DateTime?
-
+  dateOfBirth       DateTime?
   estimatedAgeValue Int?
+  estimatedAgeUnit  AgeUnit?
 
-  estimatedAgeUnit AgeUnit?
-
+  gender        Gender
   maritalStatus MaritalStatus
+  childrenCount Int?
 
-  governorate String?
-
-  city String?
-
-  district String?
-
-  streetAddress String?
-
-  gender Gender
-
-  phone String?
-
+  phone      String?
   occupation String?
+
+  governorate   String?
+  city          String?
+  district      String?
+  streetAddress String?
 
   isActive Boolean @default(true)
 
@@ -600,9 +621,8 @@ model Patient {
   supplementDetails     String?
 
   // Allergy History
-  hasAllergy Boolean @default(false)
-
-  allergies PatientAllergy[]
+  hasAllergy Boolean          @default(false)
+  allergies  PatientAllergy[]
 
   // Family History
   familyHistory PatientFamilyHistory[]
@@ -624,26 +644,21 @@ model Patient {
 model Visit {
   id String @id @default(uuid())
 
-  visitCode String
-
+  visitCode  String
   secureCode String @unique @default(uuid())
 
   patientId String
-
-  clinicId String
+  clinicId  String
 
   createdById String
-
-  doctorId String
+  doctorId    String
 
   visitStatus VisitStatus @default(WAITING)
 
   visitDate DateTime @default(now())
 
-  startedAt DateTime?
-
+  startedAt   DateTime?
   completedAt DateTime?
-
   cancelledAt DateTime?
 
   cancellationReason String?
@@ -658,12 +673,10 @@ model Visit {
   createdBy User    @relation("VisitCreatedBy", fields: [createdById], references: [id])
   doctor    User    @relation("VisitDoctor", fields: [doctorId], references: [id])
 
-  chiefComplaint VisitChiefComplaint?
-
+  chiefComplaint        VisitChiefComplaint?
   chiefComplaintAnswers VisitChiefComplaintAnswer[]
 
-  relatedSystems VisitRelatedSystem[]
-
+  relatedSystems   VisitRelatedSystem[]
   systematicReview VisitSystematicReview[]
 
   // Menstrual History
@@ -672,21 +685,17 @@ model Visit {
   // Pediatric History
   pediatricHistory VisitPediatricHistory?
 
-  vitalSigns VisitVitalSigns?
-
+  vitalSigns        VisitVitalSigns?
   generalInspection VisitGeneralInspection?
 
   regionalExaminations VisitRegionalExamination[]
-
-  systemExaminations VisitSystemExamination[]
+  systemExaminations   VisitSystemExamination[]
 
   diagnosis VisitDiagnosis?
 
   investigations VisitInvestigation[]
-
-  procedures VisitProcedure[]
-
-  referrals VisitReferral[]
+  procedures     VisitProcedure[]
+  referrals      VisitReferral[]
 
   prescription VisitPrescription?
 
@@ -1151,30 +1160,28 @@ model ChiefComplaintTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chiefComplaint ChiefComplaintMaster    @relation(fields: [chiefComplaintId], references: [id], onDelete: Cascade)
+  chiefComplaint ChiefComplaintMaster @relation(fields: [chiefComplaintId], references: [id], onDelete: Cascade)
 
   @@map("chief_complaint_templates")
 }
 
 model VisitChiefComplaintAnswer {
-  id                 String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  visitId            String
-  chiefComplaintId   String
+  visitId          String
+  chiefComplaintId String
 
-  answers            Json
+  answers Json
 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
   @@unique([visitId, chiefComplaintId])
   @@index([visitId])
-
   @@map("visit_chief_complaint_answers")
 }
-
 
 // =========================
 // Complaint Analysis

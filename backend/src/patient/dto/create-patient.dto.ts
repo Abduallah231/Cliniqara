@@ -17,13 +17,16 @@ import {
   MaritalStatus,
   PatientIdentifierType,
 } from '@prisma/client';
+
 import { Type } from 'class-transformer';
 
 export class CreatePatientDto {
+  // =========================
+  // Identification
+  // =========================
+
   @IsEnum(PatientIdentifierType)
   identifierType!: PatientIdentifierType;
-
-  // id number
 
   @ValidateIf(
     (o) =>
@@ -35,14 +38,24 @@ export class CreatePatientDto {
   @MaxLength(50)
   identifierNumber?: string;
 
-  // full name
+  @ValidateIf(
+    (o) =>
+      o.identifierType ===
+      PatientIdentifierType.OTHER,
+  )
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  documentType?: string;
+
+  // =========================
+  // Basic Information
+  // =========================
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(200)
   fullName!: string;
-
-  // dateOfBirth
 
   @ValidateIf(
     (o) =>
@@ -51,8 +64,6 @@ export class CreatePatientDto {
   @Type(() => Date)
   @IsDate()
   dateOfBirth?: Date;
-
-  // estimatedAgeValue
 
   @ValidateIf(
     (o) => !o.dateOfBirth,
@@ -69,8 +80,6 @@ export class CreatePatientDto {
   @IsEnum(AgeUnit)
   estimatedAgeUnit?: AgeUnit;
 
-  // Gender
-
   @ValidateIf(
     (o) =>
       o.identifierType !==
@@ -79,46 +88,49 @@ export class CreatePatientDto {
   @IsEnum(Gender)
   gender?: Gender;
 
-  // MaritalStatus
-
   @IsEnum(MaritalStatus)
   maritalStatus!: MaritalStatus;
 
-  // phone
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  childrenCount?: number;
+
+  // =========================
+  // Contact
+  // =========================
 
   @IsOptional()
   @IsPhoneNumber('EG')
   phone?: string;
 
-  // occupation
+  // =========================
+  // Occupation
+  // =========================
 
   @IsOptional()
   @IsString()
   @MaxLength(100)
   occupation?: string;
 
-  // governorate
+  // =========================
+  // Address
+  // =========================
 
   @IsOptional()
   @IsString()
   @MaxLength(100)
   governorate?: string;
 
-  // city
-
   @IsOptional()
   @IsString()
   @MaxLength(100)
   city?: string;
 
-  // district
-
   @IsOptional()
   @IsString()
   @MaxLength(100)
   district?: string;
-
-  // streetAddress
 
   @IsOptional()
   @IsString()

@@ -42,9 +42,10 @@ export default function CreateClinicScreen() {
       name: "",
       phone: "",
       email: "",
-      address: "",
-      country: "Egypt",
+      governorate: "",
       city: "",
+      district: "",
+      streetAddress: "",
     });
 
   const [workingDays, setWorkingDays] =
@@ -83,7 +84,7 @@ export default function CreateClinicScreen() {
       return;
     }
 
-    if (!clinicInformation.city.trim()) {
+    if (!clinicInformation.governorate.trim()) {
       Alert.alert(
         "Required",
         "Select the governorate.",
@@ -91,10 +92,26 @@ export default function CreateClinicScreen() {
       return;
     }
 
-    if (!clinicInformation.address.trim()) {
+    if (!clinicInformation.city.trim()) {
       Alert.alert(
         "Required",
-        "Enter the clinic address.",
+        "Enter the city.",
+      );
+      return;
+    }
+
+    if (!clinicInformation.district.trim()) {
+      Alert.alert(
+        "Required",
+        "Enter the district.",
+      );
+      return;
+    }
+
+    if (!clinicInformation.streetAddress.trim()) {
+      Alert.alert(
+        "Required",
+        "Enter the street address.",
       );
       return;
     }
@@ -194,23 +211,19 @@ export default function CreateClinicScreen() {
       await createClinic({
         name:
           clinicInformation.name.trim(),
-
         phone:
           clinicInformation.phone.trim(),
-
         email:
           clinicInformation.email.trim() ||
           undefined,
-
-        address:
-          clinicInformation.address.trim(),
-
-        country:
-          clinicInformation.country,
-
+        governorate:
+          clinicInformation.governorate.trim(),
         city:
           clinicInformation.city.trim(),
-
+        district:
+          clinicInformation.district.trim(),
+        streetAddress:
+          clinicInformation.streetAddress.trim(),
         workingDays:
           clinicWorkingDays,
       });

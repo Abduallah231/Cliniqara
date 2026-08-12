@@ -5,7 +5,6 @@ export function mapPatientToCreateDto(
 ): CreatePatientInput {
   const identifierTypeMap = {
     "National ID": "NATIONAL_ID",
-    "Birth Certificate": "BIRTH_CERTIFICATE",
     Passport: "PASSPORT",
     Other: "OTHER",
     Unknown: "UNKNOWN",
@@ -29,9 +28,13 @@ export function mapPatientToCreateDto(
     Days: "DAYS",
   } as const;
 
+  const identifierType =
+    identifierTypeMap[
+      patient.identifierType as keyof typeof identifierTypeMap
+    ];
+
   const dto: CreatePatientInput = {
-    identifierType:
-      identifierTypeMap[patient.identifierType as keyof typeof identifierTypeMap],
+    identifierType,
 
     fullName: patient.fullName.trim(),
 
@@ -41,6 +44,7 @@ export function mapPatientToCreateDto(
       ],
 
     phone: patient.phone?.trim() || undefined,
+
     occupation:
       patient.occupation?.trim() || undefined,
 
@@ -62,14 +66,43 @@ export function mapPatientToCreateDto(
       patient.identifierNumber.trim();
   }
 
-  if (patient.age?.trim()) {
-    dto.estimatedAgeValue =
-      Number(patient.age);
+  // Document Type is meaningful only for OTHER.
+  if (
+    patient.identifierType === "Other" &&
+    patient.documentType?.trim()
+  ) {
+    dto.documentType =
+      patient.documentType.trim();
+  }
 
-    dto.estimatedAgeUnit =
-      ageUnitMap[
-        patient.ageUnit as keyof typeof ageUnitMap
-      ];
+  if (patient.age?.trim()) {
+    const age = Number(patient.age);
+
+    if (!Number.isNaN(age)) {
+      dto.estimatedAgeValue = age;
+
+      dto.estimatedAgeUnit =
+        ageUnitMap[
+          patient.ageUnit as keyof typeof ageUnitMap
+        ];
+    }
+  }
+
+  // Children count is stored as a number in Backend.
+  if (
+    patient.childrenCount !== undefined &&
+    patient.childrenCount !== null &&
+    String(patient.childrenCount).trim() !== ""
+  ) {
+    const childrenCount =
+      Number(patient.childrenCount);
+
+    if (
+      Number.isInteger(childrenCount) &&
+      childrenCount >= 0
+    ) {
+      dto.childrenCount = childrenCount;
+    }
   }
 
   // Backend extracts gender from Egyptian National ID.

@@ -79,9 +79,10 @@ export default function ClinicManagementScreen() {
       name: "",
       phone: "",
       email: "",
-      address: "",
-      country: "Egypt",
+      governorate: "",
       city: "",
+      district: "",
+      streetAddress: "",
     });
 
   const [workingDays, setWorkingDays] =
@@ -146,9 +147,11 @@ export default function ClinicManagementScreen() {
       name: clinic.name,
       phone: clinic.phone,
       email: clinic.email ?? "",
-      address: clinic.address,
-      country: clinic.country,
-      city: clinic.city,
+      governorate: clinic.governorate ?? "",
+      city: clinic.city ?? "",
+      district: clinic.district ?? "",
+      streetAddress:
+        clinic.streetAddress ?? "",
     });
 
     setWorkingDays(
@@ -296,21 +299,41 @@ export default function ClinicManagementScreen() {
       }
 
       if (
-        !clinicInformation.city.trim()
+        !clinicInformation.governorate.trim()
       ) {
         Alert.alert(
           "Required",
-          "Enter the clinic city/governorate.",
+          "Select the governorate.",
         );
         return;
       }
 
       if (
-        !clinicInformation.address.trim()
+        !clinicInformation.city.trim()
       ) {
         Alert.alert(
           "Required",
-          "Enter the clinic address.",
+          "Enter the city.",
+        );
+        return;
+      }
+
+      if (
+        !clinicInformation.district.trim()
+      ) {
+        Alert.alert(
+          "Required",
+          "Enter the district.",
+        );
+        return;
+      }
+
+      if (
+        !clinicInformation.streetAddress.trim()
+      ) {
+        Alert.alert(
+          "Required",
+          "Enter the street address.",
         );
         return;
       }
@@ -406,31 +429,27 @@ export default function ClinicManagementScreen() {
 
         const updated =
           await updateClinic(
-            clinic.id,
-            {
-              name:
-                clinicInformation.name.trim(),
-
-              phone:
-                clinicInformation.phone.trim(),
-
-              email:
-                clinicInformation.email.trim() ||
-                undefined,
-
-              address:
-                clinicInformation.address.trim(),
-
-              country:
-                clinicInformation.country,
-
-              city:
-                clinicInformation.city.trim(),
-
-              workingDays:
-                clinicWorkingDays,
-            },
-          );
+          clinic.id,
+          {
+            name:
+              clinicInformation.name.trim(),
+            phone:
+              clinicInformation.phone.trim(),
+            email:
+              clinicInformation.email.trim() ||
+              undefined,
+            governorate:
+              clinicInformation.governorate.trim(),
+            city:
+              clinicInformation.city.trim(),
+            district:
+              clinicInformation.district.trim(),
+            streetAddress:
+              clinicInformation.streetAddress.trim(),
+            workingDays:
+              clinicWorkingDays,
+          },
+        );
 
         setCurrentClinic({
           ...currentClinic,

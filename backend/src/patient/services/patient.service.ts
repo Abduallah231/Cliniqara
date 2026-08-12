@@ -12,7 +12,7 @@ import {
 import { parseEgyptianNationalId } from '../../utils/egyptian-national-id.util';
 
 import { PrismaService } from '../../prisma/prisma.service';
-
+import { VerifyNationalIdDto } from '../dto/verify-national-id.dto';
 import { CreatePatientDto } from '../dto/create-patient.dto';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
 
@@ -51,12 +51,6 @@ export class PatientService {
     if (!membership) {
       throw new NotFoundException(
         'Clinic membership not found',
-      );
-    }
-
-    if (!membership.clinic.isActive) {
-      throw new ConflictException(
-        'Clinic is inactive',
       );
     }
 
@@ -111,24 +105,30 @@ export class PatientService {
       );
     }
 
-    // TODO (PC)
-    // Generate Secure Code
+    if (
+      dto.identifierType !==
+      PatientIdentifierType.OTHER
+    ) {
+      dto.documentType = undefined;
+    }
 
     const basePatientData = {
       identifierType: dto.identifierType,
       identifierNumber: dto.identifierNumber,
+      documentType: dto.documentType,
       fullName: dto.fullName,
       dateOfBirth: dto.dateOfBirth,
       estimatedAgeValue: dto.estimatedAgeValue,
       estimatedAgeUnit: dto.estimatedAgeUnit,
       maritalStatus: dto.maritalStatus,
+      childrenCount: dto.childrenCount,
       phone: dto.phone,
       occupation: dto.occupation,
       governorate: dto.governorate,
       city: dto.city,
       district: dto.district,
       streetAddress: dto.streetAddress,
-    };
+};
 
     let patientData: typeof basePatientData & {
       gender: import('@prisma/client').Gender;
@@ -222,7 +222,6 @@ export class PatientService {
     return this.prisma.patient.findMany({
       where: {
         clinicId: membership.clinicId,
-        isActive: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -286,6 +285,9 @@ export class PatientService {
         ...(dto.occupation !== undefined && {
           occupation: dto.occupation,
         }),
+        ...(dto.childrenCount !== undefined && {
+          childrenCount: dto.childrenCount,
+        }),
         ...(dto.governorate !== undefined && {
           governorate: dto.governorate,
         }),
@@ -324,7 +326,6 @@ export class PatientService {
     return this.prisma.patient.findMany({
       where: {
         clinicId: membership.clinicId,
-        isActive: true,
         OR: [
           {
             patientCode: {
@@ -357,75 +358,76 @@ export class PatientService {
     });
   }
 
-  async deactivate(
+  async verifyNationalId(
     userId: string,
     clinicId: string,
-    id: string,
+    dto: VerifyNationalIdDto,
   ) {
-    await this.getActiveMembership(
-      userId,
-      clinicId,
-    );
+    const membership =
+      await this.getActiveMembership(
+        userId,
+        clinicId,
+      );
 
-    const patient = await this.getById(
-      userId,
-      clinicId,
-      id,
-    );
+    const nationalId =
+      dto.nationalId.trim();
 
-    if (!patient.isActive) {
-      throw new ConflictException(
-        'Patient is already inactive.',
+    if (!/^\d{14}$/.test(nationalId)) {
+      throw new BadRequestException(
+        'National ID must be exactly 14 digits.',
       );
     }
 
-    return this.prisma.patient.update({
-      where: {
-        id: patient.id,
-      },
-      data: {
-        isActive: false,
-      },
-    });
-  }
+    let nationalIdData;
 
-  async reactivate(
-    userId: string,
-    clinicId: string,
-    id: string,
-  ) {
-    await this.getActiveMembership(
-      userId,
-      clinicId,
-    );
+    try {
+      nationalIdData =
+        parseEgyptianNationalId(
+          nationalId,
+        );
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error
+          ? error.message
+          : 'Invalid Egyptian National ID.',
+      );
+    }
 
-    const patient =
+    const existingPatient =
       await this.prisma.patient.findFirst({
         where: {
-          id,
-          clinicId,
+          clinicId: membership.clinicId,
+          identifierType:
+            PatientIdentifierType.NATIONAL_ID,
+          identifierNumber: nationalId,
+        },
+        select: {
+          id: true,
+          patientCode: true,
+          fullName: true,
         },
       });
 
-    if (!patient) {
-      throw new NotFoundException(
-        'Patient not found',
-      );
-    }
+    return {
+      valid: true,
+      alreadyExists: !!existingPatient,
 
-    if (patient.isActive) {
-      throw new ConflictException(
-        'Patient is already active.',
-      );
-    }
+      existingPatient:
+        existingPatient
+          ? {
+              id: existingPatient.id,
+              patientCode:
+                existingPatient.patientCode,
+              fullName:
+                existingPatient.fullName,
+            }
+          : null,
 
-    return this.prisma.patient.update({
-      where: {
-        id: patient.id,
-      },
-      data: {
-        isActive: true,
-      },
-    });
+      dateOfBirth:
+        nationalIdData.dateOfBirth,
+
+      gender:
+        nationalIdData.gender,
+    };
   }
 }

@@ -1,8 +1,10 @@
 import {
+  IsInt,
   IsOptional,
   IsPhoneNumber,
   IsString,
   MaxLength,
+  Min,
 } from 'class-validator';
 
 export class UpdatePatientDto {
@@ -14,6 +16,11 @@ export class UpdatePatientDto {
   @IsString()
   @MaxLength(100)
   occupation?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  childrenCount?: number;
 
   @IsOptional()
   @IsString()

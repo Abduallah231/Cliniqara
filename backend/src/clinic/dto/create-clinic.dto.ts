@@ -23,17 +23,21 @@ export class CreateClinicDto {
   @IsEmail()
   email?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  address!: string;
+    @IsOptional()
+    @IsString()
+    governorate?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  country!: string;
+    @IsOptional()
+    @IsString()
+    city?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  city!: string;
+    @IsOptional()
+    @IsString()
+    district?: string;
+
+    @IsOptional()
+    @IsString()
+    streetAddress?: string;
 
   @IsArray()
   @ValidateNested({ each: true })

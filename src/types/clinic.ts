@@ -55,13 +55,17 @@ export type Clinic = {
   name: string;
   phone: string;
   email: string | null;
-  address: string;
-  country: string;
+
+  governorate: string;
   city: string;
+  district: string;
+  streetAddress: string;
+
   isActive: boolean;
   createdById: string;
   createdAt: string;
   updatedAt: string;
+
   workingDays: WorkingDay[];
 };
 
@@ -71,33 +75,38 @@ export type MyClinic = {
   clinic: Clinic;
 };
 
+export type CreateClinicDto = {
+  name: string;
+  phone: string;
+  email?: string;
+
+  governorate: string;
+  city: string;
+  district: string;
+  streetAddress: string;
+
+  workingDays: WorkingDay[];
+};
+
+export type UpdateClinicDto = {
+  name?: string;
+  phone?: string;
+  email?: string;
+
+  governorate?: string;
+  city?: string;
+  district?: string;
+  streetAddress?: string;
+
+  workingDays?: WorkingDay[];
+};
+
 export type JoinCode = {
   id: string;
   clinicId: string;
   code: string;
   expiresAt: string;
   createdAt: string;
-};
-
-export type CreateClinicDto = {
-  name: string;
-  phone: string;
-  email?: string;
-  address: string;
-  country: string;
-  city: string;
-  workingDays: {
-    day: WeekDay;
-    startTime?: string;
-    endTime?: string;
-    isClosed: boolean;
-  }[];
-};
-
-export type UpdateClinicDto = Partial<
-  Omit<CreateClinicDto, "workingDays">
-> & {
-  workingDays?: CreateClinicDto["workingDays"];
 };
 
 export type MyMembershipRequest = {

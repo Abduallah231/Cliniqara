@@ -1,11 +1,9 @@
 import {
-    IsEmail,
-    IsOptional,
-    IsPhoneNumber,
-    IsString,
-} from 'class-validator';
-import {
   IsArray,
+  IsEmail,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -26,15 +24,19 @@ export class UpdateClinicDto {
 
   @IsOptional()
   @IsString()
-  address?: string;
-
-  @IsOptional()
-  @IsString()
-  country?: string;
+  governorate?: string;
 
   @IsOptional()
   @IsString()
   city?: string;
+
+  @IsOptional()
+  @IsString()
+  district?: string;
+
+  @IsOptional()
+  @IsString()
+  streetAddress?: string;
 
   @IsOptional()
   @IsArray()

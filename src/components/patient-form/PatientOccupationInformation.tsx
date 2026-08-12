@@ -33,7 +33,6 @@ export default function PatientOccupationInformation({
       <SectionHeader title="Occupation" />
 
       <AppDropdown
-        label="Occupation"
         selected={occupations.find(
           (item) =>
             item.label === occupation,
