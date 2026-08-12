@@ -686,6 +686,14 @@ export default function NewPatientScreen() {
       "National ID" &&
     nationalIdVerified;
 
+
+    const [address, setAddress] = useState({
+      governorate: patient.governorate,
+      city: patient.city,
+      district: patient.district,
+      street: patient.street,
+    });
+
   /*
    * =========================
    * Screen
@@ -877,46 +885,64 @@ export default function NewPatientScreen() {
             Address
             ========================= */}
         <PatientAddressInformation
-          governorate={
-            patient.governorate
-          }
-          city={
-            patient.city
-          }
-          district={
-            patient.district
-          }
-          street={
-            patient.street
-          }
-          onGovernorateChange={(value) =>
-            updatePatient(
-              "governorate",
-              value,
-            )
-          }
-          onCityChange={(value) =>
-            updatePatient(
-              "city",
-              value,
-            )
-          }
-          onDistrictChange={(
-            value,
-          ) =>
-            updatePatient(
-              "district",
-              value,
-            )
-          }
-          onStreetChange={(
-            value,
-          ) =>
-            updatePatient(
-              "street",
-              value,
-            )
-          }
+          governorate={address.governorate}
+          city={address.city}
+          district={address.district}
+          street={address.street}
+          onGovernorateChange={(value) => {
+            setAddress((prev) => ({
+              ...prev,
+              governorate: value,
+              city: "",
+            }));
+
+            updateVisit({
+              patient: {
+                ...patient,
+                governorate: value,
+                city: "",
+              },
+            });
+          }}
+          onCityChange={(value) => {
+            setAddress((prev) => ({
+              ...prev,
+              city: value,
+            }));
+
+            updateVisit({
+              patient: {
+                ...patient,
+                city: value,
+              },
+            });
+          }}
+          onDistrictChange={(value) => {
+            setAddress((prev) => ({
+              ...prev,
+              district: value,
+            }));
+
+            updateVisit({
+              patient: {
+                ...patient,
+                district: value,
+              },
+            });
+          }}
+          onStreetChange={(value) => {
+            setAddress((prev) => ({
+              ...prev,
+              street: value,
+            }));
+
+            updateVisit({
+              patient: {
+                ...patient,
+                street: value,
+              },
+            });
+          }}
         />
 
         {/* =========================

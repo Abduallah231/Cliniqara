@@ -40,7 +40,7 @@ type Props = {
   title?: string;
 };
 
-export default function AddressInformation({
+export default function PatientAddressInformation({
   governorate,
   city,
   district,
@@ -67,9 +67,8 @@ export default function AddressInformation({
    * Cities / Markaz
    * =========================
    *
-   * The available cities depend
-   * entirely on the selected
-   * governorate.
+   * Cities are determined only
+   * by the selected governorate.
    */
   const cityOptions =
     selectedGovernorate
@@ -83,9 +82,26 @@ export default function AddressInformation({
    * Governorate Change
    * =========================
    *
-   * Changing governorate makes
-   * the previously selected city
-   * invalid.
+   * IMPORTANT:
+   *
+   * We update ONLY the governorate
+   * here.
+   *
+   * We intentionally DO NOT call
+   * onCityChange("") here.
+   *
+   * Calling two parent callbacks
+   * during the same selection can
+   * cause a controlled parent form
+   * such as ClinicInformationForm
+   * to overwrite the newly selected
+   * governorate with an older state.
+   *
+   * Once the governorate changes,
+   * cityOptions automatically change.
+   * The previous city will therefore
+   * no longer be a valid selected
+   * option.
    */
   const handleGovernorateChange =
     (option: {
@@ -95,11 +111,21 @@ export default function AddressInformation({
       onGovernorateChange(
         option.label,
       );
-      
-      /*
-       * Reset City / Markaz
-       */
-      onCityChange("");
+    };
+
+  /*
+   * =========================
+   * City Change
+   * =========================
+   */
+  const handleCityChange =
+    (option: {
+      id: string;
+      label: string;
+    }) => {
+      onCityChange(
+        option.label,
+      );
     };
 
   /*
@@ -143,15 +169,17 @@ export default function AddressInformation({
         >
           <AppDropdown
             label="City / Markaz"
-            selected={cityOptions.find(
-              (item) =>
-                item.label === city,
-            )}
-            options={cityOptions}
-            onChange={(option) =>
-              onCityChange(
-                option.label,
+            selected={
+              cityOptions.find(
+                (item) =>
+                  item.label === city,
               )
+            }
+            options={
+              cityOptions
+            }
+            onChange={
+              handleCityChange
             }
           />
         </View>

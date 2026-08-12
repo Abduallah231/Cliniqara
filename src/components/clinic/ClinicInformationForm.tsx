@@ -5,7 +5,10 @@ import {
 import AppCard from "@/components/common/AppCard";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
-
+import {
+  useEffect,
+  useState,
+} from "react";
 import PatientAddressInformation from "@/components/patient-form/PatientAddressInformation";
 
 import {
@@ -44,6 +47,27 @@ export default function ClinicInformationForm({
       [field]: fieldValue,
     });
   };
+
+  const [address, setAddress] = useState({
+  governorate: value.governorate,
+  city: value.city,
+  district: value.district,
+  street: value.streetAddress,
+});
+
+  useEffect(() => {
+    setAddress({
+      governorate: value.governorate,
+      city: value.city,
+      district: value.district,
+      street: value.streetAddress,
+    });
+  }, [
+    value.governorate,
+    value.city,
+    value.district,
+    value.streetAddress,
+  ]);
 
   return (
     <>
@@ -93,48 +117,77 @@ export default function ClinicInformationForm({
       </AppCard>
 
       <PatientAddressInformation
-        title="Clinic Address"
-        governorate={
-          value.governorate
-        }
-        city={value.city}
-        district={
-          value.district
-        }
-        street={
-          value.streetAddress
-        }
-        onGovernorateChange={(
-          governorate,
-        ) =>
-          updateField(
-            "governorate",
-            governorate,
-          )
-        }
-        onCityChange={(city) =>
-          updateField(
-            "city",
-            city,
-          )
-        }
-        onDistrictChange={(
-          district,
-        ) =>
-          updateField(
-            "district",
-            district,
-          )
-        }
-        onStreetChange={(
-          streetAddress,
-        ) =>
-          updateField(
-            "streetAddress",
-            streetAddress,
-          )
-        }
-      />
+  title="Clinic Address"
+  governorate={address.governorate}
+  city={address.city}
+  district={address.district}
+  street={address.street}
+  onGovernorateChange={(governorate) => {
+    const nextAddress = {
+      ...address,
+      governorate,
+      city: "",
+    };
+
+    setAddress(nextAddress);
+
+    onChange({
+      ...value,
+      governorate,
+      city: "",
+      district: nextAddress.district,
+      streetAddress: nextAddress.street,
+    });
+  }}
+  onCityChange={(city) => {
+    const nextAddress = {
+      ...address,
+      city,
+    };
+
+    setAddress(nextAddress);
+
+    onChange({
+      ...value,
+      governorate: nextAddress.governorate,
+      city,
+      district: nextAddress.district,
+      streetAddress: nextAddress.street,
+    });
+  }}
+  onDistrictChange={(district) => {
+    const nextAddress = {
+      ...address,
+      district,
+    };
+
+    setAddress(nextAddress);
+
+    onChange({
+      ...value,
+      governorate: nextAddress.governorate,
+      city: nextAddress.city,
+      district,
+      streetAddress: nextAddress.street,
+    });
+  }}
+  onStreetChange={(street) => {
+    const nextAddress = {
+      ...address,
+      street,
+    };
+
+    setAddress(nextAddress);
+
+    onChange({
+      ...value,
+      governorate: nextAddress.governorate,
+      city: nextAddress.city,
+      district: nextAddress.district,
+      streetAddress: street,
+    });
+  }}
+/>
     </>
   );
 }
