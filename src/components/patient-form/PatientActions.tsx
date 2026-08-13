@@ -1,18 +1,43 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { router } from "expo-router";
-import { Alert } from "react-native";
-import { createPatient } from "@/services/patientApi";
-import { createWaitingVisit } from "@/services/visitApi";
-import { startVisit } from "@/services/visitApi";
-import { getErrorMessage } from "@/services/errorHandler";
-import { useVisitStore } from "@/store/visitStore";
 import {
+  useState,
+} from "react";
+
+import Ionicons from "@expo/vector-icons/Ionicons";
+
+import {
+  router,
+} from "expo-router";
+
+import {
+  Alert,
+  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { usePatientStore } from "@/store/patientStore";
+
+import {
+  createPatient,
+} from "@/services/patientApi";
+
+import {
+  createWaitingVisit,
+  startVisit,
+} from "@/services/visitApi";
+
+import {
+  getErrorMessage,
+} from "@/services/errorHandler";
+
+import {
+  useVisitStore,
+} from "@/store/visitStore";
+
+import {
+  usePatientStore,
+} from "@/store/patientStore";
+
 import {
   COLORS,
   RADIUS,
@@ -20,219 +45,428 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
-import { mapPatientToCreateDto } from "@/mappers/patientMapper";
 
-export default function PatientActions() {
-  const { visit, updateVisit } = useVisitStore();
-  const { addPatient } = usePatientStore();
-  const validatePatient = () => {
-    const patient = visit.patient;
+import {
+  mapPatientToCreateDto,
+} from "@/mappers/patientMapper";
 
-    if (!patient.fullName.trim()) {
-      Alert.alert(
-        "Missing Information",
-        "Please enter the patient's full name.",
-      );
-      return false;
-    }
+type PatientForm = {
+  id?: string;
 
-    if (
-      patient.identifierType === "Other" &&
-      !patient.documentType?.trim()
-    ) {
-      Alert.alert(
-        "Missing Information",
-        "Please enter the document type.",
-      );
-      return false;
-    }
+  identifierType: string;
+  identifierNumber: string;
+  documentType: string;
 
-    if (
-      patient.identifierType !== "Unknown" &&
-      !patient.identifierNumber?.trim()
-    ) {
-      Alert.alert(
-        "Missing Information",
-        "Please enter the document number.",
-      );
-      return false;
-    }
+  fullName: string;
+  dateOfBirth: Date | null;
 
-    if (
-      patient.childrenCount !== undefined &&
-      patient.childrenCount !== "" &&
-      (!Number.isInteger(
-        Number(patient.childrenCount),
-      ) ||
-        Number(patient.childrenCount) < 0)
-    ) {
-      Alert.alert(
-        "Invalid Information",
-        "Children count must be a valid number.",
-      );
-      return false;
-    }
+  age: string;
+  ageUnit:
+    | "Days"
+    | "Months"
+    | "Years";
 
-    return true;
-  };
-  const handleAddToWaiting = async () => {
-    if (!validatePatient()) return;
+  gender:
+    | "male"
+    | "female";
 
-    try {
+  maritalStatus:
+    | "Single"
+    | "Married"
+    | "Divorced"
+    | "Widowed";
 
-      const dto = mapPatientToCreateDto(
-        visit.patient
-      );
+  childrenCount: string;
 
-      const patientResponse =
-        await createPatient(dto);
+  phone: string;
 
-      addPatient(patientResponse);
+  occupation: string;
+  otherOccupation: string;
 
-      const waitingVisit =
-        await createWaitingVisit(
-          patientResponse.id
+  governorate: string;
+  otherGovernorate: string;
+
+  city: string;
+  otherCity: string;
+
+  district: string;
+  street: string;
+};
+
+type Props = {
+  patient: PatientForm;
+};
+
+export default function PatientActions({
+  patient,
+}: Props) {
+  const {
+    visit,
+    updateVisit,
+  } = useVisitStore();
+
+  const {
+    addPatient,
+  } = usePatientStore();
+
+  const [
+    loadingAction,
+    setLoadingAction,
+  ] = useState<
+    "start" | "waiting" | null
+  >(null);
+
+  /*
+   * =========================
+   * Add To Waiting
+   * =========================
+   */
+  const handleAddToWaiting =
+    async () => {
+      /*
+       * Prevent duplicate requests.
+       */
+      if (loadingAction) {
+        return;
+      }
+
+      try {
+        setLoadingAction(
+          "waiting",
         );
 
-      updateVisit({
-        metadata: {
-          ...visit.metadata,
-          id: waitingVisit.id,
-          patientId: patientResponse.id,
-          visitNumber: waitingVisit.visitCode,
-          status: waitingVisit.visitStatus,
-        },
-      });
+        const dto =
+          mapPatientToCreateDto(
+            patient,
+          );
 
-      router.replace("/patient-overview");
+        const patientResponse =
+          await createPatient(
+            dto,
+          );
 
-    } catch (error) {
-      Alert.alert(
-        "Error",
-        getErrorMessage(error)
-      );
-    }
-  };
-
-  const handleStartVisit = async () => {
-    if (!validatePatient()) return;
-
-    try {
-      const dto = mapPatientToCreateDto(
-        visit.patient
-      );
-
-      const patientResponse =
-        await createPatient(dto);
-
-      addPatient(patientResponse);
-
-      const waitingVisit =
-        await createWaitingVisit(
-          patientResponse.id
+        addPatient(
+          patientResponse,
         );
 
-      const startedVisit =
-        await startVisit(
-          waitingVisit.id
+        const waitingVisit =
+          await createWaitingVisit(
+            patientResponse.id,
+          );
+
+        updateVisit({
+          metadata: {
+            ...visit.metadata,
+
+            id:
+              waitingVisit.id,
+
+            patientId:
+              patientResponse.id,
+
+            visitNumber:
+              waitingVisit.visitCode,
+
+            status:
+              waitingVisit.visitStatus,
+          },
+        });
+
+        router.replace({
+          pathname:
+            "/patient-overview",
+
+          params: {
+            patientId:
+              patientResponse.id,
+          },
+        });
+      } catch (error) {
+        Alert.alert(
+          "Error",
+          getErrorMessage(
+            error,
+          ),
+        );
+      } finally {
+        setLoadingAction(
+          null,
+        );
+      }
+    };
+
+  /*
+   * =========================
+   * Save & Start Visit
+   * =========================
+   */
+  const handleStartVisit =
+    async () => {
+      /*
+       * Prevent duplicate requests.
+       */
+      if (loadingAction) {
+        return;
+      }
+
+      try {
+        setLoadingAction(
+          "start",
         );
 
-      updateVisit({
-        metadata: {
-          ...visit.metadata,
-          id: startedVisit.id,
-          patientId: patientResponse.id,
-          visitNumber: startedVisit.visitCode,
-          status: startedVisit.visitStatus,
-        },
-      });
+        const dto =
+          mapPatientToCreateDto(
+            patient,
+          );
 
-      router.replace(
-        "/visit/HistoryScreen"
-      );
+        const patientResponse =
+          await createPatient(
+            dto,
+          );
 
-    } catch (error) {
-      Alert.alert(
-        "Error",
-        getErrorMessage(error)
-      );
-    }
-  };
+        addPatient(
+          patientResponse,
+        );
+
+        const waitingVisit =
+          await createWaitingVisit(
+            patientResponse.id,
+          );
+
+        const startedVisit =
+          await startVisit(
+            waitingVisit.id,
+          );
+
+        updateVisit({
+          metadata: {
+            ...visit.metadata,
+
+            id:
+              startedVisit.id,
+
+            patientId:
+              patientResponse.id,
+
+            visitNumber:
+              startedVisit.visitCode,
+
+            status:
+              startedVisit.visitStatus,
+          },
+        });
+
+        router.replace({
+          pathname:
+            "/visit/HistoryScreen",
+
+          params: {
+            patientId:
+              patientResponse.id,
+
+            visitId:
+              startedVisit.id,
+          },
+        });
+      } catch (error) {
+        Alert.alert(
+          "Error",
+          getErrorMessage(
+            error,
+          ),
+        );
+      } finally {
+        setLoadingAction(
+          null,
+        );
+      }
+    };
+
+  const isLoading =
+    loadingAction !== null;
 
   return (
-    <View style={styles.container}>
-      <Pressable
-        style={styles.primaryButton}
-        onPress={handleStartVisit}
-      >
-        <Ionicons
-          name="play-outline"
-          size={20}
-          color={COLORS.white}
-        />
-
-        <Text style={styles.primaryText}>
+    <View
+      style={styles.container}
+    >
+      {/* =========================
           Save & Start Visit
+          ========================= */}
+      <Pressable
+        style={[
+          styles.primaryButton,
+
+          isLoading &&
+            styles.disabledButton,
+        ]}
+        onPress={
+          handleStartVisit
+        }
+        disabled={isLoading}
+      >
+        {loadingAction ===
+        "start" ? (
+          <ActivityIndicator
+            size="small"
+            color={
+              COLORS.white
+            }
+          />
+        ) : (
+          <Ionicons
+            name="play-outline"
+            size={20}
+            color={
+              COLORS.white
+            }
+          />
+        )}
+
+        <Text
+          style={
+            styles.primaryText
+          }
+        >
+          {loadingAction ===
+          "start"
+            ? "Starting..."
+            : "Save & Start Visit"}
         </Text>
       </Pressable>
 
-      <Pressable
-        style={styles.secondaryButton}
-        onPress={handleAddToWaiting}
-      >
-        <Ionicons
-          name="save-outline"
-          size={20}
-          color={COLORS.primary}
-        />
-
-        <Text style={styles.secondaryText}>
+      {/* =========================
           Add To Waiting
+          ========================= */}
+      <Pressable
+        style={[
+          styles.secondaryButton,
+
+          isLoading &&
+            styles.disabledSecondaryButton,
+        ]}
+        onPress={
+          handleAddToWaiting
+        }
+        disabled={isLoading}
+      >
+        {loadingAction ===
+        "waiting" ? (
+          <ActivityIndicator
+            size="small"
+            color={
+              COLORS.primary
+            }
+          />
+        ) : (
+          <Ionicons
+            name="save-outline"
+            size={20}
+            color={
+              COLORS.primary
+            }
+          />
+        )}
+
+        <Text
+          style={
+            styles.secondaryText
+          }
+        >
+          {loadingAction ===
+          "waiting"
+            ? "Saving..."
+            : "Add To Waiting"}
         </Text>
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    gap: SPACING.sm,
-    marginBottom: SPACING.lg,
-  },
+const styles =
+  StyleSheet.create({
+    container: {
+      gap: SPACING.md,
+      marginBottom: SPACING.lg,
+    },
 
-  primaryButton: {
-    height: 56,
-    borderRadius: RADIUS.xl,
-    backgroundColor: COLORS.primary,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: SPACING.sm,
-    ...SHADOW,
-  },
+    primaryButton: {
+      height: 56,
 
-  secondaryButton: {
-    height: 56,
-    borderRadius: RADIUS.xl,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: SPACING.sm,
-    ...SHADOW,
-  },
+      borderRadius:
+        RADIUS.xl,
 
-  primaryText: {
-    color: COLORS.white,
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-  },
+      backgroundColor:
+        COLORS.primary,
 
-  secondaryText: {
-    color: COLORS.primary,
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-  },
-});
+      flexDirection:
+        "row",
+
+      alignItems:
+        "center",
+
+      justifyContent:
+        "center",
+
+      gap: SPACING.sm,
+
+      ...SHADOW,
+    },
+
+    secondaryButton: {
+      height: 56,
+
+      borderRadius:
+        RADIUS.xl,
+
+      backgroundColor:
+        COLORS.card,
+
+      borderWidth: 1,
+
+      borderColor:
+        COLORS.border,
+
+      flexDirection:
+        "row",
+
+      alignItems:
+        "center",
+
+      justifyContent:
+        "center",
+
+      gap: SPACING.sm,
+
+      ...SHADOW,
+    },
+
+    disabledButton: {
+      opacity: 0.7,
+    },
+
+    disabledSecondaryButton: {
+      opacity: 0.6,
+    },
+
+    primaryText: {
+      color:
+        COLORS.white,
+
+      fontSize:
+        TYPOGRAPHY.body,
+
+      fontWeight:
+        "700",
+    },
+
+    secondaryText: {
+      color:
+        COLORS.primary,
+
+      fontSize:
+        TYPOGRAPHY.body,
+
+      fontWeight:
+        "700",
+    },
+  });

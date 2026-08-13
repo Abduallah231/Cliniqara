@@ -41,7 +41,9 @@ export interface Patient {
   // Address
   // =========================
   governorate: string;
+  otherGovernorate: string;
   city: string;
+  otherCity: string;
   district: string;
   street: string;
 }
@@ -75,7 +77,9 @@ export function createEmptyPatient(): Patient {
 
     // Address
     governorate: "",
+    otherGovernorate: "",
     city: "",
+    otherCity: "",
     district: "",
     street: "",
   };

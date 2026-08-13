@@ -54,14 +54,29 @@ export default function EditPatientScreen() {
         : "",
     );
 
+  const [otherOccupation, setOtherOccupation] =
+    useState(
+      currentPatient?.otherOccupation ?? "",
+    );
+
   const [governorate, setGovernorate] =
     useState(
       currentPatient?.governorate ?? "",
     );
 
+  const [otherGovernorate, setOtherGovernorate] =
+    useState(
+      currentPatient?.otherGovernorate ?? "",
+    );
+
   const [city, setCity] = useState(
     currentPatient?.city ?? "",
   );
+
+  const [otherCity, setOtherCity] =
+    useState(
+      currentPatient?.otherCity ?? "",
+    );
 
   const [district, setDistrict] =
     useState(
@@ -168,9 +183,9 @@ export default function EditPatientScreen() {
 
         <PatientOccupationInformation
           occupation={occupation}
-          onOccupationChange={
-            setOccupation
-          }
+          otherOccupation={otherOccupation}
+          onOccupationChange={setOccupation}
+          onOtherOccupationChange={setOtherOccupation}
         />
 
         <AppTextField
@@ -182,19 +197,31 @@ export default function EditPatientScreen() {
 
         <PatientAddressInformation
           governorate={governorate}
+          otherGovernorate={otherGovernorate}
           city={city}
+          otherCity={otherCity}
           district={district}
           street={streetAddress}
-          onGovernorateChange={
-            setGovernorate
+
+          onGovernorateChange={(value) => {
+            setGovernorate(value);
+            setCity("");
+            setOtherCity("");
+          }}
+
+          onOtherGovernorateChange={
+            setOtherGovernorate
           }
-          onCityChange={setCity}
-          onDistrictChange={
-            setDistrict
-          }
-          onStreetChange={
-            setStreetAddress
-          }
+
+          onCityChange={(value) => {
+            setCity(value);
+            setOtherCity("");
+          }}
+
+          onOtherCityChange={setOtherCity}
+
+          onDistrictChange={setDistrict}
+          onStreetChange={setStreetAddress}
         />
 
         <AppButton

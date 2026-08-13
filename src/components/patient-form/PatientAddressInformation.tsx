@@ -21,11 +21,22 @@ type Props = {
   district: string;
   street: string;
 
+  otherGovernorate?: string;
+  otherCity?: string;
+
   onGovernorateChange: (
     value: string,
   ) => void;
 
   onCityChange: (
+    value: string,
+  ) => void;
+
+  onOtherGovernorateChange?: (
+    value: string,
+  ) => void;
+
+  onOtherCityChange?: (
     value: string,
   ) => void;
 
@@ -45,64 +56,75 @@ export default function PatientAddressInformation({
   city,
   district,
   street,
+
+  otherGovernorate,
+  otherCity,
+
   onGovernorateChange,
   onCityChange,
+
+  onOtherGovernorateChange,
+  onOtherCityChange,
+
   onDistrictChange,
   onStreetChange,
+
   title = "Residential Address",
 }: Props) {
+  /*
+   * =========================
+   * Governorate Options
+   * =========================
+   */
+
+  const governorateOptions = [
+    ...governorates,
+    {
+      id: "other",
+      label: "Other",
+    },
+  ];
+
   /*
    * =========================
    * Selected Governorate
    * =========================
    */
+
   const selectedGovernorate =
-    governorates.find(
+    governorateOptions.find(
       (item) =>
         item.label === governorate,
     );
 
   /*
    * =========================
-   * Cities / Markaz
+   * City / Markaz Options
    * =========================
-   *
-   * Cities are determined only
-   * by the selected governorate.
    */
-  const cityOptions =
-    selectedGovernorate
+
+  const normalCityOptions =
+    selectedGovernorate &&
+    selectedGovernorate.id !== "other"
       ? citiesByGovernorate[
           selectedGovernorate.id
         ] ?? []
       : [];
 
+  const cityOptions = [
+    ...normalCityOptions,
+    {
+      id: "other",
+      label: "Other",
+    },
+  ];
+
   /*
    * =========================
    * Governorate Change
    * =========================
-   *
-   * IMPORTANT:
-   *
-   * We update ONLY the governorate
-   * here.
-   *
-   * We intentionally DO NOT call
-   * onCityChange("") here.
-   *
-   * Calling two parent callbacks
-   * during the same selection can
-   * cause a controlled parent form
-   * such as ClinicInformationForm
-   * to overwrite the newly selected
-   * governorate with an older state.
-   *
-   * Once the governorate changes,
-   * cityOptions automatically change.
-   * The previous city will therefore
-   * no longer be a valid selected
-   * option.
    */
+
   const handleGovernorateChange =
     (option: {
       id: string;
@@ -118,6 +140,7 @@ export default function PatientAddressInformation({
    * City Change
    * =========================
    */
+
   const handleCityChange =
     (option: {
       id: string;
@@ -133,6 +156,7 @@ export default function PatientAddressInformation({
    * Screen
    * =========================
    */
+
   return (
     <AppCard
       style={styles.card}
@@ -144,6 +168,7 @@ export default function PatientAddressInformation({
       {/* =========================
           Governorate + City
           ========================= */}
+
       <View
         style={styles.addressRow}
       >
@@ -156,12 +181,25 @@ export default function PatientAddressInformation({
               selectedGovernorate
             }
             options={
-              governorates
+              governorateOptions
             }
             onChange={
               handleGovernorateChange
             }
           />
+
+          {governorate === "Other" &&
+            onOtherGovernorateChange && (
+              <AppTextField
+                placeholder="Specify governorate"
+                value={
+                  otherGovernorate ?? ""
+                }
+                onChangeText={
+                  onOtherGovernorateChange
+                }
+              />
+            )}
         </View>
 
         <View
@@ -182,12 +220,26 @@ export default function PatientAddressInformation({
               handleCityChange
             }
           />
+
+          {city === "Other" &&
+            onOtherCityChange && (
+              <AppTextField
+                placeholder="Specify city / Markaz"
+                value={
+                  otherCity ?? ""
+                }
+                onChangeText={
+                  onOtherCityChange
+                }
+              />
+            )}
         </View>
       </View>
 
       {/* =========================
           District + Street
           ========================= */}
+
       <View
         style={styles.addressRow}
       >

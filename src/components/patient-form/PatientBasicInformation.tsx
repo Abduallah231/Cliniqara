@@ -682,7 +682,7 @@ export default function PatientBasicInformation({
             selected={
               gender === "male"
             }
-            style={styles.genderChip}
+            
             onPress={() =>
               !isGenderLocked &&
               onGenderChange("male")
@@ -694,7 +694,7 @@ export default function PatientBasicInformation({
             selected={
               gender === "female"
             }
-            style={styles.genderChip}
+            
             onPress={() =>
               !isGenderLocked &&
               onGenderChange("female")
@@ -963,9 +963,5 @@ const styles = StyleSheet.create({
   genderContainer: {
     flexDirection: "row",
     gap: SPACING.sm,
-  },
-
-  genderChip: {
-    flex: 1,
   },
 });

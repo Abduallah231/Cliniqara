@@ -21,8 +21,13 @@ export type ClinicInformation = {
   name: string;
   phone: string;
   email: string;
+
   governorate: string;
+  otherGovernorate: string;
+
   city: string;
+  otherCity: string;
+
   district: string;
   streetAddress: string;
 };
@@ -49,22 +54,30 @@ export default function ClinicInformationForm({
   };
 
   const [address, setAddress] = useState({
-  governorate: value.governorate,
-  city: value.city,
-  district: value.district,
-  street: value.streetAddress,
-});
+    governorate: value.governorate,
+    otherGovernorate:
+      value.otherGovernorate,
+    city: value.city,
+    otherCity: value.otherCity,
+    district: value.district,
+    street: value.streetAddress,
+  });
 
   useEffect(() => {
     setAddress({
       governorate: value.governorate,
+      otherGovernorate:
+        value.otherGovernorate,
       city: value.city,
+      otherCity: value.otherCity,
       district: value.district,
       street: value.streetAddress,
     });
   }, [
     value.governorate,
+    value.otherGovernorate,
     value.city,
+    value.otherCity,
     value.district,
     value.streetAddress,
   ]);
@@ -117,77 +130,160 @@ export default function ClinicInformationForm({
       </AppCard>
 
       <PatientAddressInformation
-  title="Clinic Address"
-  governorate={address.governorate}
-  city={address.city}
-  district={address.district}
-  street={address.street}
-  onGovernorateChange={(governorate) => {
-    const nextAddress = {
-      ...address,
-      governorate,
-      city: "",
-    };
+        title="Clinic Address"
 
-    setAddress(nextAddress);
+        governorate={
+          address.governorate
+        }
 
-    onChange({
-      ...value,
-      governorate,
-      city: "",
-      district: nextAddress.district,
-      streetAddress: nextAddress.street,
-    });
-  }}
-  onCityChange={(city) => {
-    const nextAddress = {
-      ...address,
-      city,
-    };
+        otherGovernorate={
+          address.otherGovernorate
+        }
 
-    setAddress(nextAddress);
+        city={
+          address.city
+        }
 
-    onChange({
-      ...value,
-      governorate: nextAddress.governorate,
-      city,
-      district: nextAddress.district,
-      streetAddress: nextAddress.street,
-    });
-  }}
-  onDistrictChange={(district) => {
-    const nextAddress = {
-      ...address,
-      district,
-    };
+        otherCity={
+          address.otherCity
+        }
 
-    setAddress(nextAddress);
+        district={
+          address.district
+        }
 
-    onChange({
-      ...value,
-      governorate: nextAddress.governorate,
-      city: nextAddress.city,
-      district,
-      streetAddress: nextAddress.street,
-    });
-  }}
-  onStreetChange={(street) => {
-    const nextAddress = {
-      ...address,
-      street,
-    };
+        street={
+          address.street
+        }
 
-    setAddress(nextAddress);
+        onGovernorateChange={(
+          governorate,
+        ) => {
+          const nextAddress = {
+            ...address,
+            governorate,
+            city: "",
+            otherCity: "",
+          };
 
-    onChange({
-      ...value,
-      governorate: nextAddress.governorate,
-      city: nextAddress.city,
-      district: nextAddress.district,
-      streetAddress: street,
-    });
-  }}
-/>
+          setAddress(nextAddress);
+
+          onChange({
+            ...value,
+            governorate,
+            otherGovernorate:
+              nextAddress.otherGovernorate,
+            city: "",
+            otherCity: "",
+            district:
+              nextAddress.district,
+            streetAddress:
+              nextAddress.street,
+          });
+        }}
+
+        onOtherGovernorateChange={(
+          otherGovernorate,
+        ) => {
+          const nextAddress = {
+            ...address,
+            otherGovernorate,
+          };
+
+          setAddress(nextAddress);
+
+          onChange({
+            ...value,
+            otherGovernorate,
+          });
+        }}
+
+        onCityChange={(city) => {
+          const nextAddress = {
+            ...address,
+            city,
+            otherCity: "",
+          };
+
+          setAddress(nextAddress);
+
+          onChange({
+            ...value,
+            governorate:
+              nextAddress.governorate,
+            otherGovernorate:
+              nextAddress.otherGovernorate,
+            city,
+            otherCity: "",
+            district:
+              nextAddress.district,
+            streetAddress:
+              nextAddress.street,
+          });
+        }}
+
+        onOtherCityChange={(otherCity) => {
+          const nextAddress = {
+            ...address,
+            otherCity,
+          };
+
+          setAddress(nextAddress);
+
+          onChange({
+            ...value,
+            otherCity,
+          });
+        }}
+
+        onDistrictChange={(district) => {
+          const nextAddress = {
+            ...address,
+            district,
+          };
+
+          setAddress(nextAddress);
+
+          onChange({
+            ...value,
+            governorate:
+              nextAddress.governorate,
+            otherGovernorate:
+              nextAddress.otherGovernorate,
+            city:
+              nextAddress.city,
+            otherCity:
+              nextAddress.otherCity,
+            district,
+            streetAddress:
+              nextAddress.street,
+          });
+        }}
+
+        onStreetChange={(street) => {
+          const nextAddress = {
+            ...address,
+            street,
+          };
+
+          setAddress(nextAddress);
+
+          onChange({
+            ...value,
+            governorate:
+              nextAddress.governorate,
+            otherGovernorate:
+              nextAddress.otherGovernorate,
+            city:
+              nextAddress.city,
+            otherCity:
+              nextAddress.otherCity,
+            district:
+              nextAddress.district,
+            streetAddress: street,
+          });
+        }}
+      />
     </>
   );
 }
