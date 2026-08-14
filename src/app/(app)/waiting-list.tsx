@@ -7,6 +7,7 @@ import {
 import {
   ActivityIndicator,
   FlatList,
+  RefreshControl,
   StyleSheet,
   View,
 } from "react-native";
@@ -24,7 +25,6 @@ import WaitingFilters, {
 } from "@/components/waiting-list/WaitingFilters";
 import WaitingPatientCard from "@/components/waiting-list/WaitingPatientCard";
 import WaitingSummary from "@/components/waiting-list/WaitingSummary";
-
 import { getWaitingVisits } from "@/services/visitApi";
 import { useClinicStore } from "@/store/clinicStore";
 
@@ -36,15 +36,23 @@ import {
 type WaitingVisit = {
   id: string;
   visitCode: string;
+
   patient: {
     id: string;
     patientCode: string;
     fullName: string;
   };
+
+  doctor: {
+    id: string;
+    fullName: string;
+  };
+
   visitStatus:
     | "WAITING"
     | "IN_PROGRESS"
     | string;
+
   createdAt: string;
   startedAt?: string | null;
 };
@@ -52,13 +60,21 @@ type WaitingVisit = {
 type WaitingPatient = {
   id: string;
   fullName: string;
+
   status: WaitingFilter;
+
   visitId: string;
   visitCode: string;
+
   createdAt: string;
   startedAt?: string | null;
+
   patientId: string;
   patientCode: string;
+
+  doctorId: string;
+  doctorName: string;
+
   queueNumber?: number;
 };
 
@@ -74,6 +90,9 @@ export default function WaitingListScreen() {
 
   const [loading, setLoading] =
     useState(true);
+
+  const [refreshing, setRefreshing] =
+    useState(false);
 
   const {
     currentClinic,
@@ -118,10 +137,6 @@ export default function WaitingListScreen() {
   /*
    * Reload whenever the screen
    * becomes active.
-   *
-   * This is important because a
-   * patient can be added to waiting
-   * from another screen.
    */
   useFocusEffect(
     useCallback(() => {
@@ -129,105 +144,172 @@ export default function WaitingListScreen() {
     }, [loadWaitingVisits]),
   );
 
-  const waitingPatients =
-  useMemo<WaitingPatient[]>(() => {
-    const mapped: WaitingPatient[] =
-      visits.map((visit) => ({
-        id: visit.patient.id,
-        patientId:
-          visit.patient.id,
-        patientCode:
-          visit.patient.patientCode,
-        fullName:
-          visit.patient.fullName,
-        visitId: visit.id,
-        visitCode:
-          visit.visitCode,
-        createdAt:
-          visit.createdAt,
-        startedAt:
-          visit.startedAt ?? null,
-        status:
-          visit.visitStatus ===
-          "IN_PROGRESS"
-            ? "With Doctor"
-            : "Waiting",
-      }));
+  const handleRefresh =
+    useCallback(async () => {
+      if (!clinicId) return;
 
-    const waiting = mapped
-      .filter(
-        (patient) =>
-          patient.status ===
-          "Waiting",
-      )
-      .sort(
-        (a, b) =>
-          new Date(
-            a.createdAt,
-          ).getTime() -
-          new Date(
-            b.createdAt,
-          ).getTime(),
+      try {
+        setRefreshing(true);
+
+        const data =
+          await getWaitingVisits(
+            clinicId,
+          );
+
+        setVisits(
+          Array.isArray(data)
+            ? data
+            : [],
+        );
+      } catch (error) {
+        console.error(
+          "Failed to refresh waiting list:",
+          error,
+        );
+      } finally {
+        setRefreshing(false);
+      }
+    }, [clinicId]);
+    
+
+  const waitingPatients =
+    useMemo<WaitingPatient[]>(() => {
+      const mapped: WaitingPatient[] =
+        visits.map((visit) => ({
+          id: visit.patient.id,
+
+          patientId:
+            visit.patient.id,
+
+          patientCode:
+            visit.patient.patientCode,
+
+          fullName:
+            visit.patient.fullName,
+
+          visitId:
+            visit.id,
+
+          visitCode:
+            visit.visitCode,
+
+          createdAt:
+            visit.createdAt,
+
+          startedAt:
+            visit.startedAt ?? null,
+
+          status:
+            visit.visitStatus ===
+            "IN_PROGRESS"
+              ? "With Doctor"
+              : "Waiting",
+
+          doctorId:
+            visit.doctor.id,
+
+          doctorName:
+            visit.doctor.fullName,
+        }));
+
+      /*
+       * WAITING ORDER
+       *
+       * Oldest waiting patient first.
+       */
+      const waiting =
+        mapped
+          .filter(
+            (patient) =>
+              patient.status ===
+              "Waiting",
+          )
+          .sort(
+            (a, b) =>
+              new Date(
+                a.createdAt,
+              ).getTime() -
+              new Date(
+                b.createdAt,
+              ).getTime(),
+          );
+
+      /*
+       * WITH DOCTOR ORDER
+       *
+       * First patient who started
+       * the visit gets Active Visit #1.
+       */
+      const withDoctor =
+        mapped
+          .filter(
+            (patient) =>
+              patient.status ===
+              "With Doctor",
+          )
+          .sort(
+            (a, b) =>
+              new Date(
+                a.startedAt ??
+                  a.createdAt,
+              ).getTime() -
+              new Date(
+                b.startedAt ??
+                  b.createdAt,
+              ).getTime(),
+          );
+
+      /*
+       * Waiting has its own numbering.
+       */
+      const waitingMap =
+        new Map<string, number>();
+
+      waiting.forEach(
+        (patient, index) => {
+          waitingMap.set(
+            patient.visitId,
+            index + 1,
+          );
+        },
       );
 
-    const withDoctor =
-      mapped
-        .filter(
-          (patient) =>
+      /*
+       * With Doctor has completely
+       * separate numbering.
+       */
+      const withDoctorMap =
+        new Map<string, number>();
+
+      withDoctor.forEach(
+        (patient, index) => {
+          withDoctorMap.set(
+            patient.visitId,
+            index + 1,
+          );
+        },
+      );
+
+      /*
+       * Attach the appropriate number
+       * according to the patient's status.
+       */
+      return mapped.map(
+        (patient) => ({
+          ...patient,
+
+          queueNumber:
             patient.status ===
-            "With Doctor",
-        )
-        .sort(
-          (a, b) =>
-            new Date(
-              a.startedAt ??
-                a.createdAt,
-            ).getTime() -
-            new Date(
-              b.startedAt ??
-                b.createdAt,
-            ).getTime(),
-        );
-
-    const queueMap =
-      new Map<string, number>();
-
-    waiting.forEach(
-      (patient, index) => {
-        queueMap.set(
-          patient.visitId,
-          index + 1,
-        );
-      },
-    );
-
-    const withDoctorMap =
-      new Map<string, number>();
-
-    withDoctor.forEach(
-      (patient, index) => {
-        withDoctorMap.set(
-          patient.visitId,
-          index + 1,
-        );
-      },
-    );
-
-    return mapped.map(
-      (patient) => ({
-        ...patient,
-        queueNumber:
-          patient.status ===
-          "Waiting"
-            ? queueMap.get(
-                patient.visitId,
-              )
-            : withDoctorMap.get(
-                patient.visitId,
-              ),
-      }),
-    );
-  }, [visits]);
+            "Waiting"
+              ? waitingMap.get(
+                  patient.visitId,
+                )
+              : withDoctorMap.get(
+                  patient.visitId,
+                ),
+        }),
+      );
+    }, [visits]);
 
   const filteredPatients =
     useMemo(() => {
@@ -253,6 +335,11 @@ export default function WaitingListScreen() {
               .toLowerCase()
               .includes(
                 normalizedSearch,
+              ) ||
+            patient.doctorName
+              .toLowerCase()
+              .includes(
+                normalizedSearch,
               );
 
           const matchesFilter =
@@ -265,8 +352,10 @@ export default function WaitingListScreen() {
         })
         .sort(
           (a, b) =>
-            (a.queueNumber ?? Infinity) -
-            (b.queueNumber ?? Infinity),
+            (a.queueNumber ??
+              Infinity) -
+            (b.queueNumber ??
+              Infinity),
         );
     }, [
       waitingPatients,
@@ -334,6 +423,14 @@ export default function WaitingListScreen() {
           }
           showsVerticalScrollIndicator={
             false
+          }
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[COLORS.primary]}
+              tintColor={COLORS.primary}
+            />
           }
           ListHeaderComponent={
             <>

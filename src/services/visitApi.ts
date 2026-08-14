@@ -19,12 +19,16 @@ export async function saveChiefComplaint(
 export async function createWaitingVisit(
   patientId: string,
   clinicId: string,
+  doctorId?: string,
 ) {
   const { data } = await api.post(
     "/visits/waiting",
     {
       patientId,
       clinicId,
+      ...(doctorId
+        ? { doctorId }
+        : {}),
     },
   );
 

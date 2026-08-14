@@ -18,6 +18,7 @@ export class VisitService {
   constructor(
     private readonly prisma: PrismaService,
   ) {}
+
   async createWaitingVisit(
   dto: CreateWaitingVisitDto,
   currentUserId: string,
@@ -72,18 +73,37 @@ export class VisitService {
     );
   }
 
-  const doctor = await this.prisma.user.findUnique({
-    where: {
-      id: doctorId,
-    },
-  });
-
-  if (!doctor) {
-    throw new NotFoundException("Doctor not found.");
+  if (!doctorId) {
+    throw new BadRequestException(
+      "Doctor must be selected for waiting visit.",
+    );
   }
 
-  if (doctor.accountType !== AccountType.DOCTOR) {
-    throw new BadRequestException("Selected user is not a doctor.");
+  const doctorMembership =
+    await this.prisma.clinicMember.findFirst({
+      where: {
+        userId: doctorId,
+        clinicId,
+        status: "ACTIVE",
+      },
+      include: {
+        user: true,
+      },
+    });
+
+  if (!doctorMembership) {
+    throw new BadRequestException(
+      "Selected doctor is not an active member of this clinic.",
+    );
+  }
+
+  if (
+    doctorMembership.user.accountType !==
+    AccountType.DOCTOR
+  ) {
+    throw new BadRequestException(
+      "Selected user is not a doctor.",
+    );
   }
 
   const openVisit = await this.prisma.visit.findFirst({
