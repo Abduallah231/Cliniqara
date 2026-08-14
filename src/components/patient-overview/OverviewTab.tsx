@@ -69,16 +69,54 @@ function formatMaritalStatus(
     );
 }
 
-function formatAge(
-  patient: Patient,
-) {
+function formatAge(patient: Patient) {
+  if (patient.dateOfBirth) {
+    const birthDate = new Date(patient.dateOfBirth);
+    const today = new Date();
+
+    if (Number.isNaN(birthDate.getTime())) {
+      return "Not available";
+    }
+
+    let years =
+      today.getFullYear() -
+      birthDate.getFullYear();
+
+    let months =
+      today.getMonth() -
+      birthDate.getMonth();
+
+    let days =
+      today.getDate() -
+      birthDate.getDate();
+
+    if (days < 0) {
+      months--;
+
+      const daysInPreviousMonth =
+        new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          0,
+        ).getDate();
+
+      days += daysInPreviousMonth;
+    }
+
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+
+    return `${years} Years, ${months} Months, ${days} Days`;
+  }
+
   if (
     patient.estimatedAgeValue != null &&
     patient.estimatedAgeUnit
   ) {
     const units: Record<
-      Patient["estimatedAgeUnit"] &
-        string,
+      Patient["estimatedAgeUnit"] & string,
       string
     > = {
       YEARS: "Years",
@@ -87,37 +125,9 @@ function formatAge(
     };
 
     return `${patient.estimatedAgeValue} ${
-      units[
-        patient.estimatedAgeUnit
-      ] ??
+      units[patient.estimatedAgeUnit] ??
       patient.estimatedAgeUnit
     }`;
-  }
-
-  if (patient.dateOfBirth) {
-    const birthDate =
-      new Date(patient.dateOfBirth);
-
-    const today = new Date();
-
-    let age =
-      today.getFullYear() -
-      birthDate.getFullYear();
-
-    const monthDifference =
-      today.getMonth() -
-      birthDate.getMonth();
-
-    if (
-      monthDifference < 0 ||
-      (monthDifference === 0 &&
-        today.getDate() <
-          birthDate.getDate())
-    ) {
-      age--;
-    }
-
-    return `${age} Years`;
   }
 
   return "Not available";

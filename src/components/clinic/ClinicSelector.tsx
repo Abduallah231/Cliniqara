@@ -148,7 +148,7 @@ export default function ClinicSelector({
         >
           <Ionicons
             name="enter-outline"
-            size={20}
+            size={18}
             color={COLORS.primary}
           />
 
@@ -269,23 +269,28 @@ const styles = StyleSheet.create({
 
   joinButton: {
     flex: 1,
+    minWidth: 0,
     minHeight: 48,
+    paddingHorizontal: SPACING.sm,
     borderWidth: 1,
     borderColor: COLORS.primary,
     borderRadius: 12,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
   },
 
   joinButtonText: {
+    flexShrink: 1,
+    textAlign: "center",
     color: COLORS.primary,
-    fontSize: TYPOGRAPHY.body,
+    fontSize: 14,
     fontWeight: "700",
   },
 
   actionButton: {
     flex: 1,
+    minWidth: 0,
   },
 });

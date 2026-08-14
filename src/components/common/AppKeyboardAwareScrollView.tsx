@@ -1,8 +1,5 @@
 import { ReactNode } from "react";
-import {
-  Platform,
-  StyleSheet,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import {
   KeyboardAwareScrollView,
 } from "react-native-keyboard-aware-scroll-view";
@@ -43,7 +40,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
   content: {
     flexGrow: 1,
   },

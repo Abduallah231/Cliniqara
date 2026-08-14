@@ -85,11 +85,16 @@ export type CreatePatientInput = {
 };
 
 export type UpdatePatientInput = {
+  identifierType?: PatientIdentifierType;
+  identifierNumber?: string;
+  documentType?: string;
+  fullName?: string;
+  maritalStatus?: MaritalStatus;
+  childrenCount?: number;
   phone?: string;
   occupation?: string;
   otherOccupation?: string;
-  childrenCount?: number;
-
+  
   governorate?: string;
   otherGovernorate?: string;
 
