@@ -33,17 +33,18 @@ export class VisitService {
     await this.prisma.clinicMember.findFirst({
       where: {
         userId: currentUserId,
+        clinicId: dto.clinicId,
         status: "ACTIVE",
       },
     });
 
   if (!membership) {
     throw new NotFoundException(
-      "Clinic not found.",
+      "You are not an active member of this clinic.",
     );
   }
 
-  const clinicId = membership.clinicId;
+  const clinicId = dto.clinicId;
 
   if (!patient) {
     throw new NotFoundException("Patient not found.");
@@ -334,6 +335,45 @@ async startVisit(
       },
       data: {
         doctorId: dto.doctorId,
+      },
+    });
+  }
+
+  async getWaitingVisits(
+    clinicId: string,
+    currentUserId: string,
+  ) {
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId,
+          status: "ACTIVE",
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
+    return this.prisma.visit.findMany({
+      where: {
+        clinicId,
+        visitStatus: {
+          in: [
+            VisitStatus.WAITING,
+            VisitStatus.IN_PROGRESS,
+          ],
+        },
+      },
+      include: {
+        patient: true,
+        doctor: true,
+      },
+      orderBy: {
+        createdAt: "asc",
       },
     });
   }

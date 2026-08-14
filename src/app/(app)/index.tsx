@@ -8,23 +8,37 @@ import StatCard from "@/components/dashboard/StatCard";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import dashboardStats from "@/data/dashboard";
 import SessionService from "@/services/session.service";
+import { getWaitingVisits } from "@/services/visitApi";
 import { useClinicStore } from "@/store/clinicStore";
 import { useDoctorStore } from "@/store/doctorStore";
 import {
   COLORS,
-  SPACING
+  SPACING,
 } from "@/theme";
 import {
   router,
   useFocusEffect,
 } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
 import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  Pressable,
   ScrollView,
   StyleSheet,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+type WaitingVisit = {
+  id: string;
+  visitCode: string;
+  visitStatus: string;
+  createdAt: string;
+};
 
 export default function DashboardScreen() {
   const doctor = useDoctorStore(
@@ -35,11 +49,17 @@ export default function DashboardScreen() {
     (state) => state.currentClinic
   );
 
-  const clinic = currentClinic?.clinic ?? null;
+  const clinic =
+    currentClinic?.clinic ?? null;
 
-  const [isGuest, setIsGuest] = useState(
-      !doctor
-    );
+  const [isGuest, setIsGuest] =
+    useState(!doctor);
+
+  const [waitingVisits, setWaitingVisits] =
+    useState<WaitingVisit[]>([]);
+
+  const [now, setNow] =
+    useState(Date.now());
 
   useEffect(() => {
     SessionService.isGuestMode().then(
@@ -54,46 +74,167 @@ export default function DashboardScreen() {
       }
 
       loadClinics().catch(() => {});
-    }, [doctor]),
+    }, [doctor])
   );
- 
+
+  const loadWaitingStats =
+    useCallback(async () => {
+      if (!clinic?.id) {
+        setWaitingVisits([]);
+        return;
+      }
+
+      try {
+        const data =
+          await getWaitingVisits(
+            clinic.id
+          );
+
+        const waiting = (
+          Array.isArray(data)
+            ? data
+            : []
+        ).filter(
+          (visit: WaitingVisit) =>
+            visit.visitStatus ===
+            "WAITING"
+        );
+
+        setWaitingVisits(waiting);
+      } catch (error) {
+        console.error(
+          "Failed to load dashboard waiting stats:",
+          error
+        );
+
+        setWaitingVisits([]);
+      }
+    }, [clinic?.id]);
+
+  /*
+   * Reload waiting data whenever
+   * the dashboard becomes active.
+   *
+   * Also refresh the current time
+   * every minute so the average
+   * waiting duration stays current.
+   */
+  useFocusEffect(
+    useCallback(() => {
+      loadWaitingStats();
+      setNow(Date.now());
+
+      const timer =
+        setInterval(() => {
+          setNow(Date.now());
+        }, 60_000);
+
+      return () => {
+        clearInterval(timer);
+      };
+    }, [loadWaitingStats])
+  );
+
+  const waitingCount =
+    waitingVisits.length;
+
+  const averageWaitingMinutes =
+    useMemo(() => {
+      if (waitingVisits.length === 0) {
+        return 0;
+      }
+
+      const totalMinutes =
+        waitingVisits.reduce(
+          (total, visit) => {
+            const createdAt =
+              new Date(
+                visit.createdAt
+              ).getTime();
+
+            if (
+              Number.isNaN(
+                createdAt
+              )
+            ) {
+              return total;
+            }
+
+            const minutes =
+              Math.max(
+                0,
+                (now - createdAt) /
+                  60000
+              );
+
+            return total + minutes;
+          },
+          0
+        );
+
+      return Math.round(
+        totalMinutes /
+          waitingVisits.length
+      );
+    }, [waitingVisits, now]);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={styles.container}
+    >
       <AppTopBar
-        onRightPress={() => router.push("/(app)/settings")}
+        onRightPress={() =>
+          router.push(
+            "/(app)/settings"
+          )
+        }
       />
 
       <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={
+          styles.content
+        }
+        showsVerticalScrollIndicator={
+          false
+        }
       >
-        
         {isGuest ? (
           <GuestBanner
             onCreateAccount={() =>
-              router.push("/(auth)/create-account")
+              router.push(
+                "/(auth)/create-account"
+              )
             }
           />
         ) : (
           <WelcomeCard
-            doctorName={`Dr. ${doctor?.fullName ?? ""}`}
+            doctorName={`Dr. ${
+              doctor?.fullName ?? ""
+            }`}
             specialty={
               doctor?.specialty ??
-              (doctor?.doctorLevel === "INTERN"
+              (doctor?.doctorLevel ===
+              "INTERN"
                 ? "Intern"
                 : "")
             }
-            clinicName={clinic?.name ?? ""}
+            clinicName={
+              clinic?.name ?? ""
+            }
           />
         )}
 
         {!isGuest && (
           <ClinicSelector
             onCreateClinic={() =>
-              router.push("/(app)/create-clinic")
+              router.push(
+                "/(app)/create-clinic"
+              )
             }
             onJoinClinic={() =>
-              router.push("/(app)/join-clinic")
+              router.push(
+                "/(app)/join-clinic"
+              )
             }
           />
         )}
@@ -101,23 +242,38 @@ export default function DashboardScreen() {
         <View style={styles.statsRow}>
           <StatCard
             title="Today's Patients"
-            value={dashboardStats.todayPatients}
-            subtitle={dashboardStats.todayPatientsSubtitle}
+            value={
+              dashboardStats.todayPatients
+            }
+            subtitle={
+              dashboardStats.todayPatientsSubtitle
+            }
             icon="people-outline"
             style={styles.flex}
           />
 
-          <StatCard
-            title="Waiting"
-            value={dashboardStats.waitingPatients}
-            subtitle={dashboardStats.waitingSubtitle}
-            icon="time-outline"
-            color="#16A34A"
+          <Pressable
             style={styles.flex}
-          />
+            onPress={() =>
+              router.push(
+                "/(app)/waiting-list"
+              )
+            }
+          >
+            <StatCard
+              title="Waiting"
+              value={waitingCount}
+              subtitle={`Average · ${averageWaitingMinutes} min`}
+              icon="time-outline"
+              color="#16A34A"
+              style={styles.statCard}
+            />
+          </Pressable>
         </View>
 
-        <SectionHeader title="Quick Actions" />
+        <SectionHeader
+          title="Quick Actions"
+        />
 
         <DashboardActionCard
           title="New Patient"
@@ -125,10 +281,18 @@ export default function DashboardScreen() {
           icon="person-add-outline"
           variant="primary"
           fullWidth
-          onPress={() => router.push("/new-patient")}
+          onPress={() =>
+            router.push(
+              "/new-patient"
+            )
+          }
         />
 
-        <View style={{ height: SPACING.md }} />
+        <View
+          style={{
+            height: SPACING.md,
+          }}
+        />
 
         <DashboardActionCard
           title="Waiting List"
@@ -136,10 +300,16 @@ export default function DashboardScreen() {
           icon="time-outline"
           variant="success"
           fullWidth
-          onPress={() => router.push("/(app)/waiting-list")}
+          onPress={() =>
+            router.push(
+              "/(app)/waiting-list"
+            )
+          }
         />
 
-        <View style={styles.actionsRow}>
+        <View
+          style={styles.actionsRow}
+        >
           <DashboardActionCard
             compact
             title="Existing Patients"
@@ -148,7 +318,9 @@ export default function DashboardScreen() {
             style={styles.flex}
             variant="purple"
             onPress={() =>
-              router.push("/(app)/existing-patients")
+              router.push(
+                "/(app)/existing-patients"
+              )
             }
           />
 
@@ -158,14 +330,18 @@ export default function DashboardScreen() {
             subtitle="Prescription Templates"
             icon="document-text-outline"
             style={styles.flex}
-             variant="orange"
+            variant="orange"
             onPress={() =>
-              router.push("/(app)/prescriptions")
+              router.push(
+                "/(app)/prescriptions"
+              )
             }
           />
         </View>
 
-        <View style={styles.actionsRow}>
+        <View
+          style={styles.actionsRow}
+        >
           <DashboardActionCard
             compact
             title="Statistics"
@@ -174,7 +350,9 @@ export default function DashboardScreen() {
             style={styles.flex}
             variant="cyan"
             onPress={() =>
-              router.push("/statistics")
+              router.push(
+                "/statistics"
+              )
             }
           />
 
@@ -191,86 +369,57 @@ export default function DashboardScreen() {
             variant="red"
             onPress={() => {
               if (clinic) {
-                router.push("/(app)/clinic-management");
+                router.push(
+                  "/(app)/clinic-management"
+                );
               } else {
-                router.push("/(app)/create-clinic");
+                router.push(
+                  "/(app)/create-clinic"
+                );
               }
             }}
           />
         </View>
-         {/* <View style={styles.actionsRow}>
-          <DashboardActionCard
-            compact
-            title="Login"
-            subtitle="Authentication"
-            icon="log-in-outline"
-            style={styles.flex}
-            variant="primary"
-            onPress={() => router.push("/(auth)/login")}
-          />
-
-          <DashboardActionCard
-            compact
-            title="Create Account"
-            subtitle="Register"
-            icon="person-add-outline"
-            style={styles.flex}
-            variant="success"
-            onPress={() => router.push("/(auth)/create-account")}
-          />
-        </View>
-
-        <View style={styles.actionsRow}>
-          <DashboardActionCard
-            compact
-            title="Forgot Password"
-            subtitle="Reset password"
-            icon="key-outline"
-            style={styles.flex}
-            variant="orange"
-            onPress={() => router.push("/(app)/join-clinic")}
-          />
-
-          <DashboardActionCard
-            compact
-            title="Coming Soon"
-            subtitle="Authentication"
-            icon="shield-checkmark-outline"
-            style={styles.flex}
-            variant="cyan"
-            onPress={() => router.push("/(app)/join-clinic")}
-          />
-        </View>  */}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
+const styles =
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor:
+        COLORS.background,
+    },
 
-  content: {
-    padding: SPACING.lg,
-    paddingBottom: SPACING.xl,
-  },
+    content: {
+      padding: SPACING.lg,
+      paddingBottom:
+        SPACING.xl,
+    },
 
-  statsRow: {
-    flexDirection: "row",
-    gap: SPACING.md,
-    marginBottom: SPACING.xl,
-  },
+    statsRow: {
+      flexDirection: "row",
+      gap: SPACING.md,
+      marginBottom:
+        SPACING.xl,
+    },
 
-  actionsRow: {
-    flexDirection: "row",
-    gap: SPACING.sm,
-    marginTop: SPACING.md,
-    justifyContent: "space-between",
-  },
+    actionsRow: {
+      flexDirection: "row",
+      gap: SPACING.sm,
+      marginTop:
+        SPACING.md,
+      justifyContent:
+        "space-between",
+    },
 
-  flex: {
-    flex: 1,
-  },
-});
+    flex: {
+      flex: 1,
+    },
+
+    statCard: {
+      flex: 1,
+    },
+  });

@@ -3,7 +3,7 @@ import {
 } from "react";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
-
+import { useClinicStore } from "@/store/clinicStore";
 import {
   router,
 } from "expo-router";
@@ -100,6 +100,10 @@ type Props = {
 export default function PatientActions({
   patient,
 }: Props) {
+  const { currentClinic } = useClinicStore();
+
+  const clinicId =
+    currentClinic?.clinic.id;
   const {
     visit,
     updateVisit,
@@ -135,6 +139,10 @@ export default function PatientActions({
           "waiting",
         );
 
+        if (!clinicId) {
+          throw new Error("No clinic selected.");
+        }
+
         const dto =
           mapPatientToCreateDto(
             patient,
@@ -152,6 +160,7 @@ export default function PatientActions({
         const waitingVisit =
           await createWaitingVisit(
             patientResponse.id,
+            clinicId,
           );
 
         updateVisit({
@@ -214,6 +223,10 @@ export default function PatientActions({
           "start",
         );
 
+        if (!clinicId) {
+          throw new Error("No clinic selected.");
+        }
+
         const dto =
           mapPatientToCreateDto(
             patient,
@@ -231,6 +244,7 @@ export default function PatientActions({
         const waitingVisit =
           await createWaitingVisit(
             patientResponse.id,
+            clinicId,
           );
 
         const startedVisit =

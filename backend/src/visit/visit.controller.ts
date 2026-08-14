@@ -1,4 +1,12 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from "@nestjs/common";
 import { AccountType } from "@prisma/client";
 import { CreateWaitingVisitDto } from "./dto/create-waiting-visit.dto";
 import { VisitService } from "./visit.service";
@@ -7,11 +15,9 @@ import { CompleteVisitDto } from "./dto/complete-visit.dto";
 import { CancelVisitDto } from "./dto/cancel-visit.dto";
 import { ChangeDoctorDto } from "./dto/change-doctor.dto";
 import { GetVisitDto } from "./dto/get-visit.dto";
-import { UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/interfaces/authenticated-user.interface";
-import { Param, Get } from "@nestjs/common";
 import { SaveVisitChiefComplaintDto } from "./dto/save-visit-chief-complaint.dto";
 
 @Controller("visits")
@@ -30,6 +36,17 @@ export class VisitController {
       dto,
       user.id,
       user.accountType,
+    );
+  }
+
+  @Get("waiting")
+  async getWaitingVisits(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query("clinicId") clinicId: string,
+  ) {
+    return this.visitService.getWaitingVisits(
+      clinicId,
+      user.id,
     );
   }
 
