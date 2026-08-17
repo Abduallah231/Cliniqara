@@ -1,4 +1,5 @@
 import {
+  IsNotEmpty,
   IsString,
   IsUUID,
 } from "class-validator";
@@ -8,5 +9,6 @@ export class CancelVisitDto {
   visitId!: string;
 
   @IsString()
+  @IsNotEmpty()
   reason!: string;
 }

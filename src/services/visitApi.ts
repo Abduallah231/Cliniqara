@@ -1,20 +1,10 @@
+import type {
+  CancelVisitInput,
+  ChangeDoctorInput,
+  CompleteVisitInput,
+  Visit
+} from "@/types/visit";
 import { api } from "./api";
-
-export async function saveChiefComplaint(
-  visitId: string,
-  chiefComplaintId: string,
-  answers: Record<string, any>,
-) {
-  const { data } = await api.post(
-    `/visits/${visitId}/chief-complaint`,
-    {
-      chiefComplaintId,
-      answers,
-    },
-  );
-
-  return data;
-}
 
 export async function createWaitingVisit(
   patientId: string,
@@ -37,7 +27,7 @@ export async function createWaitingVisit(
 
 export async function getWaitingVisits(
   clinicId: string,
-) {
+): Promise<Visit[]> {
   const { data } = await api.get(
     "/visits/waiting",
     {
@@ -52,7 +42,7 @@ export async function getWaitingVisits(
 
 export async function startVisit(
   visitId: string,
-) {
+): Promise<Visit> {
   const { data } = await api.post(
     "/visits/start",
     {
@@ -63,11 +53,63 @@ export async function startVisit(
   return data;
 }
 
+export async function completeVisit(
+  dto: CompleteVisitInput,
+): Promise<Visit> {
+  const { data } = await api.post(
+    "/visits/complete",
+    dto,
+  );
+
+  return data;
+}
+
+export async function cancelVisit(
+  dto: CancelVisitInput,
+): Promise<Visit> {
+  const { data } = await api.post(
+    "/visits/cancel",
+    dto,
+  );
+
+  return data;
+}
+
+export async function changeDoctor(
+  dto: ChangeDoctorInput,
+): Promise<Visit> {
+  const { data } = await api.post(
+    "/visits/change-doctor",
+    dto,
+  );
+
+  return data;
+}
+
 export async function getVisit(
   visitId: string,
+): Promise<Visit> {
+  const { data } = await api.post(
+    "/visits/details",
+    {
+      visitId,
+    },
+  );
+
+  return data;
+}
+
+export async function saveChiefComplaint(
+  visitId: string,
+  chiefComplaintId: string,
+  answers: Record<string, unknown>,
 ) {
-  const { data } = await api.get(
-    `/visits/${visitId}`,
+  const { data } = await api.post(
+    `/visits/${visitId}/chief-complaint`,
+    {
+      chiefComplaintId,
+      answers,
+    },
   );
 
   return data;

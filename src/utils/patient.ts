@@ -1,40 +1,42 @@
-export function getAgeInYears(
-  age: string,
-  ageUnit: "Days" | "Months" | "Years"
-): number {
-  const value = Number(age);
+import type { AgeUnit, Gender } from "@/types/patient";
 
-  if (isNaN(value)) {
+export function getAgeInYears(
+  age: number | null | undefined,
+  ageUnit: AgeUnit | null | undefined
+): number {
+  if (age == null || ageUnit == null || Number.isNaN(age)) {
     return 0;
   }
 
   switch (ageUnit) {
-    case "Days":
-      return value / 365;
+    case "DAYS":
+      return age / 365;
 
-    case "Months":
-      return value / 12;
+    case "MONTHS":
+      return age / 12;
 
-    case "Years":
+    case "YEARS":
+      return age;
+
     default:
-      return value;
+      return 0;
   }
 }
 
 export function isPediatric(
-  age: string,
-  ageUnit: "Days" | "Months" | "Years"
+  age: number | null | undefined,
+  ageUnit: AgeUnit | null | undefined
 ): boolean {
   return getAgeInYears(age, ageUnit) < 18;
 }
 
 export function shouldShowMenstrualHistory(
-  gender: "male" | "female",
-  age: string,
-  ageUnit: "Days" | "Months" | "Years"
+  gender: Gender | null | undefined,
+  age: number | null | undefined,
+  ageUnit: AgeUnit | null | undefined
 ): boolean {
   return (
-    gender === "female" &&
+    gender === "FEMALE" &&
     getAgeInYears(age, ageUnit) >= 8
   );
 }

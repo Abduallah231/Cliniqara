@@ -7,18 +7,20 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { AccountType } from "@prisma/client";
+
 import { CreateWaitingVisitDto } from "./dto/create-waiting-visit.dto";
-import { VisitService } from "./visit.service";
 import { StartVisitDto } from "./dto/start-visit.dto";
 import { CompleteVisitDto } from "./dto/complete-visit.dto";
 import { CancelVisitDto } from "./dto/cancel-visit.dto";
 import { ChangeDoctorDto } from "./dto/change-doctor.dto";
 import { GetVisitDto } from "./dto/get-visit.dto";
+import { SaveVisitChiefComplaintDto } from "./dto/save-visit-chief-complaint.dto";
+
+import { VisitService } from "./visit.service";
+
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/interfaces/authenticated-user.interface";
-import { SaveVisitChiefComplaintDto } from "./dto/save-visit-chief-complaint.dto";
 
 @Controller("visits")
 @UseGuards(JwtAuthGuard)
@@ -26,6 +28,10 @@ export class VisitController {
   constructor(
     private readonly visitService: VisitService,
   ) {}
+
+  // =========================
+  // Waiting Visit
+  // =========================
 
   @Post("waiting")
   async createWaitingVisit(
@@ -49,6 +55,10 @@ export class VisitController {
       user.id,
     );
   }
+
+  // =========================
+  // Visit Lifecycle
+  // =========================
 
   @Post("start")
   async startVisit(
@@ -84,38 +94,58 @@ export class VisitController {
   }
 
   @Post("change-doctor")
-    async changeDoctor(
-      @Body() dto: ChangeDoctorDto,
-    ) {
-      return this.visitService.changeDoctor(dto);
-    }
-
-    @Post("details")
-  async getVisit(
-    @Body() dto: GetVisitDto,
+  async changeDoctor(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ChangeDoctorDto,
   ) {
-    return this.visitService.getVisit(dto);
+    return this.visitService.changeDoctor(
+      dto,
+      user.id,
+    );
   }
 
+  // =========================
+  // Visit Details
+  // =========================
+
+  @Post("details")
+  async getVisit(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: GetVisitDto,
+  ) {
+    return this.visitService.getVisit(
+      dto,
+      user.id,
+    );
+  }
+
+  // =========================
+  // Chief Complaint
+  // =========================
+
   @Post(":visitId/chief-complaint")
-  saveChiefComplaint(
+  async saveChiefComplaint(
+    @CurrentUser() user: AuthenticatedUser,
     @Param("visitId") visitId: string,
     @Body() dto: SaveVisitChiefComplaintDto,
   ) {
     return this.visitService.saveChiefComplaint(
       visitId,
       dto,
+      user.id,
     );
   }
 
   @Get(":visitId/chief-complaint/:chiefComplaintId")
-  getChiefComplaint(
+  async getChiefComplaint(
+    @CurrentUser() user: AuthenticatedUser,
     @Param("visitId") visitId: string,
     @Param("chiefComplaintId") chiefComplaintId: string,
   ) {
     return this.visitService.getChiefComplaint(
       visitId,
       chiefComplaintId,
+      user.id,
     );
   }
 }

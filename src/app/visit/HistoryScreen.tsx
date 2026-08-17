@@ -1,4 +1,8 @@
-import { router, useFocusEffect } from "expo-router";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
 import {
   BackHandler,
   StyleSheet,
@@ -18,6 +22,10 @@ import {
 } from "@/theme";
 
 export default function HistoryScreen() {
+  const { patientId } =
+    useLocalSearchParams<{
+      patientId: string;
+    }>();
   useFocusEffect(() => {
   const onBackPress = () => {
     router.replace("/existing-patients");
@@ -41,7 +49,7 @@ export default function HistoryScreen() {
       />
 
       <View style={styles.content}>
-        <HistoryTab />
+        <HistoryTab patientId={patientId} />
         </View>
         
         <View style={styles.navigationBar}>

@@ -22,8 +22,48 @@ import InvestigationSection from "./assessment/InvestigationSection";
 import PrescriptionSection from "./assessment/PrescriptionSection";
 import ProceduresReferralsSection from "./assessment/ProceduresReferrals";
 import VisitHeaderCard from "./VisitHeaderCard";
+import { useEffect } from "react";
+import { usePatientStore } from "@/store/patientStore";
+import { getPatient } from "@/services/patientApi";
+type Props = {
+  patientId?: string;
+};
 
-export default function AssessmentTab() {
+export default function AssessmentTab({
+  patientId,
+}: Props) {
+  const setCurrentPatient = usePatientStore(
+    (state) => state.setCurrentPatient
+  );
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadPatient = async () => {
+      if (!patientId) {
+        return;
+      }
+
+      try {
+        const data = await getPatient(patientId);
+
+        if (mounted) {
+          setCurrentPatient(data);
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load patient:",
+          error
+        );
+      }
+    };
+
+    loadPatient();
+
+    return () => {
+      mounted = false;
+    };
+  }, [patientId, setCurrentPatient]);
   const [
   showInvestigationResults,
   setShowInvestigationResults,

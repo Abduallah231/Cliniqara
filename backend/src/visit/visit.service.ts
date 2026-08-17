@@ -19,6 +19,29 @@ export class VisitService {
     private readonly prisma: PrismaService,
   ) {}
 
+  private async getActiveClinicId(
+    currentUserId: string,
+  ): Promise<string> {
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          status: "ACTIVE",
+        },
+        select: {
+          clinicId: true,
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of a clinic.",
+      );
+    }
+
+    return membership.clinicId;
+  }
+
   async createWaitingVisit(
   dto: CreateWaitingVisitDto,
   currentUserId: string,
@@ -30,25 +53,16 @@ export class VisitService {
     },
   });
 
-  const membership =
-    await this.prisma.clinicMember.findFirst({
-      where: {
-        userId: currentUserId,
-        clinicId: dto.clinicId,
-        status: "ACTIVE",
-      },
-    });
-
-  if (!membership) {
-    throw new NotFoundException(
-      "You are not an active member of this clinic.",
-    );
-  }
-
-  const clinicId = dto.clinicId;
+  const clinicId = await this.getActiveClinicId(currentUserId);
 
   if (!patient) {
     throw new NotFoundException("Patient not found.");
+  }
+
+  if (patient.clinicId !== clinicId) {
+    throw new NotFoundException(
+      "Patient does not belong to this clinic.",
+    );
   }
 
   const clinic = await this.prisma.clinic.findUnique({
@@ -236,6 +250,21 @@ async startVisit(
       throw new NotFoundException("Visit not found.");
     }
 
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId: visit.clinicId,
+          status: "ACTIVE",
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
     if (visit.visitStatus === VisitStatus.COMPLETED) {
       throw new BadRequestException(
         "Visit is already completed.",
@@ -288,6 +317,21 @@ async startVisit(
       throw new NotFoundException("Visit not found.");
     }
 
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId: visit.clinicId,
+          status: "ACTIVE",
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
     if (visit.visitStatus === VisitStatus.COMPLETED) {
       throw new BadRequestException(
         "Completed visit cannot be cancelled.",
@@ -316,6 +360,7 @@ async startVisit(
 
   async changeDoctor(
     dto: ChangeDoctorDto,
+    currentUserId: string,
   ) {
     const visit = await this.prisma.visit.findUnique({
       where: {
@@ -327,17 +372,46 @@ async startVisit(
       throw new NotFoundException("Visit not found.");
     }
 
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId: visit.clinicId,
+          status: "ACTIVE",
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
     if (visit.visitStatus !== VisitStatus.WAITING) {
       throw new BadRequestException(
         "Doctor can only be changed while visit is waiting.",
       );
     }
 
-    const doctor = await this.prisma.user.findUnique({
-      where: {
-        id: dto.doctorId,
-      },
-    });
+    const doctorMembership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: dto.doctorId,
+          clinicId: visit.clinicId,
+          status: "ACTIVE",
+        },
+        include: {
+          user: true,
+        },
+      });
+
+    if (!doctorMembership) {
+      throw new BadRequestException(
+        "Selected doctor is not an active member of this clinic.",
+      );
+    }
+
+    const doctor = doctorMembership.user;
 
     if (!doctor) {
       throw new NotFoundException("Doctor not found.");
@@ -400,6 +474,7 @@ async startVisit(
 
   async getVisit(
     dto: GetVisitDto,
+    currentUserId: string,
   ) {
     const visit = await this.prisma.visit.findUnique({
       where: {
@@ -430,13 +505,60 @@ async startVisit(
       throw new NotFoundException("Visit not found.");
     }
 
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId: visit.clinicId,
+          status: "ACTIVE",
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
     return visit;
   }
 
   async saveChiefComplaint(
     visitId: string,
     dto: SaveVisitChiefComplaintDto,
+    currentUserId: string,
   ) {
+    const visit = await this.prisma.visit.findUnique({
+      where: {
+        id: visitId,
+      },
+    });
+
+    if (!visit) {
+      throw new NotFoundException("Visit not found.");
+    }
+
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId: visit.clinicId,
+          status: "ACTIVE",
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
+    if (visit.visitStatus !== VisitStatus.IN_PROGRESS) {
+      throw new BadRequestException(
+        "Chief complaint can only be saved for an in-progress visit.",
+      );
+    }
+
     return this.prisma.visitChiefComplaintAnswer.upsert({
       where: {
         visitId_chiefComplaintId: {
@@ -458,7 +580,33 @@ async startVisit(
   async getChiefComplaint(
     visitId: string,
     chiefComplaintId: string,
+    currentUserId: string,
   ) {
+    const visit = await this.prisma.visit.findUnique({
+      where: {
+        id: visitId,
+      },
+    });
+
+    if (!visit) {
+      throw new NotFoundException("Visit not found.");
+    }
+
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId: visit.clinicId,
+          status: "ACTIVE",
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
     return this.prisma.visitChiefComplaintAnswer.findUnique({
       where: {
         visitId_chiefComplaintId: {

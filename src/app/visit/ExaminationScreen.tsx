@@ -3,21 +3,21 @@ import AppTopBar from "@/components/common/AppTopBar";
 import ExaminationTab from "@/components/visit/ExaminationTab";
 import {
   COLORS,
-  RADIUS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
+  SPACING
 } from "@/theme";
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import {
   StyleSheet,
-  Text,
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams } from "expo-router";
 
 export default function ExaminationScreen() {
+  const { patientId } = useLocalSearchParams<{
+    patientId?: string;
+  }>();
+  
   return (
     <SafeAreaView
       style={styles.container}
@@ -32,25 +32,38 @@ export default function ExaminationScreen() {
 
 
       <View style={styles.content}>
-        <ExaminationTab />
+        <ExaminationTab
+          patientId={
+            Array.isArray(patientId)
+              ? patientId[0]
+              : patientId
+          }
+        />
       </View>
 
       <View style={styles.navigationBar}>
-  <AppButton
-    title="History"
-    variant="secondary"
-    style={styles.backButton}
-    onPress={() => router.back()}
-  />
+        <AppButton
+          title="History"
+          variant="secondary"
+          style={styles.backButton}
+          onPress={() => router.back()}
+        />
 
-  <AppButton
-  title="Assessment"
-  style={styles.nextButton}
-  onPress={() =>
-    router.push("/visit/AssessmentScreen")
-  }
-/>
-</View>
+        <AppButton
+          title="Assessment"
+          style={styles.nextButton}
+          onPress={() =>
+            router.push({
+              pathname: "/visit/AssessmentScreen",
+              params: {
+                patientId: Array.isArray(patientId)
+                  ? patientId[0]
+                  : patientId,
+              },
+            })
+          }
+        />
+      </View>
     </SafeAreaView>
   );
 }

@@ -5,8 +5,9 @@ import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScro
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 
 import { COLORS, SPACING } from "@/theme";
-
-import { useVisitStore } from "@/store/visitStore";
+import { useEffect } from "react";
+import { usePatientStore } from "@/store/patientStore";
+import { getPatient } from "@/services/patientApi";
 import {
   isPediatric,
   shouldShowMenstrualHistory,
@@ -25,21 +26,65 @@ import DrugHistory from "./history/DrugHistory";
 import AllergyHistory from "./history/AllergyHistory";
 import FamilyHistory from "./history/FamilyHistory";
 
-export default function HistoryTab() {
-  const patient = useVisitStore(
-    (state) => state.visit.patient
+type Props = {
+  patientId?: string;
+};
+
+export default function HistoryTab({
+  patientId,
+}: Props) {
+  const patient = usePatientStore(
+    (state) => state.currentPatient
   );
 
-  const pediatric = isPediatric(
-    patient.age,
-    patient.ageUnit
+  const setCurrentPatient =
+    usePatientStore(
+      (state) => state.setCurrentPatient
+    );
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadPatient = async () => {
+      if (!patientId) {
+        return;
+      }
+
+      try {
+        const data =
+          await getPatient(patientId);
+
+        if (mounted) {
+          setCurrentPatient(data);
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load patient:",
+          error
+        );
+      }
+    };
+
+    loadPatient();
+
+    return () => {
+      mounted = false;
+    };
+  }, [
+    patientId,
+    setCurrentPatient,
+  ]);
+
+    const pediatric = isPediatric(
+    patient?.estimatedAgeValue ?? null,
+    patient?.estimatedAgeUnit ?? null
   );
 
   const showMenstrual =
     shouldShowMenstrualHistory(
-      patient.gender,
-      patient.age,
-      patient.ageUnit
+      patient?.gender ?? null,
+      patient?.estimatedAgeValue ?? null,
+      patient?.estimatedAgeUnit ?? null
     );
 
   return (

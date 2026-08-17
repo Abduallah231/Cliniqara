@@ -550,7 +550,7 @@ export default function PediatricHistory() {
       <Divider />
 
       <Text style={styles.label}>
-        Birth Weight
+        Birth Weight (g)
       </Text>
 
       <AppTextField

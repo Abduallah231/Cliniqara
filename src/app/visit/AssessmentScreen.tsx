@@ -7,44 +7,53 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { useLocalSearchParams } from "expo-router";
 import {
   COLORS,
   SPACING
 } from "@/theme";
 
 export default function AssessmentScreen() {
+  const { patientId } = useLocalSearchParams<{
+    patientId?: string;
+  }>();
   return (
     <SafeAreaView
       style={styles.container}
       edges={["top", "bottom"]}
     >
       <AppTopBar
-              title="Visit Assessment"
-              onBack={() => router.back()}
-              onRightPress={() => router.push("/settings")}
-            />
-<View style={styles.content}>
-  <AssessmentTab />
-</View>
+        title="Visit Assessment"
+        onBack={() => router.back()}
+        onRightPress={() => router.push("/settings")}
+      />
+      <View style={styles.content}>
+        <AssessmentTab
+          patientId={
+            Array.isArray(patientId)
+              ? patientId[0]
+              : patientId
+          }
+        />
+      </View>
 
       <View style={styles.navigationBar}>
-  <AppButton
-    title="Examination"
-    variant="secondary"
-    style={styles.backButton}
-    onPress={() => router.back()}
-  />
+        <AppButton
+          title="Examination"
+          variant="secondary"
+          style={styles.backButton}
+          onPress={() => router.back()}
+        />
 
- <AppButton
-  title="Save Visit"
-  icon="save-outline"
-  style={styles.nextButton}
-  onPress={() => {
-  router.replace("/patient-overview");
-}}
-/>
-</View>
+        <AppButton
+          title="Save Visit"
+          icon="save-outline"
+          style={styles.nextButton}
+          onPress={() => {
+            router.replace("/patient-overview");
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 }

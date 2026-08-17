@@ -5,6 +5,7 @@ import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
 import { useEffect, useState } from "react";
 import { getChiefComplaints } from "@/services/chiefComplaintApi";
+import { saveChiefComplaint } from "@/services/visitApi";
 import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
@@ -21,6 +22,7 @@ export default function ChiefComplaint() {
   const { visit, updateVisit } = useVisitStore();
 
   const chiefComplaint = visit.history.chiefComplaint;
+  const visitId = visit.metadata.id;
   const [complaints, setComplaints] = useState<
     { id: string; label: string }[]
   >([]);
@@ -49,18 +51,45 @@ export default function ChiefComplaint() {
       label: chiefComplaint.complaintName,
     }
   : undefined;
-  const updateChiefComplaint = (
+  const updateChiefComplaint = async (
     updates: Partial<typeof chiefComplaint>
   ) => {
+    const updatedChiefComplaint = {
+      ...chiefComplaint,
+      ...updates,
+    };
+
     updateVisit({
       history: {
         ...visit.history,
-        chiefComplaint: {
-          ...chiefComplaint,
-          ...updates,
-        },
+        chiefComplaint: updatedChiefComplaint,
       },
     });
+
+    if (
+      !visitId ||
+      !updatedChiefComplaint.complaintId
+    ) {
+      return;
+    }
+
+    try {
+      await saveChiefComplaint(
+        visitId,
+        updatedChiefComplaint.complaintId,
+        {
+          durationValue:
+            updatedChiefComplaint.durationValue,
+          durationUnit:
+            updatedChiefComplaint.durationUnit,
+        },
+      );
+    } catch (error) {
+      console.error(
+        "Failed to save chief complaint:",
+        error,
+      );
+    }
   };
   const quickComplaints = complaints.slice(0, 8);
 
