@@ -38,6 +38,14 @@ export async function getWaitingVisits(
   return data;
 }
 
+export async function getTodayVisitCount(): Promise<number> {
+  const { data } = await api.get(
+    "/visits/today/count",
+  );
+
+  return data.count;
+}
+
 export async function startVisit(
   visitId: string,
 ): Promise<Visit> {

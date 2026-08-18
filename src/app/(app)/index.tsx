@@ -12,6 +12,9 @@ import { getWaitingVisits } from "@/services/visitApi";
 import { useClinicStore } from "@/store/clinicStore";
 import { useDoctorStore } from "@/store/doctorStore";
 import {
+  getTodayVisitCount,
+} from "@/services/visitApi";
+import {
   COLORS,
   SPACING,
 } from "@/theme";
@@ -41,6 +44,46 @@ type WaitingVisit = {
 };
 
 export default function DashboardScreen() {
+  const [todayVisitCount, setTodayVisitCount] =
+    useState(0);
+
+  const [loadingTodayVisits, setLoadingTodayVisits] =
+    useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+
+      const loadTodayVisitCount = async () => {
+        try {
+          setLoadingTodayVisits(true);
+
+          const count =
+            await getTodayVisitCount();
+
+          if (mounted) {
+            setTodayVisitCount(count);
+          }
+        } catch (error) {
+          console.error(
+            "Failed to load today's visit count:",
+            error,
+          );
+        } finally {
+          if (mounted) {
+            setLoadingTodayVisits(false);
+          }
+        }
+      };
+
+      loadTodayVisitCount();
+
+      return () => {
+        mounted = false;
+      };
+    }, []),
+  );
+
   const doctor = useDoctorStore(
     (state) => state.doctor
   );
@@ -240,20 +283,41 @@ export default function DashboardScreen() {
         )}
 
         <View style={styles.statsRow}>
-          <StatCard
-            title="Today's Patients"
-            value={
-              dashboardStats.todayPatients
+          <Pressable
+            style={({ pressed }) => [
+              styles.flex,
+              pressed && styles.pressedCard,
+            ]}
+            android_ripple={{
+              color: COLORS.primary + "18",
+            }}
+            onPress={() =>
+              router.push(
+                "/(app)/existing-patients"
+              )
             }
-            subtitle={
-              dashboardStats.todayPatientsSubtitle
-            }
-            icon="people-outline"
-            style={styles.flex}
-          />
+          >
+            <StatCard
+              title="Today's Patients"
+              value={
+                loadingTodayVisits
+                  ? "..."
+                  : todayVisitCount
+              }
+              subtitle="New visits today"
+              icon="people-outline"
+              style={styles.statCard}
+            />
+          </Pressable>
 
           <Pressable
-            style={styles.flex}
+            style={({ pressed }) => [
+              styles.flex,
+              pressed && styles.pressedCard,
+            ]}
+            android_ripple={{
+              color: "#16A34A18",
+            }}
             onPress={() =>
               router.push(
                 "/(app)/waiting-list"
@@ -421,5 +485,14 @@ const styles =
 
     statCard: {
       flex: 1,
+    },
+
+    pressedCard: {
+      opacity: 0.82,
+      transform: [
+        {
+          scale: 0.985,
+        },
+      ],
     },
   });

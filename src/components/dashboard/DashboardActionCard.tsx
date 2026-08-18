@@ -56,13 +56,18 @@ export default function DashboardActionCard({
 
   return (
     <Pressable
-    onPress={onPress}
-    style={[
+      onPress={onPress}
+      android_ripple={{
+        color: theme.accent + "18",
+      }}
+      style={({ pressed }) => [
         fullWidth
-            ? { width: "100%" }
-            : { flex: 1 },
-    ]}
->
+          ? { width: "100%" }
+          : { flex: 1 },
+
+        pressed && styles.pressedCard,
+      ]}
+    >
       <AppCard
         style={[
           styles.card,
@@ -189,6 +194,15 @@ function getVariant(type: Variant) {
   }
 }
 const styles = StyleSheet.create({
+  pressedCard: {
+    opacity: 0.82,
+    transform: [
+      {
+        scale: 0.985,
+      },
+    ],
+  },
+  
   card: {
     minHeight: 112,
     borderWidth: 1,

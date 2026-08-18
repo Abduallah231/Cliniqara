@@ -472,6 +472,42 @@ async startVisit(
     });
   }
 
+  async getTodayVisitCount(
+    currentUserId: string,
+  ): Promise<{ count: number }> {
+    const clinicId =
+      await this.getActiveClinicId(
+        currentUserId,
+      );
+
+    const now = new Date();
+
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+
+    const startOfNextDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1,
+    );
+
+    const count =
+      await this.prisma.visit.count({
+        where: {
+          clinicId,
+          createdAt: {
+            gte: startOfDay,
+            lt: startOfNextDay,
+          },
+        },
+      });
+
+    return { count };
+  }
+
   async getVisit(
     dto: GetVisitDto,
     currentUserId: string,

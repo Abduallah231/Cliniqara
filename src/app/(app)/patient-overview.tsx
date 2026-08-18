@@ -2,16 +2,25 @@ import {
   useCallback,
   useState,
 } from "react";
+import {
+  createWaitingVisit,
+  startVisit,
+} from "@/services/visitApi";
+
+import {
+  getErrorMessage,
+} from "@/services/errorHandler";
 
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
+  Alert,
   BackHandler,
   ScrollView,
   StyleSheet,
-  View
+  View,
 } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
@@ -98,9 +107,54 @@ export default function PatientOverviewScreen() {
       "overview"
     );
 
+  const [ creatingVisit, setCreatingVisit, ] = useState(false);
+
   if (!currentPatient) {
     return null;
   }
+
+  const handleNewVisit = async () => {
+    if (creatingVisit) {
+      return;
+    }
+
+    if (!patientId) {
+      Alert.alert(
+        "Unable to Start Visit",
+        "Patient information is missing."
+      );
+      return;
+    }
+
+    try {
+      setCreatingVisit(true);
+
+      const waitingVisit =
+        await createWaitingVisit(
+          patientId
+        );
+
+      const startedVisit =
+        await startVisit(
+          waitingVisit.id
+        );
+
+      router.push({
+        pathname: "/visit/HistoryScreen",
+        params: {
+          patientId,
+          visitId: startedVisit.id,
+        },
+      });
+    } catch (error) {
+      Alert.alert(
+        "Unable to Start Visit",
+        getErrorMessage(error)
+      );
+    } finally {
+      setCreatingVisit(false);
+    }
+};
 
   return (
     <SafeAreaView
@@ -136,30 +190,27 @@ export default function PatientOverviewScreen() {
           )}
         </View>
       </View>
-</ScrollView>
+    </ScrollView>
       <View style={styles.navigationBar}>
         <AppButton
           title="Back"
           variant="secondary"
           style={styles.backButton}
           onPress={() =>
-  router.replace("/existing-patients")
+            router.replace("/existing-patients")
           }
         />
 
         <AppButton
-          title="New Visit"
-          icon="add-outline"
-          style={styles.nextButton}
-          onPress={() =>
-            router.push({
-              pathname:
-                "/visit/HistoryScreen",
-              params: {
-                patientId,
-              },
-            })
+          title={
+            creatingVisit
+              ? "Starting..."
+              : "New Visit"
           }
+          icon="add-outline"
+          loading={creatingVisit}
+          style={styles.nextButton}
+          onPress={handleNewVisit}
         />
       </View>
       

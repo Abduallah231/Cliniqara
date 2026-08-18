@@ -56,6 +56,15 @@ export class VisitController {
     );
   }
 
+    @Get("today/count")
+    async getTodayVisitCount(
+      @CurrentUser() user: AuthenticatedUser,
+    ) {
+      return this.visitService.getTodayVisitCount(
+        user.id,
+      );
+    }
+
   // =========================
   // Visit Lifecycle
   // =========================
