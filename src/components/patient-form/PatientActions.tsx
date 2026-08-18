@@ -236,7 +236,6 @@ export default function PatientActions({
         const waitingVisit =
           await createWaitingVisit(
             patientResponse.id,
-            clinicId,
             selectedDoctorId,
           );
 
@@ -311,7 +310,6 @@ export default function PatientActions({
         const waitingVisit =
           await createWaitingVisit(
             patientResponse.id,
-            clinicId,
           );
 
         const startedVisit =
