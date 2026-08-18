@@ -28,10 +28,14 @@ import FamilyHistory from "./history/FamilyHistory";
 
 type Props = {
   patientId?: string;
+  visitId?: string;
+
 };
 
 export default function HistoryTab({
   patientId,
+  visitId,
+
 }: Props) {
   const patient = usePatientStore(
     (state) => state.currentPatient
@@ -98,6 +102,7 @@ export default function HistoryTab({
       <VisitHeaderCard
         sectionTitle="Medical History"
         icon="document-text-outline"
+        visitId={visitId}
       />
 
       <CollapsibleSection

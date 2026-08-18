@@ -5,7 +5,8 @@ import {
   Text,
   View,
 } from "react-native";
-
+import { useEffect, useState } from "react";
+import { getVisit } from "@/services/visitApi";
 import {
   COLORS,
   RADIUS,
@@ -18,15 +19,51 @@ import { usePatientStore } from "@/store/patientStore";
 type Props = {
   sectionTitle: string;
   icon: keyof typeof Ionicons.glyphMap;
+  visitId?: string;
 };
 
 export default function VisitHeaderCard({
   sectionTitle,
   icon,
+  visitId,
 }: Props) {
   const patient = usePatientStore(
     (state) => state.currentPatient
   );
+
+  const [visitCode, setVisitCode] =
+    useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadVisit = async () => {
+      if (!visitId) {
+        return;
+      }
+
+      try {
+        const visit = await getVisit(visitId);
+
+        if (mounted) {
+          setVisitCode(
+            visit.visitCode ?? null
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load visit:",
+          error
+        );
+      }
+    };
+
+    loadVisit();
+
+    return () => {
+      mounted = false;
+    };
+  }, [visitId]);
 
   const genderLabel =
     patient?.gender === "MALE"
@@ -127,6 +164,12 @@ export default function VisitHeaderCard({
             {patient?.patientCode ? (
               <Text style={styles.patientCode}>
                 Patient ID: {patient.patientCode}
+              </Text>
+            ) : null}
+
+            {visitCode ? (
+              <Text style={styles.visitCode}>
+                Visit Code: {visitCode}
               </Text>
             ) : null}
           </View>
@@ -268,5 +311,12 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
+  },
+
+  visitCode: {
+    marginTop: 3,
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.primary,
+    fontWeight: "600",
   },
 });

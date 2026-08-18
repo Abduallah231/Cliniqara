@@ -18,10 +18,12 @@ import VisitHeaderCard from "./VisitHeaderCard";
 
 type Props = {
   patientId?: string;
+  visitId?: string;
 };
 
 export default function ExaminationTab({
   patientId,
+  visitId,
 }: Props) {
   const setCurrentPatient = usePatientStore(
     (state) => state.setCurrentPatient
@@ -64,6 +66,7 @@ export default function ExaminationTab({
       <VisitHeaderCard
         sectionTitle="Medical Examination"
         icon="medkit-outline"
+        visitId={visitId}
       />
       <VitalSignsSection />
       <GeneralInspectionSection />

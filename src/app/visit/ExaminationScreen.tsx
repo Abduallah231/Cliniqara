@@ -5,18 +5,41 @@ import {
   COLORS,
   SPACING
 } from "@/theme";
-import { router } from "expo-router";
 import {
   StyleSheet,
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams } from "expo-router";
+import {
+  router,
+  useLocalSearchParams,
+} from "expo-router";
 
 export default function ExaminationScreen() {
-  const { patientId } = useLocalSearchParams<{
+  const {
+    patientId,
+    visitId,
+    visitCode,
+  } = useLocalSearchParams<{
     patientId?: string;
+    visitId?: string;
+    visitCode?: string;
   }>();
+
+  const resolvedPatientId =
+    Array.isArray(patientId)
+      ? patientId[0]
+      : patientId;
+
+  const resolvedVisitId =
+    Array.isArray(visitId)
+      ? visitId[0]
+      : visitId;
+
+  const resolvedVisitCode =
+    Array.isArray(visitCode)
+      ? visitCode[0]
+      : visitCode;
   
   return (
     <SafeAreaView
@@ -33,11 +56,8 @@ export default function ExaminationScreen() {
 
       <View style={styles.content}>
         <ExaminationTab
-          patientId={
-            Array.isArray(patientId)
-              ? patientId[0]
-              : patientId
-          }
+          patientId={resolvedPatientId}
+          visitId={resolvedVisitId}
         />
       </View>
 
@@ -54,11 +74,12 @@ export default function ExaminationScreen() {
           style={styles.nextButton}
           onPress={() =>
             router.push({
-              pathname: "/visit/AssessmentScreen",
+              pathname:
+                "/visit/AssessmentScreen",
               params: {
-                patientId: Array.isArray(patientId)
-                  ? patientId[0]
-                  : patientId,
+                patientId: resolvedPatientId,
+                visitId: resolvedVisitId,
+                visitCode: resolvedVisitCode,
               },
             })
           }

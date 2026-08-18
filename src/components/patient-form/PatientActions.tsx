@@ -336,15 +336,10 @@ export default function PatientActions({
         });
 
         router.replace({
-          pathname:
-            "/visit/HistoryScreen",
-
+          pathname: "/visit/HistoryScreen",
           params: {
-            patientId:
-              patientResponse.id,
-
-            visitId:
-              startedVisit.id,
+            patientId: patientResponse.id,
+            visitId: startedVisit.id,
           },
         });
       } catch (error) {

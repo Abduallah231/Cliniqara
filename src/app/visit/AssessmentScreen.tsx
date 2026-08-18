@@ -1,22 +1,106 @@
 import AppButton from "@/components/common/AppButton";
 import AppTopBar from "@/components/common/AppTopBar";
 import AssessmentTab from "@/components/visit/AssessmentTab";
-import { router } from "expo-router";
+
 import {
+  router,
+  useLocalSearchParams,
+} from "expo-router";
+
+import {
+  Alert,
   StyleSheet,
-  View
+  View,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useLocalSearchParams } from "expo-router";
+
 import {
   COLORS,
-  SPACING
+  SPACING,
 } from "@/theme";
 
+import { useState } from "react";
+
+import {
+  completeVisit,
+} from "@/services/visitApi";
+
+import {
+  getErrorMessage,
+} from "@/services/errorHandler";
+
 export default function AssessmentScreen() {
-  const { patientId } = useLocalSearchParams<{
+  const {
+    patientId,
+    visitId,
+    visitCode,
+  } = useLocalSearchParams<{
     patientId?: string;
+    visitId?: string;
+    visitCode?: string;
   }>();
+  const [
+    completingVisit,
+    setCompletingVisit,
+  ] = useState(false);
+
+  const resolvedPatientId =
+    Array.isArray(patientId)
+      ? patientId[0]
+      : patientId;
+
+  const resolvedVisitId =
+    Array.isArray(visitId)
+      ? visitId[0]
+      : visitId;
+
+  const resolvedVisitCode =
+    Array.isArray(visitCode)
+      ? visitCode[0]
+      : visitCode;
+
+  const handleCompleteVisit =
+    async () => {
+      /*
+       * Prevent duplicate requests.
+       */
+      if (completingVisit) {
+        return;
+      }
+
+      /*
+       * Visit ID is required to complete
+       * the backend visit.
+       */
+      if (!resolvedVisitId) {
+        Alert.alert(
+          "Unable to Save Visit",
+          "Visit information is missing. Please reopen the visit and try again.",
+        );
+        return;
+      }
+
+      try {
+        setCompletingVisit(true);
+
+        await completeVisit({
+          visitId: resolvedVisitId,
+        });
+
+        router.replace(
+          "/patient-overview",
+        );
+      } catch (error) {
+        Alert.alert(
+          "Unable to Save Visit",
+          getErrorMessage(error),
+        );
+      } finally {
+        setCompletingVisit(false);
+      }
+    };
+
   return (
     <SafeAreaView
       style={styles.container}
@@ -24,16 +108,20 @@ export default function AssessmentScreen() {
     >
       <AppTopBar
         title="Visit Assessment"
-        onBack={() => router.back()}
-        onRightPress={() => router.push("/settings")}
+        onBack={() => {
+          if (!completingVisit) {
+            router.back();
+          }
+        }}
+        onRightPress={() =>
+          router.push("/settings")
+        }
       />
+
       <View style={styles.content}>
         <AssessmentTab
-          patientId={
-            Array.isArray(patientId)
-              ? patientId[0]
-              : patientId
-          }
+          patientId={resolvedPatientId}
+          visitId={resolvedVisitId}
         />
       </View>
 
@@ -42,16 +130,25 @@ export default function AssessmentScreen() {
           title="Examination"
           variant="secondary"
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => {
+            if (!completingVisit) {
+              router.back();
+            }
+          }}
         />
 
         <AppButton
-          title="Save Visit"
+          title={
+            completingVisit
+              ? "Saving..."
+              : "Save Visit"
+          }
           icon="save-outline"
+          loading={completingVisit}
           style={styles.nextButton}
-          onPress={() => {
-            router.replace("/patient-overview");
-          }}
+          onPress={
+            handleCompleteVisit
+          }
         />
       </View>
     </SafeAreaView>
@@ -80,16 +177,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
 
-    
     padding: 4,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.15)",
+    backgroundColor:
+      "rgba(255,255,255,0.15)",
   },
 
   backButton: {
     width: 150,
     borderWidth: 1.5,
     borderColor: "#FFFFFF",
+
     shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowRadius: 10,
@@ -97,6 +195,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 4,
     },
+
     elevation: 6,
   },
 
@@ -104,6 +203,7 @@ const styles = StyleSheet.create({
     width: 150,
     borderWidth: 1.5,
     borderColor: "#FFFFFF",
+
     shadowColor: "#000",
     shadowOpacity: 0.18,
     shadowRadius: 10,
@@ -111,7 +211,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 4,
     },
+
     elevation: 6,
   },
-
 });

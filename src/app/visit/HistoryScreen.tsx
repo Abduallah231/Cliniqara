@@ -22,10 +22,31 @@ import {
 } from "@/theme";
 
 export default function HistoryScreen() {
-  const { patientId } =
-    useLocalSearchParams<{
-      patientId: string;
-    }>();
+  const {
+    patientId,
+    visitId,
+    visitCode,
+  } = useLocalSearchParams<{
+    patientId?: string;
+    visitId?: string;
+    visitCode?: string;
+  }>();
+
+  const resolvedPatientId =
+    Array.isArray(patientId)
+      ? patientId[0]
+      : patientId;
+
+  const resolvedVisitId =
+    Array.isArray(visitId)
+      ? visitId[0]
+      : visitId;
+
+  const resolvedVisitCode =
+    Array.isArray(visitCode)
+      ? visitCode[0]
+      : visitCode;
+
   useFocusEffect(() => {
   const onBackPress = () => {
     router.replace("/existing-patients");
@@ -49,7 +70,10 @@ export default function HistoryScreen() {
       />
 
       <View style={styles.content}>
-        <HistoryTab patientId={patientId} />
+        <HistoryTab
+          patientId={resolvedPatientId}
+          visitId={resolvedVisitId}
+        />
         </View>
         
         <View style={styles.navigationBar}>
@@ -64,7 +88,14 @@ export default function HistoryScreen() {
           title="Examination"
           style={styles.nextButton}
           onPress={() =>
-            router.push("/visit/ExaminationScreen")
+            router.push({
+              pathname: "/visit/ExaminationScreen",
+              params: {
+                patientId: resolvedPatientId,
+                visitId: resolvedVisitId,
+                visitCode: resolvedVisitCode,
+              },
+            })
           }
           />
         </View>

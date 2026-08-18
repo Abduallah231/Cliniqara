@@ -27,10 +27,12 @@ import { usePatientStore } from "@/store/patientStore";
 import { getPatient } from "@/services/patientApi";
 type Props = {
   patientId?: string;
+  visitId?: string;
 };
 
 export default function AssessmentTab({
   patientId,
+  visitId,
 }: Props) {
   const setCurrentPatient = usePatientStore(
     (state) => state.setCurrentPatient
@@ -82,6 +84,7 @@ export default function AssessmentTab({
       <VisitHeaderCard
         sectionTitle="Assessment"
         icon="clipboard-outline"
+        visitId={visitId}
       />
 
       <Pressable
