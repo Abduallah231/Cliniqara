@@ -1,13 +1,11 @@
-import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { View } from "react-native";
 
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 
-import { COLORS, SPACING } from "@/theme";
-import { useEffect } from "react";
 import { usePatientStore } from "@/store/patientStore";
-import { getPatient } from "@/services/patientApi";
+import { COLORS, SPACING } from "@/theme";
 import {
   isPediatric,
   shouldShowMenstrualHistory,
@@ -15,16 +13,16 @@ import {
 
 import VisitHeaderCard from "./VisitHeaderCard";
 
+import AllergyHistory from "./history/AllergyHistory";
 import ChiefComplaint from "./history/ChiefComplaint";
+import DrugHistory from "./history/DrugHistory";
+import FamilyHistory from "./history/FamilyHistory";
 import HPI from "./history/HPI";
+import MenstrualHistory from "./history/MenstrualHistory";
 import PastHistory from "./history/PastHistory";
 import PediatricHistory from "./history/PediatricHistory";
-import VaccinationHistory from "./history/VaccinationHistory";
-import MenstrualHistory from "./history/MenstrualHistory";
 import SocialHistory from "./history/SocialHistory";
-import DrugHistory from "./history/DrugHistory";
-import AllergyHistory from "./history/AllergyHistory";
-import FamilyHistory from "./history/FamilyHistory";
+import VaccinationHistory from "./history/VaccinationHistory";
 
 type Props = {
   patientId?: string;
@@ -40,44 +38,6 @@ export default function HistoryTab({
   const patient = usePatientStore(
     (state) => state.currentPatient
   );
-
-  const setCurrentPatient =
-    usePatientStore(
-      (state) => state.setCurrentPatient
-    );
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadPatient = async () => {
-      if (!patientId) {
-        return;
-      }
-
-      try {
-        const data =
-          await getPatient(patientId);
-
-        if (mounted) {
-          setCurrentPatient(data);
-        }
-      } catch (error) {
-        console.error(
-          "Failed to load patient:",
-          error
-        );
-      }
-    };
-
-    loadPatient();
-
-    return () => {
-      mounted = false;
-    };
-  }, [
-    patientId,
-    setCurrentPatient,
-  ]);
 
     const pediatric = isPediatric(
     patient?.estimatedAgeValue ?? null,

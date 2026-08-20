@@ -11,9 +11,6 @@ import GeneralInspectionSection from "./examination/sections/GeneralInspectionSe
 import RegionalExaminationSection from "./examination/sections/RegionalExaminationSection";
 import SystemExaminationSection from "./examination/sections/SystemExaminationSection";
 import VitalSignsSection from "./examination/sections/VitalSignsSection";
-import { useEffect } from "react";
-import { usePatientStore } from "@/store/patientStore";
-import { getPatient } from "@/services/patientApi";
 import VisitHeaderCard from "./VisitHeaderCard";
 
 type Props = {
@@ -25,38 +22,6 @@ export default function ExaminationTab({
   patientId,
   visitId,
 }: Props) {
-  const setCurrentPatient = usePatientStore(
-    (state) => state.setCurrentPatient
-  );
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadPatient = async () => {
-      if (!patientId) {
-        return;
-      }
-
-      try {
-        const data = await getPatient(patientId);
-
-        if (mounted) {
-          setCurrentPatient(data);
-        }
-      } catch (error) {
-        console.error(
-          "Failed to load patient:",
-          error
-        );
-      }
-    };
-
-    loadPatient();
-
-    return () => {
-      mounted = false;
-    };
-  }, [patientId, setCurrentPatient]);
   return (
     <AppKeyboardAwareScrollView
       style={styles.container}

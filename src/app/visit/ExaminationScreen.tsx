@@ -12,10 +12,65 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   router,
+  useFocusEffect,
   useLocalSearchParams,
 } from "expo-router";
-
+import { useRef, useState, useCallback } from "react";
 export default function ExaminationScreen() {
+  const [navigating, setNavigating] = useState<
+      "back" | "next" | null
+    >(null);
+  
+    const navigationLock = useRef(false);
+  
+    useFocusEffect(
+      useCallback(() => {
+        // Reset navigation state whenever the screen becomes active again
+        navigationLock.current = false;
+        setNavigating(null);
+  
+        return () => {
+          // Unlock when leaving the screen
+          navigationLock.current = false;
+          setNavigating(null);
+        };
+      }, [])
+    );
+  
+    console.log("HISTORY NAVIGATING:", navigating);
+  
+      const handleBack = () => {
+        if (navigationLock.current) {
+          return;
+        }
+
+        navigationLock.current = true;
+        setNavigating("back");
+
+        router.back();
+      };
+
+      const handleGoToAssessment = () => {
+        if (navigationLock.current) {
+          return;
+        }
+
+        if (!resolvedPatientId || !resolvedVisitId) {
+          return;
+        }
+
+        navigationLock.current = true;
+        setNavigating("next");
+
+        router.push({
+          pathname: "/visit/AssessmentScreen",
+          params: {
+            patientId: resolvedPatientId,
+            visitId: resolvedVisitId,
+            visitCode: resolvedVisitCode,
+          },
+        });
+      };
   const {
     patientId,
     visitId,
@@ -61,28 +116,22 @@ export default function ExaminationScreen() {
         />
       </View>
 
-      <View style={styles.navigationBar}>
+      <View style={styles.floatingActions}>
         <AppButton
           title="History"
           variant="secondary"
-          style={styles.backButton}
-          onPress={() => router.back()}
+          loading={navigating === "back"}
+          disabled={navigating !== null}
+          style={styles.floatingBackButton}
+          onPress={handleBack}
         />
 
         <AppButton
           title="Assessment"
-          style={styles.nextButton}
-          onPress={() =>
-            router.push({
-              pathname:
-                "/visit/AssessmentScreen",
-              params: {
-                patientId: resolvedPatientId,
-                visitId: resolvedVisitId,
-                visitCode: resolvedVisitCode,
-              },
-            })
-          }
+          style={styles.floatingNextButton}
+          loading={navigating === "next"}
+          disabled={navigating !== null}
+          onPress={handleGoToAssessment}
         />
       </View>
     </SafeAreaView>
@@ -102,48 +151,46 @@ const styles = StyleSheet.create({
     
   },
 
-  navigationBar: {
+  floatingActions: {
     position: "absolute",
     left: SPACING.lg,
     right: SPACING.lg,
     bottom: SPACING.xl,
 
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-
-    
-    padding: 4,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
   },
 
-  backButton: {
+  floatingBackButton: {
     width: 110,
-    borderWidth: 1.5,
-    borderColor: "#FFFFFF",
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    borderRadius: 16,
+
+    elevation: 7,
+    borderWidth: 5,
+    borderColor: COLORS.background,
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    elevation: 6,
   },
 
-  nextButton: {
+  floatingNextButton: {
     width: 150,
-    borderWidth: 1.5,
-    borderColor: "#FFFFFF",
-    shadowColor: "#000",
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
+    borderRadius: 16,
+    elevation: 7,
+    borderWidth: 5,
+    borderColor: COLORS.background,
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    elevation: 6,
   },
 
 });

@@ -9,7 +9,7 @@ import {
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { useRef, useState, useCallback } from "react";
 import AppButton from "@/components/common/AppButton";
 import AppTopBar from "@/components/common/AppTopBar";
 
@@ -22,6 +22,61 @@ import {
 } from "@/theme";
 
 export default function HistoryScreen() {
+  const [navigating, setNavigating] = useState<
+    "back" | "next" | null
+  >(null);
+
+  const navigationLock = useRef(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Reset navigation state whenever the screen becomes active again
+      navigationLock.current = false;
+      setNavigating(null);
+
+      return () => {
+        // Unlock when leaving the screen
+        navigationLock.current = false;
+        setNavigating(null);
+      };
+    }, [])
+  );
+
+  console.log("HISTORY NAVIGATING:", navigating);
+
+    const handleBack = () => {
+    if (navigationLock.current) {
+      return;
+    }
+
+    navigationLock.current = true;
+    setNavigating("back");
+
+    router.replace("/(app)");
+  };
+
+  const handleGoToExamination = () => {
+    if (navigationLock.current) {
+      return;
+    }
+
+    if (!resolvedPatientId || !resolvedVisitId) {
+      return;
+    }
+
+    navigationLock.current = true;
+    setNavigating("next");
+
+    router.push({
+      pathname: "/visit/ExaminationScreen",
+      params: {
+        patientId: resolvedPatientId,
+        visitId: resolvedVisitId,
+        visitCode: resolvedVisitCode,
+      },
+    });
+  };
+
   const {
     patientId,
     visitId,
@@ -76,29 +131,24 @@ export default function HistoryScreen() {
         />
         </View>
         
-        <View style={styles.navigationBar}>
+        <View style={styles.floatingActions}>
         <AppButton
           title="Back"
           variant="secondary"
-          style={styles.backButton}
+          loading={navigating === "back"}
+          disabled={navigating !== null}
+          style={styles.floatingBackButton}
           onPress={() => router.replace("/(app)")}
         />
 
         <AppButton
           title="Examination"
-          style={styles.nextButton}
-          onPress={() =>
-            router.push({
-              pathname: "/visit/ExaminationScreen",
-              params: {
-                patientId: resolvedPatientId,
-                visitId: resolvedVisitId,
-                visitCode: resolvedVisitCode,
-              },
-            })
-          }
-          />
-        </View>
+          loading={navigating === "next"}
+          disabled={navigating !== null}
+          style={styles.floatingNextButton}
+          onPress={handleGoToExamination}
+        />
+      </View>
       
     </SafeAreaView>
   );
@@ -119,48 +169,49 @@ const styles = StyleSheet.create({
     
   },
 
-  navigationBar: {
+  floatingActions: {
     position: "absolute",
     left: SPACING.lg,
     right: SPACING.lg,
     bottom: SPACING.xl,
 
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    alignItems: "center",
 
-    
-    padding: 4,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.15)",
+    pointerEvents: "box-none",
   },
 
-  backButton: {
+  floatingBackButton: {
     width: 110,
-    borderWidth: 1.5,
-    borderColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 5,
+    borderColor: COLORS.background,
+    elevation: 7,
+
     shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    elevation: 6,
   },
 
-  nextButton: {
+  floatingNextButton: {
     width: 150,
-    borderWidth: 1.5,
-    borderColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 5,
+    borderColor: COLORS.background,
+    elevation: 7,
+
     shadowColor: "#000",
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    elevation: 6,
   },
 
 });

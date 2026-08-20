@@ -56,14 +56,27 @@ export class VisitController {
     );
   }
 
-    @Get("today/count")
-    async getTodayVisitCount(
-      @CurrentUser() user: AuthenticatedUser,
-    ) {
-      return this.visitService.getTodayVisitCount(
-        user.id,
-      );
-    }
+  @Get("patient/:patientId/open")
+  async getOpenPatientVisit(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("patientId") patientId: string,
+  ) {
+    return this.visitService.getOpenPatientVisit(
+      patientId,
+      user.id,
+    );
+  }
+
+  @Get("today/count")
+  async getTodayVisitCount(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query("clinicId") clinicId: string,
+  ) {
+    return this.visitService.getTodayVisitCount(
+      clinicId,
+      user.id,
+    );
+  }
 
   // =========================
   // Visit Lifecycle

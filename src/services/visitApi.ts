@@ -2,7 +2,8 @@ import type {
   CancelVisitInput,
   ChangeDoctorInput,
   CompleteVisitInput,
-  Visit
+  WaitingVisit,
+  Visit,
 } from "@/types/visit";
 import { api } from "./api";
 
@@ -25,7 +26,7 @@ export async function createWaitingVisit(
 
 export async function getWaitingVisits(
   clinicId: string,
-): Promise<Visit[]> {
+): Promise<WaitingVisit[]> {
   const { data } = await api.get(
     "/visits/waiting",
     {
@@ -38,9 +39,26 @@ export async function getWaitingVisits(
   return data;
 }
 
-export async function getTodayVisitCount(): Promise<number> {
+export async function getOpenPatientVisit(
+  patientId: string,
+): Promise<Visit | null> {
+  const { data } = await api.get(
+    `/visits/patient/${patientId}/open`,
+  );
+
+  return data;
+}
+
+export async function getTodayVisitCount(
+  clinicId: string,
+): Promise<number> {
   const { data } = await api.get(
     "/visits/today/count",
+    {
+      params: {
+        clinicId,
+      },
+    },
   );
 
   return data.count;

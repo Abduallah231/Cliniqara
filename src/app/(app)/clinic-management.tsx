@@ -80,7 +80,9 @@ export default function ClinicManagementScreen() {
       phone: "",
       email: "",
       governorate: "",
+      otherGovernorate: "",
       city: "",
+      otherCity: "",
       district: "",
       streetAddress: "",
     });
@@ -148,10 +150,11 @@ export default function ClinicManagementScreen() {
       phone: clinic.phone,
       email: clinic.email ?? "",
       governorate: clinic.governorate ?? "",
+      otherGovernorate: "",
       city: clinic.city ?? "",
+      otherCity: "",
       district: clinic.district ?? "",
-      streetAddress:
-        clinic.streetAddress ?? "",
+      streetAddress: clinic.streetAddress ?? "",
     });
 
     setWorkingDays(

@@ -182,6 +182,7 @@ export class VisitService {
 });
 return visit;
 }
+
 async startVisit(
   dto: StartVisitDto,
   currentUserId: string,
@@ -472,13 +473,51 @@ async startVisit(
     });
   }
 
+  async getOpenPatientVisit(
+    patientId: string,
+    currentUserId: string,
+  ) {
+    const clinicId =
+      await this.getActiveClinicId(currentUserId);
+
+    const visit =
+      await this.prisma.visit.findFirst({
+        where: {
+          patientId,
+          clinicId,
+          visitStatus: {
+            in: [
+              VisitStatus.WAITING,
+              VisitStatus.IN_PROGRESS,
+            ],
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+    return visit;
+  }
+
   async getTodayVisitCount(
+    clinicId: string,
     currentUserId: string,
   ): Promise<{ count: number }> {
-    const clinicId =
-      await this.getActiveClinicId(
-        currentUserId,
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId,
+          status: "ACTIVE",
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
       );
+    }
 
     const now = new Date();
 

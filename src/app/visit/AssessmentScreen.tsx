@@ -1,7 +1,7 @@
 import AppButton from "@/components/common/AppButton";
 import AppTopBar from "@/components/common/AppTopBar";
 import AssessmentTab from "@/components/visit/AssessmentTab";
-
+import { usePatientStore } from "@/store/patientStore";
 import {
   router,
   useLocalSearchParams,
@@ -125,15 +125,17 @@ export default function AssessmentScreen() {
         />
       </View>
 
-      <View style={styles.navigationBar}>
+      <View style={styles.floatingActions}>
         <AppButton
           title="Examination"
           variant="secondary"
-          style={styles.backButton}
+          disabled={completingVisit}
+          loading={false}
+          style={styles.floatingBackButton}
           onPress={() => {
-            if (!completingVisit) {
-              router.back();
-            }
+            if (completingVisit) return;
+
+            router.back();
           }}
         />
 
@@ -145,10 +147,8 @@ export default function AssessmentScreen() {
           }
           icon="save-outline"
           loading={completingVisit}
-          style={styles.nextButton}
-          onPress={
-            handleCompleteVisit
-          }
+          style={styles.floatingNextButton}
+          onPress={handleCompleteVisit}
         />
       </View>
     </SafeAreaView>
@@ -167,51 +167,47 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
 
-  navigationBar: {
+  floatingActions: {
     position: "absolute",
     left: SPACING.lg,
     right: SPACING.lg,
     bottom: SPACING.xl,
 
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-
-    padding: 4,
-    borderRadius: 20,
-    backgroundColor:
-      "rgba(255,255,255,0.15)",
+    alignItems: "center",
   },
 
-  backButton: {
+  floatingBackButton: {
     width: 150,
-    borderWidth: 1.5,
-    borderColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 5,
+    borderColor: COLORS.background,
+    elevation: 7,
 
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-
-    elevation: 6,
   },
 
-  nextButton: {
+  floatingNextButton: {
     width: 150,
-    borderWidth: 1.5,
-    borderColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 5,
+    borderColor: COLORS.background,
+    elevation: 7,
 
-    shadowColor: "#000",
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-
-    elevation: 6,
   },
+
 });

@@ -44,6 +44,17 @@ type WaitingVisit = {
 };
 
 export default function DashboardScreen() {
+  const doctor = useDoctorStore(
+    (state) => state.doctor
+  );
+
+  const currentClinic = useClinicStore(
+    (state) => state.currentClinic
+  );
+
+  const clinic =
+    currentClinic?.clinic ?? null;
+
   const [todayVisitCount, setTodayVisitCount] =
     useState(0);
 
@@ -55,11 +66,16 @@ export default function DashboardScreen() {
       let mounted = true;
 
       const loadTodayVisitCount = async () => {
+        if (!clinic?.id) {
+          setTodayVisitCount(0);
+          return;
+        }
+
         try {
           setLoadingTodayVisits(true);
 
           const count =
-            await getTodayVisitCount();
+            await getTodayVisitCount(clinic.id);
 
           if (mounted) {
             setTodayVisitCount(count);
@@ -81,20 +97,9 @@ export default function DashboardScreen() {
       return () => {
         mounted = false;
       };
-    }, []),
+    }, [clinic?.id]),
   );
-
-  const doctor = useDoctorStore(
-    (state) => state.doctor
-  );
-
-  const currentClinic = useClinicStore(
-    (state) => state.currentClinic
-  );
-
-  const clinic =
-    currentClinic?.clinic ?? null;
-
+  
   const [isGuest, setIsGuest] =
     useState(!doctor);
 

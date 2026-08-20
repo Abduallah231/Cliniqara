@@ -188,13 +188,22 @@ function getVariant(type: Variant) {
     default:
       return {
         accent: COLORS.primary,
-        background: "#F8FBFF",
-        border: "#D8E8FF",
+        background: COLORS.background,
+        border: COLORS.border,
       };
   }
 }
 const styles = StyleSheet.create({
   pressedCard: {
+    opacity: 0.82,
+    transform: [
+      {
+        scale: 0.985,
+      },
+    ],
+  },
+
+  pressed: {
     opacity: 0.82,
     transform: [
       {

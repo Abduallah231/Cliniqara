@@ -20,9 +20,7 @@ import {
 
 import AppEmptyState from "@/components/common/AppEmptyState";
 import AppTopBar from "@/components/common/AppTopBar";
-import WaitingFilters, {
-  WaitingFilter,
-} from "@/components/waiting-list/WaitingFilters";
+import WaitingFilters, { WaitingFilter, } from "@/components/waiting-list/WaitingFilters";
 import WaitingPatientCard from "@/components/waiting-list/WaitingPatientCard";
 import WaitingSummary from "@/components/waiting-list/WaitingSummary";
 import { getWaitingVisits } from "@/services/visitApi";

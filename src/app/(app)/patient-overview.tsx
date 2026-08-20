@@ -5,8 +5,9 @@ import {
 import {
   createWaitingVisit,
   startVisit,
+  getOpenPatientVisit,
 } from "@/services/visitApi";
-
+import type { Visit } from "@/types/visit";
 import {
   getErrorMessage,
 } from "@/services/errorHandler";
@@ -16,6 +17,7 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
+  ActivityIndicator,
   Alert,
   BackHandler,
   ScrollView,
@@ -84,6 +86,13 @@ export default function PatientOverviewScreen() {
           if (mounted) {
             setCurrentPatient(patient);
           }
+
+          const visit =
+            await getOpenPatientVisit(patient.id);
+
+          if (mounted) {
+            setOpenVisit(visit);
+          }
         } catch (error) {
           console.error(
             "Failed to load patient:",
@@ -106,6 +115,12 @@ export default function PatientOverviewScreen() {
     useState<PatientOverviewTab>(
       "overview"
     );
+
+  const [openVisit, setOpenVisit] =
+    useState<Visit | null>(null);
+
+  const [visitActionLoading, setVisitActionLoading] =
+    useState(false);
 
   const [ creatingVisit, setCreatingVisit, ] = useState(false);
 
@@ -154,7 +169,76 @@ export default function PatientOverviewScreen() {
     } finally {
       setCreatingVisit(false);
     }
-};
+  };
+
+  const handleVisitAction = async () => {
+    if (visitActionLoading) {
+      return;
+    }
+
+    try {
+      setVisitActionLoading(true);
+
+      if (!openVisit) {
+        if (!patientId) {
+          Alert.alert(
+            "Unable to Start Visit",
+            "Patient information is missing."
+          );
+          return;
+        }
+
+        const waitingVisit =
+          await createWaitingVisit(patientId);
+
+        const startedVisit =
+          await startVisit(waitingVisit.id);
+
+        router.push({
+          pathname: "/visit/HistoryScreen",
+          params: {
+            patientId,
+            visitId: startedVisit.id,
+          },
+        });
+
+        return;
+      }
+
+      if (openVisit.visitStatus === "WAITING") {
+        const startedVisit = await startVisit(
+          openVisit.id,
+        );
+
+        router.push({
+          pathname: "/visit/HistoryScreen",
+          params: {
+            patientId,
+            visitId: startedVisit.id,
+          },
+        });
+
+        return;
+      }
+
+      if (openVisit.visitStatus === "IN_PROGRESS") {
+        router.push({
+          pathname: "/visit/HistoryScreen",
+          params: {
+            patientId,
+            visitId: openVisit.id,
+          },
+        });
+      }
+    } catch (error) {
+      Alert.alert(
+        "Unable to Open Visit",
+        "Please try again.",
+      );
+    } finally {
+      setVisitActionLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView
@@ -203,14 +287,24 @@ export default function PatientOverviewScreen() {
 
         <AppButton
           title={
-            creatingVisit
-              ? "Starting..."
-              : "New Visit"
+            visitActionLoading
+              ? "Loading..."
+              : !openVisit
+                ? "New Visit"
+                : openVisit.visitStatus === "WAITING"
+                  ? "Start Visit"
+                  : "Continue Visit"
           }
-          icon="add-outline"
-          loading={creatingVisit}
+          icon={
+            !openVisit
+              ? "add-outline"
+              : openVisit.visitStatus === "WAITING"
+                ? "play-outline"
+                : "arrow-forward-outline"
+          }
+          loading={visitActionLoading}
           style={styles.nextButton}
-          onPress={handleNewVisit}
+          onPress={handleVisitAction}
         />
       </View>
       
@@ -262,7 +356,7 @@ const styles = StyleSheet.create({
 
     borderWidth: 1.5,
 
-    borderColor: "#FFFFFF",
+    borderColor: COLORS.border,
 
     shadowColor: "#000",
 
@@ -283,9 +377,9 @@ const styles = StyleSheet.create({
 
     borderWidth: 1.5,
 
-    borderColor: "#FFFFFF",
+    borderColor: COLORS.border,
 
-    shadowColor: "#000",
+    shadowColor: COLORS.black,
 
     shadowOpacity: 0.18,
 

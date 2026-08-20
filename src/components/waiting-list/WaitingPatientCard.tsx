@@ -6,7 +6,8 @@ import {
   Text,
   View,
 } from "react-native";
-
+import { getPatient } from "@/services/patientApi";
+import { usePatientStore } from "@/store/patientStore";
 import {
   useEffect,
   useState,
@@ -150,6 +151,10 @@ function getStatusLabel(
 export default function WaitingPatientCard({
   patient,
 }: Props) {
+
+  const setCurrentPatient = usePatientStore(
+    (state) => state.setCurrentPatient
+  );
   /*
    * ==========================================
    * WAITING TIMER
@@ -302,65 +307,66 @@ export default function WaitingPatientCard({
    * ==========================================
    */
 
-  const handleVisitAction =
-    async () => {
+  const handleVisitAction = async () => {
+    if (starting) {
+      return;
+    }
+
+    try {
+      setStarting(true);
+
       /*
-       * If already With Doctor,
-       * we DO NOT call startVisit again.
-       *
-       * We simply continue the existing visit.
-       */
-      if (
-        patient.status ===
-        "With Doctor"
-      ) {
+      * Load the full patient exactly like
+      * Patient Overview does.
+      */
+      const patientData = await getPatient(
+        patient.patientId
+      );
+
+      setCurrentPatient(patientData);
+
+      /*
+      * Already in progress:
+      * just continue the existing visit.
+      */
+      if (patient.status === "With Doctor") {
         router.push({
-          pathname:
-            "/visit/HistoryScreen",
+          pathname: "/visit/HistoryScreen",
           params: {
-            patientId:
-              patient.patientId,
-            visitId:
-              patient.visitId,
+            patientId: patient.patientId,
+            visitId: patient.visitId,
+            visitCode: patient.visitCode,
           },
         });
 
         return;
       }
 
-      if (starting) {
-        return;
-      }
+      /*
+      * Waiting:
+      * start the visit first, then open it.
+      */
+      const visit = await startVisit(
+        patient.visitId
+      );
 
-      try {
-        setStarting(true);
-
-        const visit =
-          await startVisit(
-            patient.visitId,
-          );
-
-        router.replace({
-          pathname:
-            "/visit/HistoryScreen",
-          params: {
-            patientId:
-              patient.patientId,
-            visitId:
-              visit.id,
-          },
-        });
-      } catch (error) {
-        Alert.alert(
-          "Unable to Start Visit",
-          getErrorMessage(
-            error,
-          ),
-        );
-      } finally {
-        setStarting(false);
-      }
-    };
+      router.replace({
+        pathname: "/visit/HistoryScreen",
+        params: {
+          patientId: patient.patientId,
+          visitId: visit.id,
+          visitCode: visit.visitCode,
+        },
+      });
+    } catch (error) {
+      Alert.alert(
+        "Unable to Open Visit",
+        getErrorMessage(error)
+      );
+    } finally {
+      setStarting(false);
+    }
+  };
 
   const isWithDoctor =
     patient.status ===

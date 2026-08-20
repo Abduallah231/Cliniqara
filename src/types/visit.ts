@@ -35,6 +35,21 @@ export interface CreateWaitingVisitInput {
   doctorId?: string;
 }
 
+export type WaitingVisit = Visit & {
+  patient: {
+    id: string;
+    patientCode: string;
+    fullName: string;
+  };
+
+  doctor: {
+    id: string;
+    fullName: string;
+  };
+
+  startedAt?: string | null;
+};
+
 export interface StartVisitInput {
   visitId: string;
 }
