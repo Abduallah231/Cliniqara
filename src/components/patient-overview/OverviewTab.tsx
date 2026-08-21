@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import {
   ScrollView,
   StyleSheet,
@@ -5,7 +6,6 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 import AppCard from "@/components/common/AppCard";
 

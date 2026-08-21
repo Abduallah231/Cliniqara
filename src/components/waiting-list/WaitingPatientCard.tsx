@@ -1,5 +1,11 @@
-import { router } from "expo-router";
+import { getPatient } from "@/services/patientApi";
+import { usePatientStore } from "@/store/patientStore";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { router } from "expo-router";
+import {
+  useEffect,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -9,14 +15,8 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View
 } from "react-native";
-import { getPatient } from "@/services/patientApi";
-import { usePatientStore } from "@/store/patientStore";
-import {
-  useEffect,
-  useState,
-} from "react";
 
 import {
   getClinicMembers,
@@ -27,18 +27,18 @@ import type {
 } from "@/types/clinic";
 
 import {
-  startVisit,
   cancelVisit,
   changeDoctor,
+  startVisit,
 } from "@/services/visitApi";
 
+import AppButton from "@/components/common/AppButton";
+import AppCard from "@/components/common/AppCard";
 import {
   getErrorMessage,
 } from "@/services/errorHandler";
-import { useDoctorStore } from "@/store/doctorStore";
 import { useClinicStore } from "@/store/clinicStore";
-import AppButton from "@/components/common/AppButton";
-import AppCard from "@/components/common/AppCard";
+import { useDoctorStore } from "@/store/doctorStore";
 
 import {
   COLORS,
@@ -73,6 +73,7 @@ type WaitingPatient = {
 
 type Props = {
   patient: WaitingPatient;
+  onRefresh: () => Promise<void>;
 };
 
 function formatTime(
@@ -166,6 +167,7 @@ function getStatusLabel(
 
 export default function WaitingPatientCard({
   patient,
+  onRefresh,
 }: Props) {
 
   const setCurrentPatient = usePatientStore(
@@ -503,6 +505,7 @@ export default function WaitingPatientCard({
           doctorId:
             selectedDoctorId,
         });
+        await onRefresh();
 
         setDoctorModalVisible(false);
         setSelectedDoctorId(null);
@@ -953,9 +956,10 @@ export default function WaitingPatientCard({
         <AppButton
           title="Overview"
           variant="secondary"
-          style={
-            styles.button
-          }
+          style={[
+            styles.button,
+
+          ]}
           onPress={() =>
             router.push({
               pathname:
@@ -972,10 +976,14 @@ export default function WaitingPatientCard({
           title="Cancel Visit"
           variant="secondary"
           loading={cancelling}
-          style={styles.button}
+          style={[
+            styles.button,
+
+          ]}
           disabled={
             starting ||
-            cancelling
+            cancelling ||
+            (!isAssignedDoctor && !isOwner && !isAssistant)
           }
           onPress={handleCancelVisit}
         />
@@ -988,7 +996,10 @@ export default function WaitingPatientCard({
               loadingDoctors ||
               changingDoctor
             }
-            style={styles.button}
+            style={[
+              styles.button,
+
+            ]}
             disabled={
               starting ||
               cancelling ||
@@ -1010,7 +1021,10 @@ export default function WaitingPatientCard({
               : "Start Visit"
           }
           loading={starting}
-          style={styles.button}
+          style={[
+            styles.button,
+
+          ]}
           disabled={
             starting ||
             !isAssignedDoctor
@@ -1134,7 +1148,7 @@ export default function WaitingPatientCard({
                 title="Close"
                 variant="secondary"
                 disabled={cancelling}
-                style={styles.closeButton}
+                style={styles.cancelCloseButton}
                 onPress={() =>
                   setShowCancelReasons(false)
                 }
@@ -1157,7 +1171,7 @@ export default function WaitingPatientCard({
         <View style={styles.modalOverlay}>
           <View style={styles.doctorModal}>
             <View style={styles.doctorHeader}>
-              <View>
+              <View style={styles.doctorHeaderContent}>
                 <Text
                   style={styles.doctorTitle}
                 >
@@ -1393,12 +1407,12 @@ const styles =
         SPACING.sm,
       paddingVertical: 5,
       backgroundColor:
-        "#EAF7EE",
+        COLORS.background,
     },
 
     inProgressBadge: {
       backgroundColor:
-        "#FFF4E5",
+        COLORS.background,
     },
 
     statusText: {
@@ -1495,16 +1509,18 @@ const styles =
     },
 
     buttonRow: {
-      flexDirection:
-        "row",
-      gap:
-        SPACING.sm,
-      marginTop:
-        SPACING.lg,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignItems: "center",
+      gap: SPACING.sm,
+      marginTop: SPACING.lg,
     },
 
     button: {
-      flex: 1,
+      flexGrow: 1,
+      minWidth: 0,
+      flexShrink: 0,
+      width: "auto",
     },
 
     queueRow: {
@@ -1662,6 +1678,7 @@ const styles =
     closeButton: {
       width: 40,
       height: 40,
+      flexShrink: 0,
       borderRadius: 20,
       alignItems: "center",
       justifyContent: "center",
@@ -1681,6 +1698,11 @@ const styles =
       alignItems: "flex-start",
       justifyContent: "space-between",
       marginBottom: SPACING.lg,
+    },
+
+    doctorHeaderContent: {
+      flex: 1,
+      paddingRight: SPACING.sm,
     },
 
     doctorTitle: {
@@ -1768,5 +1790,13 @@ const styles =
       color: COLORS.white,
       fontSize: TYPOGRAPHY.body,
       fontWeight: "700",
+    },
+
+    disabledButton: {
+      opacity: 0.5,
+    },
+
+    cancelCloseButton: {
+      width: "100%",
     },
   });

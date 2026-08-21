@@ -466,6 +466,7 @@ export default function WaitingListScreen() {
           }) => (
             <WaitingPatientCard
               patient={item}
+              onRefresh={loadWaitingVisits}
             />
           )}
           ItemSeparatorComponent={() => (
