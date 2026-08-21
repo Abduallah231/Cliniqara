@@ -1,9 +1,14 @@
 import { router } from "expo-router";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {
+  ActivityIndicator,
   Alert,
+  Modal,
+  Pressable,
+  ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { getPatient } from "@/services/patientApi";
@@ -14,13 +19,24 @@ import {
 } from "react";
 
 import {
+  getClinicMembers,
+} from "@/services/clinicApi";
+
+import type {
+  ClinicMember,
+} from "@/types/clinic";
+
+import {
   startVisit,
+  cancelVisit,
+  changeDoctor,
 } from "@/services/visitApi";
 
 import {
   getErrorMessage,
 } from "@/services/errorHandler";
-
+import { useDoctorStore } from "@/store/doctorStore";
+import { useClinicStore } from "@/store/clinicStore";
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 
@@ -155,6 +171,30 @@ export default function WaitingPatientCard({
   const setCurrentPatient = usePatientStore(
     (state) => state.setCurrentPatient
   );
+
+  const doctor = useDoctorStore(
+    (state) => state.doctor
+  );
+
+  const currentClinic = useClinicStore(
+    (state) => state.currentClinic
+  );
+
+  const currentUserId = doctor?.id ?? null;
+
+  const isOwner =
+    currentClinic?.role === "OWNER";
+
+  const isAssistant =
+    doctor?.accountType === "RECEPTION";
+
+  const isAssignedDoctor =
+    !!currentUserId &&
+    patient.doctorId === currentUserId;
+
+  const canChangeDoctor =
+    isOwner || isAssistant;
+    
   /*
    * ==========================================
    * WAITING TIMER
@@ -301,14 +341,190 @@ export default function WaitingPatientCard({
     setStarting,
   ] = useState(false);
 
+  const [
+    cancelling,
+    setCancelling,
+  ] = useState(false);
+
+  const [
+    showCancelReasons,
+    setShowCancelReasons,
+  ] = useState(false);
+
+  const [
+    selectedCancelReasons,
+    setSelectedCancelReasons,
+  ] = useState<string[]>([]);
+
+  const [
+    customCancelReason,
+    setCustomCancelReason,
+  ] = useState("");
+
+  const [
+    doctorModalVisible,
+    setDoctorModalVisible,
+  ] = useState(false);
+
+  const [
+    doctors,
+    setDoctors,
+  ] = useState<ClinicMember[]>([]);
+
+  const [
+    selectedDoctorId,
+    setSelectedDoctorId,
+  ] = useState<string | null>(null);
+
+  const [
+    loadingDoctors,
+    setLoadingDoctors,
+  ] = useState(false);
+
+  const [
+    changingDoctor,
+    setChangingDoctor,
+  ] = useState(false);
+
   /*
    * ==========================================
    * START / CONTINUE VISIT
    * ==========================================
    */
 
+  const cancellationReasons = [
+    "Patient left before consultation",
+    "Patient requested cancellation",
+    "Duplicate visit",
+    "Wrong patient / incorrect registration",
+    "Doctor unavailable",
+    "Clinic closed",
+    "Other reason",
+  ];
+
+  /*
+  * ==========================================
+  * CHANGE DOCTOR
+  * ==========================================
+  */
+
+  const handleChangeDoctor = async () => {
+    if (
+      !canChangeDoctor ||
+      starting ||
+      cancelling ||
+      changingDoctor ||
+      loadingDoctors
+    ) {
+      return;
+    }
+
+    try {
+      setLoadingDoctors(true);
+
+      const clinicId =
+        currentClinic?.clinic.id;
+
+      if (!clinicId) {
+        throw new Error(
+          "No clinic selected.",
+        );
+      }
+
+      const members =
+        await getClinicMembers(
+          clinicId,
+        );
+
+      const clinicDoctors =
+        members.filter(
+          (member) =>
+            member.status === "ACTIVE" &&
+            member.user.accountType ===
+              "DOCTOR",
+        );
+
+      if (clinicDoctors.length === 0) {
+        Alert.alert(
+          "No Doctors Available",
+          "There are no active doctors in this clinic.",
+        );
+        return;
+      }
+
+      setDoctors(clinicDoctors);
+
+      /*
+      * Keep the current doctor selected
+      * initially so the user can clearly
+      * see the current assignment.
+      */
+      setSelectedDoctorId(
+        patient.doctorId,
+      );
+
+      setDoctorModalVisible(true);
+    } catch (error) {
+      Alert.alert(
+        "Unable to Load Doctors",
+        getErrorMessage(error),
+      );
+    } finally {
+      setLoadingDoctors(false);
+    }
+  };
+
+  const handleConfirmDoctor =
+    async () => {
+      if (
+        !selectedDoctorId ||
+        changingDoctor
+      ) {
+        return;
+      }
+
+      if (
+        selectedDoctorId ===
+        patient.doctorId
+      ) {
+        Alert.alert(
+          "Doctor Already Assigned",
+          "This visit is already assigned to this doctor.",
+        );
+        return;
+      }
+
+      try {
+        setChangingDoctor(true);
+
+        await changeDoctor({
+          visitId:
+            patient.visitId,
+          doctorId:
+            selectedDoctorId,
+        });
+
+        setDoctorModalVisible(false);
+        setSelectedDoctorId(null);
+
+        /*
+        * The waiting list screen already
+        * reloads when it becomes active.
+        * We close the modal here and let
+        * the parent refresh the visit data.
+        */
+      } catch (error) {
+        Alert.alert(
+          "Unable to Change Doctor",
+          getErrorMessage(error),
+        );
+      } finally {
+        setChangingDoctor(false);
+      }
+    };
+  
   const handleVisitAction = async () => {
-    if (starting) {
+    if (starting || !isAssignedDoctor) {
       return;
     }
 
@@ -368,9 +584,76 @@ export default function WaitingPatientCard({
     }
   };
 
-  const isWithDoctor =
-    patient.status ===
-    "With Doctor";
+  const handleCancelVisit = () => {
+    if (starting || cancelling) {
+      return;
+    }
+
+    setSelectedCancelReasons([]);
+    setCustomCancelReason("");
+    setShowCancelReasons(true);
+  };
+
+  const toggleCancelReason = (
+    reason: string,
+  ) => {
+    setSelectedCancelReasons((current) =>
+      current.includes(reason)
+        ? current.filter(
+            (item) => item !== reason,
+          )
+        : [...current, reason],
+    );
+  };
+
+  const confirmCancelVisit = async () => {
+    if (
+      starting ||
+      cancelling ||
+      (
+        selectedCancelReasons.length === 0 &&
+        !customCancelReason.trim()
+      )
+    ) {
+      return;
+    }
+
+    const reasons = [
+      ...selectedCancelReasons,
+      ...(customCancelReason.trim()
+        ? [customCancelReason.trim()]
+        : []),
+    ];
+
+    try {
+      setCancelling(true);
+
+      await cancelVisit({
+        visitId: patient.visitId,
+        reason: reasons.join("; "),
+      });
+
+      setShowCancelReasons(false);
+      setSelectedCancelReasons([]);
+      setCustomCancelReason("");
+    } catch (error) {
+      Alert.alert(
+        "Unable to Cancel Visit",
+        getErrorMessage(error),
+      );
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const isWithDoctor = patient.status === "With Doctor";
+
+  const handleUnauthorizedVisit = () => {
+    Alert.alert(
+      "Visit Assigned to Another Doctor",
+      "This visit is assigned to another doctor. Please contact the clinic owner or assistant."
+    );
+  };
 
   return (
     <AppCard>
@@ -686,6 +969,39 @@ export default function WaitingPatientCard({
         />
 
         <AppButton
+          title="Cancel Visit"
+          variant="secondary"
+          loading={cancelling}
+          style={styles.button}
+          disabled={
+            starting ||
+            cancelling
+          }
+          onPress={handleCancelVisit}
+        />
+
+        {canChangeDoctor && (
+          <AppButton
+            title="Change Doctor"
+            variant="secondary"
+            loading={
+              loadingDoctors ||
+              changingDoctor
+            }
+            style={styles.button}
+            disabled={
+              starting ||
+              cancelling ||
+              loadingDoctors ||
+              changingDoctor
+            }
+            onPress={
+              handleChangeDoctor
+            }
+          />
+        )}
+
+        <AppButton
           title={
             starting
               ? "Starting..."
@@ -693,17 +1009,344 @@ export default function WaitingPatientCard({
               ? "Continue Visit"
               : "Start Visit"
           }
-          style={
-            styles.button
-          }
+          loading={starting}
+          style={styles.button}
           disabled={
-            starting
+            starting ||
+            !isAssignedDoctor
           }
           onPress={
-            handleVisitAction
+            isAssignedDoctor
+              ? handleVisitAction
+              : handleUnauthorizedVisit
           }
         />
       </View>
+
+      <Modal
+        visible={showCancelReasons}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!cancelling) {
+            setShowCancelReasons(false);
+          }
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.cancelModal}>
+            <Text style={styles.modalTitle}>
+              Cancel Visit
+            </Text>
+
+            <Text style={styles.modalSubtitle}>
+              Select one or more reasons, then confirm.
+            </Text>
+
+            <ScrollView
+              style={styles.reasonsScroll}
+              contentContainerStyle={
+                styles.reasonsContent
+              }
+              showsVerticalScrollIndicator
+              persistentScrollbar
+              nestedScrollEnabled
+            >
+              <View style={styles.reasonsHeader}>
+                <Text style={styles.reasonsTitle}>
+                  Cancellation Reasons
+                </Text>
+                <Text style={styles.reasonsHint}>
+                  Select one or more
+                </Text>
+              </View>
+
+              {cancellationReasons
+                .filter(
+                  (reason) => reason !== "Other reason",
+                )
+                .map((reason) => {
+                  const selected =
+                    selectedCancelReasons.includes(reason);
+
+                  return (
+                    <AppButton
+                      key={reason}
+                      title={
+                        selected
+                          ? `✓  ${reason}`
+                          : reason
+                      }
+                      variant={
+                        selected
+                          ? "primary"
+                          : "secondary"
+                      }
+                      disabled={cancelling}
+                      style={[
+                        styles.reasonButton,
+                        selected &&
+                          styles.selectedReasonButton,
+                      ]}
+                      onPress={() =>
+                        toggleCancelReason(reason)
+                      }
+                    />
+                  );
+                })}
+
+              <View style={styles.otherSection}>
+                <Text style={styles.otherTitle}>
+                  Other reason
+                </Text>
+
+                <Text style={styles.otherHint}>
+                  Add any additional reason if needed
+                </Text>
+
+                <TextInput
+                  value={customCancelReason}
+                  onChangeText={setCustomCancelReason}
+                  placeholder="Enter another reason..."
+                  editable={!cancelling}
+                  style={styles.otherReasonInput}
+                  multiline
+                />
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalActions}>
+              <AppButton
+                title="Confirm Cancellation"
+                loading={cancelling}
+                disabled={
+                  cancelling ||
+                  (
+                    selectedCancelReasons.length === 0 &&
+                    !customCancelReason.trim()
+                  )
+                }
+                style={styles.confirmButton}
+                onPress={confirmCancelVisit}
+              />
+
+              <AppButton
+                title="Close"
+                variant="secondary"
+                disabled={cancelling}
+                style={styles.closeButton}
+                onPress={() =>
+                  setShowCancelReasons(false)
+                }
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={doctorModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!changingDoctor) {
+            setDoctorModalVisible(false);
+          }
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.doctorModal}>
+            <View style={styles.doctorHeader}>
+              <View>
+                <Text
+                  style={styles.doctorTitle}
+                >
+                  Change Doctor
+                </Text>
+
+                <Text
+                  style={styles.doctorSubtitle}
+                >
+                  Choose the doctor who will handle this visit.
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={() => {
+                  if (!changingDoctor) {
+                    setDoctorModalVisible(false);
+                  }
+                }}
+                style={styles.closeButton}
+              >
+                <Ionicons
+                  name="close"
+                  size={22}
+                  color={COLORS.text}
+                />
+              </Pressable>
+            </View>
+
+            {loadingDoctors ? (
+              <View
+                style={styles.doctorLoading}
+              >
+                <ActivityIndicator
+                  size="small"
+                  color={COLORS.primary}
+                />
+
+                <Text
+                  style={
+                    styles.doctorLoadingText
+                  }
+                >
+                  Loading doctors...
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.doctorList}>
+                {doctors.map((doctor) => {
+                  const selected =
+                    selectedDoctorId ===
+                    doctor.userId;
+
+                  return (
+                    <Pressable
+                      key={doctor.id}
+                      style={[
+                        styles.doctorItem,
+                        selected &&
+                          styles.selectedDoctorItem,
+                      ]}
+                      onPress={() =>
+                        setSelectedDoctorId(
+                          doctor.userId,
+                        )
+                      }
+                      disabled={
+                        changingDoctor
+                      }
+                    >
+                      <View
+                        style={
+                          styles.doctorAvatar
+                        }
+                      >
+                        <Ionicons
+                          name="person"
+                          size={22}
+                          color={
+                            COLORS.primary
+                          }
+                        />
+                      </View>
+
+                      <View
+                        style={
+                          styles.doctorInfo
+                        }
+                      >
+                        <Text
+                          style={
+                            styles.doctorName
+                          }
+                        >
+                          {doctor.user.fullName}
+                        </Text>
+
+                        {doctor.user
+                          .specialty ? (
+                          <Text
+                            style={
+                              styles.doctorSpecialty
+                            }
+                          >
+                            {
+                              doctor.user
+                                .specialty
+                            }
+                          </Text>
+                        ) : null}
+
+                        {doctor.userId ===
+                          patient.doctorId && (
+                          <Text
+                            style={
+                              styles.currentDoctorText
+                            }
+                          >
+                            Current doctor
+                          </Text>
+                        )}
+                      </View>
+
+                      <Ionicons
+                        name={
+                          selected
+                            ? "radio-button-on"
+                            : "radio-button-off"
+                        }
+                        size={24}
+                        color={
+                          selected
+                            ? COLORS.primary
+                            : COLORS.border
+                        }
+                      />
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
+
+            <Pressable
+              style={[
+                styles.confirmDoctorButton,
+                (
+                  !selectedDoctorId ||
+                  selectedDoctorId ===
+                    patient.doctorId ||
+                  changingDoctor
+                ) &&
+                  styles.disabledButton,
+              ]}
+              onPress={
+                handleConfirmDoctor
+              }
+              disabled={
+                !selectedDoctorId ||
+                selectedDoctorId ===
+                  patient.doctorId ||
+                changingDoctor
+              }
+            >
+              {changingDoctor ? (
+                <ActivityIndicator
+                  size="small"
+                  color={COLORS.white}
+                />
+              ) : (
+                <Ionicons
+                  name="checkmark-circle-outline"
+                  size={20}
+                  color={COLORS.white}
+                />
+              )}
+
+              <Text
+                style={
+                  styles.confirmDoctorText
+                }
+              >
+                {changingDoctor
+                  ? "Changing..."
+                  : "Confirm Doctor"}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </AppCard>
   );
 }
@@ -805,7 +1448,7 @@ const styles =
       color:
         COLORS.text,
       fontSize:
-        TYPOGRAPHY.small,
+        TYPOGRAPHY.body,
       fontWeight:
         "700",
       flexShrink: 1,
@@ -898,5 +1541,232 @@ const styles =
         TYPOGRAPHY.body,
       fontWeight:
         "800",
+    },
+
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.45)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: SPACING.lg,
+    },
+
+    cancelModal: {
+      width: "100%",
+      maxWidth: 500,
+      maxHeight: "90%",
+      backgroundColor: COLORS.white,
+      borderRadius: RADIUS.lg,
+      padding: SPACING.lg,
+      gap: SPACING.sm,
+    },
+
+    modalTitle: {
+      fontSize: TYPOGRAPHY.heading,
+      fontWeight: "700",
+      color: COLORS.text,
+    },
+
+    modalSubtitle: {
+      fontSize: TYPOGRAPHY.small,
+      color: COLORS.secondaryText,
+      marginBottom: SPACING.sm,
+    },
+
+    reasonButton: {
+      width: "100%",
+      backgroundColor: "#6188cf",
+      borderWidth: 1,
+      borderColor: "#C9D8F0",
+    },
+
+    otherReasonInput: {
+      minHeight: 90,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: RADIUS.md,
+      padding: SPACING.sm,
+      textAlignVertical: "top",
+      color: COLORS.text,
+      backgroundColor: COLORS.background,
+    },
+
+    reasonsScroll: {
+      maxHeight: 360,
+      flexGrow: 0,
+    },
+
+    reasonsContent: {
+      gap: SPACING.sm,
+      paddingBottom: SPACING.md,
+    },
+
+    reasonsHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingBottom: SPACING.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border,
+    },
+
+    reasonsTitle: {
+      fontSize: TYPOGRAPHY.body,
+      fontWeight: "700",
+      color: COLORS.text,
+    },
+
+    reasonsHint: {
+      fontSize: TYPOGRAPHY.small,
+      color: COLORS.secondaryText,
+    },
+
+    selectedReasonButton: {
+      backgroundColor: COLORS.primary,
+      borderWidth: 2,
+      borderColor: COLORS.primary,
+    },
+
+    otherSection: {
+      marginTop: SPACING.md,
+      paddingTop: SPACING.md,
+      borderTopWidth: 1,
+      borderTopColor: COLORS.border,
+    },
+
+    otherTitle: {
+      fontSize: TYPOGRAPHY.body,
+      fontWeight: "700",
+      color: COLORS.text,
+    },
+
+    otherHint: {
+      marginTop: 3,
+      marginBottom: SPACING.sm,
+      fontSize: TYPOGRAPHY.small,
+      color: COLORS.secondaryText,
+    },
+
+    modalActions: {
+      marginTop: SPACING.sm,
+      paddingTop: SPACING.md,
+      borderTopWidth: 1,
+      borderTopColor: COLORS.border,
+      gap: SPACING.sm,
+    },
+
+    confirmButton: {
+      width: "100%",
+    },
+
+    closeButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: COLORS.background,
+    },
+
+    doctorModal: {
+      width: "100%",
+      maxWidth: 520,
+      backgroundColor: COLORS.card,
+      borderRadius: RADIUS.xl,
+      padding: SPACING.lg,
+    },
+
+    doctorHeader: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      marginBottom: SPACING.lg,
+    },
+
+    doctorTitle: {
+      color: COLORS.text,
+      fontSize: TYPOGRAPHY.subHeading,
+      fontWeight: "700",
+    },
+
+    doctorSubtitle: {
+      color: COLORS.secondaryText,
+      fontSize: TYPOGRAPHY.body,
+      marginTop: 4,
+    },
+
+    doctorList: {
+      gap: SPACING.sm,
+    },
+
+    doctorItem: {
+      minHeight: 70,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: RADIUS.lg,
+      paddingHorizontal: SPACING.md,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: SPACING.sm,
+    },
+
+    selectedDoctorItem: {
+      borderColor: COLORS.primary,
+      backgroundColor: COLORS.background,
+    },
+
+    doctorAvatar: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: COLORS.background,
+    },
+
+    doctorInfo: {
+      flex: 1,
+    },
+
+    doctorSpecialty: {
+      color: COLORS.secondaryText,
+      fontSize: TYPOGRAPHY.caption,
+      marginTop: 3,
+    },
+
+    currentDoctorText: {
+      color: COLORS.primary,
+      fontSize: TYPOGRAPHY.caption,
+      fontWeight: "700",
+      marginTop: 3,
+    },
+
+    doctorLoading: {
+      minHeight: 100,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: SPACING.sm,
+    },
+
+    doctorLoadingText: {
+      color: COLORS.secondaryText,
+      fontSize: TYPOGRAPHY.body,
+    },
+
+    confirmDoctorButton: {
+      height: 52,
+      borderRadius: RADIUS.lg,
+      backgroundColor: COLORS.primary,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: SPACING.sm,
+      marginTop: SPACING.lg,
+    },
+
+    confirmDoctorText: {
+      color: COLORS.white,
+      fontSize: TYPOGRAPHY.body,
+      fontWeight: "700",
     },
   });

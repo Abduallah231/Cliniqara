@@ -42,6 +42,27 @@ export class VisitService {
     return membership.clinicId;
   }
 
+  private async getVisitMembership(
+    currentUserId: string,
+    clinicId: string,
+  ) {
+    const membership = await this.prisma.clinicMember.findFirst({
+      where: {
+        userId: currentUserId,
+        clinicId,
+        status: "ACTIVE",
+      },
+    });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
+    return membership;
+  }
+
   async createWaitingVisit(
   dto: CreateWaitingVisitDto,
   currentUserId: string,
@@ -373,18 +394,28 @@ async startVisit(
       throw new NotFoundException("Visit not found.");
     }
 
-    const membership =
-      await this.prisma.clinicMember.findFirst({
-        where: {
-          userId: currentUserId,
-          clinicId: visit.clinicId,
-          status: "ACTIVE",
-        },
-      });
+    const membership = await this.getVisitMembership(
+      currentUserId,
+      visit.clinicId,
+    );
 
-    if (!membership) {
-      throw new NotFoundException(
-        "You are not an active member of this clinic.",
+    const canCancel =
+      membership.clinicRole === "OWNER" ||
+      membership.clinicRole === "RECEPTION" ||
+      visit.doctorId === currentUserId;
+
+    if (!canCancel) {
+      throw new BadRequestException(
+        "You are not allowed to cancel this visit.",
+      );
+    }
+
+    if (
+      membership.clinicRole !== "OWNER" &&
+      membership.clinicRole !== "RECEPTION"
+    ) {
+      throw new BadRequestException(
+        "Only the clinic owner or assistant can change the assigned doctor.",
       );
     }
 
