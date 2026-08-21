@@ -8,7 +8,6 @@ export class CreateWaitingVisitDto {
   @IsUUID()
   patientId!: string;
 
-  @IsOptional()
   @IsUUID()
   doctorId?: string;
 

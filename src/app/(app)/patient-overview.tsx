@@ -11,7 +11,7 @@ import {
   useCallback,
   useState,
 } from "react";
-
+import { useDoctorStore } from "@/store/doctorStore";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -70,6 +70,10 @@ export default function PatientOverviewScreen() {
     setCurrentPatient,
   } = usePatientStore();
 
+  const doctor = useDoctorStore(
+    (state) => state.doctor,
+  );
+
   useFocusEffect(
     useCallback(() => {
       let mounted = true;
@@ -125,6 +129,10 @@ export default function PatientOverviewScreen() {
   const [ creatingVisit, setCreatingVisit, ] = useState(false);
 
   const [refreshing, setRefreshing] = useState(false);
+
+  const isVisitAssignedToCurrentDoctor =
+    !openVisit ||
+    openVisit.doctorId === doctor?.id;
 
   const handleRefresh = useCallback(async () => {
     if (!patientId || refreshing) {
@@ -205,7 +213,7 @@ export default function PatientOverviewScreen() {
     }
   };
 
-  const handleVisitAction = () => {
+  const handleVisitAction = async () => {
     if (visitActionLoading) {
       return;
     }
@@ -218,46 +226,95 @@ export default function PatientOverviewScreen() {
       return;
     }
 
-    if (!openVisit) {
-      router.push({
-        pathname: "/prepare-visit",
-        params: {
-          patientId,
-        },
-      });
+    /*
+    * ==========================================
+    * VISIT ASSIGNED TO ANOTHER DOCTOR
+    * ==========================================
+    */
+    if (
+      openVisit &&
+      !isVisitAssignedToCurrentDoctor
+    ) {
+      Alert.alert(
+        "Visit Assigned to Another Doctor",
+        "This visit is assigned to another doctor. You cannot start or continue this visit.",
+      );
 
       return;
     }
 
-    if (openVisit.visitStatus === "WAITING") {
-      startVisit(openVisit.id)
-        .then((startedVisit) => {
-          router.push({
-            pathname: "/visit/HistoryScreen",
-            params: {
-              patientId,
-              visitId: startedVisit.id,
-            },
-          });
-        })
-        .catch(() => {
-          Alert.alert(
-            "Unable to Open Visit",
-            "Please try again.",
-          );
+    try {
+      setVisitActionLoading(true);
+
+      /*
+      * ==========================================
+      * NO OPEN VISIT
+      * ==========================================
+      */
+      if (!openVisit) {
+        router.push({
+          pathname: "/prepare-visit",
+          params: {
+            patientId,
+          },
         });
 
-      return;
-    }
+        return;
+      }
 
-    if (openVisit.visitStatus === "IN_PROGRESS") {
-      router.push({
-        pathname: "/visit/HistoryScreen",
-        params: {
-          patientId,
-          visitId: openVisit.id,
-        },
-      });
+      /*
+      * ==========================================
+      * WAITING VISIT
+      * ==========================================
+      */
+      if (
+        openVisit.visitStatus ===
+        "WAITING"
+      ) {
+        const startedVisit =
+          await startVisit(
+            openVisit.id,
+          );
+
+        router.push({
+          pathname:
+            "/visit/HistoryScreen",
+          params: {
+            patientId,
+            visitId:
+              startedVisit.id,
+          },
+        });
+
+        return;
+      }
+
+      /*
+      * ==========================================
+      * IN PROGRESS
+      * ==========================================
+      */
+      if (
+        openVisit.visitStatus ===
+        "IN_PROGRESS"
+      ) {
+        router.push({
+          pathname:
+            "/visit/HistoryScreen",
+          params: {
+            patientId,
+            visitId:
+              openVisit.id,
+          },
+        });
+      }
+    } catch (error) {
+      Alert.alert(
+        "Unable to Open Visit",
+        getErrorMessage(error),
+      );
+    } finally {
+      setVisitActionLoading(false);
     }
   };
 
@@ -322,19 +379,35 @@ export default function PatientOverviewScreen() {
               ? "Loading..."
               : !openVisit
                 ? "New Visit"
-                : openVisit.visitStatus === "WAITING"
-                  ? "Start Visit"
-                  : "Continue Visit"
+                : !isVisitAssignedToCurrentDoctor
+                  ? "Assigned to Another Doctor"
+                  : openVisit.visitStatus ===
+                      "WAITING"
+                    ? "Start Visit"
+                    : "Continue Visit"
           }
           icon={
             !openVisit
               ? "add-outline"
-              : openVisit.visitStatus === "WAITING"
-                ? "play-outline"
-                : "arrow-forward-outline"
+              : !isVisitAssignedToCurrentDoctor
+                ? "lock-closed-outline"
+                : openVisit.visitStatus ===
+                    "WAITING"
+                  ? "play-outline"
+                  : "arrow-forward-outline"
           }
           loading={visitActionLoading}
-          style={styles.nextButton}
+          disabled={
+            visitActionLoading ||
+            (!!openVisit &&
+              !isVisitAssignedToCurrentDoctor)
+          }
+          style={[
+            styles.nextButton,
+            !!openVisit &&
+              !isVisitAssignedToCurrentDoctor &&
+              styles.disabledNextButton,
+          ]}
           onPress={handleVisitAction}
         />
       </View>
@@ -404,7 +477,7 @@ const styles = StyleSheet.create({
   },
 
   nextButton: {
-    width: 150,
+    width: 180,
 
     borderWidth: 1.5,
 
@@ -422,5 +495,9 @@ const styles = StyleSheet.create({
     },
 
     elevation: 6,
+  },
+
+  disabledNextButton: {
+    opacity: 0.5,
   },
 });

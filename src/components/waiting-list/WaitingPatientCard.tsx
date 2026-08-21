@@ -636,6 +636,8 @@ export default function WaitingPatientCard({
         reason: reasons.join("; "),
       });
 
+      await onRefresh();
+
       setShowCancelReasons(false);
       setSelectedCancelReasons([]);
       setCustomCancelReason("");

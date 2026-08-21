@@ -99,6 +99,12 @@ export class VisitService {
   let doctorId = dto.doctorId;
 
   if (accountType === AccountType.DOCTOR) {
+    if (doctorId && doctorId !== currentUserId) {
+      throw new BadRequestException(
+        "A doctor can only add patients to their own waiting list.",
+      );
+    }
+
     doctorId = currentUserId;
   }
 

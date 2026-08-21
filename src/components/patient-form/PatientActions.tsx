@@ -135,6 +135,11 @@ export default function PatientActions({
   ] = useState<string | null>(null);
 
   const [
+    errorPatientId,
+    setErrorPatientId,
+  ] = useState<string | null>(null);
+
+  const [
     doctorModalVisible,
     setDoctorModalVisible,
   ] = useState(false);
@@ -269,6 +274,10 @@ export default function PatientActions({
 
           targetPatientId =
             existingPatientId;
+
+          setErrorPatientId(
+            existingPatientId,
+          );
         } else {
           const dto =
             mapPatientToCreateDto(
@@ -286,6 +295,10 @@ export default function PatientActions({
 
           targetPatientId =
             patientResponse.id;
+
+          setErrorPatientId(
+            patientResponse.id,
+          );
         }
 
         const waitingVisit =
@@ -319,6 +332,12 @@ export default function PatientActions({
         setErrorMessage(
           getErrorMessage(error),
         );
+
+        if (existingPatientId) {
+          setErrorPatientId(
+            existingPatientId,
+          );
+        }
       } finally {
         setLoadingAction(null);
         setSelectedDoctorId(null);
@@ -506,9 +525,22 @@ export default function PatientActions({
 
             <Pressable
               style={styles.errorButton}
-              onPress={() =>
-                setErrorMessage(null)
-              }
+              onPress={() => {
+                const patientIdToOpen =
+                  errorPatientId;
+
+                setErrorMessage(null);
+                setErrorPatientId(null);
+
+                if (patientIdToOpen) {
+                  router.replace({
+                    pathname: "/patient-overview",
+                    params: {
+                      patientId: patientIdToOpen,
+                    },
+                  });
+                }
+              }}
             >
               <Text style={styles.errorButtonText}>
                 OK
