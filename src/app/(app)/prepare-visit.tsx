@@ -37,6 +37,8 @@ import {
   COLORS,
   SPACING,
 } from "@/theme";
+import PatientActions from "@/components/patient-form/PatientActions";
+
 
 type PatientForm = {
   identifierType: string;
@@ -582,7 +584,7 @@ export default function EditPatientScreen() {
       style={styles.container}
     >
       <AppTopBar
-        title="Edit Patient"
+        title="Prepare Visit"
         onBack={() =>
           router.back()
         }
@@ -857,21 +859,11 @@ export default function EditPatientScreen() {
           }
         />
 
-        <AppButton
-          title="Save Changes"
-          loading={loading}
-          onPress={handleSave}
-          style={styles.saveButton}
+        <PatientActions
+            patient={patient}
+            existingPatientId={patientId}
         />
 
-        <AppButton
-          title="Cancel"
-          variant="secondary"
-          disabled={loading}
-          onPress={() =>
-            router.back()
-          }
-        />
       </AppKeyboardAwareScrollView>
     </SafeAreaView>
   );

@@ -1,25 +1,25 @@
 import {
-  useCallback,
-  useState,
-} from "react";
+  getErrorMessage,
+} from "@/services/errorHandler";
 import {
   createWaitingVisit,
-  startVisit,
   getOpenPatientVisit,
+  startVisit,
 } from "@/services/visitApi";
 import type { Visit } from "@/types/visit";
 import {
-  getErrorMessage,
-} from "@/services/errorHandler";
+  useCallback,
+  useState,
+} from "react";
 
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
-  ActivityIndicator,
   Alert,
   BackHandler,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   View,
@@ -124,6 +124,40 @@ export default function PatientOverviewScreen() {
 
   const [ creatingVisit, setCreatingVisit, ] = useState(false);
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    if (!patientId || refreshing) {
+      return;
+    }
+
+    try {
+      setRefreshing(true);
+
+      const patient = await getPatient(patientId);
+      setCurrentPatient(patient);
+
+      const visit = await getOpenPatientVisit(patient.id);
+      setOpenVisit(visit);
+    } catch (error) {
+      console.error(
+        "Failed to refresh patient:",
+        error,
+      );
+
+      Alert.alert(
+        "Refresh Failed",
+        getErrorMessage(error),
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  }, [
+    patientId,
+    refreshing,
+    setCurrentPatient,
+  ]);
+
   if (!currentPatient) {
     return null;
   }
@@ -171,72 +205,59 @@ export default function PatientOverviewScreen() {
     }
   };
 
-  const handleVisitAction = async () => {
+  const handleVisitAction = () => {
     if (visitActionLoading) {
       return;
     }
 
-    try {
-      setVisitActionLoading(true);
-
-      if (!openVisit) {
-        if (!patientId) {
-          Alert.alert(
-            "Unable to Start Visit",
-            "Patient information is missing."
-          );
-          return;
-        }
-
-        const waitingVisit =
-          await createWaitingVisit(patientId);
-
-        const startedVisit =
-          await startVisit(waitingVisit.id);
-
-        router.push({
-          pathname: "/visit/HistoryScreen",
-          params: {
-            patientId,
-            visitId: startedVisit.id,
-          },
-        });
-
-        return;
-      }
-
-      if (openVisit.visitStatus === "WAITING") {
-        const startedVisit = await startVisit(
-          openVisit.id,
-        );
-
-        router.push({
-          pathname: "/visit/HistoryScreen",
-          params: {
-            patientId,
-            visitId: startedVisit.id,
-          },
-        });
-
-        return;
-      }
-
-      if (openVisit.visitStatus === "IN_PROGRESS") {
-        router.push({
-          pathname: "/visit/HistoryScreen",
-          params: {
-            patientId,
-            visitId: openVisit.id,
-          },
-        });
-      }
-    } catch (error) {
+    if (!patientId) {
       Alert.alert(
-        "Unable to Open Visit",
-        "Please try again.",
+        "Unable to Start Visit",
+        "Patient information is missing.",
       );
-    } finally {
-      setVisitActionLoading(false);
+      return;
+    }
+
+    if (!openVisit) {
+      router.push({
+        pathname: "/prepare-visit",
+        params: {
+          patientId,
+        },
+      });
+
+      return;
+    }
+
+    if (openVisit.visitStatus === "WAITING") {
+      startVisit(openVisit.id)
+        .then((startedVisit) => {
+          router.push({
+            pathname: "/visit/HistoryScreen",
+            params: {
+              patientId,
+              visitId: startedVisit.id,
+            },
+          });
+        })
+        .catch(() => {
+          Alert.alert(
+            "Unable to Open Visit",
+            "Please try again.",
+          );
+        });
+
+      return;
+    }
+
+    if (openVisit.visitStatus === "IN_PROGRESS") {
+      router.push({
+        pathname: "/visit/HistoryScreen",
+        params: {
+          patientId,
+          visitId: openVisit.id,
+        },
+      });
     }
   };
 
@@ -254,27 +275,37 @@ export default function PatientOverviewScreen() {
           router.push("/settings")
         }
       />
-        <ScrollView>
-              <View style={styles.content}>
-                <PatientOverviewHeader
-                  patient={currentPatient}
-                />
 
-        <PatientOverviewTabs
-          activeTab={activeTab}
-          onChange={setActiveTab}
-        />
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+          />
+        }
+      >
+        <View style={styles.content}>
+          <PatientOverviewHeader
+            patient={currentPatient}
+          />
 
-        <View style={styles.body}>
-          {activeTab ===
-          "overview" ? (
-            <OverviewTab patient={currentPatient} />
-          ) : (
-            <VisitsTab />
-          )}
+          <PatientOverviewTabs
+            activeTab={activeTab}
+            onChange={setActiveTab}
+          />
+
+          <View style={styles.body}>
+            {activeTab === "overview" ? (
+              <OverviewTab
+                patient={currentPatient}
+              />
+            ) : (
+              <VisitsTab />
+            )}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+
       <View style={styles.navigationBar}>
         <AppButton
           title="Back"

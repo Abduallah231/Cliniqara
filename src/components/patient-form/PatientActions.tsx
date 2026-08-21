@@ -2,15 +2,14 @@ import {
   useState,
 } from "react";
 
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { useClinicStore } from "@/store/clinicStore";
-import {
-  Color,
-  router,
-} from "expo-router";
 import {
   getClinicMembers,
 } from "@/services/clinicApi";
+import { useClinicStore } from "@/store/clinicStore";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import {
+  router
+} from "expo-router";
 
 import type {
   ClinicMember,
@@ -26,6 +25,7 @@ import {
 
 import {
   createPatient,
+  updatePatient,
 } from "@/services/patientApi";
 
 import {
@@ -102,10 +102,12 @@ type PatientForm = {
 
 type Props = {
   patient: PatientForm;
+  existingPatientId?: string;
 };
 
 export default function PatientActions({
   patient,
+  existingPatientId,
 }: Props) {
   const { currentClinic } = useClinicStore();
 
@@ -219,23 +221,76 @@ export default function PatientActions({
         setLoadingAction("waiting");
         setDoctorModalVisible(false);
 
-        const dto =
-          mapPatientToCreateDto(
-            patient,
+        let targetPatientId: string;
+
+        if (existingPatientId) {
+          const updatedPatient =
+            await updatePatient(
+              existingPatientId,
+              {
+                maritalStatus:
+                  patient.maritalStatus === "Single"
+                    ? "SINGLE"
+                    : patient.maritalStatus === "Married"
+                      ? "MARRIED"
+                      : patient.maritalStatus === "Divorced"
+                        ? "DIVORCED"
+                        : "WIDOWED",
+
+                childrenCount:
+                  patient.childrenCount.trim() === ""
+                    ? undefined
+                    : Number(patient.childrenCount),
+
+                phone:
+                  patient.phone.trim() || undefined,
+
+                occupation:
+                  patient.occupation.trim() || undefined,
+
+                governorate:
+                  patient.governorate.trim() || undefined,
+
+                city:
+                  patient.city.trim() || undefined,
+
+                district:
+                  patient.district.trim() || undefined,
+
+                streetAddress:
+                  patient.street.trim() || undefined,
+
+                fullName:
+                  patient.fullName.trim(),
+              },
+            );
+
+          addPatient(updatedPatient);
+
+          targetPatientId =
+            existingPatientId;
+        } else {
+          const dto =
+            mapPatientToCreateDto(
+              patient,
+            );
+
+          const patientResponse =
+            await createPatient(
+              dto,
+            );
+
+          addPatient(
+            patientResponse,
           );
 
-        const patientResponse =
-          await createPatient(
-            dto,
-          );
-
-        addPatient(
-          patientResponse,
-        );
+          targetPatientId =
+            patientResponse.id;
+        }
 
         const waitingVisit =
           await createWaitingVisit(
-            patientResponse.id,
+            targetPatientId,
             selectedDoctorId,
           );
 
@@ -244,7 +299,7 @@ export default function PatientActions({
             ...visit.metadata,
             id: waitingVisit.id,
             patientId:
-              patientResponse.id,
+              targetPatientId,
             visitNumber:
               waitingVisit.visitCode,
             status:
@@ -257,7 +312,7 @@ export default function PatientActions({
             "/patient-overview",
           params: {
             patientId:
-              patientResponse.id,
+              targetPatientId,
           },
         });
       } catch (error) {
@@ -293,23 +348,75 @@ export default function PatientActions({
           throw new Error("No clinic selected.");
         }
 
-        const dto =
-          mapPatientToCreateDto(
-            patient,
+        let targetPatientId: string;
+
+        if (existingPatientId) {
+          const updatedPatient =
+            await updatePatient(
+              existingPatientId,
+              {
+                maritalStatus:
+                  patient.maritalStatus === "Single"
+                    ? "SINGLE"
+                    : patient.maritalStatus === "Married"
+                      ? "MARRIED"
+                      : patient.maritalStatus === "Divorced"
+                        ? "DIVORCED"
+                        : "WIDOWED",
+
+                childrenCount:
+                  patient.childrenCount.trim() === ""
+                    ? undefined
+                    : Number(patient.childrenCount),
+
+                phone:
+                  patient.phone.trim() || undefined,
+
+                occupation:
+                  patient.occupation.trim() || undefined,
+
+                governorate:
+                  patient.governorate.trim() || undefined,
+
+                city:
+                  patient.city.trim() || undefined,
+
+                district:
+                  patient.district.trim() || undefined,
+
+                streetAddress:
+                  patient.street.trim() || undefined,
+
+                fullName:
+                  patient.fullName.trim(),
+              },
+            );
+
+          addPatient(updatedPatient);
+
+          targetPatientId = existingPatientId;
+        } else {
+          const dto =
+            mapPatientToCreateDto(
+              patient,
+            );
+
+          const patientResponse =
+            await createPatient(
+              dto,
+            );
+
+          addPatient(
+            patientResponse,
           );
 
-        const patientResponse =
-          await createPatient(
-            dto,
-          );
-
-        addPatient(
-          patientResponse,
-        );
+          targetPatientId =
+            patientResponse.id;
+        }
 
         const waitingVisit =
           await createWaitingVisit(
-            patientResponse.id,
+            targetPatientId,
           );
 
         const startedVisit =
@@ -325,7 +432,7 @@ export default function PatientActions({
               startedVisit.id,
 
             patientId:
-              patientResponse.id,
+              targetPatientId,
 
             visitNumber:
               startedVisit.visitCode,
@@ -338,7 +445,7 @@ export default function PatientActions({
         router.replace({
           pathname: "/visit/HistoryScreen",
           params: {
-            patientId: patientResponse.id,
+            patientId: targetPatientId,
             visitId: startedVisit.id,
           },
         });

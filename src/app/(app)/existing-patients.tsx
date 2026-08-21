@@ -82,13 +82,22 @@ export default function ExistingPatientScreen() {
   );
 
   const filteredPatients = useMemo(() => {
+    const uniquePatients = Array.from(
+      new Map(
+        patients.map((patient) => [
+          patient.id,
+          patient,
+        ]),
+      ).values(),
+    );
+
     const query = search.trim().toLowerCase();
 
     if (!query) {
-      return patients;
+      return uniquePatients;
     }
 
-    return patients.filter((patient) =>
+    return uniquePatients.filter((patient) =>
       patient.fullName
         .toLowerCase()
         .includes(query) ||
