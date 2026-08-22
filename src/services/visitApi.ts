@@ -126,14 +126,14 @@ export async function getVisit(
 export async function saveChiefComplaint(
   visitId: string,
   chiefComplaintId: string,
-  answers: Record<string, unknown>,
+  answers: Record<string, any>
 ) {
   const { data } = await api.post(
     `/visits/${visitId}/chief-complaint`,
     {
       chiefComplaintId,
       answers,
-    },
+    }
   );
 
   return data;

@@ -671,21 +671,23 @@ async startVisit(
       );
     }
 
-    return this.prisma.visitChiefComplaintAnswer.upsert({
-      where: {
-        visitId_chiefComplaintId: {
+    return this.prisma.$transaction(async (tx) => {
+      // Remove any previously selected chief complaint
+      // for this visit.
+      await tx.visitChiefComplaintAnswer.deleteMany({
+        where: {
+          visitId,
+        },
+      });
+
+      // Save the currently selected chief complaint.
+      return tx.visitChiefComplaintAnswer.create({
+        data: {
           visitId,
           chiefComplaintId: dto.chiefComplaintId,
+          answers: dto.answers,
         },
-      },
-      update: {
-        answers: dto.answers,
-      },
-      create: {
-        visitId,
-        chiefComplaintId: dto.chiefComplaintId,
-        answers: dto.answers,
-      },
+      });
     });
   }
 
