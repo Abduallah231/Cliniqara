@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { chiefComplaints } from './seeds/chief-complaints';
 
 const prisma = new PrismaClient();
@@ -11,10 +11,18 @@ async function main() {
       where: {
         code: complaint.code,
       },
+
       update: {
         name: complaint.name,
         isActive: true,
+        template: {
+          update: {
+            version: complaint.version,
+            template: complaint.template as unknown as Prisma.InputJsonValue,
+          },
+        },
       },
+
       create: {
         code: complaint.code,
         name: complaint.name,
@@ -22,7 +30,7 @@ async function main() {
         template: {
           create: {
             version: complaint.version,
-            template: complaint.template,
+            template: complaint.template as unknown as Prisma.InputJsonValue,
           },
         },
       },
