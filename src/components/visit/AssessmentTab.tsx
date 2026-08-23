@@ -1,4 +1,3 @@
-import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 import {
   COLORS,
@@ -21,16 +20,8 @@ import InvestigationResultsScreen from "./assessment/InvestigationResultsScreen"
 import InvestigationSection from "./assessment/InvestigationSection";
 import PrescriptionSection from "./assessment/PrescriptionSection";
 import ProceduresReferralsSection from "./assessment/ProceduresReferrals";
-import VisitHeaderCard from "./VisitHeaderCard";
-type Props = {
-  patientId?: string;
-  visitId?: string;
-};
 
-export default function AssessmentTab({
-  patientId,
-  visitId,
-}: Props) {
+export default function AssessmentTab() {
 
   const [
   showInvestigationResults,
@@ -38,21 +29,7 @@ export default function AssessmentTab({
 ] = useState(false);
 
   return (
-    <AppKeyboardAwareScrollView
-      style={styles.container}
-      contentContainerStyle={
-        styles.content
-      }
-      showsVerticalScrollIndicator={
-        false
-      }
-    >
-      <VisitHeaderCard
-        sectionTitle="Assessment"
-        icon="clipboard-outline"
-        visitId={visitId}
-      />
-
+    <View style={styles.container}>
       <Pressable
         style={styles.aiButton}
       >
@@ -179,20 +156,16 @@ export default function AssessmentTab({
       </CollapsibleSection>
 
       <View style={{ height: 50 }} />
-    </AppKeyboardAwareScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: COLORS.background,
-  },
-
-  content: {
-    padding: SPACING.md,
-    paddingBottom: 70,
-    gap: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.sm,
+    gap: SPACING.md,   
   },
 
   patientBanner: {

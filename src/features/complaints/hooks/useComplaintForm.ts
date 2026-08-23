@@ -1,84 +1,48 @@
-import { useMemo } from "react";
-import { ComplaintTemplate } from "../models/ComplaintTemplate";
-import { useVisitStore } from "@/store/visitStore";
+import { useCallback } from "react";
+import { DynamicValue } from "@/models/VisitForm/assessment";
 
-type ComplaintValues = Record<string, any>;
+type ComplaintAnswer = {
+  fieldId: string;
+  fieldLabel: string;
+  value: DynamicValue;
+  unit?: string;
+};
 
-export default function useComplaintForm(
-  template?: ComplaintTemplate
-) {
-  const {
-    visit,
-    updateAnalysisField,
-  } = useVisitStore();
+type ComplaintValues = Record<string, DynamicValue>;
 
-  const values = useMemo<ComplaintValues>(() => {
-    if (!template) {
-      return {};
-    }
+type Props = {
+  values: ComplaintValues;
+  onChange: (
+    fieldId: string,
+    fieldLabel: string,
+    value: DynamicValue,
+    unit?: string
+  ) => void;
+};
 
-    const result: ComplaintValues = {};
-
-    template.sections.forEach((section) => {
-      section.fields.forEach((field) => {
-        const saved =
-          visit.history.hpi.analysis.fields.find(
-            (item) => item.fieldId === field.code
-          );
-
-        if (saved) {
-          result[field.code] = saved.value;
-        } else {
-          switch (field.type) {
-            case "MULTI_SELECT":
-              result[field.code] = [];
-              break;
-
-            case "BOOLEAN":
-              result[field.code] = false;
-              break;
-
-            default:
-              result[field.code] = "";
-          }
-        }
-      });
-    });
-
-    return result;
-  }, [template, visit.history.hpi.analysis.fields]);
-
-  const setValue = (
-    fieldCode: string,
-    value: any
-  ) => {
-    if (!template) return;
-
-    let label = fieldCode;
-
-    for (const section of template.sections) {
-      const field = section.fields.find(
-        (f) => f.code === fieldCode
+export default function useComplaintForm({
+  values,
+  onChange,
+}: Props) {
+  const setValue = useCallback(
+    (
+      fieldId: string,
+      fieldLabel: string,
+      value: DynamicValue,
+      unit?: string
+    ) => {
+      onChange(
+        fieldId,
+        fieldLabel,
+        value,
+        unit
       );
-
-      if (field) {
-        label = field.label;
-        break;
-      }
-    }
-
-    updateAnalysisField(
-      fieldCode,
-      label,
-      value
-    );
-  };
-
-  const reset = () => {};
+    },
+    [onChange]
+  );
 
   return {
     values,
     setValue,
-    reset,
   };
 }

@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 
 import { usePatientStore } from "@/store/patientStore";
@@ -10,8 +9,6 @@ import {
   isPediatric,
   shouldShowMenstrualHistory,
 } from "@/utils/patient";
-
-import VisitHeaderCard from "./VisitHeaderCard";
 
 import AllergyHistory from "./history/AllergyHistory";
 import ChiefComplaint from "./history/ChiefComplaint";
@@ -24,17 +21,7 @@ import PediatricHistory from "./history/PediatricHistory";
 import SocialHistory from "./history/SocialHistory";
 import VaccinationHistory from "./history/VaccinationHistory";
 
-type Props = {
-  patientId?: string;
-  visitId?: string;
-
-};
-
-export default function HistoryTab({
-  patientId,
-  visitId,
-
-}: Props) {
+export default function HistoryTab() {
   const patient = usePatientStore(
     (state) => state.currentPatient
   );
@@ -52,19 +39,7 @@ export default function HistoryTab({
     );
 
   return (
-    <AppKeyboardAwareScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        paddingTop: SPACING.xs,
-        paddingBottom: 120,
-      }}
-    >
-      <VisitHeaderCard
-        sectionTitle="Medical History"
-        icon="document-text-outline"
-        visitId={visitId}
-      />
-
+    <View style={styles.container}>
       <CollapsibleSection
         title="Chief Complaint"
         icon={
@@ -195,6 +170,14 @@ export default function HistoryTab({
         <FamilyHistory />
       </CollapsibleSection>
       <View style={{ height: 50 }} />
-    </AppKeyboardAwareScrollView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.sm,
+    gap: SPACING.md,
+  },
+});

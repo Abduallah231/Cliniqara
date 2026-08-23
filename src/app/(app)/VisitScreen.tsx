@@ -1,0 +1,531 @@
+import AppButton from "@/components/common/AppButton";
+import AppTopBar from "@/components/common/AppTopBar";
+
+import AssessmentTab from "@/components/visit/AssessmentTab";
+import ExaminationTab from "@/components/visit/ExaminationTab";
+import HistoryTab from "@/components/visit/HistoryTab";
+import VisitHeaderCard from "../../components/visit/VisitHeaderCard";
+import {
+  completeVisit,
+} from "@/services/visitApi";
+
+import {
+  getErrorMessage,
+} from "@/services/errorHandler";
+
+import {
+  router,
+  useLocalSearchParams,
+} from "expo-router";
+
+import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
+
+import Ionicons from "@expo/vector-icons/Ionicons";
+
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+import {
+  SafeAreaView,
+} from "react-native-safe-area-context";
+
+import {
+  COLORS,
+  SPACING,
+} from "@/theme";
+
+import { useState } from "react";
+
+type VisitSection =
+  | "history"
+  | "examination"
+  | "assessment";
+
+export default function VisitScreen() {
+  const {
+    patientId,
+    visitId,
+    visitCode,
+  } = useLocalSearchParams<{
+    patientId?: string;
+    visitId?: string;
+    visitCode?: string;
+  }>();
+
+  const [activeSection, setActiveSection] =
+    useState<VisitSection>("history");
+
+  const [completingVisit, setCompletingVisit] =
+    useState(false);
+
+  const resolvedPatientId =
+    Array.isArray(patientId)
+      ? patientId[0]
+      : patientId;
+
+  const resolvedVisitId =
+    Array.isArray(visitId)
+      ? visitId[0]
+      : visitId;
+
+  const resolvedVisitCode =
+    Array.isArray(visitCode)
+      ? visitCode[0]
+      : visitCode;
+
+  const handleCompleteVisit = async () => {
+    if (completingVisit) {
+      return;
+    }
+
+    if (!resolvedVisitId) {
+      Alert.alert(
+        "Unable to Save Visit",
+        "Visit information is missing. Please reopen the visit and try again.",
+      );
+      return;
+    }
+
+    try {
+      setCompletingVisit(true);
+
+      await completeVisit({
+        visitId: resolvedVisitId,
+      });
+
+      router.replace("/patient-overview");
+    } catch (error) {
+      Alert.alert(
+        "Unable to Save Visit",
+        getErrorMessage(error),
+      );
+    } finally {
+      setCompletingVisit(false);
+    }
+  };
+
+  const renderActiveSection = () => {
+    switch (activeSection) {
+      case "history":
+        return <HistoryTab />;
+
+      case "examination":
+        return <ExaminationTab />;
+
+      case "assessment":
+        return <AssessmentTab />;
+    }
+  };
+
+  const getVisitHeaderConfig = () => {
+    switch (activeSection) {
+      case "history":
+        return {
+          sectionTitle: "Medical History",
+          icon: "document-text-outline" as const,
+        };
+
+      case "examination":
+        return {
+          sectionTitle: "Medical Examination",
+          icon: "medkit-outline" as const,
+        };
+
+      case "assessment":
+        return {
+          sectionTitle: "Assessment",
+          icon: "clipboard-outline" as const,
+        };
+    }
+  };
+
+  return (
+    <SafeAreaView
+      style={styles.container}
+      edges={["top", "bottom"]}
+    >
+      <AppTopBar
+        title="Patient Visit"
+        onBack={() => {
+          if (!completingVisit) {
+            router.back();
+          }
+        }}
+        onRightPress={() =>
+          router.push("/settings")
+        }
+      />
+
+      <View style={styles.sectionNavigation}>
+        <Pressable
+          disabled={completingVisit}
+          onPress={() => setActiveSection("history")}
+          android_ripple={{ color: "#B8D3F5" }}
+          style={[
+            styles.sectionItem,
+            activeSection === "history" &&
+              styles.sectionItemActive,
+          ]}
+        >
+          <Ionicons
+            name="document-text-outline"
+            size={22}
+            color={
+              activeSection === "history"
+                ? COLORS.white
+                : COLORS.primary
+            }
+          />
+
+          <Text
+            style={[
+              styles.sectionItemTitle,
+              activeSection === "history" &&
+                styles.sectionItemTitleActive,
+            ]}
+          >
+            History
+          </Text>
+        </Pressable>
+
+        <Pressable
+          disabled={completingVisit}
+          onPress={() =>
+            setActiveSection("examination")
+          }
+          android_ripple={{ color: "#B8D3F5" }}
+          style={[
+            styles.sectionItem,
+            styles.sectionItemWithLeftBorder,
+            activeSection === "examination" &&
+              styles.sectionItemActive,
+          ]}
+        >
+          <Ionicons
+            name="medkit-outline"
+            size={22}
+            color={
+              activeSection === "examination"
+                ? COLORS.white
+                : COLORS.primary
+            }
+          />
+
+          <Text
+            style={[
+              styles.sectionItemTitle,
+              activeSection === "examination" &&
+                styles.sectionItemTitleActive,
+            ]}
+          >
+            Examination
+          </Text>
+        </Pressable>
+
+        <Pressable
+          disabled={completingVisit}
+          onPress={() =>
+            setActiveSection("assessment")
+          }
+          android_ripple={{ color: "#B8D3F5" }}
+          style={[
+            styles.sectionItem,
+            styles.sectionItemWithLeftBorder,
+            activeSection === "assessment" &&
+              styles.sectionItemActive,
+          ]}
+        >
+          <Ionicons
+            name="clipboard-outline"
+            size={22}
+            color={
+              activeSection === "assessment"
+                ? COLORS.white
+                : COLORS.primary
+            }
+          />
+
+          <Text
+            style={[
+              styles.sectionItemTitle,
+              activeSection === "assessment" &&
+                styles.sectionItemTitleActive,
+            ]}
+          >
+            Assessment
+          </Text>
+        </Pressable>
+      </View>
+
+      <AppKeyboardAwareScrollView
+        style={styles.contentScroll}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.visitHeaderContainer}>
+          <VisitHeaderCard
+            sectionTitle={
+              getVisitHeaderConfig().sectionTitle
+            }
+            icon={getVisitHeaderConfig().icon}
+            visitId={resolvedVisitId}
+          />
+        </View>
+
+        {renderActiveSection()}
+      </AppKeyboardAwareScrollView>
+
+      <View style={styles.floatingActions}>
+  {activeSection !== "history" && (
+    <Pressable
+      disabled={completingVisit}
+      onPress={() => {
+        if (activeSection === "assessment") {
+          setActiveSection("examination");
+        } else {
+          setActiveSection("history");
+        }
+      }}
+      android_ripple={{ color: "#DCEBFF" }}
+      style={styles.floatingBackButton}
+    >
+      <Ionicons
+        name={
+          activeSection === "assessment"
+            ? "medkit-outline"
+            : "document-text-outline"
+        }
+        size={25}
+        color={COLORS.primary}
+      />
+    </Pressable>
+  )}
+
+  {activeSection !== "assessment" ? (
+    <Pressable
+      disabled={completingVisit}
+      onPress={() => {
+        if (activeSection === "history") {
+          setActiveSection("examination");
+        } else {
+          setActiveSection("assessment");
+        }
+      }}
+      android_ripple={{ color: "#DCEBFF" }}
+      style={[
+        styles.floatingNextButton,
+        activeSection === "history" &&
+          styles.historyNextButton,
+      ]}
+    >
+      <Ionicons
+        name={
+          activeSection === "history"
+            ? "medkit-outline"
+            : "clipboard-outline"
+        }
+        size={25}
+        color={COLORS.white}
+      />
+    </Pressable>
+  ) : (
+    <Pressable
+      disabled={completingVisit}
+      onPress={handleCompleteVisit}
+      android_ripple={{ color: "#DCEBFF" }}
+      style={styles.saveVisitButton}
+    >
+      <Ionicons
+        name="save-outline"
+        size={21}
+        color={COLORS.white}
+      />
+
+      <Text style={styles.saveVisitText}>
+        {completingVisit ? "Saving..." : "Save"}
+      </Text>
+    </Pressable>
+  )}
+</View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+
+  sectionNavigation: {
+    flexDirection: "row",
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.sm,
+    marginBottom: 0,
+
+    minHeight: 52,
+    padding: 3,
+    borderRadius: 17,
+
+    backgroundColor: "#E7F1FF",
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.14,
+    shadowRadius: 6,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    elevation: 5,
+
+    zIndex: 10,
+  },
+  
+  sectionItem: {
+    flex: 1,
+    minHeight: 46,
+    borderRadius: 14,
+
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+
+    paddingHorizontal: 4,
+    gap: 6,
+  },
+
+  sectionItemWithLeftBorder: {
+    borderLeftWidth: 1.5,
+    borderLeftColor: "#8FB3E3",
+  },
+
+  sectionItemActive: {
+    backgroundColor: COLORS.primary,
+    elevation: 6,
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.22,
+    shadowRadius: 7,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+  },
+  
+  sectionItemTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+
+  sectionItemTitleActive: {
+    color: COLORS.white,
+    fontWeight: "700",
+  },
+
+  historyContent: {
+    flex: 1,
+    paddingHorizontal: SPACING.lg,
+  },
+
+  contentScroll: {
+    flex: 1,
+  },
+
+  contentContainer: {
+    paddingTop: SPACING.xs,
+    paddingBottom: SPACING.lg,
+  },
+
+  visitHeaderContainer: {
+    paddingHorizontal: SPACING.md,
+  },
+
+  floatingActions: {
+    position: "absolute",
+
+    left: SPACING.lg,
+    right: SPACING.lg,
+    bottom: SPACING.md,
+
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  floatingBackButton: {
+    width: 70,
+    height: 50,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    borderColor: "#C9DDF5",
+    backgroundColor: COLORS.white,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 4,
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.14,
+    shadowRadius: 5,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+  },
+
+  floatingNextButton: {
+    width: 70,
+    height: 50,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    borderColor: COLORS.white,
+    backgroundColor: COLORS.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 4,
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.18,
+    shadowRadius: 5,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+  },
+
+  historyNextButton: {
+    marginLeft: "auto",
+  },
+
+  saveVisitButton: {
+    minWidth: 104,
+    height: 44,
+    paddingHorizontal: 14,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    borderColor: COLORS.white,
+    backgroundColor: COLORS.primary,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    elevation: 4,
+    shadowColor: COLORS.black,
+    shadowOpacity: 0.18,
+    shadowRadius: 5,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+  },
+
+  saveVisitText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+});

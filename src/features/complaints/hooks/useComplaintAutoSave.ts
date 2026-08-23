@@ -15,33 +15,67 @@ export default function useComplaintAutoSave({
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (!visitId || !chiefComplaintId) {
-      return;
-    }
-
-    // Don't save the initial form state.
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      saveChiefComplaint(
-        visitId,
-        chiefComplaintId,
-        answers,
-      ).catch((error) => {
-        console.error(
-          "Failed to auto-save complaint analysis:",
-          error,
-        );
-      });
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [
+  console.log("AUTOSAVE EFFECT:", {
     visitId,
     chiefComplaintId,
-    JSON.stringify(answers),
-  ]);
+    answers,
+    isFirstRender: isFirstRender.current,
+  });
+
+  if (!visitId || !chiefComplaintId) {
+    console.log(
+      "AUTOSAVE SKIPPED: missing visitId or chiefComplaintId"
+    );
+    return;
+  }
+
+  if (isFirstRender.current) {
+    console.log(
+      "AUTOSAVE SKIPPED: first render"
+    );
+
+    isFirstRender.current = false;
+    return;
+  }
+
+  console.log(
+    "AUTOSAVE SCHEDULED"
+  );
+
+  const timer = setTimeout(() => {
+    console.log(
+      "AUTOSAVE FIRING:",
+      answers
+    );
+
+    saveChiefComplaint(
+      visitId,
+      chiefComplaintId,
+      answers,
+    )
+      .then(() => {
+        console.log(
+          "AUTOSAVE SUCCESS"
+        );
+      })
+      .catch((error) => {
+        console.error(
+          "AUTOSAVE FAILED:",
+          error
+        );
+      });
+  }, 500);
+
+  return () => {
+    console.log(
+      "AUTOSAVE CLEANUP"
+    );
+
+    clearTimeout(timer);
+  };
+}, [
+  visitId,
+  chiefComplaintId,
+  JSON.stringify(answers),
+]);
 }

@@ -197,7 +197,7 @@ export default function PatientOverviewScreen() {
         );
 
       router.push({
-        pathname: "/visit/HistoryScreen",
+        pathname: "/VisitScreen",
         params: {
           patientId,
           visitId: startedVisit.id,
@@ -277,8 +277,7 @@ export default function PatientOverviewScreen() {
           );
 
         router.push({
-          pathname:
-            "/visit/HistoryScreen",
+          pathname: "/VisitScreen",
           params: {
             patientId,
             visitId:
@@ -299,8 +298,7 @@ export default function PatientOverviewScreen() {
         "IN_PROGRESS"
       ) {
         router.push({
-          pathname:
-            "/visit/HistoryScreen",
+          pathname: "/VisitScreen",
           params: {
             patientId,
             visitId:

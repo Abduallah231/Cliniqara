@@ -1,8 +1,7 @@
 import { Text } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import ComplaintTemplateRenderer from "@/features/complaints/components/ComplaintTemplateRenderer";
-import useComplaintForm from "@/features/complaints/hooks/useComplaintForm";
 import useComplaintAutoSave from "@/features/complaints/hooks/useComplaintAutoSave";
 
 import { getChiefComplaintTemplate } from "@/services/chiefComplaintApi";
@@ -13,7 +12,14 @@ import { ComplaintTemplate } from "@/features/complaints/models/ComplaintTemplat
 import GenericAnalysis from "./GenericAnalysis";
 
 export default function AnalysisOfComplaint() {
-  const { visit } = useVisitStore();
+  const visit = useVisitStore(
+    (state) => state.visit
+  );
+
+  const updateAnalysisField =
+    useVisitStore(
+      (state) => state.updateAnalysisField
+    );
 
   const chiefComplaint =
     visit.history.chiefComplaint;
@@ -33,7 +39,7 @@ export default function AnalysisOfComplaint() {
       try {
         const data =
           await getChiefComplaintTemplate(
-            chiefComplaint.complaintId,
+            chiefComplaint.complaintId
           );
 
         if (!cancelled) {
@@ -43,8 +49,9 @@ export default function AnalysisOfComplaint() {
         if (!cancelled) {
           console.error(
             "Failed to load complaint template:",
-            error,
+            error
           );
+
           setTemplate(undefined);
         }
       }
@@ -57,9 +64,71 @@ export default function AnalysisOfComplaint() {
     };
   }, [chiefComplaint.complaintId]);
 
-  const { values, setValue } =
-    useComplaintForm(template);
+  /*
+   * visitStore is the single local source of truth.
+   *
+   * ComplaintTemplateRenderer expects an object:
+   * {
+   *   [fieldId]: value
+   * }
+   *
+   * So we derive that object from the store.
+   */
+  const values = useMemo(() => {
+    const result: Record<string, any> = {};
 
+    for (
+      const field of
+        visit.history.hpi.analysis.fields
+    ) {
+      result[field.fieldId] = field.value;
+    }
+
+    return result;
+  }, [
+    visit.history.hpi.analysis.fields,
+  ]);
+
+  console.log(
+  "ANALYSIS STORE VALUES:",
+  values
+);
+
+  /*
+   * Renderer sends the fieldId + value.
+   * Store also needs fieldLabel, so we resolve it
+   * from the current template before updating the store.
+   */
+  const handleChange = (
+    fieldId: string,
+    value: any,
+    unit?: string
+  ) => {
+    if (!template) {
+      return;
+    }
+
+    const field = template.sections
+      ?.flatMap((section: any) =>
+        section.fields ?? []
+      )
+      .find(
+        (item: any) =>
+          item.fieldId === fieldId
+      );
+
+    updateAnalysisField(
+      fieldId,
+      field?.fieldLabel ?? fieldId,
+      value,
+      unit
+    );
+  };
+
+  /*
+   * Backend autosave uses the exact same values
+   * derived from visitStore.
+   */
   useComplaintAutoSave({
     visitId: visit.metadata.id,
     chiefComplaintId:
@@ -83,7 +152,7 @@ export default function AnalysisOfComplaint() {
     <ComplaintTemplateRenderer
       template={template}
       values={values}
-      onChange={setValue}
+      onChange={handleChange}
     />
   );
 }

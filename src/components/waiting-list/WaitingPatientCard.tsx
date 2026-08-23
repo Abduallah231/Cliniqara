@@ -550,7 +550,7 @@ export default function WaitingPatientCard({
       */
       if (patient.status === "With Doctor") {
         router.push({
-          pathname: "/visit/HistoryScreen",
+          pathname: "/VisitScreen",
           params: {
             patientId: patient.patientId,
             visitId: patient.visitId,
@@ -570,7 +570,7 @@ export default function WaitingPatientCard({
       );
 
       router.replace({
-        pathname: "/visit/HistoryScreen",
+        pathname: "/VisitScreen",
         params: {
           patientId: patient.patientId,
           visitId: visit.id,

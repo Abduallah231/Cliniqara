@@ -1,4 +1,3 @@
-import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import {
   COLORS,
   RADIUS,
@@ -11,48 +10,24 @@ import GeneralInspectionSection from "./examination/sections/GeneralInspectionSe
 import RegionalExaminationSection from "./examination/sections/RegionalExaminationSection";
 import SystemExaminationSection from "./examination/sections/SystemExaminationSection";
 import VitalSignsSection from "./examination/sections/VitalSignsSection";
-import VisitHeaderCard from "./VisitHeaderCard";
 
-type Props = {
-  patientId?: string;
-  visitId?: string;
-};
-
-export default function ExaminationTab({
-  patientId,
-  visitId,
-}: Props) {
+export default function ExaminationTab() {
   return (
-    <AppKeyboardAwareScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <VisitHeaderCard
-        sectionTitle="Medical Examination"
-        icon="medkit-outline"
-        visitId={visitId}
-      />
+  <View style={styles.container}>
       <VitalSignsSection />
       <GeneralInspectionSection />
       <RegionalExaminationSection />
       <SystemExaminationSection />
       <View style={{ height: 50 }} />
-    </AppKeyboardAwareScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-
-  content: {
-      paddingHorizontal: SPACING.md,
-        paddingTop: SPACING.sm,
-          paddingBottom: 70,
-            gap: SPACING.md,
-            
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.sm,
+    gap: SPACING.md,   
   },
 
   patientBanner: {
@@ -89,36 +64,36 @@ navigationBar: {
 
   
   padding: 4,
-borderRadius: 20,
-backgroundColor: "rgba(255,255,255,0.15)",
+  borderRadius: 20,
+  backgroundColor: "rgba(255,255,255,0.15)",
 },
 
 backButton: {
   width: 110,
   borderWidth: 1.5,
-borderColor: "#FFFFFF",
-shadowColor: "#000",
-shadowOpacity: 0.15,
-shadowRadius: 10,
-shadowOffset: {
-  width: 0,
-  height: 4,
-},
-elevation: 6,
+  borderColor: "#FFFFFF",
+  shadowColor: "#000",
+  shadowOpacity: 0.15,
+  shadowRadius: 10,
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  elevation: 6,
 },
 
 nextButton: {
   width: 110,
   borderWidth: 1.5,
-borderColor: "#FFFFFF",
-shadowColor: "#000",
-shadowOpacity: 0.18,
-shadowRadius: 10,
-shadowOffset: {
-  width: 0,
-  height: 4,
-},
-elevation: 6,
+  borderColor: "#FFFFFF",
+  shadowColor: "#000",
+  shadowOpacity: 0.18,
+  shadowRadius: 10,
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  elevation: 6,
 },
 
   examRow: {

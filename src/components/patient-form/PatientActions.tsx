@@ -462,7 +462,7 @@ export default function PatientActions({
         });
 
         router.replace({
-          pathname: "/visit/HistoryScreen",
+          pathname: "/VisitScreen",
           params: {
             patientId: targetPatientId,
             visitId: startedVisit.id,
