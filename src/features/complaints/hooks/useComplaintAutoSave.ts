@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { saveChiefComplaint } from "@/services/visitApi";
 
 interface Props {
@@ -12,17 +12,33 @@ export default function useComplaintAutoSave({
   chiefComplaintId,
   answers,
 }: Props) {
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
     if (!visitId || !chiefComplaintId) {
       return;
     }
 
-    saveChiefComplaint(
-      visitId,
-      chiefComplaintId,
-      answers
-    ).catch(console.error);
+    // Don't save the initial form state.
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
 
+    const timer = setTimeout(() => {
+      saveChiefComplaint(
+        visitId,
+        chiefComplaintId,
+        answers,
+      ).catch((error) => {
+        console.error(
+          "Failed to auto-save complaint analysis:",
+          error,
+        );
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [
     visitId,
     chiefComplaintId,

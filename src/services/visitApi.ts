@@ -138,3 +138,14 @@ export async function saveChiefComplaint(
 
   return data;
 }
+
+export async function getChiefComplaint(
+  visitId: string,
+  chiefComplaintId: string,
+) {
+  const { data } = await api.get(
+    `/visits/${visitId}/chief-complaint/${chiefComplaintId}`,
+  );
+
+  return data;
+}
