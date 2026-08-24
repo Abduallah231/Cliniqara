@@ -409,6 +409,8 @@ model User {
 
   userCode String @unique
 
+  currentClinicId String?
+
   accountType AccountType
   doctorLevel DoctorLevel?
 
@@ -437,10 +439,15 @@ model User {
 
   lastLoginAt DateTime?
 
+  selectedClinicId String?
+
+  selectedClinic Clinic? @relation("UserSelectedClinic", fields: [selectedClinicId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   createdClinics    Clinic[]       @relation("ClinicCreator")
+  currentClinic     Clinic?        @relation("UserCurrentClinic", fields: [currentClinicId], references: [id])
   clinicMemberships ClinicMember[]
 
   createdVisits Visit[] @relation("VisitCreatedBy")
@@ -479,10 +486,12 @@ model Clinic {
 
   createdBy User @relation("ClinicCreator", fields: [createdById], references: [id])
 
-  members   ClinicMember[]
-  patients  Patient[]
-  visits    Visit[]
-  joinCodes ClinicJoinCode[]
+  selectedByUsers User[]           @relation("UserSelectedClinic")
+  currentUsers    User[]           @relation("UserCurrentClinic")
+  members         ClinicMember[]
+  patients        Patient[]
+  visits          Visit[]
+  joinCodes       ClinicJoinCode[]
 
   @@index([createdById])
   @@index([city])

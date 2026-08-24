@@ -7,6 +7,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { SelectClinicDto } from '../dto/select-clinic.dto';
 
 import { AccountType } from '@prisma/client';
 
@@ -48,6 +49,28 @@ export class ClinicController {
   ) {
     return this.clinicService.getMyClinics(
       user.id,
+    );
+  }
+
+  @Patch('current')
+  setCurrentClinic(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body('clinicId') clinicId: string,
+  ) {
+    return this.clinicService.setCurrentClinic(
+      user.id,
+      clinicId,
+    );
+  }
+
+  @Patch('selected')
+  selectClinic(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: SelectClinicDto,
+  ) {
+    return this.clinicService.selectClinic(
+      user.id,
+      dto.clinicId,
     );
   }
 
@@ -209,4 +232,14 @@ export class ClinicController {
       clinicId,
     );
   }
+
+  @Get('selected')
+  getSelectedClinic(
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.clinicService.getSelectedClinic(
+      user.id,
+    );
+  }
+
 }

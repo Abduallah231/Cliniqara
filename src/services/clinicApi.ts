@@ -1,13 +1,13 @@
-import { api } from "./api";
+import { useClinicStore } from "@/store/clinicStore";
 import type {
   ClinicMember,
   CreateClinicDto,
   JoinCode,
   MyClinic,
-  UpdateClinicDto,
   MyMembershipRequest,
+  UpdateClinicDto,
 } from "@/types/clinic";
-import { useClinicStore } from "@/store/clinicStore";
+import { api } from "./api";
 
 export async function getMyClinics(): Promise<MyClinic[]> {
   const { data } = await api.get("/clinics/me");
@@ -139,7 +139,33 @@ export async function loadClinics(): Promise<MyClinic[]> {
     .getState()
     .setClinics(memberships);
 
+  if (memberships.length === 0) {
+    return memberships;
+  }
+
+  const selectedClinic =
+    await getSelectedClinic();
+
+  if (!selectedClinic) {
+    await selectClinic(
+      memberships[0].clinic.id,
+    );
+  }
+
   return memberships;
+}
+
+export async function setCurrentClinic(
+  clinicId: string,
+) {
+  const { data } = await api.patch(
+    "/clinics/current",
+    {
+      clinicId,
+    },
+  );
+
+  return data;
 }
 
 export async function getMyMembershipRequests(): Promise<
@@ -148,6 +174,55 @@ export async function getMyMembershipRequests(): Promise<
   const { data } = await api.get(
     "/clinics/my-membership-requests",
   );
+
+  return data;
+}
+
+export async function selectClinic(
+  clinicId: string,
+): Promise<MyClinic> {
+  const store = useClinicStore.getState();
+
+  const clinic = store.clinics.find(
+    (item) =>
+      item.clinic.id === clinicId,
+  );
+
+  if (!clinic) {
+    throw new Error(
+      "Clinic not found in local store",
+    );
+  }
+
+  // Update UI immediately.
+  store.setCurrentClinic(clinic);
+
+  // Persist selection on backend.
+  const { data } = await api.patch(
+    "/clinics/selected",
+    { clinicId },
+  );
+
+  // Refresh local clinic data from backend response.
+  if (data) {
+    useClinicStore
+      .getState()
+      .setCurrentClinic(data);
+  }
+
+  return data;
+}
+
+export async function getSelectedClinic(): Promise<MyClinic | null> {
+  const { data } = await api.get(
+    "/clinics/selected",
+  );
+
+  if (data) {
+    useClinicStore
+      .getState()
+      .setCurrentClinic(data);
+  }
 
   return data;
 }

@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import {
   AccountType,
   ClinicRole,
@@ -1080,4 +1081,163 @@ export class ClinicService {
       },
     });
   }
+
+  async selectClinic(
+    userId: string,
+    clinicId: string,
+  ) {
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId,
+          clinicId,
+          status: MembershipStatus.ACTIVE,
+          clinic: {
+            isActive: true,
+          },
+        },
+        include: {
+          clinic: {
+            include: {
+              workingDays: {
+                include: {
+                  shifts: {
+                    orderBy: {
+                      sortOrder: 'asc',
+                    },
+                  },
+                },
+                orderBy: {
+                  day: 'asc',
+                },
+              },
+            },
+          },
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        'Active clinic membership not found',
+      );
+    }
+
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        selectedClinicId: clinicId,
+      },
+    });
+
+    return {
+      membershipId: membership.id,
+      role: membership.clinicRole,
+      clinic: membership.clinic,
+    };
+  }
+
+  async getSelectedClinic(userId: string) {
+    const user =
+      await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          selectedClinicId: true,
+        },
+      });
+
+    if (!user?.selectedClinicId) {
+      return null;
+    }
+
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId,
+          clinicId: user.selectedClinicId,
+          status: MembershipStatus.ACTIVE,
+          clinic: {
+            isActive: true,
+          },
+        },
+        include: {
+          clinic: {
+            include: {
+              workingDays: {
+                include: {
+                  shifts: {
+                    orderBy: {
+                      sortOrder: 'asc',
+                    },
+                  },
+                },
+                orderBy: {
+                  day: 'asc',
+                },
+              },
+            },
+          },
+        },
+      });
+
+    if (!membership) {
+      return null;
+    }
+
+    return {
+      membershipId: membership.id,
+      role: membership.clinicRole,
+      clinic: membership.clinic,
+    };
+  }
+
+  async setCurrentClinic(
+    userId: string,
+    clinicId: string,
+  ) {
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId,
+          clinicId,
+          status: MembershipStatus.ACTIVE,
+        },
+        include: {
+          clinic: {
+            select: {
+              id: true,
+              isActive: true,
+            },
+          },
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        'Clinic membership not found',
+      );
+    }
+
+    if (!membership.clinic.isActive) {
+      throw new ConflictException(
+        'Clinic is inactive',
+      );
+    }
+
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        currentClinicId: clinicId,
+      },
+      select: {
+        currentClinicId: true,
+      },
+    });
+  }
+  
 }

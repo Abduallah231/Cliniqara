@@ -1,22 +1,30 @@
 import {
+  Modal,
   ScrollView,
   View,
   Text,
   Pressable,
   StyleSheet,
 } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 
 import AppCard from "@/components/common/AppCard";
 import AppButton from "@/components/common/AppButton";
+
 import { useClinicStore } from "@/store/clinicStore";
+import { selectClinic } from "@/services/clinicApi";
+
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
   SHADOW,
 } from "@/theme";
+
 import type { ClinicRole } from "@/types/clinic";
+
+import { useState } from "react";
 
 type Props = {
   onCreateClinic: () => void;
@@ -48,116 +56,410 @@ export default function ClinicSelector({
   const {
     clinics,
     currentClinic,
-    setCurrentClinic,
+    setCurrentClinicById,
+    moveClinicUp,
+    moveClinicDown,
   } = useClinicStore();
 
+  const [organizeMode, setOrganizeMode] =
+    useState(false);
+
+  const handleSelectClinic = async (
+    clinicId: string,
+  ) => {
+    // Update UI immediately
+    setCurrentClinicById(clinicId);
+
+    try {
+      // Persist selection on backend
+      await selectClinic(clinicId);
+    } catch (error) {
+      console.warn(
+        "Failed to select clinic:",
+        error,
+      );
+    }
+  };
+
   return (
-    <AppCard style={styles.card}>
-      <Text style={styles.title}>
-        My Clinics
-      </Text>
+    <>
+      <AppCard style={styles.card}>
+        <View style={styles.header}>
+          <Text style={styles.title}>
+            My Clinics
+          </Text>
 
-      {clinics.length > 0 ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.clinicsList}
-        >
-          {clinics.map((item) => {
-            const selected =
-              item.clinic.id ===
-              currentClinic?.clinic.id;
+          {clinics.length > 1 && (
+            <Pressable
+              style={styles.organizeButton}
+              onPress={() =>
+                setOrganizeMode(true)
+              }
+            >
+              <Ionicons
+                name="swap-vertical-outline"
+                size={18}
+                color={COLORS.primary}
+              />
 
-            return (
-              <Pressable
-                key={item.clinic.id}
-                style={[
-                  styles.clinicRow,
-                  selected && styles.selected,
-                ]}
-                onPress={() =>
-                  setCurrentClinic(item)
+              <Text
+                style={
+                  styles.organizeButtonText
                 }
               >
-                <View style={styles.icon}>
-                  <Ionicons
-                    name="business-outline"
-                    size={22}
-                    color={COLORS.primary}
-                  />
-                </View>
-
-                <View style={styles.info}>
-                  <Text
-                    style={styles.name}
-                    numberOfLines={1}
-                  >
-                    {item.clinic.name}
-                  </Text>
-
-                  <View style={styles.roleBadge}>
-                    <Text style={styles.roleBadgeText}>
-                      {getRoleLabel(item.role)}
-                    </Text>
-                  </View>
-                </View>
-
-                {selected && (
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={24}
-                    color={COLORS.primary}
-                  />
-                )}
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      ) : (
-        <View style={styles.emptyState}>
-          <View style={styles.emptyIcon}>
-            <Ionicons
-              name="business-outline"
-              size={30}
-              color={COLORS.primary}
-            />
-          </View>
-
-          <Text style={styles.emptyTitle}>
-            No Clinic Yet
-          </Text>
-
-          <Text style={styles.emptyText}>
-            Create a new clinic or join an existing
-            clinic using a join code.
-          </Text>
+                Organize
+              </Text>
+            </Pressable>
+          )}
         </View>
-      )}
 
-      <View style={styles.actions}>
-        <AppButton
-          title="Create New Clinic"
-          icon="add-outline"
-          style={styles.actionButton}
-          onPress={onCreateClinic}
-        />
+        {clinics.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={
+              false
+            }
+            contentContainerStyle={
+              styles.clinicsList
+            }
+          >
+            {clinics.map((item) => {
+              const selected =
+                item.clinic.id ===
+                currentClinic?.clinic.id;
 
-        <Pressable
-          style={styles.joinButton}
-          onPress={onJoinClinic}
-        >
-          <Ionicons
-            name="enter-outline"
-            size={18}
-            color={COLORS.primary}
+              return (
+                <Pressable
+                  key={item.clinic.id}
+                  style={[
+                    styles.clinicRow,
+                    selected &&
+                      styles.selected,
+                  ]}
+                  onPress={() =>
+                    handleSelectClinic(item.clinic.id)
+                  }
+                >
+                  <View
+                    style={styles.icon}
+                  >
+                    <Ionicons
+                      name="business-outline"
+                      size={22}
+                      color={
+                        COLORS.primary
+                      }
+                    />
+                  </View>
+
+                  <View
+                    style={styles.info}
+                  >
+                    <Text
+                      style={styles.name}
+                      numberOfLines={1}
+                    >
+                      {item.clinic.name}
+                    </Text>
+
+                    <View
+                      style={
+                        styles.roleBadge
+                      }
+                    >
+                      <Text
+                        style={
+                          styles.roleBadgeText
+                        }
+                      >
+                        {getRoleLabel(
+                          item.role,
+                        )}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {selected && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={24}
+                      color={
+                        COLORS.primary
+                      }
+                    />
+                  )}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        ) : (
+          <View
+            style={styles.emptyState}
+          >
+            <View
+              style={styles.emptyIcon}
+            >
+              <Ionicons
+                name="business-outline"
+                size={30}
+                color={COLORS.primary}
+              />
+            </View>
+
+            <Text
+              style={styles.emptyTitle}
+            >
+              No Clinic Yet
+            </Text>
+
+            <Text
+              style={styles.emptyText}
+            >
+              Create a new clinic or join
+              an existing clinic using a
+              join code.
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.actions}>
+          <AppButton
+            title="Create New Clinic"
+            icon="add-outline"
+            style={styles.actionButton}
+            onPress={onCreateClinic}
           />
 
-          <Text style={styles.joinButtonText}>
-            Join Existing Clinic
-          </Text>
-        </Pressable>
-      </View>
-    </AppCard>
+          <Pressable
+            style={styles.joinButton}
+            onPress={onJoinClinic}
+          >
+            <Ionicons
+              name="enter-outline"
+              size={18}
+              color={COLORS.primary}
+            />
+
+            <Text
+              style={
+                styles.joinButtonText
+              }
+            >
+              Join Existing Clinic
+            </Text>
+          </Pressable>
+        </View>
+      </AppCard>
+
+      <Modal
+        visible={organizeMode}
+        transparent
+        animationType="fade"
+        onRequestClose={() =>
+          setOrganizeMode(false)
+        }
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={styles.organizeModal}
+          >
+            <View
+              style={styles.modalHeader}
+            >
+              <View>
+                <Text
+                  style={
+                    styles.modalTitle
+                  }
+                >
+                  Organize Clinics
+                </Text>
+
+                <Text
+                  style={
+                    styles.modalSubtitle
+                  }
+                >
+                  Arrange your clinics in
+                  the order you prefer.
+                </Text>
+              </View>
+
+              <Pressable
+                style={
+                  styles.modalCloseButton
+                }
+                onPress={() =>
+                  setOrganizeMode(false)
+                }
+              >
+                <Ionicons
+                  name="close"
+                  size={22}
+                  color={COLORS.text}
+                />
+              </Pressable>
+            </View>
+
+            <ScrollView
+              showsVerticalScrollIndicator={
+                false
+              }
+              contentContainerStyle={
+                styles.organizeList
+              }
+            >
+              {clinics.map(
+                (item, index) => (
+                  <View
+                    key={item.clinic.id}
+                    style={
+                      styles.organizeRow
+                    }
+                  >
+                    <View
+                      style={
+                        styles.orderNumber
+                      }
+                    >
+                      <Text
+                        style={
+                          styles.orderNumberText
+                        }
+                      >
+                        {index + 1}
+                      </Text>
+                    </View>
+
+                    <View
+                      style={
+                        styles.organizeIcon
+                      }
+                    >
+                      <Ionicons
+                        name="business-outline"
+                        size={22}
+                        color={
+                          COLORS.primary
+                        }
+                      />
+                    </View>
+
+                    <View
+                      style={
+                        styles.organizeInfo
+                      }
+                    >
+                      <Text
+                        style={
+                          styles.organizeName
+                        }
+                        numberOfLines={1}
+                      >
+                        {item.clinic.name}
+                      </Text>
+
+                      <Text
+                        style={
+                          styles.organizeRole
+                        }
+                      >
+                        {getRoleLabel(
+                          item.role,
+                        )}
+                      </Text>
+                    </View>
+
+                    <View
+                      style={
+                        styles.moveButtons
+                      }
+                    >
+                      <Pressable
+                        disabled={
+                          index === 0
+                        }
+                        onPress={() =>
+                          moveClinicUp(
+                            index,
+                          )
+                        }
+                        style={[
+                          styles.moveButton,
+                          index === 0 &&
+                            styles.moveButtonDisabled,
+                        ]}
+                      >
+                        <Ionicons
+                          name="chevron-up"
+                          size={21}
+                          color={
+                            index === 0
+                              ? COLORS.border
+                              : COLORS.primary
+                          }
+                        />
+                      </Pressable>
+
+                      <Pressable
+                        disabled={
+                          index ===
+                          clinics.length -
+                            1
+                        }
+                        onPress={() =>
+                          moveClinicDown(
+                            index,
+                          )
+                        }
+                        style={[
+                          styles.moveButton,
+                          index ===
+                            clinics.length -
+                              1 &&
+                            styles.moveButtonDisabled,
+                        ]}
+                      >
+                        <Ionicons
+                          name="chevron-down"
+                          size={21}
+                          color={
+                            index ===
+                            clinics.length -
+                              1
+                              ? COLORS.border
+                              : COLORS.primary
+                          }
+                        />
+                      </Pressable>
+                    </View>
+                  </View>
+                ),
+              )}
+            </ScrollView>
+
+            <Pressable
+              style={styles.doneButton}
+              onPress={() =>
+                setOrganizeMode(false)
+              }
+            >
+              <Ionicons
+                name="checkmark"
+                size={20}
+                color={COLORS.white}
+              />
+
+              <Text
+                style={styles.doneButtonText}
+              >
+                Done
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -167,16 +469,41 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
 
-  clinicsList: {
-    gap: SPACING.sm,
-    paddingBottom: SPACING.xs,
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: SPACING.sm,
   },
 
   title: {
     fontSize: 18,
     fontWeight: "700",
     color: COLORS.text,
-    marginBottom: SPACING.sm,
+  },
+
+  organizeButton: {
+    minHeight: 38,
+    paddingHorizontal: 11,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: "#EEF6FF",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+  },
+
+  organizeButtonText: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+
+  clinicsList: {
+    gap: SPACING.sm,
+    paddingBottom: SPACING.xs,
   },
 
   clinicRow: {
@@ -202,7 +529,8 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
   },
 
   info: {
@@ -222,7 +550,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 999,
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
   },
 
   roleBadgeText: {
@@ -287,6 +616,155 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: 14,
     fontWeight: "700",
+  },
+
+  // Modal
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor:
+      "rgba(0, 0, 0, 0.38)",
+    justifyContent: "center",
+    paddingHorizontal: SPACING.lg,
+  },
+
+  organizeModal: {
+    maxHeight: "82%",
+    backgroundColor: COLORS.white,
+    borderRadius: 22,
+    padding: SPACING.lg,
+    ...SHADOW,
+  },
+
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: SPACING.md,
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: COLORS.text,
+  },
+
+  modalSubtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    lineHeight: 19,
+    color: COLORS.secondaryText,
+  },
+
+  modalCloseButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor:
+      COLORS.background,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  organizeList: {
+    gap: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+
+  organizeRow: {
+    minHeight: 70,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.background,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 8,
+  },
+
+  orderNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#E7F1FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  orderNumberText: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: "800",
+  },
+
+  organizeIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    marginLeft: 8,
+    backgroundColor: COLORS.white,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  organizeInfo: {
+    flex: 1,
+    marginLeft: 10,
+    minWidth: 0,
+  },
+
+  organizeName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
+  organizeRole: {
+    marginTop: 3,
+    fontSize: 12,
+    fontWeight: "600",
+    color: COLORS.secondaryText,
+  },
+
+  moveButtons: {
+    flexDirection: "row",
+    gap: 5,
+    marginLeft: 8,
+  },
+
+  moveButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#C9DDF5",
+    backgroundColor: COLORS.white,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  moveButtonDisabled: {
+    opacity: 0.55,
+    backgroundColor:
+      COLORS.background,
+  },
+
+  doneButton: {
+    height: 48,
+    borderRadius: 13,
+    marginTop: SPACING.md,
+    backgroundColor: COLORS.primary,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+  },
+
+  doneButtonText: {
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: "800",
   },
 
   actionButton: {
