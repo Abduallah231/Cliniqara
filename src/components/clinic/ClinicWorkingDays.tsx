@@ -1,25 +1,19 @@
-import {
-  useState,
-} from "react";
-
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
-import Divider from "@/components/common/Divider";
-
-import DateTimePicker from "@react-native-community/datetimepicker";
-
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import {
+  useState,
+} from "react";
+import {
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 
 export type WeekDay =
   | "SATURDAY"
@@ -99,10 +93,8 @@ export default function ClinicWorkingDays({
 
         return {
           ...item,
-
           isClosed:
             !item.isClosed,
-
           shifts:
             opening &&
             !item.is24Hours
@@ -132,10 +124,8 @@ export default function ClinicWorkingDays({
 
         return {
           ...item,
-
           is24Hours:
             enabling24Hours,
-
           shifts:
             enabling24Hours
               ? []
@@ -163,7 +153,6 @@ export default function ClinicWorkingDays({
         item.day === day
           ? {
               ...item,
-
               shifts:
                 item.shifts.map(
                   (
@@ -193,7 +182,6 @@ export default function ClinicWorkingDays({
         item.day === day
           ? {
               ...item,
-
               shifts: [
                 ...item.shifts,
                 {
@@ -216,7 +204,6 @@ export default function ClinicWorkingDays({
         item.day === day
           ? {
               ...item,
-
               shifts:
                 item.shifts.filter(
                   (_, index) =>
@@ -301,214 +288,391 @@ export default function ClinicWorkingDays({
   };
 
   return (
-    <AppCard>
+    <View style={styles.container}>
       {value.map((item) => (
-        <View
+        <AppCard
           key={item.day}
         >
           <View
-            style={
-              styles.dayHeader
-            }
+            style={[
+              styles.dayCard,
+              item.isClosed
+                ? styles.closedDayCard
+                : styles.openDayCard,
+            ]}
           >
-            <Text
+            {/* =========================
+                Day Header
+               ========================= */}
+            <View
               style={
-                styles.dayName
+                styles.dayHeader
               }
             >
-              {
-                DAY_LABELS[
-                  item.day
-                ]
-              }
-            </Text>
-
-            <AppButton
-              title={
-                item.isClosed
-                  ? "Closed"
-                  : "Open"
-              }
-              onPress={() =>
-                toggleDay(
-                  item.day,
-                )
-              }
-            />
-          </View>
-
-          {!item.isClosed && (
-            <View>
               <View
                 style={
-                  styles.fullDayRow
+                  styles.dayTitleContainer
                 }
               >
-                <Text
-                  style={
-                    styles.timeLabel
-                  }
-                >
-                  Working Hours
-                </Text>
-
-                <AppButton
-                  title={
-                    item.is24Hours
-                      ? "24 Hours"
-                      : "Set 24 Hours"
-                  }
-                  variant={
-                    item.is24Hours
-                      ? "primary"
-                      : "secondary"
-                  }
-                  onPress={() =>
-                    toggle24Hours(
-                      item.day,
-                    )
-                  }
+                <View
+                  style={[
+                    styles.dayIndicator,
+                    item.isClosed
+                      ? styles.closedIndicator
+                      : styles.openIndicator,
+                  ]}
                 />
+
+                <View>
+                  <Text
+                    style={
+                      styles.dayName
+                    }
+                  >
+                    {
+                      DAY_LABELS[
+                        item.day
+                      ]
+                    }
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.dayStatus,
+                      item.isClosed
+                        ? styles.closedStatus
+                        : styles.openStatus,
+                    ]}
+                  >
+                    {item.isClosed
+                      ? "Clinic closed"
+                      : "Clinic open"}
+                  </Text>
+                </View>
               </View>
 
-              {!item.is24Hours && (
-                <View>
-                  {item.shifts.map(
-                    (
-                      shift,
-                      shiftIndex,
-                    ) => (
-                      <View
-                        key={`${item.day}-${shiftIndex}`}
-                        style={
-                          styles.shiftContainer
-                        }
-                      >
-                        <View
-                          style={
-                            styles.shiftHeader
-                          }
-                        >
-                          <Text
-                            style={
-                              styles.shiftTitle
-                            }
-                          >
-                            Shift{" "}
-                            {shiftIndex +
-                              1}
-                          </Text>
+              <AppButton
+                title={
+                  item.isClosed
+                    ? "Closed"
+                    : "Open"
+                }
+                onPress={() =>
+                  toggleDay(
+                    item.day,
+                  )
+                }
+                variant={
+                  item.isClosed
+                    ? "secondary"
+                    : "primary"
+                }
+              />
+            </View>
 
-                          {item
-                            .shifts
-                            .length >
-                            1 && (
-                            <AppButton
-                              title="Remove"
-                              variant="secondary"
-                              onPress={() =>
-                                removeShift(
-                                  item.day,
-                                  shiftIndex,
-                                )
-                              }
-                            />
-                          )}
-                        </View>
+            {!item.isClosed && (
+              <View
+                style={
+                  styles.dayContent
+                }
+              >
+                {/* =========================
+                    Working Hours Header
+                   ========================= */}
+                <View
+                  style={
+                    styles.workingHoursHeader
+                  }
+                >
+                  <View
+                    style={
+                      styles.sectionTitleContainer
+                    }
+                  >
+                    <Text
+                      style={
+                        styles.sectionTitle
+                      }
+                    >
+                      Working Hours
+                    </Text>
 
-                        <View
-                          style={
-                            styles.timeRow
-                          }
-                        >
-                          <View
-                            style={
-                              styles.timeField
-                            }
-                          >
-                            <Text
-                              style={
-                                styles.timeLabel
-                              }
-                            >
-                              Opening
-                            </Text>
-
-                            <AppButton
-                              title={
-                                shift.startTime ||
-                                "Select time"
-                              }
-                              variant="secondary"
-                              onPress={() =>
-                                openTimePicker(
-                                  item.day,
-                                  shiftIndex,
-                                  "startTime",
-                                )
-                              }
-                            />
-                          </View>
-
-                          <View
-                            style={
-                              styles.timeField
-                            }
-                          >
-                            <Text
-                              style={
-                                styles.timeLabel
-                              }
-                            >
-                              Closing
-                            </Text>
-
-                            <AppButton
-                              title={
-                                shift.endTime ||
-                                "Select time"
-                              }
-                              variant="secondary"
-                              onPress={() =>
-                                openTimePicker(
-                                  item.day,
-                                  shiftIndex,
-                                  "endTime",
-                                )
-                              }
-                            />
-                          </View>
-                        </View>
-                      </View>
-                    ),
-                  )}
+                    <Text
+                      style={
+                        styles.sectionSubtitle
+                      }
+                    >
+                      Set the clinic hours
+                      for this day
+                    </Text>
+                  </View>
 
                   <AppButton
-                    title="+ Add Shift"
-                    variant="secondary"
+                    title={
+                      item.is24Hours
+                        ? "24 Hours"
+                        : "Set 24 Hours"
+                    }
+                    variant={
+                      item.is24Hours
+                        ? "primary"
+                        : "secondary"
+                    }
                     onPress={() =>
-                      addShift(
+                      toggle24Hours(
                         item.day,
                       )
                     }
                   />
                 </View>
-              )}
 
-              {item.is24Hours && (
-                <Text
-                  style={
-                    styles.fullDayText
-                  }
-                >
-                  Open 24 hours
-                </Text>
-              )}
-            </View>
-          )}
+                {/* =========================
+                    Shifts
+                   ========================= */}
+                {!item.is24Hours && (
+                  <View
+                    style={
+                      styles.shiftsSection
+                    }
+                  >
+                    {item.shifts.map(
+                      (
+                        shift,
+                        shiftIndex,
+                      ) => (
+                        <View
+                          key={`${item.day}-${shiftIndex}`}
+                          style={
+                            styles.shiftContainer
+                          }
+                        >
+                          {/* Shift Header */}
+                          <View
+                            style={
+                              styles.shiftHeader
+                            }
+                          >
+                            <View
+                              style={
+                                styles.shiftTitleContainer
+                              }
+                            >
+                              <View
+                                style={
+                                  styles.shiftNumber
+                                }
+                              >
+                                <Text
+                                  style={
+                                    styles.shiftNumberText
+                                  }
+                                >
+                                  {shiftIndex +
+                                    1}
+                                </Text>
+                              </View>
 
-          <Divider />
-        </View>
+                              <View>
+                                <Text
+                                  style={
+                                    styles.shiftTitle
+                                  }
+                                >
+                                  Shift{" "}
+                                  {shiftIndex +
+                                    1}
+                                </Text>
+
+                                <Text
+                                  style={
+                                    styles.shiftSubtitle
+                                  }
+                                >
+                                  Clinic working
+                                  period
+                                </Text>
+                              </View>
+                            </View>
+
+                            {item
+                              .shifts
+                              .length >
+                              1 && (
+                              <AppButton
+                                title="Remove"
+                                variant="secondary"
+                                onPress={() =>
+                                  removeShift(
+                                    item.day,
+                                    shiftIndex,
+                                  )
+                                }
+                              />
+                            )}
+                          </View>
+
+                          {/* Time Fields */}
+                          <View
+                            style={
+                              styles.timeRow
+                            }
+                          >
+                            <View
+                              style={
+                                styles.timeField
+                              }
+                            >
+                              <Text
+                                style={
+                                  styles.timeLabel
+                                }
+                              >
+                                Opening
+                              </Text>
+
+                              <AppButton
+                                title={
+                                  shift.startTime ||
+                                  "Select time"
+                                }
+                                variant="secondary"
+                                onPress={() =>
+                                  openTimePicker(
+                                    item.day,
+                                    shiftIndex,
+                                    "startTime",
+                                  )
+                                }
+                              />
+                            </View>
+
+                            <View
+                              style={
+                                styles.timeSeparator
+                              }
+                            >
+                              <View
+                                style={
+                                  styles.separatorDot
+                                }
+                              />
+                              <Text
+                                style={
+                                  styles.separatorText
+                                }
+                              >
+                                to
+                              </Text>
+                              <View
+                                style={
+                                  styles.separatorDot
+                                }
+                              />
+                            </View>
+
+                            <View
+                              style={
+                                styles.timeField
+                              }
+                            >
+                              <Text
+                                style={
+                                  styles.timeLabel
+                                }
+                              >
+                                Closing
+                              </Text>
+
+                              <AppButton
+                                title={
+                                  shift.endTime ||
+                                  "Select time"
+                                }
+                                variant="secondary"
+                                onPress={() =>
+                                  openTimePicker(
+                                    item.day,
+                                    shiftIndex,
+                                    "endTime",
+                                  )
+                                }
+                              />
+                            </View>
+                          </View>
+                        </View>
+                      ),
+                    )}
+
+                    {/* Add Shift */}
+                    <View
+                      style={
+                        styles.addShiftContainer
+                      }
+                    >
+                      <AppButton
+                        title="+ Add Shift"
+                        variant="secondary"
+                        onPress={() =>
+                          addShift(
+                            item.day,
+                          )
+                        }
+                      />
+                    </View>
+                  </View>
+                )}
+
+                {/* =========================
+                    24 Hours State
+                   ========================= */}
+                {item.is24Hours && (
+                  <View
+                    style={
+                      styles.fullDayContainer
+                    }
+                  >
+                    <View
+                      style={
+                        styles.fullDayIcon
+                      }
+                    >
+                      <Text
+                        style={
+                          styles.fullDayIconText
+                        }
+                      >
+                        24
+                      </Text>
+                    </View>
+
+                    <View
+                      style={
+                        styles.fullDayContent
+                      }
+                    >
+                      <Text
+                        style={
+                          styles.fullDayTitle
+                        }
+                      >
+                        Open 24 Hours
+                      </Text>
+
+                      <Text
+                        style={
+                          styles.fullDayText
+                        }
+                      >
+                        The clinic is available
+                        throughout the entire day.
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        </AppCard>
       ))}
 
       {timePicker && (
@@ -530,17 +694,21 @@ export default function ClinicWorkingDays({
           onValueChange={(
             _event,
             selectedDate,
-            ) => {
+          ) => {
             if (selectedDate) {
-                updateShift(
+              updateShift(
                 timePicker.day,
                 timePicker.shiftIndex,
                 timePicker.field,
-                formatTime(selectedDate),
-                );
+                formatTime(
+                  selectedDate,
+                ),
+              );
             }
 
-            setTimePicker(null);
+            setTimePicker(
+              null,
+            );
           }}
           onDismiss={() => {
             setTimePicker(
@@ -549,12 +717,36 @@ export default function ClinicWorkingDays({
           }}
         />
       )}
-    </AppCard>
+    </View>
   );
 }
 
 const styles =
   StyleSheet.create({
+    container: {
+      gap: SPACING.md,
+    },
+
+    dayCard: {
+      borderRadius: 16,
+      padding: SPACING.md,
+      borderWidth: 1,
+    },
+
+    openDayCard: {
+      borderColor:
+        "rgba(20, 184, 166, 0.35)",
+      backgroundColor:
+        "rgba(20, 184, 166, 0.035)",
+    },
+
+    closedDayCard: {
+      borderColor:
+        "rgba(100, 116, 139, 0.25)",
+      backgroundColor:
+        "rgba(100, 116, 139, 0.035)",
+    },
+
     dayHeader: {
       flexDirection:
         "row",
@@ -562,62 +754,116 @@ const styles =
         "center",
       justifyContent:
         "space-between",
-      marginBottom:
-        SPACING.sm,
+      gap: SPACING.md,
+    },
+
+    dayTitleContainer: {
+      flex: 1,
+      flexDirection:
+        "row",
+      alignItems:
+        "center",
+      gap: SPACING.sm,
+    },
+
+    dayIndicator: {
+      width: 10,
+      height: 42,
+      borderRadius: 6,
+    },
+
+    openIndicator: {
+      backgroundColor:
+        COLORS.primary,
+    },
+
+    closedIndicator: {
+      backgroundColor:
+        "#94A3B8",
     },
 
     dayName: {
       fontSize:
-        TYPOGRAPHY.body,
-      fontWeight: "700",
+        TYPOGRAPHY.title,
+      fontWeight: "800",
       color:
         COLORS.text,
+      marginBottom:
+        2,
     },
 
-    timeRow: {
-      flexDirection:
-        "row",
-      gap: SPACING.md,
-    },
-
-    timeField: {
-      flex: 1,
-    },
-
-    timeLabel: {
+    dayStatus: {
       fontSize:
         TYPOGRAPHY.small,
       fontWeight: "600",
-      color:
-        COLORS.secondaryText,
-      marginBottom:
-        SPACING.xs,
     },
 
-    fullDayRow: {
+    openStatus: {
+      color:
+        COLORS.primary,
+    },
+
+    closedStatus: {
+      color:
+        COLORS.secondaryText,
+    },
+
+    dayContent: {
+      marginTop:
+        SPACING.md,
+      paddingTop:
+        SPACING.md,
+      borderTopWidth: 1,
+      borderTopColor:
+        "rgba(100, 116, 139, 0.16)",
+    },
+
+    workingHoursHeader: {
       flexDirection:
         "row",
       alignItems:
         "center",
       justifyContent:
         "space-between",
+      gap: SPACING.md,
       marginBottom:
         SPACING.md,
     },
 
-    fullDayText: {
+    sectionTitleContainer: {
+      flex: 1,
+    },
+
+    sectionTitle: {
       fontSize:
         TYPOGRAPHY.body,
-      fontWeight: "600",
+      fontWeight: "800",
       color:
-        COLORS.primary,
-      paddingVertical:
-        SPACING.sm,
+        COLORS.text,
+      marginBottom:
+        3,
+    },
+
+    sectionSubtitle: {
+      fontSize:
+        TYPOGRAPHY.small,
+      color:
+        COLORS.secondaryText,
+      lineHeight: 18,
+    },
+
+    shiftsSection: {
+      gap: SPACING.sm,
     },
 
     shiftContainer: {
-      marginBottom:
-        SPACING.md,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor:
+        "rgba(59, 130, 246, 0.22)",
+      backgroundColor:
+        "rgba(59, 130, 246, 0.035)",
+      padding: SPACING.md,
     },
 
     shiftHeader: {
@@ -627,15 +873,163 @@ const styles =
         "center",
       justifyContent:
         "space-between",
+      gap: SPACING.sm,
       marginBottom:
-        SPACING.sm,
+        SPACING.md,
+    },
+
+    shiftTitleContainer: {
+      flex: 1,
+      flexDirection:
+        "row",
+      alignItems:
+        "center",
+      gap: SPACING.sm,
+    },
+
+    shiftNumber: {
+      width: 34,
+      height: 34,
+      borderRadius: 10,
+      backgroundColor:
+        "rgba(59, 130, 246, 0.12)",
+      alignItems:
+        "center",
+      justifyContent:
+        "center",
+    },
+
+    shiftNumberText: {
+      fontSize:
+        TYPOGRAPHY.body,
+      fontWeight: "800",
+      color:
+        "#2563EB",
     },
 
     shiftTitle: {
       fontSize:
         TYPOGRAPHY.body,
-      fontWeight: "700",
+      fontWeight: "800",
       color:
         COLORS.text,
+      marginBottom:
+        2,
+    },
+
+    shiftSubtitle: {
+      fontSize:
+        TYPOGRAPHY.small,
+      color:
+        COLORS.secondaryText,
+    },
+
+    timeRow: {
+      flexDirection:
+        "row",
+      alignItems:
+        "flex-end",
+      gap: SPACING.sm,
+    },
+
+    timeField: {
+      flex: 1,
+    },
+
+    timeLabel: {
+      fontSize:
+        TYPOGRAPHY.small,
+      fontWeight: "700",
+      color:
+        COLORS.secondaryText,
+      marginBottom:
+        SPACING.xs,
+    },
+
+    timeSeparator: {
+      width: 28,
+      alignItems:
+        "center",
+      justifyContent:
+        "center",
+      paddingBottom:
+        14,
+      gap: 3,
+    },
+
+    separatorDot: {
+      width: 4,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor:
+        "#94A3B8",
+    },
+
+    separatorText: {
+      fontSize: 11,
+      fontWeight: "700",
+      color:
+        COLORS.secondaryText,
+    },
+
+    addShiftContainer: {
+      marginTop:
+        SPACING.xs,
+    },
+
+    fullDayContainer: {
+      flexDirection:
+        "row",
+      alignItems:
+        "center",
+      gap: SPACING.md,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor:
+        "rgba(16, 185, 129, 0.28)",
+      backgroundColor:
+        "rgba(16, 185, 129, 0.07)",
+      padding: SPACING.md,
+    },
+
+    fullDayIcon: {
+      width: 46,
+      height: 46,
+      borderRadius: 14,
+      backgroundColor:
+        "rgba(16, 185, 129, 0.15)",
+      alignItems:
+        "center",
+      justifyContent:
+        "center",
+    },
+
+    fullDayIconText: {
+      fontSize: 14,
+      fontWeight: "900",
+      color:
+        "#059669",
+    },
+
+    fullDayContent: {
+      flex: 1,
+    },
+
+    fullDayTitle: {
+      fontSize:
+        TYPOGRAPHY.body,
+      fontWeight: "800",
+      color:
+        "#047857",
+      marginBottom:
+        3,
+    },
+
+    fullDayText: {
+      fontSize:
+        TYPOGRAPHY.small,
+      color:
+        COLORS.secondaryText,
+      lineHeight: 18,
     },
   });

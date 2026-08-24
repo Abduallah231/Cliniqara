@@ -208,7 +208,7 @@ export default function ExistingPatientScreen() {
               onStartVisit={(patient) =>
                 router.push({
                   pathname:
-                    "/visit/HistoryScreen",
+                    "/VisitScreen",
                   params: {
                     patientId:
                       patient.id,

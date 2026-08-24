@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { AccountType, VisitStatus } from "@prisma/client";
+import {  AccountType,  DoctorLevel,  VisitStatus, } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CancelVisitDto } from "./dto/cancel-visit.dto";
 import { ChangeDoctorDto } from "./dto/change-doctor.dto";
@@ -57,6 +57,67 @@ export class VisitService {
     if (!membership) {
       throw new NotFoundException(
         "You are not an active member of this clinic.",
+      );
+    }
+
+    return membership;
+  }
+
+  private async getClinicalVisitAccess(
+    currentUserId: string,
+    clinicId: string,
+    visitDoctorId: string | null,
+  ) {
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId,
+          status: "ACTIVE",
+        },
+        include: {
+          user: true,
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
+    /*
+    * Only a verified doctor can enter
+    * the clinical visit.
+    *
+    * Interns and Reception accounts
+    * are not allowed to enter the visit.
+    */
+    if (
+      membership.user.accountType !==
+      AccountType.DOCTOR
+    ) {
+      throw new BadRequestException(
+        "You are not allowed to enter this visit.",
+      );
+    }
+
+    if (
+      membership.user.doctorLevel !==
+      DoctorLevel.DOCTOR
+    ) {
+      throw new BadRequestException(
+        "Only verified doctors can enter a clinical visit.",
+      );
+    }
+
+    /*
+    * A doctor can only access a visit
+    * assigned to that doctor.
+    */
+    if (visitDoctorId !== currentUserId) {
+      throw new BadRequestException(
+        "This visit is assigned to another doctor.",
       );
     }
 
@@ -243,6 +304,12 @@ async startVisit(
     );
   }
 
+  await this.getClinicalVisitAccess(
+    currentUserId,
+    visit.clinicId,
+    visit.doctorId,
+  );
+
   if (visit.doctorId !== currentUserId) {
     throw new BadRequestException(
       "You are not assigned to this visit.",
@@ -310,6 +377,12 @@ async startVisit(
         "Visit must be in progress before completion.",
       );
     }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
 
     if (visit.doctorId !== currentUserId) {
       throw new BadRequestException(
@@ -617,20 +690,11 @@ async startVisit(
       throw new NotFoundException("Visit not found.");
     }
 
-    const membership =
-      await this.prisma.clinicMember.findFirst({
-        where: {
-          userId: currentUserId,
-          clinicId: visit.clinicId,
-          status: "ACTIVE",
-        },
-      });
-
-    if (!membership) {
-      throw new NotFoundException(
-        "You are not an active member of this clinic.",
-      );
-    }
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
 
     return visit;
   }
@@ -664,6 +728,12 @@ async startVisit(
         "You are not an active member of this clinic.",
       );
     }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
 
     if (visit.visitStatus !== VisitStatus.IN_PROGRESS) {
       throw new BadRequestException(
@@ -720,6 +790,12 @@ async startVisit(
         "You are not an active member of this clinic.",
       );
     }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
 
     return this.prisma.visitChiefComplaintAnswer.findUnique({
       where: {
