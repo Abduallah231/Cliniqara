@@ -1,13 +1,16 @@
-import AppButton from "@/components/common/AppButton";
 import AppTopBar from "@/components/common/AppTopBar";
-
 import AssessmentTab from "@/components/visit/AssessmentTab";
 import ExaminationTab from "@/components/visit/ExaminationTab";
 import HistoryTab from "@/components/visit/HistoryTab";
-import VisitHeaderCard from "../../components/visit/VisitHeaderCard";
 import {
   completeVisit,
+  getVisit,
 } from "@/services/visitApi";
+import {
+  mapBackendVisitToVisitForm,
+} from "@/services/visitMapper";
+import { useVisitStore } from "@/store/visitStore";
+import VisitHeaderCard from "../../components/visit/VisitHeaderCard";
 
 import {
   getErrorMessage,
@@ -39,7 +42,7 @@ import {
   SPACING,
 } from "@/theme";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type VisitSection =
   | "history"
@@ -63,6 +66,14 @@ export default function VisitScreen() {
   const [completingVisit, setCompletingVisit] =
     useState(false);
 
+  const [loadingVisit, setLoadingVisit] =
+    useState(true);
+
+  const {
+    resetVisit,
+    updateVisit,
+  } = useVisitStore();
+
   const resolvedPatientId =
     Array.isArray(patientId)
       ? patientId[0]
@@ -77,6 +88,69 @@ export default function VisitScreen() {
     Array.isArray(visitCode)
       ? visitCode[0]
       : visitCode;
+
+    useEffect(() => {
+      if (!resolvedVisitId) {
+        setLoadingVisit(false);
+        return;
+      }
+
+      let mounted = true;
+
+      const loadVisit = async () => {
+        try {
+          setLoadingVisit(true);
+          resetVisit();
+
+          const backendVisit =
+            await getVisit(resolvedVisitId);
+
+          if (!mounted) {
+            return;
+          }
+
+          /*
+          * Keep the visit identity synchronized
+          * with the backend.
+          */
+          const visitForm =
+            mapBackendVisitToVisitForm(backendVisit);
+
+          updateVisit(visitForm);
+
+        } catch (error) {
+          if (!mounted) {
+            return;
+          }
+
+          Alert.alert(
+            "Unable to Load Visit",
+            getErrorMessage(error),
+            [
+              {
+                text: "Back",
+                onPress: () =>
+                  router.back(),
+              },
+            ],
+          );
+        } finally {
+          if (mounted) {
+            setLoadingVisit(false);
+          }
+        }
+      };
+
+      loadVisit();
+
+      return () => {
+        mounted = false;
+        resetVisit();
+      };
+    }, [
+      resolvedVisitId,
+      resetVisit,
+    ]);
 
   const handleCompleteVisit = async () => {
     if (completingVisit) {
@@ -98,7 +172,12 @@ export default function VisitScreen() {
         visitId: resolvedVisitId,
       });
 
-      router.replace("/patient-overview");
+      router.replace({
+        pathname: "/patient-overview",
+        params: {
+          patientId: resolvedPatientId,
+        },
+      });
     } catch (error) {
       Alert.alert(
         "Unable to Save Visit",
@@ -143,6 +222,33 @@ export default function VisitScreen() {
         };
     }
   };
+
+  if (loadingVisit) {
+    return (
+      <SafeAreaView
+        style={styles.container}
+        edges={["top", "bottom"]}
+      >
+        <AppTopBar
+          title="Patient Visit"
+          onBack={() => {
+            if (!completingVisit) {
+              router.back();
+            }
+          }}
+          onRightPress={() =>
+            router.push("/settings")
+          }
+        />
+
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>
+            Loading visit...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView
@@ -527,5 +633,18 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 14,
     fontWeight: "700",
+  },
+
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: SPACING.lg,
+  },
+
+  loadingText: {
+    color: COLORS.secondaryText,
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

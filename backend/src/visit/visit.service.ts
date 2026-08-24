@@ -669,7 +669,12 @@ async startVisit(
         patient: true,
         doctor: true,
         clinic: true,
-        chiefComplaint: true,
+        chiefComplaint: {
+          include: {
+            chiefComplaint: true,
+            analysis: true,
+          },
+        },
         relatedSystems: true,
         systematicReview: true,
         menstrualHistory: true,
@@ -741,21 +746,115 @@ async startVisit(
       );
     }
 
-    return this.prisma.$transaction(async (tx) => {
-      // Remove any previously selected chief complaint
-      // for this visit.
-      await tx.visitChiefComplaintAnswer.deleteMany({
+    const complaint =
+      await this.prisma.chiefComplaintMaster.findUnique({
         where: {
-          visitId,
+          id: dto.chiefComplaintId,
+        },
+        include: {
+          template: true,
         },
       });
 
-      // Save the currently selected chief complaint.
-      return tx.visitChiefComplaintAnswer.create({
-        data: {
-          visitId,
-          chiefComplaintId: dto.chiefComplaintId,
-          answers: dto.answers,
+    if (!complaint) {
+      throw new NotFoundException(
+        "Chief complaint not found.",
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const existing =
+        await tx.visitChiefComplaint.findUnique({
+          where: {
+            visitId,
+          },
+        });
+
+      /*
+      * If the selected complaint changed,
+      * remove the old analysis first.
+      */
+      if (
+        existing &&
+        existing.chiefComplaintId !==
+          dto.chiefComplaintId
+      ) {
+        await tx.visitComplaintAnalysis.deleteMany({
+          where: {
+            chiefComplaintId: existing.id,
+          },
+        });
+      }
+
+      const chiefComplaint =
+        await tx.visitChiefComplaint.upsert({
+          where: {
+            visitId,
+          },
+          create: {
+            visitId,
+            chiefComplaintId:
+              dto.chiefComplaintId,
+            durationValue:
+              dto.durationValue,
+            durationUnit:
+              dto.durationUnit,
+          },
+          update: {
+            chiefComplaintId:
+              dto.chiefComplaintId,
+
+            ...(dto.durationValue !== undefined && {
+              durationValue:
+                dto.durationValue,
+            }),
+
+            ...(dto.durationUnit !== undefined && {
+              durationUnit:
+                dto.durationUnit,
+            }),
+          },
+        });
+
+      /*
+      * Analysis is saved only when answers
+      * are actually supplied.
+      */
+      if (
+        dto.answers !== undefined &&
+        complaint.template
+      ) {
+        await tx.visitComplaintAnalysis.upsert({
+          where: {
+            chiefComplaintId:
+              chiefComplaint.id,
+          },
+          create: {
+            chiefComplaintId:
+              chiefComplaint.id,
+            templateCode:
+              complaint.code,
+            templateVersion:
+              complaint.template.version,
+            values: dto.answers,
+          },
+          update: {
+            templateCode:
+              complaint.code,
+            templateVersion:
+              complaint.template.version,
+            values: dto.answers,
+          },
+        });
+      }
+
+      return tx.visitChiefComplaint.findUnique({
+        where: {
+          id: chiefComplaint.id,
+        },
+        include: {
+          chiefComplaint: true,
+          analysis: true,
         },
       });
     });
@@ -797,12 +896,14 @@ async startVisit(
       visit.doctorId,
     );
 
-    return this.prisma.visitChiefComplaintAnswer.findUnique({
+    return this.prisma.visitChiefComplaint.findFirst({
       where: {
-        visitId_chiefComplaintId: {
-          visitId,
-          chiefComplaintId,
-        },
+        visitId,
+        chiefComplaintId,
+      },
+      include: {
+        chiefComplaint: true,
+        analysis: true,
       },
     });
   }

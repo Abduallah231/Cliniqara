@@ -23,8 +23,13 @@ export interface DynamicFieldValue {
 export interface ChiefComplaintHistory {
   complaintId: string;
   complaintName: string;
-  durationValue:string;
-  durationUnit:string;
+  durationValue?: number;
+  durationUnit?:
+    | "HOURS"
+    | "DAYS"
+    | "WEEKS"
+    | "MONTHS"
+    | "YEARS";
   notes: string;
 }
 
@@ -257,8 +262,8 @@ export function createEmptyHistory(): History {
   chiefComplaint: {
     complaintId: "",
     complaintName: "",
-    durationValue: "",
-    durationUnit: "",
+    durationValue: undefined,
+    durationUnit: undefined,
     notes: "",
   },
 

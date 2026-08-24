@@ -10,7 +10,7 @@ import { api } from "./api";
 export async function createWaitingVisit(
   patientId: string,
   doctorId?: string,
-) {
+): Promise<Visit> {
   const { data } = await api.post(
     "/visits/waiting",
     {
@@ -126,14 +126,23 @@ export async function getVisit(
 export async function saveChiefComplaint(
   visitId: string,
   chiefComplaintId: string,
-  answers: Record<string, any>
+  payload: {
+    durationValue?: number;
+    durationUnit?:
+      | "HOURS"
+      | "DAYS"
+      | "WEEKS"
+      | "MONTHS"
+      | "YEARS";
+    answers?: Record<string, any>;
+  },
 ) {
   const { data } = await api.post(
     `/visits/${visitId}/chief-complaint`,
     {
       chiefComplaintId,
-      answers,
-    }
+      ...payload,
+    },
   );
 
   return data;

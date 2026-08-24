@@ -51,6 +51,7 @@ export default function ChiefComplaint() {
       label: chiefComplaint.complaintName,
     }
   : undefined;
+
   const updateChiefComplaint = async (
     updates: Partial<typeof chiefComplaint>
   ) => {
@@ -74,23 +75,66 @@ export default function ChiefComplaint() {
     }
 
     try {
+      const payload: {
+        durationValue?: number;
+        durationUnit?:
+          | "HOURS"
+          | "DAYS"
+          | "WEEKS"
+          | "MONTHS"
+          | "YEARS";
+      } = {};
+
+      if (
+        typeof updatedChiefComplaint.durationValue === "number" &&
+        Number.isInteger(updatedChiefComplaint.durationValue) &&
+        updatedChiefComplaint.durationValue >= 0
+      ) {
+        payload.durationValue =
+          updatedChiefComplaint.durationValue;
+      }
+
+      const validDurationUnits = [
+        "HOURS",
+        "DAYS",
+        "WEEKS",
+        "MONTHS",
+        "YEARS",
+      ] as const;
+
+      if (
+        updatedChiefComplaint.durationUnit &&
+        validDurationUnits.includes(
+          updatedChiefComplaint.durationUnit
+        )
+      ) {
+        payload.durationUnit =
+          updatedChiefComplaint.durationUnit;
+      }
+
+      console.log(
+        "CHIEF COMPLAINT PAYLOAD:",
+        {
+          visitId,
+          chiefComplaintId:
+            updatedChiefComplaint.complaintId,
+          payload,
+        }
+      );
+
       await saveChiefComplaint(
         visitId,
         updatedChiefComplaint.complaintId,
-        {
-          durationValue:
-            updatedChiefComplaint.durationValue,
-          durationUnit:
-            updatedChiefComplaint.durationUnit,
-        },
+        payload,
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error(
         "Failed to save chief complaint:",
-        error,
+        error?.response?.data ?? error,
       );
     }
   };
+
   const quickComplaints = complaints.slice(0, 8);
 
   const dropdownComplaints = complaints.filter(
@@ -141,8 +185,17 @@ export default function ChiefComplaint() {
 <Divider />
 <SectionHeader title="Duration" />
       <AppTextField
-        value={chiefComplaint.durationValue}
-        onChangeText={(text) => updateChiefComplaint({ durationValue: text })}
+        value={
+          chiefComplaint.durationValue === undefined
+            ? ""
+            : String(chiefComplaint.durationValue)
+        }
+        onChangeText={(text) =>
+          updateChiefComplaint({
+            durationValue:
+              text === "" ? undefined : Number(text),
+          })
+        }
         placeholder="e.g. 3"
         keyboardType="numeric"
       />
@@ -155,18 +208,20 @@ export default function ChiefComplaint() {
         }}
       >
         {[
-          "Hours",
-          "Days",
-          "Weeks",
-          "Months",
-          "Years",
+          { label: "Hours", value: "HOURS" as const },
+          { label: "Days", value: "DAYS" as const },
+          { label: "Weeks", value: "WEEKS" as const },
+          { label: "Months", value: "MONTHS" as const },
+          { label: "Years", value: "YEARS" as const },
         ].map((item) => (
           <AppChip
-            key={item}
-            label={item}
-            selected={chiefComplaint.durationUnit === item}
+            key={item.value}
+            label={item.label}
+            selected={chiefComplaint.durationUnit === item.value}
             onPress={() =>
-              updateChiefComplaint({ durationUnit: item })
+              updateChiefComplaint({
+                durationUnit: item.value,
+              })
             }
           />
         ))}
