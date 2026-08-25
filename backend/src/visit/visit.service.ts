@@ -3,15 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import {  AccountType,  DoctorLevel,  VisitStatus, } from "@prisma/client";
+import { AccountType, DoctorLevel, VisitStatus, } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CancelVisitDto } from "./dto/cancel-visit.dto";
 import { ChangeDoctorDto } from "./dto/change-doctor.dto";
 import { CompleteVisitDto } from "./dto/complete-visit.dto";
 import { CreateWaitingVisitDto } from "./dto/create-waiting-visit.dto";
-import { StartVisitDto } from "./dto/start-visit.dto";
 import { GetVisitDto } from "./dto/get-visit.dto";
 import { SaveVisitChiefComplaintDto } from "./dto/save-visit-chief-complaint.dto";
+import { StartVisitDto } from "./dto/start-visit.dto";
 
 @Injectable()
 export class VisitService {
@@ -226,6 +226,13 @@ export class VisitService {
       "Patient already has an open visit.",
     );
   }
+  
+console.log("CREATE VISIT DEBUG", {
+  patientId: dto.patientId,
+  clinicId,
+  currentUserId,
+  patientClinicId: patient.clinicId,
+});
 
   const visit = await this.prisma.$transaction(async (tx) => {
   const currentClinic = await tx.clinic.findUnique({
@@ -781,7 +788,7 @@ async startVisit(
       ) {
         await tx.visitComplaintAnalysis.deleteMany({
           where: {
-            chiefComplaintId: existing.id,
+            visitChiefComplaintId: existing.id,
           },
         });
       }
@@ -826,16 +833,12 @@ async startVisit(
       ) {
         await tx.visitComplaintAnalysis.upsert({
           where: {
-            chiefComplaintId:
-              chiefComplaint.id,
+            visitChiefComplaintId: chiefComplaint.id,
           },
           create: {
-            chiefComplaintId:
-              chiefComplaint.id,
-            templateCode:
-              complaint.code,
-            templateVersion:
-              complaint.template.version,
+            visitChiefComplaintId: chiefComplaint.id,
+            templateCode: complaint.code,
+            templateVersion: complaint.template.version,
             values: dto.answers,
           },
           update: {

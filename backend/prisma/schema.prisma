@@ -682,8 +682,7 @@ model Visit {
   createdBy User    @relation("VisitCreatedBy", fields: [createdById], references: [id])
   doctor    User    @relation("VisitDoctor", fields: [doctorId], references: [id])
 
-  chiefComplaint        VisitChiefComplaint?
-  chiefComplaintAnswers VisitChiefComplaintAnswer[]
+  chiefComplaint VisitChiefComplaint?
 
   relatedSystems   VisitRelatedSystem[]
   systematicReview VisitSystematicReview[]
@@ -1117,7 +1116,6 @@ model VisitChiefComplaint {
   chiefComplaintId String
 
   durationValue Int?
-
   durationUnit DurationUnit?
 
   analysis VisitComplaintAnalysis?
@@ -1125,9 +1123,9 @@ model VisitChiefComplaint {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  visit Visit @relation(    fields: [visitId],    references: [id],    onDelete: Cascade  )
 
-  chiefComplaint ChiefComplaintMaster @relation(fields: [chiefComplaintId], references: [id])
+  chiefComplaint ChiefComplaintMaster @relation(    fields: [chiefComplaintId],    references: [id]  )
 
   @@index([chiefComplaintId])
   @@map("visit_chief_complaints")
@@ -1174,24 +1172,6 @@ model ChiefComplaintTemplate {
   @@map("chief_complaint_templates")
 }
 
-model VisitChiefComplaintAnswer {
-  id String @id @default(uuid())
-
-  visitId          String
-  chiefComplaintId String
-
-  answers Json
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
-
-  @@unique([visitId, chiefComplaintId])
-  @@index([visitId])
-  @@map("visit_chief_complaint_answers")
-}
-
 // =========================
 // Complaint Analysis
 // =========================
@@ -1199,10 +1179,9 @@ model VisitChiefComplaintAnswer {
 model VisitComplaintAnalysis {
   id String @id @default(uuid())
 
-  chiefComplaintId String @unique
+  visitChiefComplaintId String @unique
 
   templateCode String
-
   templateVersion Int
 
   values Json
@@ -1210,7 +1189,7 @@ model VisitComplaintAnalysis {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chiefComplaint VisitChiefComplaint @relation(fields: [chiefComplaintId], references: [id], onDelete: Cascade)
+  visitChiefComplaint VisitChiefComplaint @relation(    fields: [visitChiefComplaintId],    references: [id],    onDelete: Cascade  )
 
   @@index([templateCode])
   @@map("visit_complaint_analysis")

@@ -51,7 +51,9 @@ export default function useComplaintAutoSave({
     saveChiefComplaint(
       visitId,
       chiefComplaintId,
-      answers,
+      {
+        answers,
+      },
     )
       .then(() => {
         console.log(
