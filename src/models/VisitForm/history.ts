@@ -94,13 +94,101 @@ export interface HPIHistory {
 // Pediatric History
 // ======================================================
 
+export type AntenatalCare =
+  | "REGULAR"
+  | "IRREGULAR"
+  | "NONE"
+  | "UNKNOWN";
+
+export type SmokingExposure =
+  | "NO"
+  | "PASSIVE"
+  | "MATERNAL_SMOKING";
+
+export type GestationalAge =
+  | "TERM"
+  | "PRETERM"
+  | "POST_TERM"
+  | "UNKNOWN";
+
+export type DeliveryMode =
+  | "NORMAL_VAGINAL"
+  | "CESAREAN"
+  | "INSTRUMENTAL"
+  | "UNKNOWN";
+
+export type DevelopmentStatus =
+  | "NORMAL"
+  | "DELAYED"
+  | "UNKNOWN";
+
+export type DelayType =
+  | "GROSS_MOTOR"
+  | "FINE_MOTOR"
+  | "SPEECH"
+  | "SOCIAL"
+  | "MULTIPLE";
+
+export type SchoolPerformance =
+  | "GOOD"
+  | "AVERAGE"
+  | "POOR";
+
+export type SchoolAttendance =
+  | "REGULAR"
+  | "IRREGULAR";
+
 export interface PediatricHistory {
-  prenatalHistory: DynamicFieldValue[];
-  birthHistory: DynamicFieldValue[];
-  neonatalHistory: DynamicFieldValue[];
-  feedingHistory: DynamicFieldValue[];
-  developmentHistory: DynamicFieldValue[];
-  schoolHistory: DynamicFieldValue[];
+  antenatalCare?: AntenatalCare;
+  antenatalCareNotes: string;
+
+  maternalIllnesses: string[];
+  maternalIllnessOther: string;
+
+  pregnancyComplications: string[];
+  pregnancyComplicationsOther: string;
+
+  drugIntake?: boolean;
+  drugIntakeDetails: string;
+
+  smokingExposure?: SmokingExposure;
+
+  alcoholExposure?: boolean;
+  alcoholExposureDetails: string;
+
+  gestationalAge?: GestationalAge;
+  gestationalWeeks?: number;
+
+  deliveryMode?: DeliveryMode;
+
+  birthWeight?: number;
+
+  nicuAdmission?: boolean;
+  nicuReason: string;
+  nicuDuration?: number;
+
+  birthComplications: string[];
+  birthComplicationDetails: string;
+
+  neonatalJaundice?: boolean;
+  phototherapy?: boolean;
+  exchangeTransfusion?: boolean;
+  neonatalSeizures?: boolean;
+
+  feedingTypes: string[];
+
+  development?: DevelopmentStatus;
+  delayType?: DelayType;
+  delayDetails: string;
+
+  attendsSchool?: boolean;
+  grade: string;
+
+  schoolPerformance?: SchoolPerformance;
+  schoolPerformanceDetails: string;
+
+  schoolAttendance?: SchoolAttendance;
+  schoolAttendanceReason: string;
 }
 
 // ======================================================
@@ -302,12 +390,56 @@ export function createEmptyHistory(): History {
   },
 
   pediatricHistory: {
-    prenatalHistory: [],
-    birthHistory: [],
-    neonatalHistory: [],
-    feedingHistory: [],
-    developmentHistory: [],
-    schoolHistory: [],
+    antenatalCare: undefined,
+    antenatalCareNotes: "",
+
+    maternalIllnesses: [],
+    maternalIllnessOther: "",
+
+    pregnancyComplications: [],
+    pregnancyComplicationsOther: "",
+
+    drugIntake: undefined,
+    drugIntakeDetails: "",
+
+    smokingExposure: undefined,
+
+    alcoholExposure: undefined,
+    alcoholExposureDetails: "",
+
+    gestationalAge: undefined,
+    gestationalWeeks: undefined,
+
+    deliveryMode: undefined,
+
+    birthWeight: undefined,
+
+    nicuAdmission: undefined,
+    nicuReason: "",
+    nicuDuration: undefined,
+
+    birthComplications: [],
+    birthComplicationDetails: "",
+
+    neonatalJaundice: undefined,
+    phototherapy: undefined,
+    exchangeTransfusion: undefined,
+    neonatalSeizures: undefined,
+
+    feedingTypes: [],
+
+    development: undefined,
+    delayType: undefined,
+    delayDetails: "",
+
+    attendsSchool: undefined,
+    grade: "",
+
+    schoolPerformance: undefined,
+    schoolPerformanceDetails: "",
+
+    schoolAttendance: undefined,
+    schoolAttendanceReason: "",
   },
 
   vaccinationHistory: {

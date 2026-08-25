@@ -19,6 +19,7 @@ import { GetVisitDto } from "./dto/get-visit.dto";
 import { SaveVisitChiefComplaintDto } from "./dto/save-visit-chief-complaint.dto";
 import { StartVisitDto } from "./dto/start-visit.dto";
 import { SaveRelatedSystemsDto } from "./dto/save-related-systems.dto";
+import { SavePediatricHistoryDto } from "./dto/save-pediatric-history.dto";
 
 @Injectable()
 export class VisitService {
@@ -1070,4 +1071,74 @@ async startVisit(
     });
   }
 
+  async savePediatricHistory(
+    visitId: string,
+    dto: SavePediatricHistoryDto,
+    currentUserId: string,
+  ) {
+    const visit = await this.prisma.visit.findUnique({
+      where: { id: visitId },
+      select: {
+        id: true,
+        clinicId: true,
+        doctorId: true,
+        visitStatus: true,
+      },
+    });
+
+    if (!visit) {
+      throw new NotFoundException("Visit not found.");
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    if (visit.visitStatus !== VisitStatus.IN_PROGRESS) {
+      throw new BadRequestException(
+        "Pediatric history can only be saved for an in-progress visit.",
+      );
+    }
+
+    return this.prisma.visitPediatricHistory.upsert({
+      where: { visitId },
+      create: {
+        visitId,
+        ...dto,
+      },
+      update: {
+        ...dto,
+      },
+    });
+  }
+
+  async getPediatricHistory(
+    visitId: string,
+    currentUserId: string,
+  ) {
+    const visit = await this.prisma.visit.findUnique({
+      where: { id: visitId },
+      select: {
+        id: true,
+        clinicId: true,
+        doctorId: true,
+      },
+    });
+
+    if (!visit) {
+      throw new NotFoundException("Visit not found.");
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    return this.prisma.visitPediatricHistory.findUnique({
+      where: { visitId },
+    });
+  }
 }

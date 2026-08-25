@@ -4,128 +4,63 @@ import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
+import { PediatricHistory as PediatricHistoryType } from "@/models/VisitForm/history";
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
-type PediatricSection =
-  | "prenatalHistory"
-  | "birthHistory"
-  | "neonatalHistory"
-  | "feedingHistory"
-  | "developmentHistory"
-  | "schoolHistory";
-
 export default function PediatricHistory() {
-  const { visit, updatePediatricField } =
-    useVisitStore();
+  const {
+    visit,
+    updatePediatricHistory,
+  } = useVisitStore();
 
-  const updateField = (
-    section: PediatricSection,
-    fieldId: string,
-    fieldLabel: string,
-    value: any
+  const pediatricHistory =
+    visit.history.pediatricHistory;
+
+  const updateField = <
+    K extends keyof PediatricHistoryType
+  >(
+    field: K,
+    value: PediatricHistoryType[K]
   ) => {
-    updatePediatricField(
-      section,
-      fieldId,
-      fieldLabel,
-      value
-    );
+    updatePediatricHistory({
+      [field]: value,
+    });
   };
 
-  const getValue = (
-    section: PediatricSection,
-    fieldId: string
-  ) => {
-    const fields =
-      visit.history.pediatricHistory[
-        section
-      ];
-
-    return (
-      fields.find(
-        (field) =>
-          field.fieldId === fieldId
-      )?.value ?? null
-    );
-  };
-
-  const prenatalValue = (
-    fieldId: string
-  ) => getValue("prenatalHistory", fieldId);
-
-  const birthValue = (
-    fieldId: string
-  ) => getValue("birthHistory", fieldId);
-
-  const neonatalValue = (
-    fieldId: string
-  ) => getValue("neonatalHistory", fieldId);
-
-  const feedingValue = (
-    fieldId: string
-  ) => getValue("feedingHistory", fieldId);
-
-  const developmentValue = (
-    fieldId: string
-  ) =>
-    getValue(
-      "developmentHistory",
-      fieldId
-    );
-
-  const schoolValue = (
-    fieldId: string
-  ) => getValue("schoolHistory", fieldId);
-
-  const toggleMultiSelect = (
-    section: PediatricSection,
-    fieldId: string,
-    fieldLabel: string,
+  const toggleStringArrayField = (
+    field:
+      | "maternalIllnesses"
+      | "pregnancyComplications"
+      | "birthComplications"
+      | "feedingTypes",
     value: string
   ) => {
     const current =
-      (getValue(
-        section,
-        fieldId
-      ) as string[]) ?? [];
+      pediatricHistory[field] ?? [];
 
     const updated = current.includes(value)
-      ? current.filter(
-          (x) => x !== value
-        )
+      ? current.filter((item) => item !== value)
       : [...current, value];
 
-    updatePediatricField(
-      section,
-      fieldId,
-      fieldLabel,
-      updated
-    );
+    updateField(field, updated);
   };
 
-  const toggleMultiSelectWithNone = (
-    section: PediatricSection,
-    fieldId: string,
-    fieldLabel: string,
+  const toggleStringArrayFieldWithNone = (
+    field:
+      | "maternalIllnesses"
+      | "pregnancyComplications"
+      | "birthComplications",
     value: string
   ) => {
     const current =
-      (getValue(
-        section,
-        fieldId
-      ) as string[]) ?? [];
+      pediatricHistory[field] ?? [];
 
     if (value === "None") {
-      updatePediatricField(
-        section,
-        fieldId,
-        fieldLabel,
-        ["None"]
-      );
+      updateField(field, ["None"]);
       return;
     }
 
@@ -141,12 +76,7 @@ export default function PediatricHistory() {
       updated.push(value);
     }
 
-    updatePediatricField(
-      section,
-      fieldId,
-      fieldLabel,
-      updated
-    );
+    updateField(field, updated);
   };
 
   return (
@@ -159,45 +89,49 @@ export default function PediatricHistory() {
 
       <View style={styles.row}>
         {[
-          "Regular",
-          "Irregular",
-          "None",
-          "Unknown",
+          {
+            label: "Regular",
+            value: "REGULAR" as const,
+          },
+          {
+            label: "Irregular",
+            value: "IRREGULAR" as const,
+          },
+          {
+            label: "None",
+            value: "NONE" as const,
+          },
+          {
+            label: "Unknown",
+            value: "UNKNOWN" as const,
+          },
         ].map((item) => (
           <AppChip
-            key={item}
-            label={item}
+            key={item.value}
+            label={item.label}
             selected={
-              prenatalValue(
-                "antenatalCare"
-              ) === item
+              pediatricHistory.antenatalCare ===
+              item.value
             }
             onPress={() =>
               updateField(
-                "prenatalHistory",
                 "antenatalCare",
-                "Antenatal Care",
-                item
+                item.value
               )
             }
           />
         ))}
       </View>
 
-      {prenatalValue(
-        "antenatalCare"
-      ) === "Irregular" && (
+      {pediatricHistory.antenatalCare ===
+        "IRREGULAR" && (
         <AppTextField
           value={
-            (prenatalValue(
-              "antenatalCareNotes"
-            ) as string) ?? ""
+            pediatricHistory.antenatalCareNotes
           }
           onChangeText={(v) =>
             updateField(
-              "prenatalHistory",
               "antenatalCareNotes",
-              "Antenatal Care Notes",
               v
             )
           }
@@ -223,18 +157,12 @@ export default function PediatricHistory() {
           <AppChip
             key={item}
             label={item}
-            selected={
-              (
-                (prenatalValue(
-                  "maternalIllnesses"
-                ) as string[]) ?? []
-              ).includes(item)
-            }
+            selected={pediatricHistory.maternalIllnesses.includes(
+              item
+            )}
             onPress={() =>
-              toggleMultiSelectWithNone(
-                "prenatalHistory",
+              toggleStringArrayFieldWithNone(
                 "maternalIllnesses",
-                "Maternal Illnesses",
                 item
               )
             }
@@ -242,22 +170,16 @@ export default function PediatricHistory() {
         ))}
       </View>
 
-      {(
-        (prenatalValue(
-          "maternalIllnesses"
-        ) as string[]) ?? []
-      ).includes("Other") && (
+      {pediatricHistory.maternalIllnesses.includes(
+        "Other"
+      ) && (
         <AppTextField
           value={
-            (prenatalValue(
-              "maternalIllnessOther"
-            ) as string) ?? ""
+            pediatricHistory.maternalIllnessOther
           }
           onChangeText={(v) =>
             updateField(
-              "prenatalHistory",
               "maternalIllnessOther",
-              "Maternal Illness Other",
               v
             )
           }
@@ -267,7 +189,7 @@ export default function PediatricHistory() {
 
       <Divider />
 
-            <Text style={styles.label}>
+      <Text style={styles.label}>
         Pregnancy Complications
       </Text>
 
@@ -284,18 +206,12 @@ export default function PediatricHistory() {
           <AppChip
             key={item}
             label={item}
-            selected={
-              (
-                (prenatalValue(
-                  "pregnancyComplications"
-                ) as string[]) ?? []
-              ).includes(item)
-            }
+            selected={pediatricHistory.pregnancyComplications.includes(
+              item
+            )}
             onPress={() =>
-              toggleMultiSelectWithNone(
-                "prenatalHistory",
+              toggleStringArrayFieldWithNone(
                 "pregnancyComplications",
-                "Pregnancy Complications",
                 item
               )
             }
@@ -303,22 +219,16 @@ export default function PediatricHistory() {
         ))}
       </View>
 
-      {(
-        (prenatalValue(
-          "pregnancyComplications"
-        ) as string[]) ?? []
-      ).includes("Other") && (
+      {pediatricHistory.pregnancyComplications.includes(
+        "Other"
+      ) && (
         <AppTextField
           value={
-            (prenatalValue(
-              "pregnancyComplicationsOther"
-            ) as string) ?? ""
+            pediatricHistory.pregnancyComplicationsOther
           }
           onChangeText={(v) =>
             updateField(
-              "prenatalHistory",
               "pregnancyComplicationsOther",
-              "Pregnancy Complications Other",
               v
             )
           }
@@ -338,34 +248,27 @@ export default function PediatricHistory() {
             key={item}
             label={item}
             selected={
-              prenatalValue("drugIntake") ===
-              item
+              pediatricHistory.drugIntake ===
+              (item === "Yes")
             }
             onPress={() =>
               updateField(
-                "prenatalHistory",
                 "drugIntake",
-                "Drug Intake",
-                item
+                item === "Yes"
               )
             }
           />
         ))}
       </View>
 
-      {prenatalValue("drugIntake") ===
-        "Yes" && (
+      {pediatricHistory.drugIntake === true && (
         <AppTextField
           value={
-            (prenatalValue(
-              "drugIntakeDetails"
-            ) as string) ?? ""
+            pediatricHistory.drugIntakeDetails
           }
           onChangeText={(v) =>
             updateField(
-              "prenatalHistory",
               "drugIntakeDetails",
-              "Drug Intake Details",
               v
             )
           }
@@ -381,24 +284,30 @@ export default function PediatricHistory() {
 
       <View style={styles.row}>
         {[
-          "No",
-          "Passive",
-          "Maternal Smoking",
+          {
+            label: "No",
+            value: "NO" as const,
+          },
+          {
+            label: "Passive",
+            value: "PASSIVE" as const,
+          },
+          {
+            label: "Maternal Smoking",
+            value: "MATERNAL_SMOKING" as const,
+          },
         ].map((item) => (
           <AppChip
-            key={item}
-            label={item}
+            key={item.value}
+            label={item.label}
             selected={
-              prenatalValue(
-                "smokingExposure"
-              ) === item
+              pediatricHistory.smokingExposure ===
+              item.value
             }
             onPress={() =>
               updateField(
-                "prenatalHistory",
                 "smokingExposure",
-                "Smoking Exposure",
-                item
+                item.value
               )
             }
           />
@@ -417,36 +326,28 @@ export default function PediatricHistory() {
             key={item}
             label={item}
             selected={
-              prenatalValue(
-                "alcoholExposure"
-              ) === item
+              pediatricHistory.alcoholExposure ===
+              (item === "Yes")
             }
             onPress={() =>
               updateField(
-                "prenatalHistory",
                 "alcoholExposure",
-                "Alcohol Exposure",
-                item
+                item === "Yes"
               )
             }
           />
         ))}
       </View>
 
-      {prenatalValue(
-        "alcoholExposure"
-      ) === "Yes" && (
+      {pediatricHistory.alcoholExposure ===
+        true && (
         <AppTextField
           value={
-            (prenatalValue(
-              "alcoholExposureDetails"
-            ) as string) ?? ""
+            pediatricHistory.alcoholExposureDetails
           }
           onChangeText={(v) =>
             updateField(
-              "prenatalHistory",
               "alcoholExposureDetails",
-              "Alcohol Exposure Details",
               v
             )
           }
@@ -468,45 +369,53 @@ export default function PediatricHistory() {
 
       <View style={styles.row}>
         {[
-          "Term",
-          "Preterm",
-          "Post-term",
-          "Unknown",
+          {
+            label: "Term",
+            value: "TERM" as const,
+          },
+          {
+            label: "Preterm",
+            value: "PRETERM" as const,
+          },
+          {
+            label: "Post-term",
+            value: "POST_TERM" as const,
+          },
+          {
+            label: "Unknown",
+            value: "UNKNOWN" as const,
+          },
         ].map((item) => (
           <AppChip
-            key={item}
-            label={item}
+            key={item.value}
+            label={item.label}
             selected={
-              birthValue(
-                "gestationalAge"
-              ) === item
+              pediatricHistory.gestationalAge ===
+              item.value
             }
             onPress={() =>
               updateField(
-                "birthHistory",
                 "gestationalAge",
-                "Gestational Age",
-                item
+                item.value
               )
             }
           />
         ))}
       </View>
 
-      {birthValue("gestationalAge") ===
-        "Preterm" && (
+      {pediatricHistory.gestationalAge ===
+        "PRETERM" && (
         <AppTextField
           value={
-            (birthValue(
-              "gestationalWeeks"
-            ) as string) ?? ""
+            pediatricHistory.gestationalWeeks?.toString() ??
+            ""
           }
           onChangeText={(v) =>
             updateField(
-              "birthHistory",
               "gestationalWeeks",
-              "Gestational Weeks",
-              v
+              v === ""
+                ? undefined
+                : Number(v)
             )
           }
           placeholder="Gestational Age (Weeks)"
@@ -522,25 +431,34 @@ export default function PediatricHistory() {
 
       <View style={styles.row}>
         {[
-          "Normal Vaginal",
-          "Cesarean",
-          "Instrumental",
-          "Unknown",
+          {
+            label: "Normal Vaginal",
+            value: "NORMAL_VAGINAL" as const,
+          },
+          {
+            label: "Cesarean",
+            value: "CESAREAN" as const,
+          },
+          {
+            label: "Instrumental",
+            value: "INSTRUMENTAL" as const,
+          },
+          {
+            label: "Unknown",
+            value: "UNKNOWN" as const,
+          },
         ].map((item) => (
           <AppChip
-            key={item}
-            label={item}
+            key={item.value}
+            label={item.label}
             selected={
-              birthValue(
-                "deliveryMode"
-              ) === item
+              pediatricHistory.deliveryMode ===
+              item.value
             }
             onPress={() =>
               updateField(
-                "birthHistory",
                 "deliveryMode",
-                "Delivery Mode",
-                item
+                item.value
               )
             }
           />
@@ -555,16 +473,15 @@ export default function PediatricHistory() {
 
       <AppTextField
         value={
-          (birthValue(
-            "birthWeight"
-          ) as string) ?? ""
+          pediatricHistory.birthWeight?.toString() ??
+          ""
         }
         onChangeText={(v) =>
           updateField(
-            "birthHistory",
             "birthWeight",
-            "Birth Weight",
-            v
+            v === ""
+              ? undefined
+              : Number(v)
           )
         }
         placeholder="Birth Weight (g)"
@@ -573,7 +490,7 @@ export default function PediatricHistory() {
 
       <Divider />
 
-            <SectionHeader title="NICU Admission" />
+      <SectionHeader title="NICU Admission" />
 
       <View style={styles.row}>
         {["No", "Yes"].map((item) => (
@@ -581,35 +498,29 @@ export default function PediatricHistory() {
             key={item}
             label={item}
             selected={
-              birthValue("nicuAdmission") ===
-              item
+              pediatricHistory.nicuAdmission ===
+              (item === "Yes")
             }
             onPress={() =>
               updateField(
-                "birthHistory",
                 "nicuAdmission",
-                "NICU Admission",
-                item
+                item === "Yes"
               )
             }
           />
         ))}
       </View>
 
-      {birthValue("nicuAdmission") ===
-        "Yes" && (
+      {pediatricHistory.nicuAdmission ===
+        true && (
         <View style={styles.box}>
           <AppTextField
             value={
-              (birthValue(
-                "nicuReason"
-              ) as string) ?? ""
+              pediatricHistory.nicuReason
             }
             onChangeText={(v) =>
               updateField(
-                "birthHistory",
                 "nicuReason",
-                "NICU Reason",
                 v
               )
             }
@@ -618,16 +529,15 @@ export default function PediatricHistory() {
 
           <AppTextField
             value={
-              (birthValue(
-                "nicuDuration"
-              ) as string) ?? ""
+              pediatricHistory.nicuDuration?.toString() ??
+              ""
             }
             onChangeText={(v) =>
               updateField(
-                "birthHistory",
                 "nicuDuration",
-                "NICU Duration",
-                v
+                v === ""
+                  ? undefined
+                  : Number(v)
               )
             }
             placeholder="NICU Duration (days)"
@@ -652,18 +562,12 @@ export default function PediatricHistory() {
           <AppChip
             key={item}
             label={item}
-            selected={
-              (
-                (birthValue(
-                  "birthComplications"
-                ) as string[]) ?? []
-              ).includes(item)
-            }
+            selected={pediatricHistory.birthComplications.includes(
+              item
+            )}
             onPress={() =>
-              toggleMultiSelectWithNone(
-                "birthHistory",
+              toggleStringArrayFieldWithNone(
                 "birthComplications",
-                "Birth Complications",
                 item
               )
             }
@@ -671,22 +575,16 @@ export default function PediatricHistory() {
         ))}
       </View>
 
-      {(
-        (birthValue(
-          "birthComplications"
-        ) as string[]) ?? []
-      ).includes("Other") && (
+      {pediatricHistory.birthComplications.includes(
+        "Other"
+      ) && (
         <AppTextField
           value={
-            (birthValue(
-              "birthComplicationDetails"
-            ) as string) ?? ""
+            pediatricHistory.birthComplicationDetails
           }
           onChangeText={(v) =>
             updateField(
-              "birthHistory",
               "birthComplicationDetails",
-              "Birth Complication Details",
               v
             )
           }
@@ -712,25 +610,21 @@ export default function PediatricHistory() {
             key={item}
             label={item}
             selected={
-              neonatalValue(
-                "neonatalJaundice"
-              ) === item
+              pediatricHistory.neonatalJaundice ===
+              (item === "Yes")
             }
             onPress={() =>
               updateField(
-                "neonatalHistory",
                 "neonatalJaundice",
-                "Neonatal Jaundice",
-                item
+                item === "Yes"
               )
             }
           />
         ))}
       </View>
 
-      {neonatalValue(
-        "neonatalJaundice"
-      ) === "Yes" && (
+      {pediatricHistory.neonatalJaundice ===
+        true && (
         <>
           <Divider />
 
@@ -744,16 +638,13 @@ export default function PediatricHistory() {
                 key={item}
                 label={item}
                 selected={
-                  neonatalValue(
-                    "phototherapy"
-                  ) === item
+                  pediatricHistory.phototherapy ===
+                  (item === "Yes")
                 }
                 onPress={() =>
                   updateField(
-                    "neonatalHistory",
                     "phototherapy",
-                    "Phototherapy",
-                    item
+                    item === "Yes"
                   )
                 }
               />
@@ -772,16 +663,13 @@ export default function PediatricHistory() {
                 key={item}
                 label={item}
                 selected={
-                  neonatalValue(
-                    "exchangeTransfusion"
-                  ) === item
+                  pediatricHistory.exchangeTransfusion ===
+                  (item === "Yes")
                 }
                 onPress={() =>
                   updateField(
-                    "neonatalHistory",
                     "exchangeTransfusion",
-                    "Exchange Transfusion",
-                    item
+                    item === "Yes"
                   )
                 }
               />
@@ -802,16 +690,13 @@ export default function PediatricHistory() {
             key={item}
             label={item}
             selected={
-              neonatalValue(
-                "neonatalSeizures"
-              ) === item
+              pediatricHistory.neonatalSeizures ===
+              (item === "Yes")
             }
             onPress={() =>
               updateField(
-                "neonatalHistory",
                 "neonatalSeizures",
-                "Neonatal Seizures",
-                item
+                item === "Yes"
               )
             }
           />
@@ -820,7 +705,7 @@ export default function PediatricHistory() {
 
       <Divider />
 
-            {/* =========================
+      {/* =========================
           Feeding History
       ========================= */}
 
@@ -840,18 +725,12 @@ export default function PediatricHistory() {
           <AppChip
             key={item}
             label={item}
-            selected={
-              (
-                (feedingValue(
-                  "feeding"
-                ) as string[]) ?? []
-              ).includes(item)
-            }
+            selected={pediatricHistory.feedingTypes.includes(
+              item
+            )}
             onPress={() =>
-              toggleMultiSelect(
-                "feedingHistory",
-                "feeding",
-                "Feeding Type",
+              toggleStringArrayField(
+                "feedingTypes",
                 item
               )
             }
@@ -869,33 +748,38 @@ export default function PediatricHistory() {
 
       <View style={styles.row}>
         {[
-          "Normal",
-          "Delayed",
-          "Unknown",
+          {
+            label: "Normal",
+            value: "NORMAL" as const,
+          },
+          {
+            label: "Delayed",
+            value: "DELAYED" as const,
+          },
+          {
+            label: "Unknown",
+            value: "UNKNOWN" as const,
+          },
         ].map((item) => (
           <AppChip
-            key={item}
-            label={item}
+            key={item.value}
+            label={item.label}
             selected={
-              developmentValue(
-                "development"
-              ) === item
+              pediatricHistory.development ===
+              item.value
             }
             onPress={() =>
               updateField(
-                "developmentHistory",
                 "development",
-                "Development",
-                item
+                item.value
               )
             }
           />
         ))}
       </View>
 
-      {developmentValue(
-        "development"
-      ) === "Delayed" && (
+      {pediatricHistory.development ===
+        "DELAYED" && (
         <View style={styles.box}>
           <Text style={styles.label}>
             Delay Type
@@ -903,26 +787,38 @@ export default function PediatricHistory() {
 
           <View style={styles.row}>
             {[
-              "Gross Motor",
-              "Fine Motor",
-              "Speech",
-              "Social",
-              "Multiple",
+              {
+                label: "Gross Motor",
+                value: "GROSS_MOTOR" as const,
+              },
+              {
+                label: "Fine Motor",
+                value: "FINE_MOTOR" as const,
+              },
+              {
+                label: "Speech",
+                value: "SPEECH" as const,
+              },
+              {
+                label: "Social",
+                value: "SOCIAL" as const,
+              },
+              {
+                label: "Multiple",
+                value: "MULTIPLE" as const,
+              },
             ].map((item) => (
               <AppChip
-                key={item}
-                label={item}
+                key={item.value}
+                label={item.label}
                 selected={
-                  developmentValue(
-                    "delayType"
-                  ) === item
+                  pediatricHistory.delayType ===
+                  item.value
                 }
                 onPress={() =>
                   updateField(
-                    "developmentHistory",
                     "delayType",
-                    "Delay Type",
-                    item
+                    item.value
                   )
                 }
               />
@@ -931,15 +827,11 @@ export default function PediatricHistory() {
 
           <AppTextField
             value={
-              (developmentValue(
-                "delayDetails"
-              ) as string) ?? ""
+              pediatricHistory.delayDetails
             }
             onChangeText={(v) =>
               updateField(
-                "developmentHistory",
                 "delayDetails",
-                "Delay Details",
                 v
               )
             }
@@ -966,37 +858,29 @@ export default function PediatricHistory() {
             key={item}
             label={item}
             selected={
-              schoolValue(
-                "attendsSchool"
-              ) === item
+              pediatricHistory.attendsSchool ===
+              (item === "Yes")
             }
             onPress={() =>
               updateField(
-                "schoolHistory",
                 "attendsSchool",
-                "Attends School",
-                item
+                item === "Yes"
               )
             }
           />
         ))}
       </View>
 
-      {schoolValue(
-        "attendsSchool"
-      ) === "Yes" && (
+      {pediatricHistory.attendsSchool ===
+        true && (
         <View style={styles.box}>
           <AppTextField
             value={
-              (schoolValue(
-                "grade"
-              ) as string) ?? ""
+              pediatricHistory.grade
             }
             onChangeText={(v) =>
               updateField(
-                "schoolHistory",
                 "grade",
-                "Grade",
                 v
               )
             }
@@ -1009,44 +893,45 @@ export default function PediatricHistory() {
 
           <View style={styles.row}>
             {[
-              "Good",
-              "Average",
-              "Poor",
+              {
+                label: "Good",
+                value: "GOOD" as const,
+              },
+              {
+                label: "Average",
+                value: "AVERAGE" as const,
+              },
+              {
+                label: "Poor",
+                value: "POOR" as const,
+              },
             ].map((item) => (
               <AppChip
-                key={item}
-                label={item}
+                key={item.value}
+                label={item.label}
                 selected={
-                  schoolValue(
-                    "schoolPerformance"
-                  ) === item
+                  pediatricHistory.schoolPerformance ===
+                  item.value
                 }
                 onPress={() =>
                   updateField(
-                    "schoolHistory",
                     "schoolPerformance",
-                    "School Performance",
-                    item
+                    item.value
                   )
                 }
               />
             ))}
           </View>
 
-          {schoolValue(
-            "schoolPerformance"
-          ) === "Poor" && (
+          {pediatricHistory.schoolPerformance ===
+            "POOR" && (
             <AppTextField
               value={
-                (schoolValue(
-                  "schoolPerformanceDetails"
-                ) as string) ?? ""
+                pediatricHistory.schoolPerformanceDetails
               }
               onChangeText={(v) =>
                 updateField(
-                  "schoolHistory",
                   "schoolPerformanceDetails",
-                  "School Performance Details",
                   v
                 )
               }
@@ -1060,43 +945,41 @@ export default function PediatricHistory() {
 
           <View style={styles.row}>
             {[
-              "Regular",
-              "Irregular",
+              {
+                label: "Regular",
+                value: "REGULAR" as const,
+              },
+              {
+                label: "Irregular",
+                value: "IRREGULAR" as const,
+              },
             ].map((item) => (
               <AppChip
-                key={item}
-                label={item}
+                key={item.value}
+                label={item.label}
                 selected={
-                  schoolValue(
-                    "schoolAttendance"
-                  ) === item
+                  pediatricHistory.schoolAttendance ===
+                  item.value
                 }
                 onPress={() =>
                   updateField(
-                    "schoolHistory",
                     "schoolAttendance",
-                    "School Attendance",
-                    item
+                    item.value
                   )
                 }
               />
             ))}
           </View>
 
-          {schoolValue(
-            "schoolAttendance"
-          ) === "Irregular" && (
+          {pediatricHistory.schoolAttendance ===
+            "IRREGULAR" && (
             <AppTextField
               value={
-                (schoolValue(
-                  "schoolAttendanceReason"
-                ) as string) ?? ""
+                pediatricHistory.schoolAttendanceReason
               }
               onChangeText={(v) =>
                 updateField(
-                  "schoolHistory",
                   "schoolAttendanceReason",
-                  "School Attendance Reason",
                   v
                 )
               }

@@ -206,3 +206,25 @@ export async function getChiefComplaint(
 
   return data;
 }
+
+export async function savePediatricHistory(
+  visitId: string,
+  dto: Record<string, unknown>,
+) {
+  const { data } = await api.post(
+    `/visits/${visitId}/pediatric-history`,
+    dto,
+  );
+
+  return data;
+}
+
+export async function getPediatricHistory(
+  visitId: string,
+) {
+  const { data } = await api.get(
+    `/visits/${visitId}/pediatric-history`,
+  );
+
+  return data;
+}

@@ -22,6 +22,7 @@ import { VisitService } from "./visit.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/interfaces/authenticated-user.interface";
+import { SavePediatricHistoryDto } from "./dto/save-pediatric-history.dto";
 
 @Controller("visits")
 @UseGuards(JwtAuthGuard)
@@ -195,6 +196,30 @@ export class VisitController {
     @Param("visitId") visitId: string,
   ) {
     return this.visitService.getRelatedSystems(
+      visitId,
+      user.id,
+    );
+  }
+
+  @Post(":visitId/pediatric-history")
+  savePediatricHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SavePediatricHistoryDto,
+  ) {
+    return this.visitService.savePediatricHistory(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/pediatric-history")
+  getPediatricHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getPediatricHistory(
       visitId,
       user.id,
     );

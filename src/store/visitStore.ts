@@ -80,13 +80,9 @@ interface VisitStore {
     unit?: string
   ) => void;
 
-  updatePediatricField: (
-  section: keyof PediatricHistory,
-  fieldId: string,
-  fieldLabel: string,
-  value: DynamicValue,
-  unit?: string
-) => void;
+  updatePediatricHistory: (
+    updates: Partial<PediatricHistory>
+  ) => void;
 
 updateVaccinationField(
   fieldId: string,
@@ -836,65 +832,19 @@ export const useVisitStore =
                 };
               }),
 
-    updatePediatricField: (
-                section,
-                fieldId,
-                fieldLabel,
-                value,
-                unit
-              ) =>
-                set((state) => {
-                  const history =
-                    state.visit.history.pediatricHistory ??
-                    {
-                      prenatalHistory: [],
-                      birthHistory: [],
-                      neonatalHistory: [],
-                      feedingHistory: [],
-                      developmentHistory: [],
-                      schoolHistory: [],
-                    };
-
-                  const fields = history[section];
-
-                  const index = fields.findIndex(
-                    (field) => field.fieldId === fieldId
-                  );
-
-                  let updatedFields;
-
-                  if (index >= 0) {
-                    updatedFields = [...fields];
-                    updatedFields[index] = {
-                      ...updatedFields[index],
-                      value,
-                      unit,
-                    };
-                  } else {
-                    updatedFields = [
-                      ...fields,
-                      {
-                        fieldId,
-                        fieldLabel,
-                        value,
-                        unit,
-                      },
-                    ];
-                  }
-
-                  return {
-                    visit: {
-                      ...state.visit,
-                      history: {
-                        ...state.visit.history,
-                        pediatricHistory: {
-                          ...history,
-                          [section]: updatedFields,
-                        },
-                      },
-                    },
-                  };
-                }),
+    updatePediatricHistory: (updates) =>
+      set((state) => ({
+        visit: {
+          ...state.visit,
+          history: {
+            ...state.visit.history,
+            pediatricHistory: {
+              ...state.visit.history.pediatricHistory,
+              ...updates,
+            },
+          },
+        },
+      })),
 
     updateVaccinationField: (
                   fieldId,
