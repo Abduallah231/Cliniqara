@@ -15,29 +15,25 @@ import { useVisitStore } from "@/store/visitStore";
 export default function GynecologySystem() {
   const {
     visit,
-    updateRelatedSystemField,
+    updateRelatedSystem,
   } = useVisitStore();
 
-  const selected =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "Gynecology"
-    )?.value as string[]) ?? [];
+  const system =
+    visit.history.hpi.relatedSystemSymptoms.systems.find(
+      (item) => item.system === "GYNECOLOGY"
+    );
 
-  const otherFinding =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "GynecologyOther"
-    )?.value as string) ?? "";
+  const selected = system?.symptoms ?? [];
+  const otherFinding = system?.otherFinding ?? "";
 
   const toggle = (item: string) => {
-    const updated = selected.includes(item)
+    const symptoms = selected.includes(item)
       ? selected.filter((x) => x !== item)
       : [...selected, item];
 
-    updateRelatedSystemField(
-      "Gynecology",
-      "Gynecology",
-      updated
-    );
+    updateRelatedSystem("GYNECOLOGY", {
+      symptoms,
+    });
   };
 
   const Section = ({
@@ -71,7 +67,7 @@ export default function GynecologySystem() {
         Gynecology
       </Text>
 
-            <Section
+      <Section
         title="Menstrual"
         items={[
           "Amenorrhea",
@@ -132,17 +128,15 @@ export default function GynecologySystem() {
         placeholder="Add other findings..."
         value={otherFinding}
         onChangeText={(text) =>
-          updateRelatedSystemField(
-            "GynecologyOther",
-            "Gynecology Other",
-            text
-          )
+          updateRelatedSystem("GYNECOLOGY", {
+            otherFinding: text,
+          })
         }
         multiline
       />
     </View>
   );
-  }
+}
 
 const styles = StyleSheet.create({
   container: {

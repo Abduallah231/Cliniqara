@@ -15,29 +15,23 @@ import { useVisitStore } from "@/store/visitStore";
 export default function GITSystem() {
   const {
     visit,
-    updateRelatedSystemField,
+    updateRelatedSystem,
   } = useVisitStore();
 
-  const selected =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "GIT"
-    )?.value as string[]) ?? [];
+  const system =
+    visit.history.hpi.relatedSystemSymptoms.systems.find(
+      (item) => item.system === "GIT"
+    );
 
-  const otherFinding =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "GITOther"
-    )?.value as string) ?? "";
+  const selected = system?.symptoms ?? [];
+  const otherFinding = system?.otherFinding ?? "";
 
   const toggle = (item: string) => {
-    const updated = selected.includes(item)
+    const symptoms = selected.includes(item)
       ? selected.filter((x) => x !== item)
       : [...selected, item];
 
-    updateRelatedSystemField(
-      "GIT",
-      "GIT",
-      updated
-    );
+    updateRelatedSystem("GIT", { symptoms });
   };
 
   const Section = ({
@@ -48,9 +42,7 @@ export default function GITSystem() {
     items: string[];
   }) => (
     <>
-      <Text style={styles.sectionTitle}>
-        {title}
-      </Text>
+      <Text style={styles.sectionTitle}>{title}</Text>
 
       <View style={styles.row}>
         {items.map((item) => (
@@ -67,11 +59,9 @@ export default function GITSystem() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        GIT
-      </Text>
+      <Text style={styles.title}>GIT</Text>
 
-            <Section
+      <Section
         title="Core"
         items={[
           "Abdominal Pain",
@@ -141,17 +131,15 @@ export default function GITSystem() {
         placeholder="Add other findings..."
         value={otherFinding}
         onChangeText={(text) =>
-          updateRelatedSystemField(
-            "GITOther",
-            "GIT Other",
-            text
-          )
+          updateRelatedSystem("GIT", {
+            otherFinding: text,
+          })
         }
         multiline
       />
     </View>
   );
-  }
+}
 
 const styles = StyleSheet.create({
   container: {

@@ -3,7 +3,13 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { AccountType, DoctorLevel, VisitStatus, } from "@prisma/client";
+import {
+  AccountType,
+  DoctorLevel,
+  MembershipStatus,
+  SystemType,
+  VisitStatus,
+} from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CancelVisitDto } from "./dto/cancel-visit.dto";
 import { ChangeDoctorDto } from "./dto/change-doctor.dto";
@@ -12,6 +18,7 @@ import { CreateWaitingVisitDto } from "./dto/create-waiting-visit.dto";
 import { GetVisitDto } from "./dto/get-visit.dto";
 import { SaveVisitChiefComplaintDto } from "./dto/save-visit-chief-complaint.dto";
 import { StartVisitDto } from "./dto/start-visit.dto";
+import { SaveRelatedSystemsDto } from "./dto/save-related-systems.dto";
 
 @Injectable()
 export class VisitService {
@@ -709,6 +716,143 @@ async startVisit(
     );
 
     return visit;
+  }
+
+  async saveRelatedSystems(
+    visitId: string,
+    dto: SaveRelatedSystemsDto,
+    currentUserId: string,
+  ) {
+    const visit = await this.prisma.visit.findUnique({
+      where: {
+        id: visitId,
+      },
+      select: {
+        id: true,
+        clinicId: true,
+        doctorId: true,
+        visitStatus: true,
+      },
+    });
+
+    if (!visit) {
+      throw new NotFoundException("Visit not found.");
+    }
+
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId: visit.clinicId,
+          status: MembershipStatus.ACTIVE,
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    if (visit.visitStatus !== VisitStatus.IN_PROGRESS) {
+      throw new BadRequestException(
+        "Related system symptoms can only be saved for an in-progress visit.",
+      );
+    }
+
+    // Prevent duplicate systems inside the same request.
+    const systems = dto.systems.map(
+      (item) => item.system,
+    );
+
+    const uniqueSystems = new Set(systems);
+
+    if (uniqueSystems.size !== systems.length) {
+      throw new BadRequestException(
+        "Duplicate systems are not allowed.",
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // Replace the complete current state.
+      await tx.visitRelatedSystem.deleteMany({
+        where: {
+          visitId,
+        },
+      });
+
+      if (dto.systems.length === 0) {
+        return [];
+      }
+
+      await tx.visitRelatedSystem.createMany({
+        data: dto.systems.map((item) => ({
+          visitId,
+          system: item.system,
+          symptoms: item.symptoms,
+          otherFinding:
+            item.otherFinding ?? null,
+        })),
+      });
+
+      return tx.visitRelatedSystem.findMany({
+        where: {
+          visitId,
+        },
+        orderBy: {
+          system: "asc",
+        },
+      });
+    });
+  }
+
+  async getRelatedSystems(
+    visitId: string,
+    currentUserId: string,
+  ) {
+    const visit = await this.prisma.visit.findUnique({
+      where: {
+        id: visitId,
+      },
+      select: {
+        id: true,
+        clinicId: true,
+      },
+    });
+
+    if (!visit) {
+      throw new NotFoundException("Visit not found.");
+    }
+
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId: visit.clinicId,
+          status: MembershipStatus.ACTIVE,
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        "You are not an active member of this clinic.",
+      );
+    }
+
+    return this.prisma.visitRelatedSystem.findMany({
+      where: {
+        visitId,
+      },
+      orderBy: {
+        system: "asc",
+      },
+    });
   }
 
   async saveChiefComplaint(

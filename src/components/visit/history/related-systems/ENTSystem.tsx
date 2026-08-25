@@ -15,29 +15,23 @@ import { useVisitStore } from "@/store/visitStore";
 export default function ENTSystem() {
   const {
     visit,
-    updateRelatedSystemField,
+    updateRelatedSystem,
   } = useVisitStore();
 
-  const selected =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "ENT"
-    )?.value as string[]) ?? [];
+  const system =
+    visit.history.hpi.relatedSystemSymptoms.systems.find(
+      (item) => item.system === "ENT"
+    );
 
-  const otherFinding =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "ENTOther"
-    )?.value as string) ?? "";
+  const selected = system?.symptoms ?? [];
+  const otherFinding = system?.otherFinding ?? "";
 
   const toggle = (item: string) => {
-    const updated = selected.includes(item)
+    const symptoms = selected.includes(item)
       ? selected.filter((x) => x !== item)
       : [...selected, item];
 
-    updateRelatedSystemField(
-      "ENT",
-      "ENT",
-      updated
-    );
+    updateRelatedSystem("ENT", { symptoms });
   };
 
   const Section = ({
@@ -48,9 +42,7 @@ export default function ENTSystem() {
     items: string[];
   }) => (
     <>
-      <Text style={styles.sectionTitle}>
-        {title}
-      </Text>
+      <Text style={styles.sectionTitle}>{title}</Text>
 
       <View style={styles.row}>
         {items.map((item) => (
@@ -67,10 +59,9 @@ export default function ENTSystem() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        ENT
-      </Text>
-            <Section
+      <Text style={styles.title}>ENT</Text>
+
+      <Section
         title="Ear"
         items={[
           "Hearing Loss",
@@ -122,17 +113,15 @@ export default function ENTSystem() {
         placeholder="Add other findings..."
         value={otherFinding}
         onChangeText={(text) =>
-          updateRelatedSystemField(
-            "ENTOther",
-            "ENT Other",
-            text
-          )
+          updateRelatedSystem("ENT", {
+            otherFinding: text,
+          })
         }
         multiline
       />
     </View>
   );
-  }
+}
 
 const styles = StyleSheet.create({
   container: {

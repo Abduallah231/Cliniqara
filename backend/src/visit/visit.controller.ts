@@ -4,10 +4,11 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from "@nestjs/common";
-
+import { SaveRelatedSystemsDto } from "./dto/save-related-systems.dto";
 import { CreateWaitingVisitDto } from "./dto/create-waiting-visit.dto";
 import { StartVisitDto } from "./dto/start-visit.dto";
 import { CompleteVisitDto } from "./dto/complete-visit.dto";
@@ -170,4 +171,33 @@ export class VisitController {
       user.id,
     );
   }
+
+  // =========================
+  // Related System Symptoms
+  // =========================
+
+  @Put(":visitId/related-systems")
+  async saveRelatedSystems(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveRelatedSystemsDto,
+  ) {
+    return this.visitService.saveRelatedSystems(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/related-systems")
+  async getRelatedSystems(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getRelatedSystems(
+      visitId,
+      user.id,
+    );
+  }
+  
 }

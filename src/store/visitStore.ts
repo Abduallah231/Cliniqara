@@ -14,6 +14,8 @@ import {
   MajorTrauma,
   ICUAdmission,
   FamilyDisease,
+  RelatedSystemItem,
+  RelatedSystemType
 } from "@/models/VisitForm/history";
 import {
   VitalSigns,
@@ -52,11 +54,23 @@ interface VisitStore {
     unit?: string
   ) => void;
 
-  updateRelatedSystemField: (
-    fieldId: string,
-    fieldLabel: string,
-    value: DynamicValue,
-    unit?: string
+  updateRelatedSystem: (
+    system: RelatedSystemType,
+    updates: Partial<RelatedSystemItem>
+  ) => void;
+
+  toggleRelatedSystemSymptom: (
+    system: RelatedSystemType,
+    symptom: string
+  ) => void;
+
+  updateRelatedSystemOtherFinding: (
+    system: RelatedSystemType,
+    otherFinding: string
+  ) => void;
+
+  setRelatedSystems: (
+    systems: RelatedSystemItem[]
   ) => void;
 
   updateSystematicReviewField: (
@@ -602,61 +616,173 @@ export const useVisitStore =
         };
       }),
 
-    updateRelatedSystemField: (
-            fieldId,
-            fieldLabel,
-            value,
-            unit
-          ) =>
-            set((state) => {
-              const fields =
-                state.visit.history.hpi
-                  .relatedSystemSymptoms.fields;
+    setRelatedSystems: (systems) =>
+      set((state) => ({
+        visit: {
+          ...state.visit,
+          history: {
+            ...state.visit.history,
+            hpi: {
+              ...state.visit.history.hpi,
+              relatedSystemSymptoms: {
+                systems,
+              },
+            },
+          },
+        },
+      })),
 
-              const index = fields.findIndex(
-                (field) =>
-                  field.fieldId === fieldId
-              );
+    updateRelatedSystem: (
+      system,
+      updates
+    ) =>
+      set((state) => {
+        const current =
+          state.visit.history.hpi.relatedSystemSymptoms
+            .systems;
 
-              let updatedFields;
+        const index = current.findIndex(
+          (item) => item.system === system
+        );
 
-              if (index >= 0) {
-                updatedFields = [...fields];
+        let systems: RelatedSystemItem[];
 
-                updatedFields[index] = {
-                  ...updatedFields[index],
-                  value,
-                  unit,
-                };
-              } else {
-                updatedFields = [
-                  ...fields,
-                  {
-                    fieldId,
-                    fieldLabel,
-                    value,
-                    unit,
-                  },
-                ];
-              }
+        if (index >= 0) {
+          systems = [...current];
 
-              return {
-                visit: {
-                  ...state.visit,
-                  history: {
-                    ...state.visit.history,
-                    hpi: {
-                      ...state.visit.history.hpi,
-                      relatedSystemSymptoms: {
-                        ...state.visit.history.hpi
-                          .relatedSystemSymptoms,
-                        fields: updatedFields,
-                      },
-                    },
-                  },
+          systems[index] = {
+            ...systems[index],
+            ...updates,
+          };
+        } else {
+          systems = [
+            ...current,
+            {
+              system,
+              symptoms: [],
+              otherFinding: null,
+              ...updates,
+            },
+          ];
+        }
+
+        return {
+          visit: {
+            ...state.visit,
+            history: {
+              ...state.visit.history,
+              hpi: {
+                ...state.visit.history.hpi,
+                relatedSystemSymptoms: {
+                  systems,
                 },
-              };
-            }),
+              },
+            },
+          },
+        };
+      }),
+
+    toggleRelatedSystemSymptom: (
+      system,
+      symptom
+    ) =>
+      set((state) => {
+        const current =
+          state.visit.history.hpi.relatedSystemSymptoms
+            .systems;
+
+        const existing = current.find(
+          (item) => item.system === system
+        );
+
+        const symptoms = existing
+          ? existing.symptoms.includes(symptom)
+            ? existing.symptoms.filter(
+                (item) => item !== symptom
+              )
+            : [...existing.symptoms, symptom]
+          : [symptom];
+
+        const systems = existing
+          ? current.map((item) =>
+              item.system === system
+                ? {
+                    ...item,
+                    symptoms,
+                  }
+                : item
+            )
+          : [
+              ...current,
+              {
+                system,
+                symptoms,
+                otherFinding: null,
+              },
+            ];
+
+        return {
+          visit: {
+            ...state.visit,
+            history: {
+              ...state.visit.history,
+              hpi: {
+                ...state.visit.history.hpi,
+                relatedSystemSymptoms: {
+                  systems,
+                },
+              },
+            },
+          },
+        };
+      }),
+
+    updateRelatedSystemOtherFinding: (
+      system,
+      otherFinding
+    ) =>
+      set((state) => {
+        const current =
+          state.visit.history.hpi.relatedSystemSymptoms
+            .systems;
+
+        const existing = current.find(
+          (item) => item.system === system
+        );
+
+        const systems = existing
+          ? current.map((item) =>
+              item.system === system
+                ? {
+                    ...item,
+                    otherFinding,
+                  }
+                : item
+            )
+          : [
+              ...current,
+              {
+                system,
+                symptoms: [],
+                otherFinding,
+              },
+            ];
+
+        return {
+          visit: {
+            ...state.visit,
+            history: {
+              ...state.visit.history,
+              hpi: {
+                ...state.visit.history.hpi,
+                relatedSystemSymptoms: {
+                  systems,
+                },
+              },
+            },
+          },
+        };
+      }),
 
     updateSystematicReviewField: (
               fieldId,

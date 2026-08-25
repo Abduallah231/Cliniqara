@@ -15,29 +15,23 @@ import { useVisitStore } from "@/store/visitStore";
 export default function EndocrineSystem() {
   const {
     visit,
-    updateRelatedSystemField,
+    updateRelatedSystem,
   } = useVisitStore();
 
-  const selected =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "Endocrine"
-    )?.value as string[]) ?? [];
+  const system =
+    visit.history.hpi.relatedSystemSymptoms.systems.find(
+      (item) => item.system === "ENDOCRINE"
+    );
 
-  const otherFinding =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "EndocrineOther"
-    )?.value as string) ?? "";
+  const selected = system?.symptoms ?? [];
+  const otherFinding = system?.otherFinding ?? "";
 
   const toggle = (item: string) => {
-    const updated = selected.includes(item)
+    const symptoms = selected.includes(item)
       ? selected.filter((x) => x !== item)
       : [...selected, item];
 
-    updateRelatedSystemField(
-      "Endocrine",
-      "Endocrine",
-      updated
-    );
+    updateRelatedSystem("ENDOCRINE", { symptoms });
   };
 
   const Section = ({
@@ -48,9 +42,7 @@ export default function EndocrineSystem() {
     items: string[];
   }) => (
     <>
-      <Text style={styles.sectionTitle}>
-        {title}
-      </Text>
+      <Text style={styles.sectionTitle}>{title}</Text>
 
       <View style={styles.row}>
         {items.map((item) => (
@@ -67,11 +59,9 @@ export default function EndocrineSystem() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        Endocrine
-      </Text>
+      <Text style={styles.title}>Endocrine</Text>
 
-            <Section
+      <Section
         title="Core"
         items={[
           "Weight Gain",
@@ -166,16 +156,16 @@ export default function EndocrineSystem() {
         placeholder="Add other findings..."
         value={otherFinding}
         onChangeText={(text) =>
-          updateRelatedSystemField(
-            "EndocrineOther",
-            "Endocrine Other",
-            text
-          )
+          updateRelatedSystem("ENDOCRINE", {
+            otherFinding: text,
+          })
         }
         multiline
       />
     </View>
-  );}
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     gap: SPACING.md,

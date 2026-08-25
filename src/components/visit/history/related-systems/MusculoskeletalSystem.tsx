@@ -15,29 +15,25 @@ import { useVisitStore } from "@/store/visitStore";
 export default function MusculoskeletalSystem() {
   const {
     visit,
-    updateRelatedSystemField,
+    updateRelatedSystem,
   } = useVisitStore();
 
-  const selected =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "Musculoskeletal"
-    )?.value as string[]) ?? [];
+  const system =
+    visit.history.hpi.relatedSystemSymptoms.systems.find(
+      (item) => item.system === "MUSCULOSKELETAL"
+    );
 
-  const otherFinding =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "MusculoskeletalOther"
-    )?.value as string) ?? "";
+  const selected = system?.symptoms ?? [];
+  const otherFinding = system?.otherFinding ?? "";
 
   const toggle = (item: string) => {
-    const updated = selected.includes(item)
+    const symptoms = selected.includes(item)
       ? selected.filter((x) => x !== item)
       : [...selected, item];
 
-    updateRelatedSystemField(
-      "Musculoskeletal",
-      "Musculoskeletal",
-      updated
-    );
+    updateRelatedSystem("MUSCULOSKELETAL", {
+      symptoms,
+    });
   };
 
   const Section = ({
@@ -71,7 +67,7 @@ export default function MusculoskeletalSystem() {
         Musculoskeletal
       </Text>
 
-            <Section
+      <Section
         title="Core"
         items={[
           "Joint Pain",
@@ -151,17 +147,18 @@ export default function MusculoskeletalSystem() {
         placeholder="Add other findings..."
         value={otherFinding}
         onChangeText={(text) =>
-          updateRelatedSystemField(
-            "MusculoskeletalOther",
-            "Musculoskeletal Other",
-            text
+          updateRelatedSystem(
+            "MUSCULOSKELETAL",
+            {
+              otherFinding: text,
+            }
           )
         }
         multiline
       />
     </View>
   );
-  }
+}
 
 const styles = StyleSheet.create({
   container: {

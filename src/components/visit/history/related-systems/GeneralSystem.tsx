@@ -15,18 +15,17 @@ import { useVisitStore } from "@/store/visitStore";
 export default function GeneralSystem() {
   const {
     visit,
-    updateRelatedSystemField,
+    toggleRelatedSystemSymptom,
+    updateRelatedSystemOtherFinding,
   } = useVisitStore();
 
-  const selectedSymptoms =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "General"
-    )?.value as string[]) ?? [];
+  const general =
+    visit.history.hpi.relatedSystemSymptoms.systems.find(
+      (item) => item.system === "GENERAL"
+    );
 
-  const otherFinding =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "GeneralOther"
-    )?.value as string) ?? "";
+  const selectedSymptoms = general?.symptoms ?? [];
+  const otherFinding = general?.otherFinding ?? "";
 
   const symptoms = [
     "Fever",
@@ -38,24 +37,8 @@ export default function GeneralSystem() {
     "Night Sweats",
   ];
 
-  const toggleSymptom = (
-    symptom: string
-  ) => {
-    const updated =
-      selectedSymptoms.includes(symptom)
-        ? selectedSymptoms.filter(
-            (item) => item !== symptom
-          )
-        : [
-            ...selectedSymptoms,
-            symptom,
-          ];
-
-    updateRelatedSystemField(
-      "General",
-      "General",
-      updated
-    );
+  const toggleSymptom = (symptom: string) => {
+    toggleRelatedSystemSymptom("GENERAL", symptom);
   };
 
   return (
@@ -79,14 +62,13 @@ export default function GeneralSystem() {
         ))}
       </View>
 
-            <AppTextField
+      <AppTextField
         label="Other Findings"
         placeholder="Add other findings..."
         value={otherFinding}
         onChangeText={(text) =>
-          updateRelatedSystemField(
-            "GeneralOther",
-            "General Other",
+          updateRelatedSystemOtherFinding(
+            "GENERAL",
             text
           )
         }
@@ -94,8 +76,7 @@ export default function GeneralSystem() {
       />
     </View>
   );
-
-  }
+}
 
 const styles = StyleSheet.create({
   container: {

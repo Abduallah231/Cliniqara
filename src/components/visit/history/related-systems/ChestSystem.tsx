@@ -4,10 +4,8 @@ import {
   Text,
   View,
 } from "react-native";
-
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-
 import {
   COLORS,
   SPACING,
@@ -17,29 +15,31 @@ import {
 export default function ChestSystem() {
   const {
     visit,
-    updateRelatedSystemField,
+    updateRelatedSystem,
   } = useVisitStore();
 
-  const selected =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "Chest"
-    )?.value as string[]) ?? [];
+  const system =
+    visit.history.hpi.relatedSystemSymptoms.systems.find(
+      (item) => item.system === "CHEST"
+    );
 
-  const otherFinding =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "ChestOther"
-    )?.value as string) ?? "";
+  const selected = system?.symptoms ?? [];
+  const otherFinding = system?.otherFinding ?? "";
 
   const toggle = (item: string) => {
-    const updated = selected.includes(item)
+    const symptoms = selected.includes(item)
       ? selected.filter((x) => x !== item)
       : [...selected, item];
 
-    updateRelatedSystemField(
-      "Chest",
-      "Chest",
-      updated
-    );
+    updateRelatedSystem("CHEST", {
+      symptoms,
+    });
+  };
+
+  const updateOtherFinding = (text: string) => {
+    updateRelatedSystem("CHEST", {
+      otherFinding: text,
+    });
   };
 
   const Section = ({
@@ -59,12 +59,8 @@ export default function ChestSystem() {
           <AppChip
             key={item}
             label={item}
-            selected={selected.includes(
-              item
-            )}
-            onPress={() =>
-              toggle(item)
-            }
+            selected={selected.includes(item)}
+            onPress={() => toggle(item)}
           />
         ))}
       </View>
@@ -119,13 +115,7 @@ export default function ChestSystem() {
         label="Other Findings"
         placeholder="Add other findings..."
         value={otherFinding}
-        onChangeText={(text) =>
-          updateRelatedSystemField(
-            "ChestOther",
-            "Chest Other",
-            text
-          )
-        }
+        onChangeText={updateOtherFinding}
         multiline
       />
     </View>

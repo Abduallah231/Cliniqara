@@ -7,6 +7,32 @@ import type {
 } from "@/types/visit";
 import { api } from "./api";
 
+export type RelatedSystemType =
+  | "GENERAL"
+  | "CVS"
+  | "CHEST"
+  | "GIT"
+  | "RENAL"
+  | "NEURO"
+  | "MUSCULOSKELETAL"
+  | "ENDOCRINE"
+  | "HEMATOLOGY"
+  | "SKIN"
+  | "GYNECOLOGY"
+  | "OBSTETRIC"
+  | "ENT"
+  | "OPHTHALMOLOGY";
+
+export type RelatedSystemItem = {
+  system: RelatedSystemType;
+  symptoms: string[];
+  otherFinding?: string | null;
+};
+
+export type SaveRelatedSystemsInput = {
+  systems: RelatedSystemItem[];
+};
+
 export async function createWaitingVisit(
   patientId: string,
   doctorId?: string,
@@ -118,6 +144,28 @@ export async function getVisit(
     {
       visitId,
     },
+  );
+
+  return data;
+}
+
+export async function saveRelatedSystems(
+  visitId: string,
+  dto: SaveRelatedSystemsInput,
+): Promise<RelatedSystemItem[]> {
+  const { data } = await api.put(
+    `/visits/${visitId}/related-systems`,
+    dto,
+  );
+
+  return data;
+}
+
+export async function getRelatedSystems(
+  visitId: string,
+): Promise<RelatedSystemItem[]> {
+  const { data } = await api.get(
+    `/visits/${visitId}/related-systems`,
   );
 
   return data;

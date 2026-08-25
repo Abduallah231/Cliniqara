@@ -15,29 +15,25 @@ import { useVisitStore } from "@/store/visitStore";
 export default function ObstetricSystem() {
   const {
     visit,
-    updateRelatedSystemField,
+    updateRelatedSystem,
   } = useVisitStore();
 
-  const selected =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "Obstetric"
-    )?.value as string[]) ?? [];
+  const system =
+    visit.history.hpi.relatedSystemSymptoms.systems.find(
+      (item) => item.system === "OBSTETRIC"
+    );
 
-  const otherFinding =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "ObstetricOther"
-    )?.value as string) ?? "";
+  const selected = system?.symptoms ?? [];
+  const otherFinding = system?.otherFinding ?? "";
 
   const toggle = (item: string) => {
-    const updated = selected.includes(item)
+    const symptoms = selected.includes(item)
       ? selected.filter((x) => x !== item)
       : [...selected, item];
 
-    updateRelatedSystemField(
-      "Obstetric",
-      "Obstetric",
-      updated
-    );
+    updateRelatedSystem("OBSTETRIC", {
+      symptoms,
+    });
   };
 
   const Section = ({
@@ -70,7 +66,8 @@ export default function ObstetricSystem() {
       <Text style={styles.title}>
         Obstetric
       </Text>
-            <Section
+
+      <Section
         title="Core"
         items={[
           "Amenorrhea",
@@ -134,16 +131,15 @@ export default function ObstetricSystem() {
         placeholder="Add other findings..."
         value={otherFinding}
         onChangeText={(text) =>
-          updateRelatedSystemField(
-            "ObstetricOther",
-            "Obstetric Other",
-            text
-          )
+          updateRelatedSystem("OBSTETRIC", {
+            otherFinding: text,
+          })
         }
         multiline
       />
     </View>
-  );}
+  );
+}
 
 const styles = StyleSheet.create({
   container: {

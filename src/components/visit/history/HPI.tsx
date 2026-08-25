@@ -42,7 +42,7 @@ export default function HPI() {
     </CollapsibleSection>
 
     <CollapsibleSection
-      title="Related System Symptoms"
+      title="Systems Symptoms"
       icon={
         <Ionicons
           name="body-outline"
@@ -54,7 +54,7 @@ export default function HPI() {
       <RelatedSystemSymptoms />
     </CollapsibleSection>
 
-    <CollapsibleSection
+    {/* <CollapsibleSection
       title="Systematic Review"
       icon={
         <Ionicons
@@ -65,7 +65,7 @@ export default function HPI() {
       }
     >
       <SystematicReview />
-    </CollapsibleSection>
+    </CollapsibleSection> */}
   </View>
 </View>
   );

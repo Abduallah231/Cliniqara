@@ -45,8 +45,30 @@ export interface AnalysisOfComplaint {
 // Related System Symptoms
 // ======================================================
 
+export type RelatedSystemType =
+  | "GENERAL"
+  | "CVS"
+  | "CHEST"
+  | "GIT"
+  | "RENAL"
+  | "NEURO"
+  | "MUSCULOSKELETAL"
+  | "ENDOCRINE"
+  | "HEMATOLOGY"
+  | "SKIN"
+  | "GYNECOLOGY"
+  | "OBSTETRIC"
+  | "ENT"
+  | "OPHTHALMOLOGY";
+
+export interface RelatedSystemItem {
+  system: RelatedSystemType;
+  symptoms: string[];
+  otherFinding?: string | null;
+}
+
 export interface RelatedSystemSymptoms {
-  fields: DynamicFieldValue[];
+  systems: RelatedSystemItem[];
 }
 
 // ======================================================
@@ -272,7 +294,7 @@ export function createEmptyHistory(): History {
       fields: [],
     },
     relatedSystemSymptoms: {
-      fields: [],
+      systems: [],
     },
     systematicReview: {
       systems: [],

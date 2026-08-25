@@ -15,29 +15,23 @@ import { useVisitStore } from "@/store/visitStore";
 export default function RenalSystem() {
   const {
     visit,
-    updateRelatedSystemField,
+    updateRelatedSystem,
   } = useVisitStore();
 
-  const selected =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "Renal"
-    )?.value as string[]) ?? [];
+  const system =
+    visit.history.hpi.relatedSystemSymptoms.systems.find(
+      (item) => item.system === "RENAL"
+    );
 
-  const otherFinding =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "RenalOther"
-    )?.value as string) ?? "";
+  const selected = system?.symptoms ?? [];
+  const otherFinding = system?.otherFinding ?? "";
 
   const toggle = (item: string) => {
-    const updated = selected.includes(item)
+    const symptoms = selected.includes(item)
       ? selected.filter((x) => x !== item)
       : [...selected, item];
 
-    updateRelatedSystemField(
-      "Renal",
-      "Renal",
-      updated
-    );
+    updateRelatedSystem("RENAL", { symptoms });
   };
 
   const Section = ({
@@ -48,9 +42,7 @@ export default function RenalSystem() {
     items: string[];
   }) => (
     <>
-      <Text style={styles.sectionTitle}>
-        {title}
-      </Text>
+      <Text style={styles.sectionTitle}>{title}</Text>
 
       <View style={styles.row}>
         {items.map((item) => (
@@ -67,10 +59,9 @@ export default function RenalSystem() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        Renal
-      </Text>
-            <Section
+      <Text style={styles.title}>Renal</Text>
+
+      <Section
         title="Core"
         items={[
           "Dysuria",
@@ -154,16 +145,15 @@ export default function RenalSystem() {
         placeholder="Add other findings..."
         value={otherFinding}
         onChangeText={(text) =>
-          updateRelatedSystemField(
-            "RenalOther",
-            "Renal Other",
-            text
-          )
+          updateRelatedSystem("RENAL", {
+            otherFinding: text,
+          })
         }
         multiline
       />
     </View>
-  );}
+  );
+}
 
 const styles = StyleSheet.create({
   container: {

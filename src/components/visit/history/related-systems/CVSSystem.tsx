@@ -15,29 +15,24 @@ import { useVisitStore } from "@/store/visitStore";
 export default function CVSSystem() {
   const {
     visit,
-    updateRelatedSystemField,
+    toggleRelatedSystemSymptom,
+    updateRelatedSystemOtherFinding,
   } = useVisitStore();
 
-  const selected =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "CVS"
-    )?.value as string[]) ?? [];
+  const cvs =
+    visit.history.hpi.relatedSystemSymptoms.systems.find(
+      (item) => item.system === "CVS"
+    );
 
-  const otherFinding =
-    (visit.history.hpi.relatedSystemSymptoms.fields.find(
-      (f) => f.fieldId === "CVSOther"
-    )?.value as string) ?? "";
+  const selected = cvs?.symptoms ?? [];
+  const otherFinding = cvs?.otherFinding ?? "";
 
   const toggle = (item: string) => {
     const updated = selected.includes(item)
       ? selected.filter((x) => x !== item)
       : [...selected, item];
 
-    updateRelatedSystemField(
-      "CVS",
-      "CVS",
-      updated
-    );
+    toggleRelatedSystemSymptom("CVS", item);
   };
 
   const Section = ({
@@ -118,9 +113,8 @@ export default function CVSSystem() {
         placeholder="Add other findings..."
         value={otherFinding}
         onChangeText={(text) =>
-          updateRelatedSystemField(
-            "CVSOther",
-            "CVS Other",
+          updateRelatedSystemOtherFinding(
+            "CVS",
             text
           )
         }
