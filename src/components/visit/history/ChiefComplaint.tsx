@@ -19,7 +19,11 @@ import {
 } from "react-native";
 
 export default function ChiefComplaint() {
-  const { visit, updateVisit } = useVisitStore();
+  const {
+    visit,
+    setChiefComplaint,
+    updateVisit,
+  } = useVisitStore();
 
   const chiefComplaint = visit.history.chiefComplaint;
   const visitId = visit.metadata.id;
@@ -60,12 +64,22 @@ export default function ChiefComplaint() {
       ...updates,
     };
 
-    updateVisit({
-      history: {
-        ...visit.history,
-        chiefComplaint: updatedChiefComplaint,
-      },
-    });
+    if (
+      updates.complaintId &&
+      updates.complaintId !== chiefComplaint.complaintId
+    ) {
+      setChiefComplaint(
+        updates.complaintId,
+        updates.complaintName ?? ""
+      );
+    } else {
+      updateVisit({
+        history: {
+          ...visit.history,
+          chiefComplaint: updatedChiefComplaint,
+        },
+      });
+    }
 
     if (
       !visitId ||

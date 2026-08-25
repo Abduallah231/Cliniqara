@@ -469,6 +469,11 @@ removeStaff: (
   id: string
 ) => void;
 
+setChiefComplaint: (
+  complaintId: string,
+  complaintName: string
+) => void;
+
   resetVisit: () => void;
 }
 
@@ -488,6 +493,59 @@ export const useVisitStore =
           ...updates,
         },
       })),
+
+    setChiefComplaint: (
+      complaintId,
+      complaintName
+    ) =>
+      set((state) => {
+        const currentComplaintId =
+          state.visit.history.chiefComplaint.complaintId;
+
+        const complaintChanged =
+          currentComplaintId !== complaintId;
+
+        return {
+          visit: {
+            ...state.visit,
+
+            history: {
+              ...state.visit.history,
+
+              chiefComplaint: {
+                ...state.visit.history.chiefComplaint,
+                complaintId,
+                complaintName,
+
+                /*
+                * New chief complaint =
+                * completely new analysis context.
+                */
+                ...(complaintChanged && {
+                  durationValue: undefined,
+                  durationUnit: undefined,
+                }),
+              },
+
+              hpi: {
+                ...state.visit.history.hpi,
+
+                analysis: {
+                  ...state.visit.history.hpi.analysis,
+
+                  /*
+                  * NEVER carry analysis fields
+                  * from the previous complaint.
+                  */
+                  ...(complaintChanged && {
+                    fields: [],
+                  }),
+                },
+              },
+            },
+          },
+        };
+      }),
 
     updateAnalysisField: (
       fieldId,

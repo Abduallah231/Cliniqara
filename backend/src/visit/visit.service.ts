@@ -769,6 +769,21 @@ async startVisit(
       );
     }
 
+    const existing =
+      await this.prisma.visitChiefComplaint.findUnique({
+        where: {
+          visitId,
+        },
+      });
+
+    if (
+      existing &&
+      existing.chiefComplaintId === dto.chiefComplaintId
+    ) {
+      // Same complaint.
+      // Continue normally.
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const existing =
         await tx.visitChiefComplaint.findUnique({

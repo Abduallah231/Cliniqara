@@ -12,72 +12,66 @@ export default function useComplaintAutoSave({
   chiefComplaintId,
   answers,
 }: Props) {
-  const isFirstRender = useRef(true);
+  const previousComplaintId =
+    useRef<string | undefined>(
+      chiefComplaintId
+    );
+
+  const skipNextSave = useRef(true);
 
   useEffect(() => {
-  console.log("AUTOSAVE EFFECT:", {
-    visitId,
-    chiefComplaintId,
-    answers,
-    isFirstRender: isFirstRender.current,
-  });
+    if (!visitId || !chiefComplaintId) {
+      return;
+    }
 
-  if (!visitId || !chiefComplaintId) {
-    console.log(
-      "AUTOSAVE SKIPPED: missing visitId or chiefComplaintId"
-    );
-    return;
-  }
+    /*
+     * Chief complaint changed.
+     *
+     * The analysis fields were cleared in
+     * visitStore, so do not autosave anything
+     * during this transition.
+     */
+    if (
+      previousComplaintId.current !==
+      chiefComplaintId
+    ) {
+      previousComplaintId.current =
+        chiefComplaintId;
 
-  if (isFirstRender.current) {
-    console.log(
-      "AUTOSAVE SKIPPED: first render"
-    );
+      skipNextSave.current = true;
 
-    isFirstRender.current = false;
-    return;
-  }
+      return;
+    }
 
-  console.log(
-    "AUTOSAVE SCHEDULED"
-  );
+    /*
+     * Skip the first render for this complaint.
+     */
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
+      return;
+    }
 
-  const timer = setTimeout(() => {
-    console.log(
-      "AUTOSAVE FIRING:",
-      answers
-    );
-
-    saveChiefComplaint(
-      visitId,
-      chiefComplaintId,
-      {
-        answers,
-      },
-    )
-      .then(() => {
-        console.log(
-          "AUTOSAVE SUCCESS"
-        );
-      })
-      .catch((error) => {
+    const timer = setTimeout(() => {
+      saveChiefComplaint(
+        visitId,
+        chiefComplaintId,
+        {
+          answers,
+        },
+      ).catch((error) => {
         console.error(
           "AUTOSAVE FAILED:",
-          error
+          error,
         );
       });
-  }, 500);
+    }, 500);
 
-  return () => {
-    console.log(
-      "AUTOSAVE CLEANUP"
-    );
-
-    clearTimeout(timer);
-  };
-}, [
-  visitId,
-  chiefComplaintId,
-  JSON.stringify(answers),
-]);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [
+    visitId,
+    chiefComplaintId,
+    JSON.stringify(answers),
+  ]);
 }
