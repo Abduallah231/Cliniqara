@@ -195,8 +195,47 @@ export interface PediatricHistory {
 // Vaccination History
 // ======================================================
 
+export type VaccinationStatus =
+  | "UP_TO_DATE"
+  | "PARTIALLY_VACCINATED"
+  | "UNVACCINATED"
+  | "UNKNOWN";
+
+export type VaccinationReason =
+  | "MISSED_APPOINTMENT"
+  | "VACCINE_UNAVAILABLE"
+  | "MEDICAL_CONTRAINDICATION"
+  | "PARENT_REFUSED"
+  | "ACCESS_PROBLEMS"
+  | "UNKNOWN"
+  | "OTHER";
+
+export type ReactionSeverity =
+  | "MILD"
+  | "MODERATE"
+  | "SEVERE";
+
 export interface VaccinationHistory {
-  fields: DynamicFieldValue[];
+  id?: string;
+  patientId?: string;
+
+  vaccinationStatus?: VaccinationStatus | null;
+
+  missedVaccines: string[];
+
+  partialReason?: VaccinationReason | null;
+  partialOtherDetails?: string | null;
+
+  unvaccinatedReason?: VaccinationReason | null;
+  unvaccinatedOtherDetails?: string | null;
+
+  previousReaction?: boolean | null;
+
+  reactionSeverity?: ReactionSeverity | null;
+  reactionDetails?: string | null;
+
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // ======================================================
@@ -443,7 +482,15 @@ export function createEmptyHistory(): History {
   },
 
   vaccinationHistory: {
-    fields: [],
+    vaccinationStatus: null,
+    missedVaccines: [],
+    partialReason: null,
+    partialOtherDetails: null,
+    unvaccinatedReason: null,
+    unvaccinatedOtherDetails: null,
+    previousReaction: null,
+    reactionSeverity: null,
+    reactionDetails: null,
   },
 
   menstrualHistory: {

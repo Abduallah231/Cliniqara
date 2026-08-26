@@ -14,6 +14,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { VerifyNationalIdDto } from '../dto/verify-national-id.dto';
 import { CreatePatientDto } from '../dto/create-patient.dto';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
+import { SaveVaccinationHistoryDto } from "../dto/save-vaccination-history.dto";
 
 @Injectable()
 export class PatientService {
@@ -82,6 +83,30 @@ export class PatientService {
     }
 
     return membership;
+  }
+
+  private async getActiveMembershipForPatient(
+    userId: string,
+    patientId: string,
+  ) {
+    const patient = await this.prisma.patient.findUnique({
+      where: {
+        id: patientId,
+      },
+      select: {
+        id: true,
+        clinicId: true,
+      },
+    });
+
+    if (!patient) {
+      throw new NotFoundException('Patient not found');
+    }
+
+    return this.getActiveMembership(
+      userId,
+      patient.clinicId,
+    );
   }
 
   private async generatePatientCode(
@@ -745,5 +770,204 @@ export class PatientService {
       gender:
         nationalIdData.gender,
     };
+  }
+
+  async saveVaccinationHistory(
+    userId: string,
+    patientId: string,
+    dto: SaveVaccinationHistoryDto,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    // =========================================
+    // Basic validation
+    // =========================================
+    if (!dto.vaccinationStatus) {
+      throw new BadRequestException(
+        'Vaccination status is required.',
+      );
+    }
+
+    // =========================================
+    // PARTIALLY VACCINATED
+    // =========================================
+    let missedVaccines: string[] = [];
+    let partialReason:
+      | SaveVaccinationHistoryDto['partialReason']
+      | undefined;
+    let partialOtherDetails: string | undefined;
+
+    if (
+      dto.vaccinationStatus ===
+      'PARTIALLY_VACCINATED'
+    ) {
+      missedVaccines = dto.missedVaccines ?? [];
+
+      if (missedVaccines.length === 0) {
+        throw new BadRequestException(
+          'At least one missed vaccine is required for a partially vaccinated patient.',
+        );
+      }
+
+      if (!dto.partialReason) {
+        throw new BadRequestException(
+          'Reason is required for a partially vaccinated patient.',
+        );
+      }
+
+      partialReason = dto.partialReason;
+
+      if (
+        dto.partialReason === 'OTHER'
+      ) {
+        if (!dto.partialOtherDetails?.trim()) {
+          throw new BadRequestException(
+            'Other reason details are required.',
+          );
+        }
+
+        partialOtherDetails =
+          dto.partialOtherDetails.trim();
+      }
+    }
+
+    // =========================================
+    // UNVACCINATED
+    // =========================================
+    let unvaccinatedReason:
+      | SaveVaccinationHistoryDto['unvaccinatedReason']
+      | undefined;
+    let unvaccinatedOtherDetails:
+      | string
+      | undefined;
+
+    if (
+      dto.vaccinationStatus ===
+      'UNVACCINATED'
+    ) {
+      if (!dto.unvaccinatedReason) {
+        throw new BadRequestException(
+          'Reason is required for an unvaccinated patient.',
+        );
+      }
+
+      unvaccinatedReason =
+        dto.unvaccinatedReason;
+
+      if (
+        dto.unvaccinatedReason === 'OTHER'
+      ) {
+        if (
+          !dto.unvaccinatedOtherDetails?.trim()
+        ) {
+          throw new BadRequestException(
+            'Other reason details are required.',
+          );
+        }
+
+        unvaccinatedOtherDetails =
+          dto.unvaccinatedOtherDetails.trim();
+      }
+    }
+
+    // =========================================
+    // PREVIOUS VACCINE REACTION
+    // =========================================
+    let reactionSeverity:
+      | SaveVaccinationHistoryDto['reactionSeverity']
+      | undefined;
+    let reactionDetails:
+      | string
+      | undefined;
+
+    if (dto.previousReaction === true) {
+      if (!dto.reactionSeverity) {
+        throw new BadRequestException(
+          'Reaction severity is required when previous reaction is yes.',
+        );
+      }
+
+      if (!dto.reactionDetails?.trim()) {
+        throw new BadRequestException(
+          'Reaction details are required when previous reaction is yes.',
+        );
+      }
+
+      reactionSeverity =
+        dto.reactionSeverity;
+
+      reactionDetails =
+        dto.reactionDetails.trim();
+    }
+
+    // =========================================
+    // Upsert patient vaccination history
+    // =========================================
+    return this.prisma.patientVaccinationHistory.upsert({
+      where: {
+        patientId,
+      },
+
+      create: {
+        patientId,
+
+        vaccinationStatus:
+          dto.vaccinationStatus,
+
+        missedVaccines,
+
+        partialReason,
+        partialOtherDetails,
+
+        unvaccinatedReason,
+        unvaccinatedOtherDetails,
+
+        previousReaction:
+          dto.previousReaction ?? false,
+
+        reactionSeverity,
+        reactionDetails,
+      },
+
+      update: {
+        vaccinationStatus:
+          dto.vaccinationStatus,
+
+        // Clear old conditional data when
+        // vaccination status changes.
+        missedVaccines,
+
+        partialReason,
+        partialOtherDetails,
+
+        unvaccinatedReason,
+        unvaccinatedOtherDetails,
+
+        previousReaction:
+          dto.previousReaction ?? false,
+
+        reactionSeverity,
+        reactionDetails,
+      },
+    });
+  }
+
+  async getVaccinationHistory(
+    userId: string,
+    patientId: string,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    return this.prisma.patientVaccinationHistory.findUnique({
+      where: {
+        patientId,
+      },
+    });
   }
 }

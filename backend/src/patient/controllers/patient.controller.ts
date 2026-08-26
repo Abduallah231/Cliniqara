@@ -8,6 +8,7 @@ import {
   Post,
   UseGuards,
   Query,
+  Put,
 } from '@nestjs/common';
 import { VerifyNationalIdDto } from '../dto/verify-national-id.dto';
 import { AccountType } from '@prisma/client';
@@ -24,6 +25,7 @@ import { PatientService } from '../services/patient.service';
 
 import { CreatePatientDto } from '../dto/create-patient.dto';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
+import { SaveVaccinationHistoryDto } from "../dto/save-vaccination-history.dto";
 
 @Controller('patients')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -113,6 +115,32 @@ export class PatientController {
       clinicId,
       id,
       dto,
+    );
+  }
+
+  @Put(':patientId/vaccination-history')
+  @Roles(AccountType.DOCTOR)
+  async saveVaccinationHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+    @Body() dto: SaveVaccinationHistoryDto,
+  ) {
+    return this.patientService.saveVaccinationHistory(
+      user.id,
+      patientId,
+      dto,
+    );
+  }
+
+  @Get(':patientId/vaccination-history')
+  @Roles(AccountType.DOCTOR)
+  async getVaccinationHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.patientService.getVaccinationHistory(
+      user.id,
+      patientId,
     );
   }
 }

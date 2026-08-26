@@ -228,3 +228,61 @@ export async function getPediatricHistory(
 
   return data;
 }
+
+export type VaccinationStatus =
+  | "UP_TO_DATE"
+  | "PARTIALLY_VACCINATED"
+  | "UNVACCINATED"
+  | "UNKNOWN";
+
+export type VaccinationReason =
+  | "MISSED_APPOINTMENT"
+  | "VACCINE_UNAVAILABLE"
+  | "MEDICAL_CONTRAINDICATION"
+  | "PARENT_REFUSED"
+  | "ACCESS_PROBLEMS"
+  | "UNKNOWN"
+  | "OTHER";
+
+export type ReactionSeverity =
+  | "MILD"
+  | "MODERATE"
+  | "SEVERE";
+
+export type SaveVaccinationHistoryInput = {
+  vaccinationStatus?: VaccinationStatus | null;
+  missedVaccines?: string[];
+
+  partialReason?: VaccinationReason | null;
+  partialOtherDetails?: string | null;
+
+  unvaccinatedReason?: VaccinationReason | null;
+  unvaccinatedOtherDetails?: string | null;
+
+  previousReaction?: boolean | null;
+
+  reactionSeverity?: ReactionSeverity | null;
+  reactionDetails?: string | null;
+};
+
+export async function saveVaccinationHistory(
+  visitId: string,
+  dto: SaveVaccinationHistoryInput,
+) {
+  const { data } = await api.post(
+    `/visits/${visitId}/vaccination-history`,
+    dto,
+  );
+
+  return data;
+}
+
+export async function getVaccinationHistory(
+  visitId: string,
+) {
+  const { data } = await api.get(
+    `/visits/${visitId}/vaccination-history`,
+  );
+
+  return data;
+}
