@@ -23,6 +23,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/interfaces/authenticated-user.interface";
 import { SavePediatricHistoryDto } from "./dto/save-pediatric-history.dto";
+import { SaveMenstrualHistoryDto } from "./dto/save-menstrual-history.dto";
 
 @Controller("visits")
 @UseGuards(JwtAuthGuard)
@@ -220,6 +221,30 @@ export class VisitController {
     @Param("visitId") visitId: string,
   ) {
     return this.visitService.getPediatricHistory(
+      visitId,
+      user.id,
+    );
+  }
+
+  @Put(":visitId/menstrual-history")
+  saveMenstrualHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveMenstrualHistoryDto,
+  ) {
+    return this.visitService.saveMenstrualHistory(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/menstrual-history")
+  getMenstrualHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getMenstrualHistory(
       visitId,
       user.id,
     );

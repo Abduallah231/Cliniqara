@@ -20,6 +20,7 @@ import { SaveVisitChiefComplaintDto } from "./dto/save-visit-chief-complaint.dto
 import { StartVisitDto } from "./dto/start-visit.dto";
 import { SaveRelatedSystemsDto } from "./dto/save-related-systems.dto";
 import { SavePediatricHistoryDto } from "./dto/save-pediatric-history.dto";
+import { SaveMenstrualHistoryDto } from "./dto/save-menstrual-history.dto";
 
 @Injectable()
 export class VisitService {
@@ -1138,6 +1139,80 @@ async startVisit(
     );
 
     return this.prisma.visitPediatricHistory.findUnique({
+      where: { visitId },
+    });
+  }
+
+  async saveMenstrualHistory(
+    visitId: string,
+    dto: SaveMenstrualHistoryDto,
+    currentUserId: string,
+  ) {
+    const visit = await this.prisma.visit.findUnique({
+      where: { id: visitId },
+      select: {
+        id: true,
+        clinicId: true,
+        doctorId: true,
+        visitStatus: true,
+      },
+    });
+
+    if (!visit) {
+      throw new NotFoundException("Visit not found.");
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    if (visit.visitStatus !== VisitStatus.IN_PROGRESS) {
+      throw new BadRequestException(
+        "Menstrual history can only be saved for an in-progress visit.",
+      );
+    }
+
+    return this.prisma.visitMenstrualHistory.upsert({
+      where: { visitId },
+      create: {
+        visitId,
+        painRelievedBy: [],
+        associatedSymptoms: [],
+        pmsSymptoms: [],
+        ...dto,
+      },
+      update: {
+        ...dto,
+      },
+    });
+  }
+
+  async getMenstrualHistory(
+    visitId: string,
+    currentUserId: string,
+  ) {
+    const visit = await this.prisma.visit.findUnique({
+      where: { id: visitId },
+      select: {
+        id: true,
+        clinicId: true,
+        doctorId: true,
+      },
+    });
+
+    if (!visit) {
+      throw new NotFoundException("Visit not found.");
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    return this.prisma.visitMenstrualHistory.findUnique({
       where: { visitId },
     });
   }

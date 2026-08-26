@@ -229,6 +229,71 @@ export async function getPediatricHistory(
   return data;
 }
 
+export type CycleRegularity =
+  | "REGULAR"
+  | "IRREGULAR"
+  | "UNKNOWN";
+
+export type BleedingDuration =
+  | "LESS_THAN_3_DAYS"
+  | "DAYS_3_TO_7"
+  | "MORE_THAN_7_DAYS";
+
+export type MenstrualFlow =
+  | "SCANTY"
+  | "NORMAL"
+  | "HEAVY"
+  | "FLOODING";
+
+export type DysmenorrheaSeverity =
+  | "NONE"
+  | "MILD"
+  | "MODERATE"
+  | "SEVERE";
+
+export type PainStart =
+  | "BEFORE_MENSES"
+  | "FIRST_DAY"
+  | "THROUGHOUT_MENSES";
+
+export type SaveMenstrualHistoryInput = {
+  ageAtMenarche?: number | null;
+  cycleRegularity?: CycleRegularity | null;
+  cycleLength?: number | null;
+  bleedingDuration?: BleedingDuration | null;
+  menstrualFlow?: MenstrualFlow | null;
+  dysmenorrhea?: DysmenorrheaSeverity | null;
+  painStarts?: PainStart | null;
+  painRelievedBy?: string[];
+  associatedSymptoms?: string[];
+  intermenstrualBleeding?: boolean | null;
+  postcoitalBleeding?: boolean | null;
+  pmsSymptoms?: string[];
+  lmp?: string | null;
+};
+
+export async function saveMenstrualHistory(
+  visitId: string,
+  dto: SaveMenstrualHistoryInput,
+) {
+  const { data } = await api.put(
+    `/visits/${visitId}/menstrual-history`,
+    dto,
+  );
+
+  return data;
+}
+
+export async function getMenstrualHistory(
+  visitId: string,
+) {
+  const { data } = await api.get(
+    `/visits/${visitId}/menstrual-history`,
+  );
+
+  return data;
+}
+
 export type VaccinationStatus =
   | "UP_TO_DATE"
   | "PARTIALLY_VACCINATED"

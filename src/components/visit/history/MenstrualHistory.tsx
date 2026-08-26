@@ -9,6 +9,13 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import { useEffect, useRef, useState } from "react";
+import {
+  getMenstrualHistory,
+} from "@/services/visitApi";
+import useMenstrualHistoryAutoSave, {
+  mapMenstrualHistoryFromBackend,
+} from "@/hooks/useMenstrualHistoryAutoSave";
 
 export default function MenstrualHistory() {
   const {
@@ -16,8 +23,72 @@ export default function MenstrualHistory() {
     updateMenstrualField,
   } = useVisitStore();
 
+  const fields =
+    visit.history.menstrualHistory.fields;
+
+  const visitId = visit.metadata.id;
+
+  const [isHydrating, setIsHydrating] =
+    useState(false);
+
+  const loadedVisitId = useRef<string | null>(null);
+
+  useMenstrualHistoryAutoSave({
+    visitId,
+    fields,
+    isHydrating,
+  });
+
+  useEffect(() => {
+    if (
+      !visitId ||
+      loadedVisitId.current === visitId
+    ) {
+      return;
+    }
+
+    const loadMenstrualHistory = async () => {
+      try {
+        setIsHydrating(true);
+
+        const data =
+          await getMenstrualHistory(visitId);
+
+        if (!data) {
+          loadedVisitId.current = visitId;
+          return;
+        }
+
+        mapMenstrualHistoryFromBackend(data).forEach(
+          (field) => {
+            updateMenstrualField(
+              field.fieldId,
+              field.fieldLabel,
+              field.value,
+              field.unit,
+            );
+          },
+        );
+
+        loadedVisitId.current = visitId;
+      } catch (error) {
+        console.error(
+          "Failed to load menstrual history:",
+          error,
+        );
+      } finally {
+        setIsHydrating(false);
+      }
+    };
+
+    loadMenstrualHistory();
+  }, [
+    visitId,
+    updateMenstrualField,
+  ]);
+
   const getValue = (fieldId: string) =>
-    visit.history.menstrualHistory.fields.find(
+    fields.find(
       (field) => field.fieldId === fieldId
     )?.value ?? null;
 
