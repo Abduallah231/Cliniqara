@@ -238,6 +238,22 @@ export interface VaccinationHistory {
   updatedAt?: string;
 }
 
+export interface SaveVaccinationHistoryDto {
+  vaccinationStatus: VaccinationStatus;
+  missedVaccines: string[];
+
+  partialReason?: VaccinationReason | null;
+  partialOtherDetails?: string | null;
+
+  unvaccinatedReason?: VaccinationReason | null;
+  unvaccinatedOtherDetails?: string | null;
+
+  previousReaction?: boolean | null;
+
+  reactionSeverity?: ReactionSeverity | null;
+  reactionDetails?: string | null;
+}
+
 // ======================================================
 // Menstrual History
 // ======================================================

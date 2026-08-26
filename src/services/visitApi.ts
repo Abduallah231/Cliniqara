@@ -266,11 +266,11 @@ export type SaveVaccinationHistoryInput = {
 };
 
 export async function saveVaccinationHistory(
-  visitId: string,
+  patientId: string,
   dto: SaveVaccinationHistoryInput,
 ) {
-  const { data } = await api.post(
-    `/visits/${visitId}/vaccination-history`,
+  const { data } = await api.put(
+    `/patients/${patientId}/vaccination-history`,
     dto,
   );
 
@@ -278,10 +278,10 @@ export async function saveVaccinationHistory(
 }
 
 export async function getVaccinationHistory(
-  visitId: string,
+  patientId: string,
 ) {
   const { data } = await api.get(
-    `/visits/${visitId}/vaccination-history`,
+    `/patients/${patientId}/vaccination-history`,
   );
 
   return data;

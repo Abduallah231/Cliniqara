@@ -9,6 +9,9 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import { useEffect, useRef, useState } from "react";
+import { getVaccinationHistory } from "@/services/visitApi";
+import useVaccinationHistoryAutoSave from "@/hooks/useVaccinationHistoryAutoSave";
 
 export default function VaccinationHistory() {
   const {
@@ -16,57 +19,146 @@ export default function VaccinationHistory() {
     updateVaccinationField,
   } = useVisitStore();
 
+  const vaccinationHistory =
+    visit.history.vaccinationHistory;
+
+  const patientId = visit.patient?.id;
+
+  const [isHydrating, setIsHydrating] = useState(false);
+
+  useVaccinationHistoryAutoSave({
+    patientId,
+    vaccinationHistory,
+    isHydrating,
+  });
+
+  const isLoadingHistory = useRef(false);
+  const loadedPatientId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (
+      !patientId ||
+      loadedPatientId.current === patientId
+    ) {
+      return;
+    }
+
+    const loadVaccinationHistory = async () => {
+      try {
+        isLoadingHistory.current = true;
+        setIsHydrating(true);
+
+        const data =
+          await getVaccinationHistory(patientId);
+
+        if (!data) {
+          loadedPatientId.current = patientId;
+          return;
+        }
+
+        updateVaccinationField(
+          "vaccinationStatus",
+          data.vaccinationStatus ?? null,
+        );
+
+        updateVaccinationField(
+          "missedVaccines",
+          data.missedVaccines ?? [],
+        );
+
+        updateVaccinationField(
+          "partialReason",
+          data.partialReason ?? null,
+        );
+
+        updateVaccinationField(
+          "partialOtherDetails",
+          data.partialOtherDetails ?? null,
+        );
+
+        updateVaccinationField(
+          "unvaccinatedReason",
+          data.unvaccinatedReason ?? null,
+        );
+
+        updateVaccinationField(
+          "unvaccinatedOtherDetails",
+          data.unvaccinatedOtherDetails ?? null,
+        );
+
+        updateVaccinationField(
+          "previousReaction",
+          data.previousReaction ?? null,
+        );
+
+        updateVaccinationField(
+          "reactionSeverity",
+          data.reactionSeverity ?? null,
+        );
+
+        updateVaccinationField(
+          "reactionDetails",
+          data.reactionDetails ?? null,
+        );
+
+        loadedPatientId.current = patientId;
+      } catch (error) {
+        console.error(
+          "Failed to load vaccination history:",
+          error,
+        );
+      } finally {
+        isLoadingHistory.current = false;
+        setIsHydrating(false);
+      }
+    };
+
+    loadVaccinationHistory();
+  }, [
+    patientId,
+    updateVaccinationField,
+  ]);
+
   const updateField = (
-    fieldId: string,
-    fieldLabel: string,
-    value: any
+    field: any,
+    value: any,
   ) => {
     updateVaccinationField(
-      fieldId,
-      fieldLabel,
-      value
+      field,
+      value,
     );
   };
 
-  const getValue = (fieldId: string) =>
-    visit.history.vaccinationHistory.fields.find(
-      (field) => field.fieldId === fieldId
-    )?.value ?? null;
+  const getValue = (field: string) =>
+    vaccinationHistory?.[
+      field as keyof typeof vaccinationHistory
+    ] ?? null;
 
   const toggleMultiSelectWithNone = (
-    fieldId: string,
-    fieldLabel: string,
-    value: string
+    field: "missedVaccines",
+    value: string,
   ) => {
     const current =
-      (getValue(fieldId) as string[]) ?? [];
+      (getValue(field) as string[]) ?? [];
 
     if (value === "Unknown") {
-      updateVaccinationField(
-        fieldId,
-        fieldLabel,
-        ["Unknown"]
-      );
+      updateField(field, ["Unknown"]);
       return;
     }
 
     let updated = current.filter(
-      (item) => item !== "Unknown"
+      (item) => item !== "Unknown",
     );
 
     if (updated.includes(value)) {
       updated = updated.filter(
-        (item) => item !== value
+        (item) => item !== value,
       );
     } else {
       updated.push(value);
     }
 
-    updateVaccinationField(
-      fieldId,
-      fieldLabel,
-      updated
-    );
+    updateField(field, updated);
   };
 
   return (
@@ -79,131 +171,95 @@ export default function VaccinationHistory() {
 
       <View style={styles.row}>
         {[
-          "Up to Date",
-          "Partially Vaccinated",
-          "Unvaccinated",
-          "Unknown",
+          "UP_TO_DATE",
+          "PARTIALLY_VACCINATED",
+          "UNVACCINATED",
+          "UNKNOWN",
         ].map((item) => (
           <AppChip
             key={item}
-            label={item}
+            label={
+              item === "UP_TO_DATE"
+                ? "Up to Date"
+                : item ===
+                  "PARTIALLY_VACCINATED"
+                ? "Partially Vaccinated"
+                : item === "UNVACCINATED"
+                ? "Unvaccinated"
+                : "Unknown"
+            }
             selected={
               getValue(
-                "vaccinationStatus"
+                "vaccinationStatus",
               ) === item
             }
             onPress={() => {
               updateField(
                 "vaccinationStatus",
-                "Vaccination Status",
-                item
+                item,
               );
 
               if (
-                item === "Up to Date"
+                item === "UP_TO_DATE" ||
+                item === "UNKNOWN"
               ) {
                 updateField(
                   "missedVaccines",
-                  "Missed Vaccines",
-                  []
+                  [],
                 );
 
                 updateField(
                   "partialReason",
-                  "Partial Reason",
-                  ""
+                  null,
                 );
 
                 updateField(
                   "partialOtherDetails",
-                  "Partial Other Details",
-                  ""
+                  null,
                 );
 
                 updateField(
                   "unvaccinatedReason",
-                  "Unvaccinated Reason",
-                  ""
+                  null,
                 );
 
                 updateField(
                   "unvaccinatedOtherDetails",
-                  "Unvaccinated Other Details",
-                  ""
+                  null,
                 );
               }
 
               if (
                 item ===
-                "Partially Vaccinated"
+                "PARTIALLY_VACCINATED"
               ) {
                 updateField(
                   "unvaccinatedReason",
-                  "Unvaccinated Reason",
-                  ""
+                  null,
                 );
 
                 updateField(
                   "unvaccinatedOtherDetails",
-                  "Unvaccinated Other Details",
-                  ""
+                  null,
                 );
               }
 
               if (
-                item ===
-                "Unvaccinated"
+                item === "UNVACCINATED"
               ) {
                 updateField(
                   "missedVaccines",
-                  "Missed Vaccines",
-                  []
+                  [],
                 );
 
                 updateField(
                   "partialReason",
-                  "Partial Reason",
-                  ""
+                  null,
                 );
 
                 updateField(
                   "partialOtherDetails",
-                  "Partial Other Details",
-                  ""
-                );
-              }
-
-              if (
-                item === "Unknown"
-              ) {
-                updateField(
-                  "missedVaccines",
-                  "Missed Vaccines",
-                  []
-                );
-
-                updateField(
-                  "partialReason",
-                  "Partial Reason",
-                  ""
-                );
-
-                updateField(
-                  "partialOtherDetails",
-                  "Partial Other Details",
-                  ""
-                );
-
-                updateField(
-                  "unvaccinatedReason",
-                  "Unvaccinated Reason",
-                  ""
-                );
-
-                updateField(
-                  "unvaccinatedOtherDetails",
-                  "Unvaccinated Other Details",
-                  ""
+                  null,
                 );
               }
             }}
@@ -212,17 +268,16 @@ export default function VaccinationHistory() {
       </View>
 
       {getValue(
-        "vaccinationStatus"
-      ) !== "Unknown" && <Divider />}
+        "vaccinationStatus",
+      ) !== "UNKNOWN" && <Divider />}
 
       {/* =========================
           Partially Vaccinated
       ========================= */}
 
       {getValue(
-        "vaccinationStatus"
-      ) ===
-        "Partially Vaccinated" && (
+        "vaccinationStatus",
+      ) === "PARTIALLY_VACCINATED" && (
         <>
           <SectionHeader title="Missed Vaccines" />
 
@@ -241,19 +296,15 @@ export default function VaccinationHistory() {
               <AppChip
                 key={item}
                 label={item}
-                selected={
-                  (
-                    (getValue(
-                      "missedVaccines"
-                    ) as string[]) ??
-                    []
-                  ).includes(item)
-                }
+                selected={(
+                  (getValue(
+                    "missedVaccines",
+                  ) as string[]) ?? []
+                ).includes(item)}
                 onPress={() =>
                   toggleMultiSelectWithNone(
                     "missedVaccines",
-                    "Missed Vaccines",
-                    item
+                    item,
                   )
                 }
               />
@@ -262,30 +313,45 @@ export default function VaccinationHistory() {
 
           <Divider />
 
-                    <SectionHeader title="Reason" />
+          <SectionHeader title="Reason" />
 
           <View style={styles.row}>
             {[
-              "Missed Appointment",
-              "Vaccine Unavailable",
-              "Medical Contraindication",
-              "Parent Refused",
-              "Unknown",
-              "Other",
+              "MISSED_APPOINTMENT",
+              "VACCINE_UNAVAILABLE",
+              "MEDICAL_CONTRAINDICATION",
+              "PARENT_REFUSED",
+              "UNKNOWN",
+              "OTHER",
             ].map((item) => (
               <AppChip
                 key={item}
-                label={item}
+                label={
+                  item ===
+                  "MISSED_APPOINTMENT"
+                    ? "Missed Appointment"
+                    : item ===
+                      "VACCINE_UNAVAILABLE"
+                    ? "Vaccine Unavailable"
+                    : item ===
+                      "MEDICAL_CONTRAINDICATION"
+                    ? "Medical Contraindication"
+                    : item ===
+                      "PARENT_REFUSED"
+                    ? "Parent Refused"
+                    : item === "UNKNOWN"
+                    ? "Unknown"
+                    : "Other"
+                }
                 selected={
                   getValue(
-                    "partialReason"
+                    "partialReason",
                   ) === item
                 }
                 onPress={() =>
                   updateField(
                     "partialReason",
-                    "Partial Reason",
-                    item
+                    item,
                   )
                 }
               />
@@ -293,19 +359,18 @@ export default function VaccinationHistory() {
           </View>
 
           {getValue(
-            "partialReason"
-          ) === "Other" && (
+            "partialReason",
+          ) === "OTHER" && (
             <AppTextField
               value={
                 (getValue(
-                  "partialOtherDetails"
+                  "partialOtherDetails",
                 ) as string) ?? ""
               }
-              onChangeText={(v) =>
+              onChangeText={(value) =>
                 updateField(
                   "partialOtherDetails",
-                  "Partial Other Details",
-                  v
+                  value,
                 )
               }
               placeholder="Details"
@@ -321,32 +386,44 @@ export default function VaccinationHistory() {
       ========================= */}
 
       {getValue(
-        "vaccinationStatus"
-      ) === "Unvaccinated" && (
+        "vaccinationStatus",
+      ) === "UNVACCINATED" && (
         <>
           <SectionHeader title="Reason" />
 
           <View style={styles.row}>
             {[
-              "Parent Refused",
-              "Medical Contraindication",
-              "Access Problems",
-              "Unknown",
-              "Other",
+              "PARENT_REFUSED",
+              "MEDICAL_CONTRAINDICATION",
+              "ACCESS_PROBLEMS",
+              "UNKNOWN",
+              "OTHER",
             ].map((item) => (
               <AppChip
                 key={item}
-                label={item}
+                label={
+                  item ===
+                  "PARENT_REFUSED"
+                    ? "Parent Refused"
+                    : item ===
+                      "MEDICAL_CONTRAINDICATION"
+                    ? "Medical Contraindication"
+                    : item ===
+                      "ACCESS_PROBLEMS"
+                    ? "Access Problems"
+                    : item === "UNKNOWN"
+                    ? "Unknown"
+                    : "Other"
+                }
                 selected={
                   getValue(
-                    "unvaccinatedReason"
+                    "unvaccinatedReason",
                   ) === item
                 }
                 onPress={() =>
                   updateField(
                     "unvaccinatedReason",
-                    "Unvaccinated Reason",
-                    item
+                    item,
                   )
                 }
               />
@@ -354,19 +431,18 @@ export default function VaccinationHistory() {
           </View>
 
           {getValue(
-            "unvaccinatedReason"
-          ) === "Other" && (
+            "unvaccinatedReason",
+          ) === "OTHER" && (
             <AppTextField
               value={
                 (getValue(
-                  "unvaccinatedOtherDetails"
+                  "unvaccinatedOtherDetails",
                 ) as string) ?? ""
               }
-              onChangeText={(v) =>
+              onChangeText={(value) =>
                 updateField(
                   "unvaccinatedOtherDetails",
-                  "Unvaccinated Other Details",
-                  v
+                  value,
                 )
               }
               placeholder="Details"
@@ -382,48 +458,55 @@ export default function VaccinationHistory() {
       ========================= */}
 
       {getValue(
-        "vaccinationStatus"
-      ) !== "Unknown" && (
+        "vaccinationStatus",
+      ) !== "UNKNOWN" && (
         <>
           <SectionHeader title="Previous Vaccine Reaction" />
 
           <View style={styles.row}>
-            {["No", "Yes"].map((item) => (
+            {[
+              {
+                label: "No",
+                value: false,
+              },
+              {
+                label: "Yes",
+                value: true,
+              },
+            ].map((item) => (
               <AppChip
-                key={item}
-                label={item}
+                key={item.label}
+                label={item.label}
                 selected={
                   getValue(
-                    "previousReaction"
-                  ) === item
+                    "previousReaction",
+                  ) === item.value
                 }
                 onPress={() => {
                   updateField(
                     "previousReaction",
-                    "Previous Reaction",
-                    item
+                    item.value,
                   );
 
-                  if (item === "No") {
+                  if (!item.value) {
                     updateField(
                       "reactionSeverity",
-                      "Reaction Severity",
-                      ""
+                      null,
                     );
 
                     updateField(
                       "reactionDetails",
-                      "Reaction Details",
-                      ""
+                      null,
                     );
                   }
                 }}
               />
             ))}
           </View>
-                    {getValue(
-            "previousReaction"
-          ) === "Yes" && (
+
+          {getValue(
+            "previousReaction",
+          ) === true && (
             <>
               <Divider />
 
@@ -433,23 +516,28 @@ export default function VaccinationHistory() {
 
               <View style={styles.row}>
                 {[
-                  "Mild",
-                  "Moderate",
-                  "Severe",
+                  "MILD",
+                  "MODERATE",
+                  "SEVERE",
                 ].map((item) => (
                   <AppChip
                     key={item}
-                    label={item}
+                    label={
+                      item === "MILD"
+                        ? "Mild"
+                        : item === "MODERATE"
+                        ? "Moderate"
+                        : "Severe"
+                    }
                     selected={
                       getValue(
-                        "reactionSeverity"
+                        "reactionSeverity",
                       ) === item
                     }
                     onPress={() =>
                       updateField(
                         "reactionSeverity",
-                        "Reaction Severity",
-                        item
+                        item,
                       )
                     }
                   />
@@ -459,14 +547,13 @@ export default function VaccinationHistory() {
               <AppTextField
                 value={
                   (getValue(
-                    "reactionDetails"
+                    "reactionDetails",
                   ) as string) ?? ""
                 }
-                onChangeText={(v) =>
+                onChangeText={(value) =>
                   updateField(
                     "reactionDetails",
-                    "Reaction Details",
-                    v
+                    value,
                   )
                 }
                 placeholder="Reaction Details"

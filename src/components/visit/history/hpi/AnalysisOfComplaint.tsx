@@ -89,10 +89,7 @@ export default function AnalysisOfComplaint() {
     visit.history.hpi.analysis.fields,
   ]);
 
-  console.log(
-  "ANALYSIS STORE VALUES:",
-  values
-);
+
 
   /*
    * Renderer sends the fieldId + value.

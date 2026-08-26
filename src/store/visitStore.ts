@@ -38,6 +38,17 @@ import {
   Staff,
 } from "@/models/VisitForm/clinic";
 
+type VaccinationHistoryField =
+  | "vaccinationStatus"
+  | "missedVaccines"
+  | "partialReason"
+  | "partialOtherDetails"
+  | "unvaccinatedReason"
+  | "unvaccinatedOtherDetails"
+  | "previousReaction"
+  | "reactionSeverity"
+  | "reactionDetails";
+
 interface VisitStore {
   visit: VisitForm;
 
@@ -85,10 +96,8 @@ interface VisitStore {
   ) => void;
 
 updateVaccinationField(
-  fieldId: string,
-  fieldLabel: string,
-  value: DynamicValue,
-  unit?: string
+  field: VaccinationHistoryField,
+  value: DynamicValue
 ): void;
 
 updateMenstrualField(
@@ -846,55 +855,20 @@ export const useVisitStore =
         },
       })),
 
-    updateVaccinationField: (
-                  fieldId,
-                  fieldLabel,
-                  value,
-                  unit
-                ) =>
-                  set((state) => {
-                    const fields =
-                      state.visit.history
-                        .vaccinationHistory.fields;
-
-                    const index = fields.findIndex(
-                      (field) =>
-                        field.fieldId === fieldId
-                    );
-
-                    let updatedFields;
-
-                    if (index >= 0) {
-                      updatedFields = [...fields];
-                      updatedFields[index] = {
-                        ...updatedFields[index],
-                        value,
-                        unit,
-                      };
-                    } else {
-                      updatedFields = [
-                        ...fields,
-                        {
-                          fieldId,
-                          fieldLabel,
-                          value,
-                          unit,
-                        },
-                      ];
-                    }
-
-                    return {
-                      visit: {
-                        ...state.visit,
-                        history: {
-                          ...state.visit.history,
-                          vaccinationHistory: {
-                            fields: updatedFields,
-                          },
-                        },
-                      },
-                    };
-                  }),
+    updateVaccinationField: (field, value) =>
+      set((state) => ({
+        visit: {
+          ...state.visit,
+          history: {
+            ...state.visit.history,
+            vaccinationHistory: {
+              ...state.visit.history.vaccinationHistory,
+              [field]: value,
+            },
+          },
+        },
+      })
+    ),
 
     updateMenstrualField: (
                     fieldId,
