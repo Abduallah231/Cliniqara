@@ -10,12 +10,18 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
-
+import usePediatricHistoryAutoSave from "@/hooks/usePediatricHistoryAutoSave";
 export default function PediatricHistory() {
   const {
     visit,
     updatePediatricHistory,
   } = useVisitStore();
+  
+  usePediatricHistoryAutoSave({
+    visitId: visit.metadata.id,
+    pediatricHistory:
+      visit.history.pediatricHistory,
+  });
 
   const pediatricHistory =
     visit.history.pediatricHistory;

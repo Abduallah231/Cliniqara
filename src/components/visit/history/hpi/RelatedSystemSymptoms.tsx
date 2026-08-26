@@ -1,17 +1,16 @@
+import AppChip from "@/components/common/AppChip";
+import {
+  saveRelatedSystems,
+  type RelatedSystemItem,
+  type RelatedSystemType,
+} from "@/services/visitApi";
+import { useVisitStore } from "@/store/visitStore";
+import { SPACING } from "@/theme";
 import { useEffect, useRef, useState } from "react";
 import {
   StyleSheet,
   View,
 } from "react-native";
-
-import AppChip from "@/components/common/AppChip";
-import { SPACING } from "@/theme";
-import { useVisitStore } from "@/store/visitStore";
-import {
-  saveRelatedSystems,
-  type RelatedSystemType,
-} from "@/services/visitApi";
-
 import CVSSystem from "../related-systems/CVSSystem";
 import ChestSystem from "../related-systems/ChestSystem";
 import ENTSystem from "../related-systems/ENTSystem";
@@ -37,20 +36,14 @@ const systems: {
   { key: "GIT", label: "GIT" },
   { key: "RENAL", label: "Renal" },
   { key: "NEURO", label: "Neuro" },
-  {
-    key: "MUSCULOSKELETAL",
-    label: "Musculoskeletal",
-  },
+  { key: "MUSCULOSKELETAL", label: "Musculoskeletal" },
   { key: "ENDOCRINE", label: "Endocrine" },
   { key: "HEMATOLOGY", label: "Hematology" },
   { key: "SKIN", label: "Skin" },
   { key: "GYNECOLOGY", label: "Gynecology" },
   { key: "OBSTETRIC", label: "Obstetric" },
   { key: "ENT", label: "ENT" },
-  {
-    key: "OPHTHALMOLOGY",
-    label: "Ophthalmology",
-  },
+  { key: "OPHTHALMOLOGY", label: "Ophthalmology" },
 ];
 
 const SYSTEM_COMPONENTS: Record<
@@ -84,29 +77,114 @@ export default function RelatedSystemSymptoms() {
 
   const visitId = visit.metadata.id;
 
+  /*
+   * Prevent saving immediately after loading
+   * the visit from the backend.
+   */
   const skipNextSave = useRef(true);
+
+  /*
+   * Serialization state.
+   *
+   * Only ONE save request is allowed
+   * to run at a time.
+   */
+  const isSavingRef = useRef(false);
+
+  /*
+   * Indicates that the data changed while
+   * another save request was still running.
+   */
+  const pendingSaveRef = useRef(false);
+
+  /*
+   * Always keep the latest version of systems data.
+   */
+  const latestSystemsRef =
+    useRef<RelatedSystemItem[]>(systemsData);
+
+  /*
+   * Keep the latest data available to the
+   * asynchronous save function.
+   */
+  useEffect(() => {
+    latestSystemsRef.current = systemsData;
+  }, [systemsData]);
+
+  /*
+   * Serialized autosave function.
+   */
+  const runSave = async () => {
+    if (!visitId) {
+      return;
+    }
+
+    /*
+     * If another save is already running,
+     * don't start a second request.
+     */
+    if (isSavingRef.current) {
+      pendingSaveRef.current = true;
+      return;
+    }
+
+    isSavingRef.current = true;
+    pendingSaveRef.current = false;
+
+    /*
+     * Take a snapshot of the latest data
+     * before starting the request.
+     */
+    const snapshot = latestSystemsRef.current;
+
+    try {
+      await saveRelatedSystems(visitId, {
+        systems: snapshot,
+      });
+    } catch (error) {
+      console.error(
+        "RELATED SYSTEMS AUTOSAVE FAILED:",
+        error,
+      );
+    } finally {
+      isSavingRef.current = false;
+
+      /*
+       * If the user changed anything while the
+       * previous request was running, schedule
+       * one more save for the latest state.
+       */
+      if (pendingSaveRef.current) {
+        pendingSaveRef.current = false;
+
+        setTimeout(() => {
+          runSave();
+        }, 750);
+      }
+    }
+  };
 
   useEffect(() => {
     if (!visitId) {
       return;
     }
 
-    // Don't save immediately after loading the visit.
+    /*
+     * Don't save immediately after loading
+     * the visit.
+     */
     if (skipNextSave.current) {
       skipNextSave.current = false;
       return;
     }
 
+    /*
+     * Debounce:
+     * wait 750ms after the last change.
+     */
     const timer = setTimeout(() => {
-      saveRelatedSystems(visitId, {
-        systems: systemsData,
-      }).catch((error) => {
-        console.error(
-          "RELATED SYSTEMS AUTOSAVE FAILED:",
-          error,
-        );
-      });
-    }, 500);
+      runSave();
+    }, 750);
 
     return () => {
       clearTimeout(timer);
