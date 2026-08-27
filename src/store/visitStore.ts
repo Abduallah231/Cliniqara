@@ -979,8 +979,7 @@ export const useVisitStore =
     ) =>
       set((state) => {
         const fields =
-          state.visit.history
-            .pastHistory.fields;
+          state.visit.history.pastHistory.fields;
 
         const index = fields.findIndex(
           (field) =>

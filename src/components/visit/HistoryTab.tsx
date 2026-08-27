@@ -72,19 +72,6 @@ export default function HistoryTab() {
           >
             <PediatricHistory />
           </CollapsibleSection>
-
-          <CollapsibleSection
-            title="Vaccination History"
-            icon={
-              <Ionicons
-                name="shield-checkmark-outline"
-                size={20}
-                color={COLORS.primary}
-              />
-            }
-          >
-            <VaccinationHistory />
-          </CollapsibleSection>
         </>
       )}
 
@@ -143,6 +130,19 @@ export default function HistoryTab() {
       >
         <DrugHistory />
       </CollapsibleSection>
+
+      <CollapsibleSection
+            title="Vaccination History"
+            icon={
+              <Ionicons
+                name="shield-checkmark-outline"
+                size={20}
+                color={COLORS.primary}
+              />
+            }
+          >
+            <VaccinationHistory />
+          </CollapsibleSection>
 
       <CollapsibleSection
         title="Allergy History"

@@ -188,7 +188,7 @@ export default function DrugHistory() {
         />
       </View>
 
-            {visit.history.drugHistory.currentMedications.map(
+      {visit.history.drugHistory.currentMedications.map(
         (medication) => (
           <View
             key={medication.id}

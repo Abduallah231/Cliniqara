@@ -26,6 +26,7 @@ import { PatientService } from '../services/patient.service';
 import { CreatePatientDto } from '../dto/create-patient.dto';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
 import { SaveVaccinationHistoryDto } from "../dto/save-vaccination-history.dto";
+import { SavePastHistoryDto } from '../dto/save-past-history.dto';
 
 @Controller('patients')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -139,6 +140,32 @@ export class PatientController {
     @Param('patientId') patientId: string,
   ) {
     return this.patientService.getVaccinationHistory(
+      user.id,
+      patientId,
+    );
+  }
+
+  @Put(':patientId/past-history')
+  @Roles(AccountType.DOCTOR)
+  async savePastHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+    @Body() dto: SavePastHistoryDto,
+  ) {
+    return this.patientService.savePastHistory(
+      user.id,
+      patientId,
+      dto,
+    );
+  }
+
+  @Get(':patientId/past-history')
+  @Roles(AccountType.DOCTOR)
+  async getPastHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.patientService.getPastHistory(
       user.id,
       patientId,
     );

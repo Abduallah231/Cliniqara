@@ -351,3 +351,62 @@ export async function getVaccinationHistory(
 
   return data;
 }
+
+export type SavePastHistoryInput = {
+  chronicDiseases: {
+    diseaseCode: string;
+    diseaseName: string;
+    notes?: string | null;
+  }[];
+  hospitalizations: {
+    reason: string;
+    date?: string | null;
+    duration?: string | null;
+    notes?: string | null;
+  }[];
+  operations: {
+    operationName: string;
+    date?: string | null;
+    indication?: string | null;
+    notes?: string | null;
+  }[];
+  bloodTransfusions: {
+    reason?: string | null;
+    date?: string | null;
+    reaction?: string | null;
+    notes?: string | null;
+  }[];
+  majorTraumas: {
+    traumaType: string;
+    date?: string | null;
+    complications?: string | null;
+    notes?: string | null;
+  }[];
+  icuAdmissions: {
+    reason: string;
+    date?: string | null;
+    duration?: string | null;
+    ventilatorSupport?: boolean;
+    notes?: string | null;
+  }[];
+};
+
+export async function savePastHistory(
+  patientId: string,
+  dto: SavePastHistoryInput,
+) {
+  const { data } = await api.put(
+    `/patients/${patientId}/past-history`,
+    dto,
+  );
+  return data;
+}
+
+export async function getPastHistory(
+  patientId: string,
+) {
+  const { data } = await api.get(
+    `/patients/${patientId}/past-history`,
+  );
+  return data;
+}

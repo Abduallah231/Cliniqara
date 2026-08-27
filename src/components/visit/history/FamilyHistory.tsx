@@ -169,13 +169,13 @@ export default function FamilyHistory() {
         </Text>
 
         <View style={styles.row}>
-          {chronicDiseases.map((item) => (
+          {chronicDiseases.map((disease) => (
             <AppChip
-              key={item}
-              label={item}
-              selected={diseases.includes(item)}
+              key={disease.code}
+              label={disease.name}
+              selected={diseases.includes(disease.code)}
               onPress={() =>
-                toggleDisease(item)
+                toggleDisease(disease.code)
               }
             />
           ))}

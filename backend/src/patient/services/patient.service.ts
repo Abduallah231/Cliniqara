@@ -15,6 +15,7 @@ import { VerifyNationalIdDto } from '../dto/verify-national-id.dto';
 import { CreatePatientDto } from '../dto/create-patient.dto';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
 import { SaveVaccinationHistoryDto } from "../dto/save-vaccination-history.dto";
+import { SavePastHistoryDto } from '../dto/save-past-history.dto';
 
 @Injectable()
 export class PatientService {
@@ -967,6 +968,239 @@ export class PatientService {
     return this.prisma.patientVaccinationHistory.findUnique({
       where: {
         patientId,
+      },
+    });
+  }
+
+  async savePastHistory(
+    userId: string,
+    patientId: string,
+    dto: SavePastHistoryDto,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        // =========================================
+        // Remove previous Past History
+        // =========================================
+
+        await tx.patientChronicDisease.deleteMany({
+          where: {
+            patientId,
+          },
+        });
+
+        await tx.patientHospitalization.deleteMany({
+          where: {
+            patientId,
+          },
+        });
+
+        await tx.patientOperation.deleteMany({
+          where: {
+            patientId,
+          },
+        });
+
+        await tx.patientBloodTransfusion.deleteMany({
+          where: {
+            patientId,
+          },
+        });
+
+        await tx.patientMajorTrauma.deleteMany({
+          where: {
+            patientId,
+          },
+        });
+
+        await tx.patientICUAdmission.deleteMany({
+          where: {
+            patientId,
+          },
+        });
+
+        // =========================================
+        // Create Chronic Diseases
+        // =========================================
+
+        if (dto.chronicDiseases.length > 0) {
+          await tx.patientChronicDisease.createMany({
+            data: dto.chronicDiseases.map(
+              (disease) => ({
+                patientId,
+                diseaseCode:
+                  disease.diseaseCode,
+                diseaseName:
+                  disease.diseaseName,
+                notes:
+                  disease.notes?.trim() || null,
+              }),
+            ),
+          });
+        }
+
+        // =========================================
+        // Create Hospitalizations
+        // =========================================
+
+        if (dto.hospitalizations.length > 0) {
+          await tx.patientHospitalization.createMany({
+            data: dto.hospitalizations.map(
+              (item) => ({
+                patientId,
+                reason: item.reason.trim(),
+                date: item.date
+                  ? new Date(item.date)
+                  : null,
+                duration:
+                  item.duration?.trim() || null,
+                notes:
+                  item.notes?.trim() || null,
+              }),
+            ),
+          });
+        }
+
+        // =========================================
+        // Create Operations
+        // =========================================
+
+        if (dto.operations.length > 0) {
+          await tx.patientOperation.createMany({
+            data: dto.operations.map(
+              (item) => ({
+                patientId,
+                operationName:
+                  item.operationName.trim(),
+                date: item.date
+                  ? new Date(item.date)
+                  : null,
+                indication:
+                  item.indication?.trim() || null,
+                notes:
+                  item.notes?.trim() || null,
+              }),
+            ),
+          });
+        }
+
+        // =========================================
+        // Create Blood Transfusions
+        // =========================================
+
+        if (dto.bloodTransfusions.length > 0) {
+          await tx.patientBloodTransfusion.createMany({
+            data: dto.bloodTransfusions.map(
+              (item) => ({
+                patientId,
+                reason:
+                  item.reason?.trim() || null,
+                date: item.date
+                  ? new Date(item.date)
+                  : null,
+                reaction:
+                  item.reaction?.trim() || null,
+                notes:
+                  item.notes?.trim() || null,
+              }),
+            ),
+          });
+        }
+
+        // =========================================
+        // Create Major Traumas
+        // =========================================
+
+        if (dto.majorTraumas.length > 0) {
+          await tx.patientMajorTrauma.createMany({
+            data: dto.majorTraumas.map(
+              (item) => ({
+                patientId,
+                traumaType:
+                  item.traumaType.trim(),
+                date: item.date
+                  ? new Date(item.date)
+                  : null,
+                complications:
+                  item.complications?.trim() ||
+                  null,
+                notes:
+                  item.notes?.trim() || null,
+              }),
+            ),
+          });
+        }
+
+        // =========================================
+        // Create ICU Admissions
+        // =========================================
+
+        if (dto.icuAdmissions.length > 0) {
+          await tx.patientICUAdmission.createMany({
+            data: dto.icuAdmissions.map(
+              (item) => ({
+                patientId,
+                reason: item.reason.trim(),
+                date: item.date
+                  ? new Date(item.date)
+                  : null,
+                duration:
+                  item.duration?.trim() || null,
+                ventilatorSupport:
+                  item.ventilatorSupport ?? false,
+                notes:
+                  item.notes?.trim() || null,
+              }),
+            ),
+          });
+        }
+
+        // =========================================
+        // Return complete Past History
+        // =========================================
+
+        return tx.patient.findUnique({
+          where: {
+            id: patientId,
+          },
+          select: {
+            chronicDiseases: true,
+            hospitalizations: true,
+            operations: true,
+            bloodTransfusions: true,
+            majorTraumas: true,
+            icuAdmissions: true,
+          },
+        });
+      },
+    );
+  }
+
+  async getPastHistory(
+    userId: string,
+    patientId: string,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    return this.prisma.patient.findUnique({
+      where: {
+        id: patientId,
+      },
+      select: {
+        chronicDiseases: true,
+        hospitalizations: true,
+        operations: true,
+        bloodTransfusions: true,
+        majorTraumas: true,
+        icuAdmissions: true,
       },
     });
   }
