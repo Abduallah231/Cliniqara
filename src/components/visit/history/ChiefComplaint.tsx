@@ -126,15 +126,15 @@ export default function ChiefComplaint() {
           updatedChiefComplaint.durationUnit;
       }
 
-      console.log(
-        "CHIEF COMPLAINT PAYLOAD:",
-        {
-          visitId,
-          chiefComplaintId:
-            updatedChiefComplaint.complaintId,
-          payload,
-        }
-      );
+      // console.log(
+      //   "CHIEF COMPLAINT PAYLOAD:",
+      //   {
+      //     visitId,
+      //     chiefComplaintId:
+      //       updatedChiefComplaint.complaintId,
+      //     payload,
+      //   }
+      // );
 
       await saveChiefComplaint(
         visitId,

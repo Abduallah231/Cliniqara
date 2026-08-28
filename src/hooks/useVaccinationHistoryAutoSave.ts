@@ -39,6 +39,15 @@ export default function useVaccinationHistoryAutoSave({
       vaccinationHistory.vaccinationStatus;
 
     /*
+    * Do not save until vaccination status exists.
+    * This prevents autosave from sending an incomplete
+    * initial/intermediate vaccination history state.
+    */
+    if (!status) {
+      return;
+    }
+
+    /*
      * Do not save an incomplete
      * UNVACCINATED state.
      *
@@ -53,6 +62,18 @@ export default function useVaccinationHistoryAutoSave({
     }
 
     /*
+    * Do not save OTHER unvaccinated reason
+    * until the user provides the required details.
+    */
+    if (
+      status === "UNVACCINATED" &&
+      vaccinationHistory.unvaccinatedReason === "OTHER" &&
+      !vaccinationHistory.unvaccinatedOtherDetails?.trim()
+    ) {
+      return;
+    }
+
+    /*
      * Do not save an incomplete
      * PARTIALLY_VACCINATED state.
      *
@@ -61,6 +82,18 @@ export default function useVaccinationHistoryAutoSave({
     if (
       status === "PARTIALLY_VACCINATED" &&
       !vaccinationHistory.partialReason
+    ) {
+      return;
+    }
+
+    /*
+    * Do not save OTHER partial vaccination reason
+    * until the user provides the required details.
+    */
+    if (
+      status === "PARTIALLY_VACCINATED" &&
+      vaccinationHistory.partialReason === "OTHER" &&
+      !vaccinationHistory.partialOtherDetails?.trim()
     ) {
       return;
     }

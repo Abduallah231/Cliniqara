@@ -103,7 +103,7 @@ export default function HistoryTab() {
         <PastHistory />
       </CollapsibleSection>
 
-      {!pediatric && (
+      
         <CollapsibleSection
           title="Social History"
           icon={
@@ -116,8 +116,7 @@ export default function HistoryTab() {
         >
           <SocialHistory />
         </CollapsibleSection>
-      )}
-
+      
       <CollapsibleSection
         title="Drug History"
         icon={
