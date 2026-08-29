@@ -26,6 +26,40 @@ import {
   TYPOGRAPHY,
 } from "@/theme";
 
+const allergyTypeLabel = (
+  type: AllergyType
+) => {
+  switch (type) {
+    case "DRUG":
+      return "Drug";
+    case "FOOD":
+      return "Food";
+    case "ENVIRONMENTAL":
+      return "Environmental";
+    case "OTHER":
+      return "Other";
+    default:
+      return type;
+  }
+};
+
+const allergySeverityLabel = (
+  severity: AllergySeverity
+) => {
+  switch (severity) {
+    case "MILD":
+      return "Mild";
+    case "MODERATE":
+      return "Moderate";
+    case "SEVERE":
+      return "Severe";
+    case "ANAPHYLAXIS":
+      return "Anaphylaxis";
+    default:
+      return severity;
+  }
+};
+
 export default function AllergyHistory() {
   const {
     visit,
@@ -36,7 +70,7 @@ export default function AllergyHistory() {
   } = useVisitStore();
 
   const [type, setType] =
-    useState<AllergyType>("Drug");
+    useState<AllergyType>("DRUG");
 
   const [allergen, setAllergen] =
     useState("");
@@ -44,9 +78,11 @@ export default function AllergyHistory() {
   const [reaction, setReaction] =
     useState("");
 
+  const [notes, setNotes] = useState("");
+
   const [severity, setSeverity] =
     useState<AllergySeverity>(
-      "Moderate"
+      "MODERATE"
     );
 
   const [
@@ -57,10 +93,11 @@ export default function AllergyHistory() {
   );
 
   const clearForm = () => {
-    setType("Drug");
+    setType("DRUG");
     setAllergen("");
     setReaction("");
-    setSeverity("Moderate");
+    setNotes("");
+    setSeverity("MODERATE");
     setEditingAllergyId(null);
   };
 
@@ -76,6 +113,7 @@ export default function AllergyHistory() {
             allergen.trim(),
           reaction:
             reaction.trim(),
+          notes: notes.trim(),
           severity,
         }
       );
@@ -87,6 +125,7 @@ export default function AllergyHistory() {
           allergen.trim(),
         reaction:
           reaction.trim(),
+        notes: notes.trim(),
         severity,
       };
 
@@ -106,12 +145,11 @@ export default function AllergyHistory() {
           selected={
             visit.history
               .allergyHistory
-              .hasAllergy ===
-            "Yes"
+              .hasAllergy === true
           }
           onPress={() =>
-            updateHasAllergy("Yes")
-          }
+            updateHasAllergy(true)
+          }          
         />
 
         <AppChip
@@ -119,18 +157,17 @@ export default function AllergyHistory() {
           selected={
             visit.history
               .allergyHistory
-              .hasAllergy ===
-            "No"
+              .hasAllergy === false
           }
           onPress={() =>
-            updateHasAllergy("No")
+            updateHasAllergy(false)
           }
         />
       </View>
 
       {visit.history
         .allergyHistory
-        .hasAllergy === "Yes" && (
+        .hasAllergy === true && (
         <>
           <Divider />
 
@@ -138,21 +175,20 @@ export default function AllergyHistory() {
 
           <View style={styles.row}>
             {[
-              "Drug",
-              "Food",
-              "Environmental",
-              "Other",
+              { label: "Drug", value: "DRUG" },
+              { label: "Food", value: "FOOD" },
+              {
+                label: "Environmental",
+                value: "ENVIRONMENTAL",
+              },
+              { label: "Other", value: "OTHER" },
             ].map((item) => (
               <AppChip
-                key={item}
-                label={item}
-                selected={
-                  type === item
-                }
+                key={item.value}
+                label={item.label}
+                selected={type === item.value}
                 onPress={() =>
-                  setType(
-                    item as AllergyType
-                  )
+                  setType(item.value as AllergyType)
                 }
               />
             ))}
@@ -176,26 +212,34 @@ export default function AllergyHistory() {
             }
           />
 
+          <AppTextField
+            label="Notes"
+            placeholder="Additional notes..."
+            value={notes}
+            onChangeText={setNotes}
+          />
+
           <Text style={styles.label}>
             Severity
           </Text>
 
           <View style={styles.row}>
             {[
-              "Mild",
-              "Moderate",
-              "Severe",
-              "Anaphylaxis",
+              { label: "Mild", value: "MILD" },
+              { label: "Moderate", value: "MODERATE" },
+              { label: "Severe", value: "SEVERE" },
+              {
+                label: "Anaphylaxis",
+                value: "ANAPHYLAXIS",
+              },
             ].map((item) => (
               <AppChip
-                key={item}
-                label={item}
-                selected={
-                  severity === item
-                }
+                key={item.value}
+                label={item.label}
+                selected={severity === item.value}
                 onPress={() =>
                   setSeverity(
-                    item as AllergySeverity
+                    item.value as AllergySeverity
                   )
                 }
               />
@@ -232,7 +276,7 @@ export default function AllergyHistory() {
                     styles.allergyText
                   }
                 >
-                  Type: {allergy.type}
+                  Type: {allergyTypeLabel(allergy.type)}
                 </Text>
 
                 {!!allergy.reaction && (
@@ -246,13 +290,21 @@ export default function AllergyHistory() {
                   </Text>
                 )}
 
+                {!!allergy.notes && (
+                  <Text style={styles.allergyText}>
+                    Notes: {allergy.notes}
+                  </Text>
+                )}
+
                 <Text
                   style={
                     styles.allergyText
                   }
                 >
                   Severity:{" "}
-                  {allergy.severity}
+                  {allergySeverityLabel(
+                    allergy.severity
+                  )}
                 </Text>
 
                 <View
@@ -278,7 +330,11 @@ export default function AllergyHistory() {
                       );
 
                       setReaction(
-                        allergy.reaction
+                        allergy.reaction ?? ""
+                      );
+
+                      setNotes(
+                        allergy.notes ?? ""
                       );
 
                       setSeverity(

@@ -120,6 +120,7 @@ export default function PatientActions({
 
   const {
     addPatient,
+    setCurrentPatient,
   } = usePatientStore();
 
   const [
@@ -241,39 +242,30 @@ export default function PatientActions({
                       : patient.maritalStatus === "Divorced"
                         ? "DIVORCED"
                         : "WIDOWED",
-
                 childrenCount:
                   patient.childrenCount.trim() === ""
                     ? undefined
                     : Number(patient.childrenCount),
-
                 phone:
                   patient.phone.trim() || undefined,
-
                 occupation:
                   patient.occupation.trim() || undefined,
-
                 governorate:
                   patient.governorate.trim() || undefined,
-
                 city:
                   patient.city.trim() || undefined,
-
                 district:
                   patient.district.trim() || undefined,
-
                 streetAddress:
                   patient.street.trim() || undefined,
-
                 fullName:
                   patient.fullName.trim(),
               },
             );
 
           addPatient(updatedPatient);
-
-          targetPatientId =
-            existingPatientId;
+          setCurrentPatient(updatedPatient);
+          targetPatientId = existingPatientId;
 
           setErrorPatientId(
             existingPatientId,
@@ -290,6 +282,10 @@ export default function PatientActions({
             );
 
           addPatient(
+            patientResponse,
+          );
+
+          setCurrentPatient(
             patientResponse,
           );
 
@@ -412,6 +408,7 @@ export default function PatientActions({
             );
 
           addPatient(updatedPatient);
+          setCurrentPatient(updatedPatient);
 
           targetPatientId = existingPatientId;
         } else {
@@ -426,6 +423,10 @@ export default function PatientActions({
             );
 
           addPatient(
+            patientResponse,
+          );
+
+          setCurrentPatient(
             patientResponse,
           );
 

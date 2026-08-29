@@ -1,4 +1,7 @@
 import { useState } from "react";
+import type {
+  FamilyRelation,
+} from "@/models/VisitForm/history";
 import {
   StyleSheet,
   Text,
@@ -33,7 +36,7 @@ export default function FamilyHistory() {
   } = useVisitStore();
 
   const [relationship, setRelationship] =
-    useState("");
+    useState<FamilyRelation | "">("");
 
   const [otherRelative, setOtherRelative] =
     useState("");
@@ -48,6 +51,9 @@ export default function FamilyHistory() {
     useState(true);
 
   const [ageAtDeath, setAgeAtDeath] =
+    useState("");
+
+  const [notes, setNotes] =
     useState("");
 
   const [causeOfDeath, setCauseOfDeath] =
@@ -76,56 +82,63 @@ export default function FamilyHistory() {
     setAlive(true);
     setAgeAtDeath("");
     setCauseOfDeath("");
+    setNotes("");
     setEditingRecordId(null);
   };
 
   const handleAddFamilyHistory = () => {
-    const selectedRelative =
-      relationship === "Other"
-        ? otherRelative.trim()
-        : relationship;
-
-    if (!selectedRelative) return;
+    if (!relationship) return;
 
     const finalDiseases = [...diseases];
 
     if (
       otherDisease.trim() &&
-      !finalDiseases.includes(
-        otherDisease.trim()
-      )
+      !finalDiseases.includes(otherDisease.trim())
     ) {
-      finalDiseases.push(
-        otherDisease.trim()
-      );
+      finalDiseases.push(otherDisease.trim());
     }
 
     if (finalDiseases.length === 0) return;
 
+    const parsedAgeAtDeath =
+      !alive && ageAtDeath.trim()
+        ? Number(ageAtDeath)
+        : null;
+
+    if (
+      !alive &&
+      ageAtDeath.trim() &&
+      Number.isNaN(parsedAgeAtDeath)
+    ) {
+      return;
+    }
+
+    const familyDisease = {
+      id:
+        editingRecordId ??
+        Date.now().toString(),
+      relation: relationship,
+      otherRelation:
+        relationship === "OTHER"
+          ? otherRelative.trim() || null
+          : null,
+      diseases: finalDiseases,
+      alive,
+      ageAtDeath: parsedAgeAtDeath,
+      causeOfDeath:
+        !alive
+          ? causeOfDeath.trim() || null
+          : null,
+      notes: notes.trim() || null,
+    };
+
     if (editingRecordId) {
       updateFamilyDisease(
         editingRecordId,
-        {
-          affectedRelative:
-            relationship,
-          otherRelative,
-          diseases: finalDiseases,
-          alive,
-          ageAtDeath,
-          causeOfDeath,
-        }
+        familyDisease
       );
     } else {
-      addFamilyDisease({
-        id: Date.now().toString(),
-        affectedRelative:
-          relationship,
-        otherRelative,
-        diseases: finalDiseases,
-        alive,
-        ageAtDeath,
-        causeOfDeath,
-      });
+      addFamilyDisease(familyDisease);
     }
 
     clearForm();
@@ -148,13 +161,15 @@ export default function FamilyHistory() {
                 relationship === relative
               }
               onPress={() =>
-                setRelationship(relative)
+                setRelationship(
+                  relative as FamilyRelation
+                )
               }
             />
           ))}
         </View>
 
-        {relationship === "Other" && (
+        {relationship === "OTHER" && (
           <AppTextField
             placeholder="Specify Relative"
             value={otherRelative}
@@ -208,7 +223,7 @@ export default function FamilyHistory() {
           />
         </View>
 
-        {alive && (
+        {!alive && (
           <>
             <AppTextField
               placeholder="Age at Death"
@@ -224,6 +239,12 @@ export default function FamilyHistory() {
             />
           </>
         )}
+
+        <AppTextField
+          placeholder="Additional Notes..."
+          value={notes}
+          onChangeText={setNotes}
+        />
 
         <AppButton
           title={
@@ -242,9 +263,9 @@ export default function FamilyHistory() {
             style={styles.recordCard}
           >
             <Text style={styles.recordTitle}>
-              {item.affectedRelative === "Other"
-                ? item.otherRelative
-                : item.affectedRelative}
+              {item.relation === "OTHER"
+                ? item.otherRelation
+                : item.relation}
             </Text>
 
             <Text style={styles.recordText}>
@@ -263,29 +284,28 @@ export default function FamilyHistory() {
             )}
 
             <Text style={styles.recordText}>
-              Alive: {item.alive}
+              Alive: {item.alive ? "Yes" : "No"}
             </Text>
 
-            {item.alive && (
+            {!item.alive && (
               <>
                 {!!item.ageAtDeath && (
-                  <Text
-                    style={styles.recordText}
-                  >
-                    Age at Death:{" "}
-                    {item.ageAtDeath}
+                  <Text style={styles.recordText}>
+                    Age at Death: {item.ageAtDeath}
                   </Text>
                 )}
-
                 {!!item.causeOfDeath && (
-                  <Text
-                    style={styles.recordText}
-                  >
-                    Cause:{" "}
-                    {item.causeOfDeath}
+                  <Text style={styles.recordText}>
+                    Cause: {item.causeOfDeath}
                   </Text>
                 )}
               </>
+            )}
+
+            {!!item.notes && (
+              <Text style={styles.recordText}>
+                Notes: {item.notes}
+              </Text>
             )}
 
             <View style={styles.actionRow}>
@@ -294,29 +314,29 @@ export default function FamilyHistory() {
                 onPress={() => {
                   setEditingRecordId(item.id);
 
-                  setRelationship(
-                    item.affectedRelative
-                  );
+                  setRelationship(item.relation);
 
                   setOtherRelative(
-                    item.otherRelative
+                    item.otherRelation ?? ""
                   );
 
-                  setDiseases(
-                    item.diseases
-                  );
+                  setDiseases(item.diseases);
 
                   setOtherDisease("");
 
-                  Alive: {item.alive ? "Yes" : "No"}
+                  setAlive(item.alive);
 
                   setAgeAtDeath(
-                    item.ageAtDeath
+                    item.ageAtDeath != null
+                      ? String(item.ageAtDeath)
+                      : ""
                   );
 
                   setCauseOfDeath(
-                    item.causeOfDeath
+                    item.causeOfDeath ?? ""
                   );
+
+                  setNotes(item.notes ?? "");
                 }}
               >
                 <MaterialIcons

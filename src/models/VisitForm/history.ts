@@ -324,25 +324,34 @@ export interface ICUAdmission {
 // Drug History
 // ======================================================
 
+export type DurationUnit =
+  | "HOURS"
+  | "DAYS"
+  | "WEEKS"
+  | "MONTHS"
+  | "YEARS";
+
+export type MedicationCompliance =
+  | "GOOD"
+  | "POOR"
+  | "IRREGULAR";
+
 export interface Medication {
   id: string;
-  name: string;
-  dose: string;
-
-  durationValue: string;
-  durationUnit: string;
+  medicationName: string;
+  dose?: string | null;
+  durationValue?: number | null;
+  durationUnit?: DurationUnit | null;
+  notes?: string | null;
 }
 
 export interface DrugHistory {
   currentMedications: Medication[];
-
-  compliance: string;
-
-  selfMedication: string;
-  selfMedicationDetails: string;
-
-  supplements: string;
-  supplementDetails: string;
+  compliance?: MedicationCompliance | null;
+  selfMedication: boolean;
+  selfMedicationDetails?: string | null;
+  supplements: boolean;
+  supplementDetails?: string | null;
 }
 
 // ======================================================
@@ -350,27 +359,28 @@ export interface DrugHistory {
 // ======================================================
 
 export type AllergyType =
-  | "Drug"
-  | "Food"
-  | "Environmental"
-  | "Other";
+  | "DRUG"
+  | "FOOD"
+  | "ENVIRONMENTAL"
+  | "OTHER";
 
 export type AllergySeverity =
-  | "Mild"
-  | "Moderate"
-  | "Severe"
-  | "Anaphylaxis";
+  | "MILD"
+  | "MODERATE"
+  | "SEVERE"
+  | "ANAPHYLAXIS";
 
 export interface Allergy {
   id: string;
   type: AllergyType;
   allergen: string;
-  reaction: string;
+  reaction?: string | null;
   severity: AllergySeverity;
+  notes?: string | null;
 }
 
 export interface AllergyHistory {
-  hasAllergy: string;
+  hasAllergy: boolean;
   allergies: Allergy[];
 }
 
@@ -378,14 +388,29 @@ export interface AllergyHistory {
 // Family History
 // ======================================================
 
+export type FamilyRelation =
+  | "FATHER"
+  | "MOTHER"
+  | "BROTHER"
+  | "SISTER"
+  | "SON"
+  | "DAUGHTER"
+  | "GRANDFATHER"
+  | "GRANDMOTHER"
+  | "UNCLE"
+  | "AUNT"
+  | "COUSIN"
+  | "OTHER";
+
 export interface FamilyDisease {
   id: string;
-  affectedRelative: string;
-  otherRelative: string;
+  relation: FamilyRelation;
+  otherRelation?: string | null;
   diseases: string[];
   alive: boolean;
-  ageAtDeath: string;
-  causeOfDeath: string;
+  ageAtDeath?: number | null;
+  causeOfDeath?: string | null;
+  notes?: string | null;
 }
 
 export interface FamilyHistory {
@@ -533,17 +558,15 @@ export function createEmptyHistory(): History {
 
   drugHistory: {
     currentMedications: [],
-    compliance: "",
-
-    selfMedication: "",
-    selfMedicationDetails: "",
-
-    supplements: "",
-    supplementDetails: "",
+    compliance: null,
+    selfMedication: false,
+    selfMedicationDetails: null,
+    supplements: false,
+    supplementDetails: null,
   },
 
   allergyHistory: {
-    hasAllergy: "",
+    hasAllergy: false,
     allergies: [],
   },
 

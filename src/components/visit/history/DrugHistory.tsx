@@ -40,11 +40,13 @@ export default function DrugHistory() {
   const [dose, setDose] =
     useState("");
 
+  const [notes, setNotes] = useState("");
+
   const [durationValue, setDurationValue] =
     useState("");
 
   const [durationUnit, setDurationUnit] =
-    useState("Days");
+    useState<"HOURS" | "DAYS" | "WEEKS" | "MONTHS" | "YEARS">("DAYS");
 
   const [
     editingMedicationId,
@@ -55,7 +57,8 @@ export default function DrugHistory() {
     setMedicationName("");
     setDose("");
     setDurationValue("");
-    setDurationUnit("Days");
+    setDurationUnit("DAYS");
+    setNotes("");
     setEditingMedicationId(null);
   };
 
@@ -66,21 +69,25 @@ export default function DrugHistory() {
       updateMedication(
         editingMedicationId,
         {
-          name: medicationName.trim(),
+          medicationName: medicationName.trim(),
           dose: dose.trim(),
-          durationValue:
-            durationValue.trim(),
+          durationValue: durationValue.trim()
+            ? Number(durationValue)
+            : null,
           durationUnit,
+          notes: notes.trim() || null,
         }
       );
     } else {
       const medication: Medication = {
         id: Date.now().toString(),
-        name: medicationName.trim(),
-        dose: dose.trim(),
-        durationValue:
-          durationValue.trim(),
+        medicationName: medicationName.trim(),
+        dose: dose.trim() || null,
+        durationValue: durationValue.trim()
+          ? Number(durationValue)
+          : null,
         durationUnit,
+        notes: notes.trim() || null,
       };
 
       addMedication(medication);
@@ -104,6 +111,12 @@ export default function DrugHistory() {
           placeholder="Dose"
           value={dose}
           onChangeText={setDose}
+        />
+
+        <AppTextField
+          placeholder="Notes"
+          value={notes}
+          onChangeText={setNotes}
         />
 
         <View style={styles.inlineRow}>
@@ -130,41 +143,20 @@ export default function DrugHistory() {
           >
             <AppChip
               label="Days"
-              selected={
-                durationUnit ===
-                "Days"
-              }
-              onPress={() =>
-                setDurationUnit(
-                  "Days"
-                )
-              }
+              selected={durationUnit === "DAYS"}
+              onPress={() => setDurationUnit("DAYS")}
             />
 
             <AppChip
               label="Months"
-              selected={
-                durationUnit ===
-                "Months"
-              }
-              onPress={() =>
-                setDurationUnit(
-                  "Months"
-                )
-              }
+              selected={durationUnit === "MONTHS"}
+              onPress={() => setDurationUnit("MONTHS")}
             />
 
             <AppChip
               label="Years"
-              selected={
-                durationUnit ===
-                "Years"
-              }
-              onPress={() =>
-                setDurationUnit(
-                  "Years"
-                )
-              }
+              selected={durationUnit === "YEARS"}
+              onPress={() => setDurationUnit("YEARS")}
             />
           </View>
         </View>
@@ -199,7 +191,7 @@ export default function DrugHistory() {
                 styles.medicationName
               }
             >
-              {medication.name}
+              {medication.medicationName}
             </Text>
 
             {!!medication.dose && (
@@ -212,19 +204,21 @@ export default function DrugHistory() {
               </Text>
             )}
 
-            {!!medication.durationValue && (
+            {medication.durationValue != null && (
               <Text
                 style={
                   styles.medicationText
                 }
               >
                 Duration:{" "}
-                {
-                  medication.durationValue
-                }{" "}
-                {
-                  medication.durationUnit
-                }
+                {medication.durationValue}{" "}
+                {medication.durationUnit}
+              </Text>
+            )}
+
+            {!!medication.notes && (
+              <Text style={styles.medicationText}>
+                Notes: {medication.notes}
               </Text>
             )}
 
@@ -236,13 +230,17 @@ export default function DrugHistory() {
 
                         setEditingMedicationId(medication.id);
 
-                        setMedicationName(medication.name);
-
-                        setDose(medication.dose);
-
-                        setDurationValue(medication.durationValue);
-
-                        setDurationUnit(medication.durationUnit);
+                        setMedicationName(medication.medicationName);
+                        setDose(medication.dose ?? "");
+                        setNotes(medication.notes ?? "");
+                        setDurationValue(
+                          medication.durationValue != null
+                            ? String(medication.durationValue)
+                            : ""
+                        );
+                        setDurationUnit(
+                          medication.durationUnit ?? "DAYS"
+                        );
 
                     }}
                 >
@@ -283,45 +281,30 @@ export default function DrugHistory() {
         <AppChip
           label="Good"
           selected={
-            visit.history
-              .drugHistory
-              .compliance ===
-            "Good"
+            visit.history.drugHistory.compliance === "GOOD"
           }
           onPress={() =>
-            updateCompliance(
-              "Good"
-            )
+            updateCompliance("GOOD")
           }
         />
 
         <AppChip
           label="Poor"
           selected={
-            visit.history
-              .drugHistory
-              .compliance ===
-            "Poor"
+            visit.history.drugHistory.compliance === "POOR"
           }
           onPress={() =>
-            updateCompliance(
-              "Poor"
-            )
+            updateCompliance("POOR")
           }
         />
 
         <AppChip
           label="Irregular"
           selected={
-            visit.history
-              .drugHistory
-              .compliance ===
-            "Irregular"
+            visit.history.drugHistory.compliance === "IRREGULAR"
           }
           onPress={() =>
-            updateCompliance(
-              "Irregular"
-            )
+            updateCompliance("IRREGULAR")
           }
         />
       </View>
@@ -334,43 +317,29 @@ export default function DrugHistory() {
         <AppChip
           label="Yes"
           selected={
-            visit.history
-              .drugHistory
-              .selfMedication ===
-            "Yes"
+            visit.history.drugHistory.selfMedication === true
           }
           onPress={() =>
-            updateSelfMedication(
-              "Yes"
-            )
+            updateSelfMedication(true)
           }
         />
 
         <AppChip
           label="No"
           selected={
-            visit.history
-              .drugHistory
-              .selfMedication ===
-            "No"
+            visit.history.drugHistory.selfMedication === false
           }
           onPress={() =>
-            updateSelfMedication(
-              "No"
-            )
+            updateSelfMedication(false)
           }
         />
       </View>
 
-      {visit.history.drugHistory
-        .selfMedication ===
-        "Yes" && (
+      {visit.history.drugHistory.selfMedication && (
         <AppTextField
           placeholder="Specify"
           value={
-            visit.history
-              .drugHistory
-              .selfMedicationDetails
+            visit.history.drugHistory.selfMedicationDetails ?? ""
           }
           onChangeText={
             updateSelfMedicationDetails
@@ -386,43 +355,29 @@ export default function DrugHistory() {
         <AppChip
           label="Yes"
           selected={
-            visit.history
-              .drugHistory
-              .supplements ===
-            "Yes"
+            visit.history.drugHistory.supplements === true
           }
           onPress={() =>
-            updateSupplements(
-              "Yes"
-            )
+            updateSupplements(true)
           }
         />
 
         <AppChip
           label="No"
           selected={
-            visit.history
-              .drugHistory
-              .supplements ===
-            "No"
+            visit.history.drugHistory.supplements === false
           }
           onPress={() =>
-            updateSupplements(
-              "No"
-            )
+            updateSupplements(false)
           }
         />
       </View>
 
-      {visit.history.drugHistory
-        .supplements ===
-        "Yes" && (
+      {visit.history.drugHistory.supplements && (
         <AppTextField
           placeholder="Specify"
           value={
-            visit.history
-              .drugHistory
-              .supplementDetails
+            visit.history.drugHistory.supplementDetails ?? ""
           }
           onChangeText={
             updateSupplementDetails

@@ -7,6 +7,7 @@ import { DynamicValue } from "@/models/VisitForm/assessment";
 import {
   PediatricHistory,
   Medication,
+  MedicationCompliance,
   Allergy,
   Hospitalization,
   Operation,
@@ -223,11 +224,11 @@ updateMedication: (
 removeMedication: (id: string) => void;
 
 updateCompliance: (
-  value: string
+  value: MedicationCompliance
 ) => void;
 
 updateSelfMedication: (
-  value: string
+  value: boolean
 ) => void;
 
 updateSelfMedicationDetails: (
@@ -235,7 +236,7 @@ updateSelfMedicationDetails: (
 ) => void;
 
 updateSupplements: (
-  value: string
+  value: boolean
 ) => void;
 
 updateSupplementDetails: (
@@ -247,7 +248,7 @@ updateSupplementDetails: (
 // ======================================================
 
 updateHasAllergy: (
-    value: string
+    value: boolean
 ) => void;
 
 addAllergy: (
@@ -1450,7 +1451,7 @@ removeICUAdmission: (id) =>
               ...state.visit.history.allergyHistory,
               hasAllergy: value,
               allergies:
-                value === "No"
+                value === false
                   ? []
                   : state.visit.history.allergyHistory.allergies,
             },
