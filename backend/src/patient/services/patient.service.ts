@@ -16,6 +16,10 @@ import { CreatePatientDto } from '../dto/create-patient.dto';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
 import { SaveVaccinationHistoryDto } from "../dto/save-vaccination-history.dto";
 import { SavePastHistoryDto } from '../dto/save-past-history.dto';
+import { SaveDrugHistoryDto } from '../dto/save-drug-history.dto';
+import { SaveAllergyHistoryDto } from '../dto/save-allergy-history.dto';
+import { SaveFamilyHistoryDto } from '../dto/save-family-history.dto';
+import { SaveSocialHistoryDto } from '../dto/save-social-history.dto';
 
 @Injectable()
 export class PatientService {
@@ -1204,4 +1208,681 @@ export class PatientService {
       },
     });
   }
+
+  async saveDrugHistory(
+    userId: string,
+    patientId: string,
+    dto: SaveDrugHistoryDto,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    if (
+      dto.selfMedication &&
+      !dto.selfMedicationDetails?.trim()
+    ) {
+      throw new BadRequestException(
+        'Self-medication details are required when self-medication is yes.',
+      );
+    }
+
+    if (
+      !dto.selfMedication &&
+      dto.selfMedicationDetails
+    ) {
+      dto.selfMedicationDetails = undefined;
+    }
+
+    if (
+      dto.takesSupplements &&
+      !dto.supplementDetails?.trim()
+    ) {
+      throw new BadRequestException(
+        'Supplement details are required when supplements are taken.',
+      );
+    }
+
+    if (
+      !dto.takesSupplements &&
+      dto.supplementDetails
+    ) {
+      dto.supplementDetails = undefined;
+    }
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        await tx.patientMedication.deleteMany({
+          where: {
+            patientId,
+          },
+        });
+
+        if (dto.medications.length > 0) {
+          await tx.patientMedication.createMany({
+            data: dto.medications.map((medication) => ({
+              patientId,
+              medicationName:
+                medication.medicationName.trim(),
+              dose:
+                medication.dose?.trim() || null,
+              durationValue:
+                medication.durationValue ?? null,
+              durationUnit:
+                medication.durationUnit ?? null,
+              notes:
+                medication.notes?.trim() || null,
+            })),
+          });
+        }
+
+        const patient =
+          await tx.patient.update({
+            where: {
+              id: patientId,
+            },
+            data: {
+              medicationCompliance:
+                dto.medicationCompliance ?? null,
+
+              selfMedication:
+                dto.selfMedication,
+
+              selfMedicationDetails:
+                dto.selfMedication
+                  ? dto.selfMedicationDetails?.trim() ||
+                    null
+                  : null,
+
+              takesSupplements:
+                dto.takesSupplements,
+
+              supplementDetails:
+                dto.takesSupplements
+                  ? dto.supplementDetails?.trim() ||
+                    null
+                  : null,
+            },
+            select: {
+              medications: true,
+              medicationCompliance: true,
+              selfMedication: true,
+              selfMedicationDetails: true,
+              takesSupplements: true,
+              supplementDetails: true,
+            },
+          });
+
+        return patient;
+      },
+    );
+  }
+
+  async getDrugHistory(
+    userId: string,
+    patientId: string,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    return this.prisma.patient.findUnique({
+      where: {
+        id: patientId,
+      },
+      select: {
+        medications: true,
+        medicationCompliance: true,
+        selfMedication: true,
+        selfMedicationDetails: true,
+        takesSupplements: true,
+        supplementDetails: true,
+      },
+    });
+  }
+
+  async saveAllergyHistory(
+    userId: string,
+    patientId: string,
+    dto: SaveAllergyHistoryDto,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    if (
+      dto.hasAllergy &&
+      dto.allergies.length === 0
+    ) {
+      throw new BadRequestException(
+        'At least one allergy is required when the patient has an allergy.',
+      );
+    }
+
+    if (
+      !dto.hasAllergy &&
+      dto.allergies.length > 0
+    ) {
+      throw new BadRequestException(
+        'Allergies must be empty when the patient has no allergy.',
+      );
+    }
+
+    if (
+      dto.hasAllergy
+    ) {
+      for (const allergy of dto.allergies) {
+        if (
+          allergy.type === 'OTHER' &&
+          !allergy.allergen.trim()
+        ) {
+          throw new BadRequestException(
+            'Allergen is required.',
+          );
+        }
+      }
+    }
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        await tx.patientAllergy.deleteMany({
+          where: {
+            patientId,
+          },
+        });
+
+        if (
+          dto.hasAllergy &&
+          dto.allergies.length > 0
+        ) {
+          await tx.patientAllergy.createMany({
+            data: dto.allergies.map(
+              (allergy) => ({
+                patientId,
+
+                type: allergy.type,
+
+                allergen:
+                  allergy.allergen.trim(),
+
+                reaction:
+                  allergy.reaction?.trim() ||
+                  null,
+
+                severity:
+                  allergy.severity,
+
+                notes:
+                  allergy.notes?.trim() ||
+                  null,
+              }),
+            ),
+          });
+        }
+
+        return tx.patient.update({
+          where: {
+            id: patientId,
+          },
+          data: {
+            hasAllergy: dto.hasAllergy,
+          },
+          select: {
+            hasAllergy: true,
+            allergies: true,
+          },
+        });
+      },
+    );
+  }
+
+  async getAllergyHistory(
+    userId: string,
+    patientId: string,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    return this.prisma.patient.findUnique({
+      where: {
+        id: patientId,
+      },
+      select: {
+        hasAllergy: true,
+        allergies: true,
+      },
+    });
+  }
+
+  async saveFamilyHistory(
+    userId: string,
+    patientId: string,
+    dto: SaveFamilyHistoryDto,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    for (const member of dto.familyHistory) {
+      if (
+        member.relation === 'OTHER' &&
+        !member.otherRelation?.trim()
+      ) {
+        throw new BadRequestException(
+          'Other relation details are required when relation is OTHER.',
+        );
+      }
+
+      if (
+        member.relation !== 'OTHER' &&
+        member.otherRelation?.trim()
+      ) {
+        throw new BadRequestException(
+          'Other relation details are only allowed when relation is OTHER.',
+        );
+      }
+
+      if (!member.alive) {
+        if (
+          member.ageAtDeath === undefined &&
+          !member.causeOfDeath?.trim()
+        ) {
+          throw new BadRequestException(
+            'Age at death or cause of death is required for a deceased family member.',
+          );
+        }
+      }
+
+      if (member.alive) {
+        if (
+          member.ageAtDeath !== undefined ||
+          member.causeOfDeath?.trim()
+        ) {
+          throw new BadRequestException(
+            'Death information cannot be provided for a living family member.',
+          );
+        }
+      }
+    }
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        await tx.patientFamilyHistory.deleteMany({
+          where: {
+            patientId,
+          },
+        });
+
+        if (
+          dto.familyHistory.length > 0
+        ) {
+          await tx.patientFamilyHistory.createMany({
+            data: dto.familyHistory.map(
+              (member) => ({
+                patientId,
+
+                relation:
+                  member.relation,
+
+                otherRelation:
+                  member.relation === 'OTHER'
+                    ? member.otherRelation?.trim() ||
+                      null
+                    : null,
+
+                diseases:
+                  member.diseases
+                    .map((disease) =>
+                      disease.trim(),
+                    )
+                    .filter(Boolean),
+
+                alive:
+                  member.alive,
+
+                ageAtDeath:
+                  member.alive
+                    ? null
+                    : member.ageAtDeath ??
+                      null,
+
+                causeOfDeath:
+                  member.alive
+                    ? null
+                    : member.causeOfDeath?.trim() ||
+                      null,
+
+                notes:
+                  member.notes?.trim() ||
+                  null,
+              }),
+            ),
+          });
+        }
+
+        return tx.patient.findUnique({
+          where: {
+            id: patientId,
+          },
+          select: {
+            familyHistory: true,
+          },
+        });
+      },
+    );
+  }
+
+  async getFamilyHistory(
+    userId: string,
+    patientId: string,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    return this.prisma.patient.findUnique({
+      where: {
+        id: patientId,
+      },
+      select: {
+        familyHistory: true,
+      },
+    });
+  }
+
+  async saveSocialHistory(
+    userId: string,
+    patientId: string,
+    dto: SaveSocialHistoryDto,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    // =========================
+    // Smoking validation
+    // =========================
+
+    if (
+      dto.smoking === 'CURRENT'
+    ) {
+      if (
+        dto.cigarettesPerDay === undefined
+      ) {
+        throw new BadRequestException(
+          'Cigarettes per day is required for current smokers.',
+        );
+      }
+
+      if (
+        dto.yearsSmoking === undefined
+      ) {
+        throw new BadRequestException(
+          'Years of smoking is required for current smokers.',
+        );
+      }
+    }
+
+    if (
+      dto.smoking === 'FORMER' &&
+      dto.yearsSinceQuitting === undefined
+    ) {
+      throw new BadRequestException(
+        'Years since quitting is required for former smokers.',
+      );
+    }
+
+    if (
+      dto.smoking === 'NEVER'
+    ) {
+      dto.cigarettesPerDay = undefined;
+      dto.yearsSmoking = undefined;
+      dto.yearsSinceQuitting = undefined;
+    }
+
+    // =========================
+    // Alcohol validation
+    // =========================
+
+    if (
+      dto.alcohol === 'CURRENT'
+    ) {
+      if (!dto.alcoholFrequency) {
+        throw new BadRequestException(
+          'Alcohol frequency is required for current alcohol use.',
+        );
+      }
+
+      dto.yearsSinceStopping = undefined;
+    }
+
+    if (
+      dto.alcohol === 'FORMER' &&
+      dto.yearsSinceStopping === undefined
+    ) {
+      throw new BadRequestException(
+        'Years since stopping is required for former alcohol use.',
+      );
+    }
+
+    if (
+      dto.alcohol === 'NO'
+    ) {
+      dto.alcoholFrequency = undefined;
+      dto.yearsSinceStopping = undefined;
+    }
+
+    // =========================
+    // Substance use
+    // =========================
+
+    const substanceUse =
+      dto.substanceUse
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+    if (
+      substanceUse.length === 0
+    ) {
+      dto.substanceNotes = undefined;
+    }
+
+    // =========================
+    // Living condition
+    // =========================
+
+    if (
+      dto.livingCondition !== 'OTHER'
+    ) {
+      dto.livingConditionNotes =
+        undefined;
+    }
+
+    // =========================
+    // Save
+    // =========================
+
+    return this.prisma.patientSocialHistory.upsert({
+      where: {
+        patientId,
+      },
+
+      create: {
+        patientId,
+
+        smoking:
+          dto.smoking ?? null,
+
+        cigarettesPerDay:
+          dto.smoking === 'CURRENT'
+            ? dto.cigarettesPerDay ?? null
+            : null,
+
+        yearsSmoking:
+          dto.smoking === 'CURRENT' ||
+          dto.smoking === 'FORMER'
+            ? dto.yearsSmoking ?? null
+            : null,
+
+        yearsSinceQuitting:
+          dto.smoking === 'FORMER'
+            ? dto.yearsSinceQuitting ?? null
+            : null,
+
+        alcohol:
+          dto.alcohol ?? null,
+
+        alcoholFrequency:
+          dto.alcohol === 'CURRENT'
+            ? dto.alcoholFrequency ?? null
+            : null,
+
+        yearsSinceStopping:
+          dto.alcohol === 'FORMER'
+            ? dto.yearsSinceStopping ?? null
+            : null,
+
+        livingCondition:
+          dto.livingCondition ?? null,
+
+        livingConditionNotes:
+          dto.livingConditionNotes
+            ?.trim() || null,
+
+        substanceUse,
+
+        substanceNotes:
+          dto.substanceNotes?.trim() ||
+          null,
+
+        physicalActivity:
+          dto.physicalActivity ?? null,
+
+        physicalActivityNotes:
+          dto.physicalActivityNotes
+            ?.trim() || null,
+
+        sleepDuration:
+          dto.sleepDuration ?? null,
+
+        sleepNotes:
+          dto.sleepNotes?.trim() ||
+          null,
+
+        socialSupport:
+          dto.socialSupport ?? null,
+
+        socialSupportNotes:
+          dto.socialSupportNotes
+            ?.trim() || null,
+
+        sexualHistory:
+          dto.sexualHistory ?? null,
+
+        sexualHistoryNotes:
+          dto.sexualHistoryNotes
+            ?.trim() || null,
+      },
+
+      update: {
+        smoking:
+          dto.smoking ?? null,
+
+        cigarettesPerDay:
+          dto.smoking === 'CURRENT'
+            ? dto.cigarettesPerDay ?? null
+            : null,
+
+        yearsSmoking:
+          dto.smoking === 'CURRENT' ||
+          dto.smoking === 'FORMER'
+            ? dto.yearsSmoking ?? null
+            : null,
+
+        yearsSinceQuitting:
+          dto.smoking === 'FORMER'
+            ? dto.yearsSinceQuitting ?? null
+            : null,
+
+        alcohol:
+          dto.alcohol ?? null,
+
+        alcoholFrequency:
+          dto.alcohol === 'CURRENT'
+            ? dto.alcoholFrequency ?? null
+            : null,
+
+        yearsSinceStopping:
+          dto.alcohol === 'FORMER'
+            ? dto.yearsSinceStopping ?? null
+            : null,
+
+        livingCondition:
+          dto.livingCondition ?? null,
+
+        livingConditionNotes:
+          dto.livingConditionNotes
+            ?.trim() || null,
+
+        substanceUse,
+
+        substanceNotes:
+          dto.substanceNotes?.trim() ||
+          null,
+
+        physicalActivity:
+          dto.physicalActivity ?? null,
+
+        physicalActivityNotes:
+          dto.physicalActivityNotes
+            ?.trim() || null,
+
+        sleepDuration:
+          dto.sleepDuration ?? null,
+
+        sleepNotes:
+          dto.sleepNotes?.trim() ||
+          null,
+
+        socialSupport:
+          dto.socialSupport ?? null,
+
+        socialSupportNotes:
+          dto.socialSupportNotes
+            ?.trim() || null,
+
+        sexualHistory:
+          dto.sexualHistory ?? null,
+
+        sexualHistoryNotes:
+          dto.sexualHistoryNotes
+            ?.trim() || null,
+      },
+    });
+  }
+
+  async getSocialHistory(
+    userId: string,
+    patientId: string,
+  ) {
+    await this.getActiveMembershipForPatient(
+      userId,
+      patientId,
+    );
+
+    return this.prisma.patientSocialHistory.findUnique({
+      where: {
+        patientId,
+      },
+    });
+  }
+
 }

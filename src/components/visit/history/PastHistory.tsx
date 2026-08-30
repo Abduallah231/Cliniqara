@@ -1711,21 +1711,6 @@ export default function PastHistory() {
           }
         />
 
-        <DateField
-          value={
-            hospitalizationDate
-          }
-          disabled={
-            savingSection !==
-            null
-          }
-          onPress={() =>
-            openDatePicker(
-              "hospitalization"
-            )
-          }
-        />
-
         <AppTextField
           placeholder="Duration"
           value={
@@ -1740,6 +1725,21 @@ export default function PastHistory() {
           }
         />
 
+        <DateField
+          value={
+            hospitalizationDate
+          }
+          disabled={
+            savingSection !==
+            null
+          }
+          onPress={() =>
+            openDatePicker(
+              "hospitalization"
+            )
+          }
+        />
+        
         <Text
           style={styles.helperText}
         >
@@ -1897,6 +1897,20 @@ export default function PastHistory() {
           }
         />
 
+        <AppTextField
+          placeholder="Indication"
+          value={
+            operationIndication
+          }
+          onChangeText={
+            setOperationIndication
+          }
+          editable={
+            savingSection !==
+            "operation"
+          }
+        />
+
         <DateField
           value={
             operationDate
@@ -1909,20 +1923,6 @@ export default function PastHistory() {
             openDatePicker(
               "operation"
             )
-          }
-        />
-
-        <AppTextField
-          placeholder="Indication"
-          value={
-            operationIndication
-          }
-          onChangeText={
-            setOperationIndication
-          }
-          editable={
-            savingSection !==
-            "operation"
           }
         />
 
@@ -2083,6 +2083,20 @@ export default function PastHistory() {
           }
         />
 
+        <AppTextField
+          placeholder="Reaction"
+          value={
+            transfusionReaction
+          }
+          onChangeText={
+            setTransfusionReaction
+          }
+          editable={
+            savingSection !==
+            "transfusion"
+          }
+        />
+
         <DateField
           value={
             transfusionDate
@@ -2095,20 +2109,6 @@ export default function PastHistory() {
             openDatePicker(
               "transfusion"
             )
-          }
-        />
-
-        <AppTextField
-          placeholder="Reaction"
-          value={
-            transfusionReaction
-          }
-          onChangeText={
-            setTransfusionReaction
-          }
-          editable={
-            savingSection !==
-            "transfusion"
           }
         />
 
@@ -2270,6 +2270,20 @@ export default function PastHistory() {
           }
         />
 
+        <AppTextField
+          placeholder="Complications"
+          value={
+            traumaComplications
+          }
+          onChangeText={
+            setTraumaComplications
+          }
+          editable={
+            savingSection !==
+            "trauma"
+          }
+        />
+
         <DateField
           value={
             traumaDate
@@ -2282,20 +2296,6 @@ export default function PastHistory() {
             openDatePicker(
               "trauma"
             )
-          }
-        />
-
-        <AppTextField
-          placeholder="Complications"
-          value={
-            traumaComplications
-          }
-          onChangeText={
-            setTraumaComplications
-          }
-          editable={
-            savingSection !==
-            "trauma"
           }
         />
 
@@ -2456,6 +2456,20 @@ export default function PastHistory() {
           }
         />
 
+        <AppTextField
+          placeholder="Duration"
+          value={
+            icuDuration
+          }
+          onChangeText={
+            setIcuDuration
+          }
+          editable={
+            savingSection !==
+            "icu"
+          }
+        />
+
         <DateField
           value={
             icuDate
@@ -2471,21 +2485,7 @@ export default function PastHistory() {
           }
         />
 
-        <AppTextField
-          placeholder="Duration"
-          value={
-            icuDuration
-          }
-          onChangeText={
-            setIcuDuration
-          }
-          editable={
-            savingSection !==
-            "icu"
-          }
-        />
-
-        <View
+        {/* <View
           style={
             styles.chipRow
           }
@@ -2523,7 +2523,7 @@ export default function PastHistory() {
               )
             }
           />
-        </View>
+        </View> */}
 
         <Text
           style={styles.helperText}

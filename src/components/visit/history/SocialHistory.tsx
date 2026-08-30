@@ -1,6 +1,18 @@
 import { useVisitStore } from "@/store/visitStore";
 import { StyleSheet, Text, View } from "react-native";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
+import {
+  getSocialHistory,
+} from "@/services/patientApi";
+
+import useSocialHistoryAutoSave, {
+  mapSocialHistoryFromBackend,
+} from "@/hooks/useSocialHistoryAutoSave";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
@@ -17,6 +29,91 @@ export default function SocialHistory() {
     visit,
     updateSocialField,
   } = useVisitStore();
+
+  const patientId =
+    visit.metadata.patientId;
+
+  const fields =
+    visit.history.socialHistory.fields;
+
+  const [
+    isHydrating,
+    setIsHydrating,
+  ] = useState(true);
+
+  const loadedPatientId =
+    useRef<string | null>(null);
+
+  useSocialHistoryAutoSave({
+    patientId,
+    fields,
+    isHydrating,
+  });
+
+  useEffect(() => {
+    if (
+      !patientId ||
+      loadedPatientId.current ===
+        patientId
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadSocialHistory = async () => {
+      try {
+        setIsHydrating(true);
+
+        const data =
+          await getSocialHistory(
+            patientId,
+          );
+
+        if (cancelled) {
+          return;
+        }
+
+        if (data) {
+          const mappedFields =
+            mapSocialHistoryFromBackend(
+              data,
+            );
+
+          mappedFields.forEach(
+            (field) => {
+              updateSocialField(
+                field.fieldId,
+                field.fieldLabel,
+                field.value,
+              );
+            },
+          );
+        }
+
+        loadedPatientId.current =
+          patientId;
+      } catch (error) {
+        console.error(
+          "Failed to load social history:",
+          error,
+        );
+      } finally {
+        if (!cancelled) {
+          setIsHydrating(false);
+        }
+      }
+    };
+
+    loadSocialHistory();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    patientId,
+    updateSocialField,
+  ]);
 
   const getValue = (fieldId: string) =>
     visit.history.socialHistory.fields.find(

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import {
+  Alert,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
-  TouchableOpacity
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+
 import AppButton from "@/components/common/AppButton";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
@@ -14,6 +16,7 @@ import SectionHeader from "@/components/common/SectionHeader";
 
 import { Medication } from "@/models/VisitForm/history";
 import { useVisitStore } from "@/store/visitStore";
+import useDrugHistoryAutoSave from "@/hooks/useDrugHistoryAutoSave";
 
 import {
   COLORS,
@@ -34,99 +37,354 @@ export default function DrugHistory() {
     updateSupplementDetails,
   } = useVisitStore();
 
-  const [medicationName, setMedicationName] =
-    useState("");
+  const patientId =
+    visit.patient?.id;
+
+  const {
+    isHydrating,
+    isSavingMedications,
+    isAutoSaving,
+    saveMedications,
+  } =
+    useDrugHistoryAutoSave(
+      patientId ?? "",
+    );
+
+  const [
+    medicationName,
+    setMedicationName,
+  ] = useState("");
 
   const [dose, setDose] =
     useState("");
 
-  const [notes, setNotes] = useState("");
-
-  const [durationValue, setDurationValue] =
+  const [notes, setNotes] =
     useState("");
 
-  const [durationUnit, setDurationUnit] =
-    useState<"HOURS" | "DAYS" | "WEEKS" | "MONTHS" | "YEARS">("DAYS");
+  const [
+    durationValue,
+    setDurationValue,
+  ] = useState("");
+
+  const [
+    durationUnit,
+    setDurationUnit,
+  ] = useState<
+    | "HOURS"
+    | "DAYS"
+    | "WEEKS"
+    | "MONTHS"
+    | "YEARS"
+  >("DAYS");
 
   const [
     editingMedicationId,
     setEditingMedicationId,
-  ] = useState<string | null>(null);
+  ] = useState<string | null>(
+    null,
+  );
 
-  const clearMedicationForm = () => {
-    setMedicationName("");
-    setDose("");
-    setDurationValue("");
-    setDurationUnit("DAYS");
-    setNotes("");
-    setEditingMedicationId(null);
-  };
+  /**
+   * ======================================================
+   * Delete loading state
+   * ======================================================
+   *
+   * Prevents two delete requests from running
+   * simultaneously.
+   */
+  const [
+    deletingMedicationId,
+    setDeletingMedicationId,
+  ] = useState<string | null>(
+    null,
+  );
 
-  const handleAddMedication = () => {
-    if (!medicationName.trim()) return;
+  const clearMedicationForm =
+    () => {
+      setMedicationName("");
+      setDose("");
+      setDurationValue("");
+      setDurationUnit("DAYS");
+      setNotes("");
+      setEditingMedicationId(null);
+    };
 
-    if (editingMedicationId) {
-      updateMedication(
-        editingMedicationId,
-        {
-          medicationName: medicationName.trim(),
-          dose: dose.trim(),
-          durationValue: durationValue.trim()
-            ? Number(durationValue)
-            : null,
-          durationUnit,
-          notes: notes.trim() || null,
-        }
-      );
-    } else {
-      const medication: Medication = {
-        id: Date.now().toString(),
-        medicationName: medicationName.trim(),
-        dose: dose.trim() || null,
-        durationValue: durationValue.trim()
+  /**
+   * ======================================================
+   * Medication action state
+   * ======================================================
+   */
+  const isMedicationActionRunning =
+    isSavingMedications ||
+    deletingMedicationId !== null;
+
+  /**
+   * ======================================================
+   * Add / Update Medication
+   *
+   * MANUAL SAVE
+   * ======================================================
+   */
+  const handleAddMedication =
+    async () => {
+      /**
+       * Prevent duplicate presses.
+       */
+      if (
+        isMedicationActionRunning
+      ) {
+        return;
+      }
+
+      /**
+       * Validate medication name.
+       */
+      if (!medicationName.trim()) {
+        Alert.alert(
+          "Medication Required",
+          "Please enter the medication name.",
+        );
+
+        return;
+      }
+
+      /**
+       * Parse duration.
+       */
+      const parsedDuration =
+        durationValue.trim()
           ? Number(durationValue)
-          : null,
-        durationUnit,
-        notes: notes.trim() || null,
-      };
+          : null;
 
-      addMedication(medication);
-    }
+      /**
+       * Validate numeric duration.
+       */
+      if (
+        durationValue.trim() &&
+        !Number.isFinite(
+          parsedDuration,
+        )
+      ) {
+        Alert.alert(
+          "Invalid Duration",
+          "Please enter a valid duration.",
+        );
 
-    clearMedicationForm();
-  };
+        return;
+      }
+
+      try {
+        /**
+         * ==================================================
+         * UPDATE
+         * ==================================================
+         */
+        if (editingMedicationId) {
+          updateMedication(
+            editingMedicationId,
+            {
+              medicationName:
+                medicationName.trim(),
+
+              dose:
+                dose.trim() || null,
+
+              durationValue:
+                parsedDuration,
+
+              durationUnit:
+                parsedDuration !== null
+                  ? durationUnit
+                  : null,
+
+              notes:
+                notes.trim() || null,
+            },
+          );
+        } else {
+          /**
+           * ==================================================
+           * ADD
+           * ==================================================
+           */
+          const medication: Medication =
+            {
+              /**
+               * Temporary frontend ID.
+               *
+               * Backend ID replaces this after
+               * successful save.
+               */
+              id: Date.now().toString(),
+
+              medicationName:
+                medicationName.trim(),
+
+              dose:
+                dose.trim() || null,
+
+              durationValue:
+                parsedDuration,
+
+              durationUnit:
+                parsedDuration !== null
+                  ? durationUnit
+                  : null,
+
+              notes:
+                notes.trim() || null,
+            };
+
+          addMedication(
+            medication,
+          );
+        }
+
+        /**
+         * Zustand mutation is synchronous.
+         *
+         * saveMedications() reads the latest Store
+         * and persists the complete medication list.
+         */
+        await saveMedications();
+
+        /**
+         * Clear only after successful backend save.
+         */
+        clearMedicationForm();
+      } catch (error) {
+        Alert.alert(
+          "Save Failed",
+          "Medication changes could not be saved. Please try again.",
+        );
+      }
+    };
+
+  /**
+   * ======================================================
+   * Delete Medication
+   *
+   * MANUAL SAVE
+   * ======================================================
+   */
+  const handleRemoveMedication =
+    async (
+      medicationId: string,
+    ) => {
+      /**
+       * Prevent concurrent actions.
+       */
+      if (
+        isMedicationActionRunning
+      ) {
+        return;
+      }
+
+      try {
+        /**
+         * Show deleting state immediately.
+         */
+        setDeletingMedicationId(
+          medicationId,
+        );
+
+        /**
+         * Remove from Zustand first.
+         */
+        removeMedication(
+          medicationId,
+        );
+
+        /**
+         * Persist the complete medication list.
+         */
+        await saveMedications();
+
+        /**
+         * If the deleted medication was
+         * currently being edited, close the form.
+         */
+        if (
+          editingMedicationId ===
+          medicationId
+        ) {
+          clearMedicationForm();
+        }
+      } catch (error) {
+        Alert.alert(
+          "Delete Failed",
+          "Medication could not be deleted. The previous medication list has been restored.",
+        );
+      } finally {
+        setDeletingMedicationId(
+          null,
+        );
+      }
+    };
+
+  const medications =
+    visit.history.drugHistory
+      .currentMedications;
 
   return (
     <View style={styles.container}>
-      <SectionHeader title="Current Medication" />
+      {/* ==================================================
+          HYDRATION
+      ================================================== */}
+      {isHydrating && (
+        <Text
+          style={styles.statusText}
+        >
+          Loading drug history...
+        </Text>
+      )}
+
+      {/* ==================================================
+          CURRENT MEDICATION
+      ================================================== */}
+      <SectionHeader
+        title="Current Medication"
+      />
 
       <View style={styles.card}>
         <AppTextField
           placeholder="Medication Name"
           value={medicationName}
-          onChangeText={setMedicationName}
+          onChangeText={
+            setMedicationName
+          }
+          editable={
+            !isMedicationActionRunning &&
+            !isHydrating
+          }
         />
 
         <AppTextField
-          placeholder="Dose"
+          placeholder="Dose Per day"
           value={dose}
           onChangeText={setDose}
+          editable={
+            !isMedicationActionRunning &&
+            !isHydrating
+          }
         />
-
-        <AppTextField
-          placeholder="Notes"
-          value={notes}
-          onChangeText={setNotes}
-        />
-
-        <View style={styles.inlineRow}>
-          <View style={{ flex: 1 }}>
+        
+        <View
+          style={styles.inlineRow}
+        >
+          <View
+            style={{ flex: 1 }}
+          >
             <AppTextField
               placeholder="Duration"
               keyboardType="numeric"
               value={durationValue}
               onChangeText={
                 setDurationValue
+              }
+              editable={
+                !isMedicationActionRunning &&
+                !isHydrating
               }
             />
           </View>
@@ -143,246 +401,466 @@ export default function DrugHistory() {
           >
             <AppChip
               label="Days"
-              selected={durationUnit === "DAYS"}
-              onPress={() => setDurationUnit("DAYS")}
+              selected={
+                durationUnit ===
+                "DAYS"
+              }
+              onPress={() => {
+                if (
+                  !isMedicationActionRunning &&
+                  !isHydrating
+                ) {
+                  setDurationUnit(
+                    "DAYS",
+                  );
+                }
+              }}
             />
 
             <AppChip
               label="Months"
-              selected={durationUnit === "MONTHS"}
-              onPress={() => setDurationUnit("MONTHS")}
+              selected={
+                durationUnit ===
+                "MONTHS"
+              }
+              onPress={() => {
+                if (
+                  !isMedicationActionRunning &&
+                  !isHydrating
+                ) {
+                  setDurationUnit(
+                    "MONTHS",
+                  );
+                }
+              }}
             />
 
             <AppChip
               label="Years"
-              selected={durationUnit === "YEARS"}
-              onPress={() => setDurationUnit("YEARS")}
+              selected={
+                durationUnit ===
+                "YEARS"
+              }
+              onPress={() => {
+                if (
+                  !isMedicationActionRunning &&
+                  !isHydrating
+                ) {
+                  setDurationUnit(
+                    "YEARS",
+                  );
+                }
+              }}
             />
           </View>
         </View>
 
+        <AppTextField
+          placeholder="Notes"
+          value={notes}
+          onChangeText={setNotes}
+          editable={
+            !isMedicationActionRunning &&
+            !isHydrating
+          }
+        />
+
         <Text
           style={styles.helperText}
         >
-          Tap "Add Medication" to
-          save this medication.
+          {editingMedicationId
+            ? "Tap Update Medication to save your changes."
+            : 'Tap "Add Medication" to save this medication.'}
         </Text>
 
         <AppButton
           title={
-            editingMedicationId
-              ? "Update Medication"
-              : "Add Medication"
+            isSavingMedications
+              ? "Saving..."
+              : editingMedicationId
+                ? "Update Medication"
+                : "Add Medication"
           }
           onPress={
             handleAddMedication
           }
+          disabled={
+            isMedicationActionRunning ||
+            isHydrating
+          }
         />
       </View>
 
-      {visit.history.drugHistory.currentMedications.map(
-        (medication) => (
-          <View
-            key={medication.id}
-            style={styles.medicationCard}
-          >
-            <Text
+      {/* ==================================================
+          MEDICATION LIST
+      ================================================== */}
+      {medications.map(
+        (medication) => {
+          const isDeleting =
+            deletingMedicationId ===
+            medication.id;
+
+          return (
+            <View
+              key={
+                medication.id
+              }
               style={
-                styles.medicationName
+                styles.medicationCard
               }
             >
-              {medication.medicationName}
-            </Text>
-
-            {!!medication.dose && (
               <Text
                 style={
-                  styles.medicationText
+                  styles.medicationName
                 }
               >
-                Dose: {medication.dose}
-              </Text>
-            )}
-
-            {medication.durationValue != null && (
-              <Text
-                style={
-                  styles.medicationText
+                {
+                  medication.medicationName
                 }
-              >
-                Duration:{" "}
-                {medication.durationValue}{" "}
-                {medication.durationUnit}
               </Text>
-            )}
 
-            {!!medication.notes && (
-              <Text style={styles.medicationText}>
-                Notes: {medication.notes}
-              </Text>
-            )}
-
-            <View style={styles.actionRow}>
-
-                <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={() => {
-
-                        setEditingMedicationId(medication.id);
-
-                        setMedicationName(medication.medicationName);
-                        setDose(medication.dose ?? "");
-                        setNotes(medication.notes ?? "");
-                        setDurationValue(
-                          medication.durationValue != null
-                            ? String(medication.durationValue)
-                            : ""
-                        );
-                        setDurationUnit(
-                          medication.durationUnit ?? "DAYS"
-                        );
-
-                    }}
+              {!!medication.dose && (
+                <Text
+                  style={
+                    styles.medicationText
+                  }
                 >
+                  Dose:{" "}
+                  {
+                    medication.dose
+                  }
+                </Text>
+              )}
 
-                    <MaterialIcons
-                        name="edit"
-                        size={22}
-                        color="#1976D2"
-                    />
+              {medication.durationValue !=
+                null && (
+                <Text
+                  style={
+                    styles.medicationText
+                  }
+                >
+                  Duration:{" "}
+                  {
+                    medication.durationValue
+                  }{" "}
+                  {
+                    medication.durationUnit
+                  }
+                </Text>
+              )}
 
-                </TouchableOpacity>
+              {!!medication.notes && (
+                <Text
+                  style={
+                    styles.medicationText
+                  }
+                >
+                  Notes:{" "}
+                  {medication.notes}
+                </Text>
+              )}
 
+              <View
+                style={
+                  styles.actionRow
+                }
+              >
+                {/* ==================================================
+                    EDIT
+                ================================================== */}
                 <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={() =>
-                        removeMedication(medication.id)
+                  style={
+                    styles.iconButton
+                  }
+                  disabled={
+                    isMedicationActionRunning ||
+                    isHydrating
+                  }
+                  onPress={() => {
+                    if (
+                      isMedicationActionRunning ||
+                      isHydrating
+                    ) {
+                      return;
                     }
+
+                    setEditingMedicationId(
+                      medication.id,
+                    );
+
+                    setMedicationName(
+                      medication.medicationName,
+                    );
+
+                    setDose(
+                      medication.dose ??
+                        "",
+                    );
+
+                    setNotes(
+                      medication.notes ??
+                        "",
+                    );
+
+                    setDurationValue(
+                      medication.durationValue !=
+                        null
+                        ? String(
+                            medication.durationValue,
+                          )
+                        : "",
+                    );
+
+                    setDurationUnit(
+                      medication.durationUnit ??
+                        "DAYS",
+                    );
+                  }}
                 >
-
-                    <MaterialIcons
-                        name="delete"
-                        size={22}
-                        color="#D32F2F"
-                    />
-
+                  <MaterialIcons
+                    name="edit"
+                    size={22}
+                    color={
+                      isMedicationActionRunning ||
+                      isHydrating
+                        ? COLORS.secondaryText
+                        : "#1976D2"
+                    }
+                  />
                 </TouchableOpacity>
 
+                {/* ==================================================
+                    DELETE
+                ================================================== */}
+                <TouchableOpacity
+                  style={
+                    styles.iconButton
+                  }
+                  disabled={
+                    isMedicationActionRunning ||
+                    isHydrating
+                  }
+                  onPress={() =>
+                    handleRemoveMedication(
+                      medication.id,
+                    )
+                  }
+                >
+                  <MaterialIcons
+                    name={
+                      isDeleting
+                        ? "hourglass-top"
+                        : "delete"
+                    }
+                    size={22}
+                    color={
+                      isMedicationActionRunning ||
+                      isHydrating
+                        ? COLORS.secondaryText
+                        : "#D32F2F"
+                    }
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {isDeleting && (
+                <Text
+                  style={
+                    styles.savingText
+                  }
+                >
+                  Deleting...
+                </Text>
+              )}
             </View>
-          </View>
-        )
+          );
+        },
       )}
 
       <Divider />
 
-      <SectionHeader title="Compliance" />
+      {/* ==================================================
+          COMPLIANCE
+          AUTO SAVE
+      ================================================== */}
+      <SectionHeader
+        title="Compliance"
+      />
 
       <View style={styles.row}>
         <AppChip
           label="Good"
           selected={
-            visit.history.drugHistory.compliance === "GOOD"
+            visit.history
+              .drugHistory
+              .compliance ===
+            "GOOD"
           }
           onPress={() =>
-            updateCompliance("GOOD")
+            updateCompliance(
+              "GOOD",
+            )
           }
         />
 
         <AppChip
           label="Poor"
           selected={
-            visit.history.drugHistory.compliance === "POOR"
+            visit.history
+              .drugHistory
+              .compliance ===
+            "POOR"
           }
           onPress={() =>
-            updateCompliance("POOR")
+            updateCompliance(
+              "POOR",
+            )
           }
         />
 
         <AppChip
           label="Irregular"
           selected={
-            visit.history.drugHistory.compliance === "IRREGULAR"
+            visit.history
+              .drugHistory
+              .compliance ===
+            "IRREGULAR"
           }
           onPress={() =>
-            updateCompliance("IRREGULAR")
+            updateCompliance(
+              "IRREGULAR",
+            )
           }
         />
       </View>
 
-      <Divider />
+      {/* ==================================================
+          SELF MEDICATION
+          AUTO SAVE
+      ================================================== */}
+      {/* <Divider />
 
-      <SectionHeader title="Self Medication" />
+      <SectionHeader
+        title="Self Medication"
+      />
 
       <View style={styles.row}>
         <AppChip
           label="Yes"
           selected={
-            visit.history.drugHistory.selfMedication === true
+            visit.history
+              .drugHistory
+              .selfMedication ===
+            true
           }
           onPress={() =>
-            updateSelfMedication(true)
+            updateSelfMedication(
+              true,
+            )
           }
         />
 
         <AppChip
           label="No"
           selected={
-            visit.history.drugHistory.selfMedication === false
+            visit.history
+              .drugHistory
+              .selfMedication ===
+            false
           }
           onPress={() =>
-            updateSelfMedication(false)
+            updateSelfMedication(
+              false,
+            )
           }
         />
       </View>
 
-      {visit.history.drugHistory.selfMedication && (
+      {visit.history.drugHistory
+        .selfMedication && (
         <AppTextField
           placeholder="Specify"
           value={
-            visit.history.drugHistory.selfMedicationDetails ?? ""
+            visit.history
+              .drugHistory
+              .selfMedicationDetails ??
+            ""
           }
           onChangeText={
             updateSelfMedicationDetails
           }
         />
-      )}
+      )} */}
 
-      <Divider />
+      {/* ==================================================
+          HERBAL / SUPPLEMENTS
+          AUTO SAVE
+      ================================================== */}
+      {/* <Divider />
 
-      <SectionHeader title="Herbal / Supplements" />
+      <SectionHeader
+        title="Herbal / Supplements"
+      />
 
       <View style={styles.row}>
         <AppChip
           label="Yes"
           selected={
-            visit.history.drugHistory.supplements === true
+            visit.history
+              .drugHistory
+              .supplements ===
+            true
           }
           onPress={() =>
-            updateSupplements(true)
+            updateSupplements(
+              true,
+            )
           }
         />
 
         <AppChip
           label="No"
           selected={
-            visit.history.drugHistory.supplements === false
+            visit.history
+              .drugHistory
+              .supplements ===
+            false
           }
           onPress={() =>
-            updateSupplements(false)
+            updateSupplements(
+              false,
+            )
           }
         />
       </View>
 
-      {visit.history.drugHistory.supplements && (
+      {visit.history.drugHistory
+        .supplements && (
         <AppTextField
           placeholder="Specify"
           value={
-            visit.history.drugHistory.supplementDetails ?? ""
+            visit.history
+              .drugHistory
+              .supplementDetails ??
+            ""
           }
           onChangeText={
             updateSupplementDetails
           }
         />
+      )} */}
+
+      {/* ==================================================
+          AUTO SAVE STATUS
+      ================================================== */}
+      {isAutoSaving && (
+        <Text
+          style={
+            styles.savingText
+          }
+        >
+          Saving changes...
+        </Text>
       )}
     </View>
   );
@@ -395,12 +873,6 @@ const styles = StyleSheet.create({
 
   card: {
     gap: SPACING.sm,
-  },
-
-  sectionTitle: {
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
   },
 
   row: {
@@ -416,36 +888,59 @@ const styles = StyleSheet.create({
   },
 
   helperText: {
-    fontSize: TYPOGRAPHY.small,
-    color: COLORS.secondaryText,
+    fontSize:
+      TYPOGRAPHY.small,
+    color:
+      COLORS.secondaryText,
+  },
+
+  statusText: {
+    fontSize:
+      TYPOGRAPHY.small,
+    color:
+      COLORS.secondaryText,
+  },
+
+  savingText: {
+    fontSize:
+      TYPOGRAPHY.small,
+    color:
+      COLORS.secondaryText,
   },
 
   medicationCard: {
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor:
+      COLORS.border,
     borderRadius: 12,
     padding: SPACING.md,
     gap: SPACING.xs,
-    backgroundColor: COLORS.white,
+    backgroundColor:
+      COLORS.white,
   },
 
   medicationName: {
-    fontSize: TYPOGRAPHY.body,
+    fontSize:
+      TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
   },
 
   medicationText: {
-    fontSize: TYPOGRAPHY.small,
-    color: COLORS.secondaryText,
+    fontSize:
+      TYPOGRAPHY.small,
+    color:
+      COLORS.secondaryText,
   },
 
   actionRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent:
+      "flex-end",
     alignItems: "center",
     gap: SPACING.md,
-    marginTop: SPACING.sm,
+    marginTop:
+      SPACING.sm,
   },
 
   iconButton: {

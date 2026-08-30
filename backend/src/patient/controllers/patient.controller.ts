@@ -27,6 +27,10 @@ import { CreatePatientDto } from '../dto/create-patient.dto';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
 import { SaveVaccinationHistoryDto } from "../dto/save-vaccination-history.dto";
 import { SavePastHistoryDto } from '../dto/save-past-history.dto';
+import { SaveDrugHistoryDto } from '../dto/save-drug-history.dto';
+import { SaveAllergyHistoryDto } from '../dto/save-allergy-history.dto';
+import { SaveFamilyHistoryDto } from '../dto/save-family-history.dto';
+import { SaveSocialHistoryDto } from '../dto/save-social-history.dto';
 
 @Controller('patients')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -166,6 +170,126 @@ export class PatientController {
     @Param('patientId') patientId: string,
   ) {
     return this.patientService.getPastHistory(
+      user.id,
+      patientId,
+    );
+  }
+
+  // =========================
+  // Drug History
+  // =========================
+
+  @Put(':patientId/drug-history')
+  @Roles(AccountType.DOCTOR)
+  async saveDrugHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+    @Body() dto: SaveDrugHistoryDto,
+  ) {
+    return this.patientService.saveDrugHistory(
+      user.id,
+      patientId,
+      dto,
+    );
+  }
+
+  @Get(':patientId/drug-history')
+  @Roles(AccountType.DOCTOR)
+  async getDrugHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.patientService.getDrugHistory(
+      user.id,
+      patientId,
+    );
+  }
+
+  // =========================
+  // Allergy History
+  // =========================
+
+  @Put(':patientId/allergy-history')
+  @Roles(AccountType.DOCTOR)
+  async saveAllergyHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+    @Body() dto: SaveAllergyHistoryDto,
+  ) {
+    return this.patientService.saveAllergyHistory(
+      user.id,
+      patientId,
+      dto,
+    );
+  }
+
+  @Get(':patientId/allergy-history')
+  @Roles(AccountType.DOCTOR)
+  async getAllergyHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.patientService.getAllergyHistory(
+      user.id,
+      patientId,
+    );
+  }
+
+  // =========================
+  // Family History
+  // =========================
+
+  @Put(':patientId/family-history')
+  @Roles(AccountType.DOCTOR)
+  async saveFamilyHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+    @Body() dto: SaveFamilyHistoryDto,
+  ) {
+    return this.patientService.saveFamilyHistory(
+      user.id,
+      patientId,
+      dto,
+    );
+  }
+
+  @Get(':patientId/family-history')
+  @Roles(AccountType.DOCTOR)
+  async getFamilyHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.patientService.getFamilyHistory(
+      user.id,
+      patientId,
+    );
+  }
+
+  // =========================
+  // Social History
+  // =========================
+
+  @Put(':patientId/social-history')
+  @Roles(AccountType.DOCTOR)
+  async saveSocialHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+    @Body() dto: SaveSocialHistoryDto,
+  ) {
+    return this.patientService.saveSocialHistory(
+      user.id,
+      patientId,
+      dto,
+    );
+  }
+
+  @Get(':patientId/social-history')
+  @Roles(AccountType.DOCTOR)
+  async getSocialHistory(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('patientId') patientId: string,
+  ) {
+    return this.patientService.getSocialHistory(
       user.id,
       patientId,
     );
