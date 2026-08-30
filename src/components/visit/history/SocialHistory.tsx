@@ -5,11 +5,9 @@ import {
   useRef,
   useState,
 } from "react";
-
 import {
   getSocialHistory,
 } from "@/services/patientApi";
-
 import useSocialHistoryAutoSave, {
   mapSocialHistoryFromBackend,
 } from "@/hooks/useSocialHistoryAutoSave";
@@ -17,7 +15,6 @@ import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
-
 import {
   COLORS,
   SPACING,
@@ -44,11 +41,14 @@ export default function SocialHistory() {
   const loadedPatientId =
     useRef<string | null>(null);
 
-  useSocialHistoryAutoSave({
-    patientId,
-    fields,
-    isHydrating,
-  });
+  const {
+    isSectionAutoSaving,
+  } =
+    useSocialHistoryAutoSave({
+      patientId,
+      fields,
+      isHydrating,
+    });
 
   useEffect(() => {
     if (
@@ -125,6 +125,10 @@ export default function SocialHistory() {
     fieldLabel: string,
     value: any
   ) => {
+    if (isHydrating) {
+      return;
+    }
+
     updateSocialField(
       fieldId,
       fieldLabel,
@@ -137,6 +141,10 @@ export default function SocialHistory() {
     fieldLabel: string,
     value: string
   ) => {
+    if (isHydrating) {
+      return;
+    }
+
     const current =
       (getValue(fieldId) as string[]) ?? [];
 
@@ -176,6 +184,21 @@ export default function SocialHistory() {
 
   return (
     <View style={styles.container}>
+
+      {/* =========================
+          HYDRATION
+      ========================= */}
+
+      {isHydrating && (
+        <Text
+          style={
+            styles.statusText
+          }
+        >
+          Loading social history...
+        </Text>
+      )}
+
       {/* =========================
           Smoking
       ========================= */}
@@ -194,20 +217,51 @@ export default function SocialHistory() {
             selected={
               getValue("smoking") === item
             }
-            onPress={() =>
+            disabled={isHydrating}
+            onPress={() => {
+              if (item === "Never") {
+                updateField(
+                  "smoking",
+                  "Smoking",
+                  "Never"
+                );
+
+                updateField(
+                  "cigarettesPerDay",
+                  "Cigarettes Per Day",
+                  null
+                );
+
+                updateField(
+                  "yearsSmoking",
+                  "Years Smoking",
+                  null
+                );
+
+                updateField(
+                  "yearsSinceQuitting",
+                  "Years Since Quitting",
+                  null
+                );
+
+                return;
+              }
+
               updateField(
                 "smoking",
                 "Smoking",
                 item
-              )
-            }
+              );
+            }}
           />
         ))}
       </View>
 
-      {getValue("smoking") !==
-        "Never" && (
+      {["Current", "Former"].includes(
+        getValue("smoking") as string,
+      ) && (
         <View style={styles.box}>
+
           <AppTextField
             placeholder="Cigarettes Per Day"
             keyboardType="numeric"
@@ -216,6 +270,7 @@ export default function SocialHistory() {
                 "cigarettesPerDay"
               ) as string) ?? ""
             }
+            editable={!isHydrating}
             onChangeText={(v) =>
               updateField(
                 "cigarettesPerDay",
@@ -233,6 +288,7 @@ export default function SocialHistory() {
                 "yearsSmoking"
               ) as string) ?? ""
             }
+            editable={!isHydrating}
             onChangeText={(v) =>
               updateField(
                 "yearsSmoking",
@@ -278,6 +334,7 @@ export default function SocialHistory() {
                   "yearsSinceQuitting"
                 ) as string) ?? ""
               }
+              editable={!isHydrating}
               onChangeText={(v) =>
                 updateField(
                   "yearsSinceQuitting",
@@ -290,13 +347,19 @@ export default function SocialHistory() {
         </View>
       )}
 
+      {isSectionAutoSaving("smoking") && (
+        <Text style={styles.savingText}>
+          Saving changes...
+        </Text>
+      )}
+
       <Divider />
 
       {/* =========================
           Alcohol
       ========================= */}
 
-            <SectionHeader title="Alcohol" />
+      <SectionHeader title="Alcohol" />
 
       <View style={styles.row}>
         {[
@@ -310,19 +373,45 @@ export default function SocialHistory() {
             selected={
               getValue("alcohol") === item
             }
-            onPress={() =>
+            disabled={isHydrating}
+            onPress={() => {
+              if (item === "No") {
+                updateField(
+                  "alcohol",
+                  "Alcohol",
+                  "No"
+                );
+
+                updateField(
+                  "alcoholFrequency",
+                  "Alcohol Frequency",
+                  null
+                );
+
+                updateField(
+                  "yearsSinceStopping",
+                  "Years Since Stopping",
+                  null
+                );
+
+                return;
+              }
+
               updateField(
                 "alcohol",
                 "Alcohol",
                 item
-              )
-            }
+              );
+            }}
           />
         ))}
       </View>
 
-      {getValue("alcohol") !== "No" && (
+      {["Current", "Former"].includes(
+        getValue("alcohol") as string,
+      ) && (
         <View style={styles.box}>
+
           <Text style={styles.label}>
             How Often
           </Text>
@@ -342,6 +431,7 @@ export default function SocialHistory() {
                     "alcoholFrequency"
                   ) === item
                 }
+                disabled={isHydrating}
                 onPress={() =>
                   updateField(
                     "alcoholFrequency",
@@ -363,6 +453,7 @@ export default function SocialHistory() {
                   "yearsSinceStopping"
                 ) as string) ?? ""
               }
+              editable={!isHydrating}
               onChangeText={(v) =>
                 updateField(
                   "yearsSinceStopping",
@@ -373,6 +464,12 @@ export default function SocialHistory() {
             />
           )}
         </View>
+      )}
+
+      {isSectionAutoSaving("alcohol") && (
+        <Text style={styles.savingText}>
+          Saving changes...
+        </Text>
       )}
 
       <Divider />
@@ -399,6 +496,7 @@ export default function SocialHistory() {
                 "livingCondition"
               ) === item
             }
+            disabled={isHydrating}
             onPress={() =>
               updateField(
                 "livingCondition",
@@ -410,21 +508,33 @@ export default function SocialHistory() {
         ))}
       </View>
 
-      <AppTextField
-        placeholder="Additional Notes..."
-        value={
-          (getValue(
-            "livingConditionNotes"
-          ) as string) ?? ""
-        }
-        onChangeText={(v) =>
-          updateField(
-            "livingConditionNotes",
-            "Living Condition Notes",
-            v
-          )
-        }
-      />
+      {getValue("livingCondition") ===
+        "Other" && (
+        <AppTextField
+          placeholder="Additional Notes..."
+          value={
+            (getValue(
+              "livingConditionNotes"
+            ) as string) ?? ""
+          }
+          editable={!isHydrating}
+          onChangeText={(v) =>
+            updateField(
+              "livingConditionNotes",
+              "Living Condition Notes",
+              v
+            )
+          }
+        />
+      )}
+
+      {isSectionAutoSaving(
+        "livingCondition"
+      ) && (
+        <Text style={styles.savingText}>
+          Saving changes...
+        </Text>
+      )}
 
       <Divider />
 
@@ -453,10 +563,16 @@ export default function SocialHistory() {
                 ) as string[]) ?? []
               ).includes(item)
             }
+            disabled={isHydrating}
             onPress={() => {
+              if (isHydrating) {
+                return;
+              }
+
               const current =
-                (getValue("substanceUse") as string[]) ??
-                [];
+                (getValue(
+                  "substanceUse"
+                ) as string[]) ?? [];
 
               if (item === "None") {
                 updateField(
@@ -489,21 +605,36 @@ export default function SocialHistory() {
         ))}
       </View>
 
-      <AppTextField
-        placeholder="Specify if needed..."
-        value={
-          (getValue(
-            "substanceNotes"
-          ) as string) ?? ""
-        }
-        onChangeText={(v) =>
-          updateField(
-            "substanceNotes",
-            "Substance Notes",
-            v
-          )
-        }
-      />
+      {(
+        (getValue(
+          "substanceUse"
+        ) as string[]) ?? []
+      ).includes("Other") && (
+        <AppTextField
+          placeholder="Specify if needed..."
+          value={
+            (getValue(
+              "substanceNotes"
+            ) as string) ?? ""
+          }
+          editable={!isHydrating}
+          onChangeText={(v) =>
+            updateField(
+              "substanceNotes",
+              "Substance Notes",
+              v
+            )
+          }
+        />
+      )}
+
+      {isSectionAutoSaving(
+        "substanceUse"
+      ) && (
+        <Text style={styles.savingText}>
+          Saving changes...
+        </Text>
+      )}
 
       <Divider />
 
@@ -511,7 +642,7 @@ export default function SocialHistory() {
           Physical Activity
       ========================= */}
 
-            <SectionHeader title="Physical Activity" />
+      <SectionHeader title="Physical Activity" />
 
       <View style={styles.row}>
         {[
@@ -528,6 +659,7 @@ export default function SocialHistory() {
                 "physicalActivity"
               ) === item
             }
+            disabled={isHydrating}
             onPress={() =>
               updateField(
                 "physicalActivity",
@@ -546,6 +678,7 @@ export default function SocialHistory() {
             "physicalActivityNotes"
           ) as string) ?? ""
         }
+        editable={!isHydrating}
         onChangeText={(v) =>
           updateField(
             "physicalActivityNotes",
@@ -554,6 +687,14 @@ export default function SocialHistory() {
           )
         }
       />
+
+      {isSectionAutoSaving(
+        "physicalActivity"
+      ) && (
+        <Text style={styles.savingText}>
+          Saving changes...
+        </Text>
+      )}
 
       <Divider />
 
@@ -578,6 +719,7 @@ export default function SocialHistory() {
                 "sleepDuration"
               ) === item
             }
+            disabled={isHydrating}
             onPress={() =>
               updateField(
                 "sleepDuration",
@@ -596,6 +738,7 @@ export default function SocialHistory() {
             "sleepNotes"
           ) as string) ?? ""
         }
+        editable={!isHydrating}
         onChangeText={(v) =>
           updateField(
             "sleepNotes",
@@ -604,6 +747,12 @@ export default function SocialHistory() {
           )
         }
       />
+
+      {isSectionAutoSaving("sleep") && (
+        <Text style={styles.savingText}>
+          Saving changes...
+        </Text>
+      )}
 
       <Divider />
 
@@ -628,6 +777,7 @@ export default function SocialHistory() {
                 "socialSupport"
               ) === item
             }
+            disabled={isHydrating}
             onPress={() =>
               updateField(
                 "socialSupport",
@@ -646,6 +796,7 @@ export default function SocialHistory() {
             "socialSupportNotes"
           ) as string) ?? ""
         }
+        editable={!isHydrating}
         onChangeText={(v) =>
           updateField(
             "socialSupportNotes",
@@ -654,6 +805,14 @@ export default function SocialHistory() {
           )
         }
       />
+
+      {isSectionAutoSaving(
+        "socialSupport"
+      ) && (
+        <Text style={styles.savingText}>
+          Saving changes...
+        </Text>
+      )}
 
       <Divider />
 
@@ -677,6 +836,7 @@ export default function SocialHistory() {
                 "sexualHistory"
               ) === item
             }
+            disabled={isHydrating}
             onPress={() =>
               updateField(
                 "sexualHistory",
@@ -695,6 +855,7 @@ export default function SocialHistory() {
             "sexualHistoryNotes"
           ) as string) ?? ""
         }
+        editable={!isHydrating}
         onChangeText={(v) =>
           updateField(
             "sexualHistoryNotes",
@@ -704,7 +865,15 @@ export default function SocialHistory() {
         }
       />
 
-      <Divider />
+      {isSectionAutoSaving(
+        "sexualHistory"
+      ) && (
+        <Text style={styles.savingText}>
+          Saving changes...
+        </Text>
+      )}
+
+      
     </View>
   );
 }
@@ -756,5 +925,15 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     fontSize: TYPOGRAPHY.body,
     fontWeight: "500",
+  },
+
+  statusText: {
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.secondaryText,
+  },
+
+  savingText: {
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.secondaryText,
   },
 });

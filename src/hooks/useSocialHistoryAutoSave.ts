@@ -1,4 +1,8 @@
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import {
   getSocialHistory,
@@ -24,6 +28,73 @@ type UseSocialHistoryAutoSaveParams = {
   isHydrating: boolean;
 };
 
+type SocialHistorySection =
+  | "smoking"
+  | "alcohol"
+  | "livingCondition"
+  | "substanceUse"
+  | "physicalActivity"
+  | "sleep"
+  | "socialSupport"
+  | "sexualHistory";
+
+// ======================================================
+// Section Mapping
+// ======================================================
+
+const SECTION_FIELDS: Record<
+  SocialHistorySection,
+  string[]
+> = {
+  smoking: [
+    "smoking",
+    "cigarettesPerDay",
+    "yearsSmoking",
+    "yearsSinceQuitting",
+  ],
+
+  alcohol: [
+    "alcohol",
+    "alcoholFrequency",
+    "yearsSinceStopping",
+  ],
+
+  livingCondition: [
+    "livingCondition",
+    "livingConditionNotes",
+  ],
+
+  substanceUse: [
+    "substanceUse",
+    "substanceNotes",
+  ],
+
+  physicalActivity: [
+    "physicalActivity",
+    "physicalActivityNotes",
+  ],
+
+  sleep: [
+    "sleepDuration",
+    "sleepNotes",
+  ],
+
+  socialSupport: [
+    "socialSupport",
+    "socialSupportNotes",
+  ],
+
+  sexualHistory: [
+    "sexualHistory",
+    "sexualHistoryNotes",
+  ],
+};
+
+const SECTION_NAMES =
+  Object.keys(
+    SECTION_FIELDS,
+  ) as SocialHistorySection[];
+
 // ======================================================
 // Helpers
 // ======================================================
@@ -33,7 +104,8 @@ function getFieldValue(
   fieldId: string,
 ) {
   return fields.find(
-    (field) => field.fieldId === fieldId,
+    (field) =>
+      field.fieldId === fieldId,
   )?.value ?? null;
 }
 
@@ -68,13 +140,97 @@ function toStringOrNull(
   return value.trim();
 }
 
+function getSectionForField(
+  fieldId: string,
+): SocialHistorySection | null {
+  for (
+    const section of SECTION_NAMES
+  ) {
+    if (
+      SECTION_FIELDS[section].includes(
+        fieldId,
+      )
+    ) {
+      return section;
+    }
+  }
+
+  return null;
+}
+
+function getChangedSections(
+  previousFields:
+    | SocialHistoryField[]
+    | null,
+  currentFields:
+    | SocialHistoryField[],
+): SocialHistorySection[] {
+  if (!previousFields) {
+    return [];
+  }
+
+  const changedSections =
+    new Set<SocialHistorySection>();
+
+  const allFieldIds = new Set([
+    ...previousFields.map(
+      (field) => field.fieldId,
+    ),
+    ...currentFields.map(
+      (field) => field.fieldId,
+    ),
+  ]);
+
+  allFieldIds.forEach(
+    (fieldId) => {
+      const previousValue =
+        getFieldValue(
+          previousFields,
+          fieldId,
+        );
+
+      const currentValue =
+        getFieldValue(
+          currentFields,
+          fieldId,
+        );
+
+      if (
+        JSON.stringify(
+          previousValue,
+        ) !==
+        JSON.stringify(
+          currentValue,
+        )
+      ) {
+        const section =
+          getSectionForField(
+            fieldId,
+          );
+
+        if (section) {
+          changedSections.add(
+            section,
+          );
+        }
+      }
+    },
+  );
+
+  return Array.from(
+    changedSections,
+  );
+}
+
 // ======================================================
 // UI → Backend
 // ======================================================
 
 const smokingToApi: Record<
   string,
-  NonNullable<SaveSocialHistoryInput["smoking"]>
+  NonNullable<
+    SaveSocialHistoryInput["smoking"]
+  >
 > = {
   Never: "NEVER",
   Current: "CURRENT",
@@ -83,7 +239,9 @@ const smokingToApi: Record<
 
 const alcoholToApi: Record<
   string,
-  NonNullable<SaveSocialHistoryInput["alcohol"]>
+  NonNullable<
+    SaveSocialHistoryInput["alcohol"]
+  >
 > = {
   No: "NO",
   Current: "CURRENT",
@@ -109,7 +267,8 @@ const livingConditionToApi: Record<
   >
 > = {
   "Lives Alone": "LIVES_ALONE",
-  "Lives With Family": "LIVES_WITH_FAMILY",
+  "Lives With Family":
+    "LIVES_WITH_FAMILY",
   "Nursing Home / Assisted Living":
     "NURSING_HOME",
   Homeless: "HOMELESS",
@@ -159,8 +318,10 @@ const sexualHistoryToApi: Record<
     SaveSocialHistoryInput["sexualHistory"]
   >
 > = {
-  "Not Discussed": "NOT_DISCUSSED",
-  "Sexually Active": "SEXUALLY_ACTIVE",
+  "Not Discussed":
+    "NOT_DISCUSSED",
+  "Sexually Active":
+    "SEXUALLY_ACTIVE",
   "Not Active": "NOT_ACTIVE",
 };
 
@@ -172,22 +333,31 @@ export function buildSocialHistoryPayload(
   fields: SocialHistoryField[],
 ): SaveSocialHistoryInput {
   const get = (fieldId: string) =>
-    getFieldValue(fields, fieldId);
+    getFieldValue(
+      fields,
+      fieldId,
+    );
 
   const substanceValue =
     get("substanceUse");
 
   const substanceUse =
-    Array.isArray(substanceValue)
+    Array.isArray(
+      substanceValue,
+    )
       ? substanceValue.filter(
-          (item): item is string =>
-            typeof item === "string",
+          (
+            item,
+          ): item is string =>
+            typeof item ===
+            "string",
         )
       : [];
 
   return {
     smoking:
-      typeof get("smoking") === "string"
+      typeof get("smoking") ===
+      "string"
         ? smokingToApi[
             get("smoking") as string
           ] ?? null
@@ -195,7 +365,9 @@ export function buildSocialHistoryPayload(
 
     cigarettesPerDay:
       toNumberOrNull(
-        get("cigarettesPerDay"),
+        get(
+          "cigarettesPerDay",
+        ),
       ),
 
     yearsSmoking:
@@ -205,38 +377,53 @@ export function buildSocialHistoryPayload(
 
     yearsSinceQuitting:
       toNumberOrNull(
-        get("yearsSinceQuitting"),
+        get(
+          "yearsSinceQuitting",
+        ),
       ),
 
     alcohol:
-      typeof get("alcohol") === "string"
+      typeof get("alcohol") ===
+      "string"
         ? alcoholToApi[
             get("alcohol") as string
           ] ?? null
         : null,
 
     alcoholFrequency:
-      typeof get("alcoholFrequency") === "string"
+      typeof get(
+        "alcoholFrequency",
+      ) === "string"
         ? alcoholFrequencyToApi[
-            get("alcoholFrequency") as string
+            get(
+              "alcoholFrequency",
+            ) as string
           ] ?? null
         : null,
 
     yearsSinceStopping:
       toNumberOrNull(
-        get("yearsSinceStopping"),
+        get(
+          "yearsSinceStopping",
+        ),
       ),
 
     livingCondition:
-      typeof get("livingCondition") === "string"
+      typeof get(
+        "livingCondition",
+      ) === "string"
         ? livingConditionToApi[
-            get("livingCondition") as string
+            get(
+              "livingCondition",
+            ) as string
           ] ?? null
         : null,
 
     livingConditionNotes:
       toStringOrNull(
-        get("livingConditionNotes"),
+        get(
+          "livingConditionNotes",
+        ),
       ),
 
     substanceUse,
@@ -247,21 +434,31 @@ export function buildSocialHistoryPayload(
       ),
 
     physicalActivity:
-      typeof get("physicalActivity") === "string"
+      typeof get(
+        "physicalActivity",
+      ) === "string"
         ? physicalActivityToApi[
-            get("physicalActivity") as string
+            get(
+              "physicalActivity",
+            ) as string
           ] ?? null
         : null,
 
     physicalActivityNotes:
       toStringOrNull(
-        get("physicalActivityNotes"),
+        get(
+          "physicalActivityNotes",
+        ),
       ),
 
     sleepDuration:
-      typeof get("sleepDuration") === "string"
+      typeof get(
+        "sleepDuration",
+      ) === "string"
         ? sleepDurationToApi[
-            get("sleepDuration") as string
+            get(
+              "sleepDuration",
+            ) as string
           ] ?? null
         : null,
 
@@ -271,27 +468,39 @@ export function buildSocialHistoryPayload(
       ),
 
     socialSupport:
-      typeof get("socialSupport") === "string"
+      typeof get(
+        "socialSupport",
+      ) === "string"
         ? socialSupportToApi[
-            get("socialSupport") as string
+            get(
+              "socialSupport",
+            ) as string
           ] ?? null
         : null,
 
     socialSupportNotes:
       toStringOrNull(
-        get("socialSupportNotes"),
+        get(
+          "socialSupportNotes",
+        ),
       ),
 
     sexualHistory:
-      typeof get("sexualHistory") === "string"
+      typeof get(
+        "sexualHistory",
+      ) === "string"
         ? sexualHistoryToApi[
-            get("sexualHistory") as string
+            get(
+              "sexualHistory",
+            ) as string
           ] ?? null
         : null,
 
     sexualHistoryNotes:
       toStringOrNull(
-        get("sexualHistoryNotes"),
+        get(
+          "sexualHistoryNotes",
+        ),
       ),
   };
 }
@@ -320,8 +529,10 @@ const alcoholFrequencyFromApi = {
 } as const;
 
 const livingConditionFromApi = {
-  LIVES_ALONE: "Lives Alone",
-  LIVES_WITH_FAMILY: "Lives With Family",
+  LIVES_ALONE:
+    "Lives Alone",
+  LIVES_WITH_FAMILY:
+    "Lives With Family",
   NURSING_HOME:
     "Nursing Home / Assisted Living",
   HOMELESS: "Homeless",
@@ -351,15 +562,18 @@ const socialSupportFromApi = {
 } as const;
 
 const sexualHistoryFromApi = {
-  NOT_DISCUSSED: "Not Discussed",
-  SEXUALLY_ACTIVE: "Sexually Active",
+  NOT_DISCUSSED:
+    "Not Discussed",
+  SEXUALLY_ACTIVE:
+    "Sexually Active",
   NOT_ACTIVE: "Not Active",
 } as const;
 
 function createField(
   fieldId: string,
   fieldLabel: string,
-  value: SocialHistoryField["value"],
+  value:
+    SocialHistoryField["value"],
 ): SocialHistoryField {
   return {
     fieldId,
@@ -377,44 +591,62 @@ export function mapSocialHistoryFromBackend(
     return [];
   }
 
-  const fields: SocialHistoryField[] = [];
+  const fields: SocialHistoryField[] =
+    [];
 
   if (data.smoking) {
     fields.push(
       createField(
         "smoking",
         "Smoking",
-        smokingFromApi[data.smoking],
+        smokingFromApi[
+          data.smoking
+        ],
       ),
     );
   }
 
-  if (data.cigarettesPerDay !== null) {
+  if (
+    data.cigarettesPerDay !==
+    null
+  ) {
     fields.push(
       createField(
         "cigarettesPerDay",
         "Cigarettes Per Day",
-        String(data.cigarettesPerDay),
+        String(
+          data.cigarettesPerDay,
+        ),
       ),
     );
   }
 
-  if (data.yearsSmoking !== null) {
+  if (
+    data.yearsSmoking !==
+    null
+  ) {
     fields.push(
       createField(
         "yearsSmoking",
         "Years Smoking",
-        String(data.yearsSmoking),
+        String(
+          data.yearsSmoking,
+        ),
       ),
     );
   }
 
-  if (data.yearsSinceQuitting !== null) {
+  if (
+    data.yearsSinceQuitting !==
+    null
+  ) {
     fields.push(
       createField(
         "yearsSinceQuitting",
         "Years Since Quitting",
-        String(data.yearsSinceQuitting),
+        String(
+          data.yearsSinceQuitting,
+        ),
       ),
     );
   }
@@ -424,12 +656,16 @@ export function mapSocialHistoryFromBackend(
       createField(
         "alcohol",
         "Alcohol",
-        alcoholFromApi[data.alcohol],
+        alcoholFromApi[
+          data.alcohol
+        ],
       ),
     );
   }
 
-  if (data.alcoholFrequency) {
+  if (
+    data.alcoholFrequency
+  ) {
     fields.push(
       createField(
         "alcoholFrequency",
@@ -441,17 +677,24 @@ export function mapSocialHistoryFromBackend(
     );
   }
 
-  if (data.yearsSinceStopping !== null) {
+  if (
+    data.yearsSinceStopping !==
+    null
+  ) {
     fields.push(
       createField(
         "yearsSinceStopping",
         "Years Since Stopping",
-        String(data.yearsSinceStopping),
+        String(
+          data.yearsSinceStopping,
+        ),
       ),
     );
   }
 
-  if (data.livingCondition) {
+  if (
+    data.livingCondition
+  ) {
     fields.push(
       createField(
         "livingCondition",
@@ -463,7 +706,9 @@ export function mapSocialHistoryFromBackend(
     );
   }
 
-  if (data.livingConditionNotes) {
+  if (
+    data.livingConditionNotes
+  ) {
     fields.push(
       createField(
         "livingConditionNotes",
@@ -473,7 +718,10 @@ export function mapSocialHistoryFromBackend(
     );
   }
 
-  if (data.substanceUse.length > 0) {
+  if (
+    data.substanceUse
+      .length > 0
+  ) {
     fields.push(
       createField(
         "substanceUse",
@@ -493,7 +741,9 @@ export function mapSocialHistoryFromBackend(
     );
   }
 
-  if (data.physicalActivity) {
+  if (
+    data.physicalActivity
+  ) {
     fields.push(
       createField(
         "physicalActivity",
@@ -505,7 +755,9 @@ export function mapSocialHistoryFromBackend(
     );
   }
 
-  if (data.physicalActivityNotes) {
+  if (
+    data.physicalActivityNotes
+  ) {
     fields.push(
       createField(
         "physicalActivityNotes",
@@ -549,7 +801,9 @@ export function mapSocialHistoryFromBackend(
     );
   }
 
-  if (data.socialSupportNotes) {
+  if (
+    data.socialSupportNotes
+  ) {
     fields.push(
       createField(
         "socialSupportNotes",
@@ -571,7 +825,9 @@ export function mapSocialHistoryFromBackend(
     );
   }
 
-  if (data.sexualHistoryNotes) {
+  if (
+    data.sexualHistoryNotes
+  ) {
     fields.push(
       createField(
         "sexualHistoryNotes",
@@ -600,58 +856,216 @@ export default function useSocialHistoryAutoSave({
   const lastSavedPayloadRef =
     useRef<string | null>(null);
 
+  const previousFieldsRef =
+    useRef<
+      SocialHistoryField[] | null
+    >(null);
+
+  const pendingSectionsRef =
+    useRef<
+      Set<SocialHistorySection>
+    >(
+      new Set(),
+    );
+
+  const [
+    savingSections,
+    setSavingSections,
+  ] = useState<
+    SocialHistorySection[]
+  >([]);
+
+  // ======================================================
+  // Auto Save
+  // ======================================================
+
   useEffect(() => {
-    if (!patientId || isHydrating) {
+    if (!patientId) {
       return;
     }
 
+    /*
+     * While loading:
+     * keep the loaded state as our baseline.
+     *
+     * This prevents the GET response itself
+     * from being treated as a user edit.
+     */
+    if (isHydrating) {
+      previousFieldsRef.current =
+        fields;
+
+      lastSavedPayloadRef.current =
+        JSON.stringify(
+          buildSocialHistoryPayload(
+            fields,
+          ),
+        );
+
+      return;
+    }
+
+    const previousFields =
+      previousFieldsRef.current;
+
+    const changedSections =
+      getChangedSections(
+        previousFields,
+        fields,
+      );
+
+    changedSections.forEach(
+      (section) => {
+        pendingSectionsRef.current.add(
+          section,
+        );
+      },
+    );
+
+    previousFieldsRef.current =
+      fields;
+
     const payload =
-      buildSocialHistoryPayload(fields);
+      buildSocialHistoryPayload(
+        fields,
+      );
 
     const payloadKey =
       JSON.stringify(payload);
 
+    /*
+     * No actual change.
+     */
     if (
       payloadKey ===
-      lastSavedPayloadRef.current
+        lastSavedPayloadRef.current &&
+      pendingSectionsRef.current
+        .size === 0
     ) {
       return;
     }
 
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
+    /*
+     * ==================================================
+     * Alcohol validation
+     * ==================================================
+     *
+     * Backend requires alcoholFrequency
+     * when alcohol is CURRENT or FORMER.
+     *
+     * Do not send an invalid request.
+     */
+    const alcohol =
+      payload.alcohol;
+
+    const alcoholFrequency =
+      payload.alcoholFrequency;
+
+    const alcoholRequiresFrequency =
+      alcohol === "CURRENT" ||
+      alcohol === "FORMER";
+
+    if (
+      alcoholRequiresFrequency &&
+      !alcoholFrequency
+    ) {
+      if (timerRef.current) {
+        clearTimeout(
+          timerRef.current,
+        );
+        timerRef.current =
+          null;
+      }
+
+      return;
     }
 
-    timerRef.current = setTimeout(
-      async () => {
-        try {
-          await saveSocialHistory(
-            patientId,
-            payload,
+    if (timerRef.current) {
+      clearTimeout(
+        timerRef.current,
+      );
+    }
+
+    timerRef.current =
+      setTimeout(
+        async () => {
+          const sectionsToSave =
+            Array.from(
+              pendingSectionsRef.current,
+            );
+
+          if (
+            sectionsToSave.length === 0
+          ) {
+            return;
+          }
+
+          /*
+           * Move current pending sections
+           * into saving state.
+           */
+          pendingSectionsRef.current.clear();
+
+          setSavingSections(
+            (current) =>
+              Array.from(
+                new Set([
+                  ...current,
+                  ...sectionsToSave,
+                ]),
+              ),
           );
 
-          lastSavedPayloadRef.current =
-            payloadKey;
-        } catch (error: any) {
-          console.error(
-            "FAILED SOCIAL HISTORY AUTO-SAVE",
-            {
-              status:
-                error?.response?.status,
-
-              data:
-                error?.response?.data,
-
-              message:
-                error?.message,
-
+          try {
+            await saveSocialHistory(
+              patientId,
               payload,
-            },
-          );
-        }
-      },
-      500,
-    );
+            );
+
+            lastSavedPayloadRef.current =
+              payloadKey;
+          } catch (error: any) {
+            /*
+             * Put the failed sections back
+             * so they can be saved again
+             * after the next valid change.
+             */
+            sectionsToSave.forEach(
+              (section) => {
+                pendingSectionsRef.current.add(
+                  section,
+                );
+              },
+            );
+
+            console.error(
+              "FAILED SOCIAL HISTORY AUTO-SAVE",
+              {
+                status:
+                  error?.response
+                    ?.status,
+                data:
+                  error?.response
+                    ?.data,
+                message:
+                  error?.message,
+                payload,
+              },
+            );
+          } finally {
+            setSavingSections(
+              (current) =>
+                current.filter(
+                  (section) =>
+                    !sectionsToSave.includes(
+                      section,
+                    ),
+                ),
+            );
+          }
+        },
+        500,
+      );
 
     return () => {
       if (timerRef.current) {
@@ -665,4 +1079,19 @@ export default function useSocialHistoryAutoSave({
     fields,
     isHydrating,
   ]);
+
+  // ======================================================
+  // Section Saving Status
+  // ======================================================
+
+  const isSectionAutoSaving = (
+    section: SocialHistorySection,
+  ) =>
+    savingSections.includes(
+      section,
+    );
+
+  return {
+    isSectionAutoSaving,
+  };
 }
