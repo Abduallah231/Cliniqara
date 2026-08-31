@@ -30,7 +30,7 @@ import {
   savePastHistory,
   type SavePastHistoryInput,
 } from "@/services/visitApi";
-import {
+import usePastHistoryAutoSave, {
   mapPastHistoryFromBackend,
 } from "@/hooks/usePastHistoryAutoSave";
 import type {
@@ -185,7 +185,7 @@ export default function PastHistory() {
   const [
     isHydrating,
     setIsHydrating,
-  ] = useState(false);
+  ] = useState(true);
 
   const loadedPatientId =
     useRef<string | null>(null);
@@ -207,6 +207,58 @@ export default function PastHistory() {
       "chronicDiseases"
     ) as string[]) ?? [];
 
+  const buildChronicDiseaseItems =
+    useCallback(
+      (
+        diseaseCodes: string[],
+      ): SavePastHistoryInput["chronicDiseases"] => {
+        return diseaseCodes.map(
+          (code) => {
+            const disease =
+              chronicDiseases.find(
+                (item) =>
+                  item.code === code,
+              );
+
+            return {
+              diseaseCode: code,
+              diseaseName:
+                disease?.name ?? code,
+              notes: null,
+            };
+          },
+        );
+      },
+      [],
+    );
+
+  const {
+    isAutoSaving,
+    autoSavingSection,
+    markSectionSaved,
+  } =
+    usePastHistoryAutoSave({
+      patientId,
+      fields:
+        pastHistory.fields,
+      chronicDiseases:
+        buildChronicDiseaseItems(
+          selectedDiseases,
+        ),
+      hospitalizations:
+        pastHistory.hospitalizations,
+      operations:
+        pastHistory.operations,
+      bloodTransfusions:
+        pastHistory.bloodTransfusions,
+      majorTraumas:
+        pastHistory.majorTraumas,
+      icuAdmissions:
+        pastHistory.icuAdmissions,
+      isHydrating,
+    });
+    
+    
   /*
    * We explicitly track whether the user changed
    * Chronic Diseases.
@@ -498,6 +550,21 @@ export default function PastHistory() {
 
         setChronicSaving(false);
 
+
+        if (
+          success &&
+          chronicSaveVersion.current ===
+            version
+        ) {
+          markSectionSaved(
+            "chronicDiseases",
+          );
+
+          setChronicDiseasesDirty(
+            false,
+          );
+        }
+
         /*
          * Only mark the current change as saved if
          * the user did not change Chronic Diseases
@@ -642,6 +709,10 @@ export default function PastHistory() {
             hospitalizations:
               updated,
           });
+
+          markSectionSaved(
+            "hospitalizations",
+          );
         } else {
           const newItem: Hospitalization =
             {
@@ -664,6 +735,10 @@ export default function PastHistory() {
               newItem,
             ],
           });
+
+          markSectionSaved(
+            "hospitalizations",
+          );
         }
 
         clearHospitalizationForm();
@@ -695,6 +770,10 @@ export default function PastHistory() {
           hospitalizations:
             updated,
         });
+
+        markSectionSaved(
+          "hospitalizations",
+        );
       } finally {
         setSavingSection(null);
       }
@@ -786,6 +865,10 @@ export default function PastHistory() {
           await saveSnapshot({
             operations: updated,
           });
+
+          markSectionSaved(
+            "operations",
+          );
         } else {
           const newItem: Operation =
             {
@@ -806,6 +889,10 @@ export default function PastHistory() {
               newItem,
             ],
           });
+
+          markSectionSaved(
+            "operations",
+          );
         }
 
         clearOperationForm();
@@ -836,6 +923,10 @@ export default function PastHistory() {
         await saveSnapshot({
           operations: updated,
         });
+
+        markSectionSaved(
+          "operations",
+        );
       } finally {
         setSavingSection(null);
       }
@@ -928,6 +1019,9 @@ export default function PastHistory() {
             bloodTransfusions:
               updated,
           });
+          markSectionSaved(
+            "bloodTransfusions",
+          );
         } else {
           const newItem: BloodTransfusion =
             {
@@ -950,6 +1044,10 @@ export default function PastHistory() {
               newItem,
             ],
           });
+
+          markSectionSaved(
+            "bloodTransfusions",
+          );
         }
 
         clearBloodTransfusionForm();
@@ -981,6 +1079,10 @@ export default function PastHistory() {
           bloodTransfusions:
             updated,
         });
+
+        markSectionSaved(
+          "bloodTransfusions",
+        );
       } finally {
         setSavingSection(null);
       }
@@ -1073,6 +1175,10 @@ export default function PastHistory() {
             majorTraumas:
               updated,
           });
+
+          markSectionSaved(
+            "majorTraumas",
+          );
         } else {
           const newItem: MajorTrauma =
             {
@@ -1093,6 +1199,10 @@ export default function PastHistory() {
               newItem,
             ],
           });
+
+          markSectionSaved(
+            "majorTraumas",
+          );
         }
 
         clearMajorTraumaForm();
@@ -1124,6 +1234,10 @@ export default function PastHistory() {
           majorTraumas:
             updated,
         });
+
+        markSectionSaved(
+          "majorTraumas",
+        );
       } finally {
         setSavingSection(null);
       }
@@ -1228,6 +1342,10 @@ export default function PastHistory() {
             icuAdmissions:
               updated,
           });
+
+          markSectionSaved(
+            "icuAdmissions",
+          );
         } else {
           const newItem: ICUAdmission =
             {
@@ -1252,6 +1370,10 @@ export default function PastHistory() {
               newItem,
             ],
           });
+
+          markSectionSaved(
+            "icuAdmissions",
+          );
         }
 
         clearICUForm();
@@ -1283,6 +1405,10 @@ export default function PastHistory() {
           icuAdmissions:
             updated,
         });
+
+        markSectionSaved(
+          "icuAdmissions",
+        );
       } finally {
         setSavingSection(null);
       }
@@ -1651,6 +1777,11 @@ export default function PastHistory() {
 
   return (
     <View style={styles.container}>
+      {isHydrating && (
+        <Text style={styles.saveStatus}>
+          Loading past history...
+        </Text>
+      )}
       {/* ==================================================
           Chronic Diseases
       ================================================== */}
@@ -1668,6 +1799,7 @@ export default function PastHistory() {
               selected={selectedDiseases.includes(
                 disease.code
               )}
+              disabled={isHydrating}
               onPress={() =>
                 toggleMultiSelect(
                   "chronicDiseases",
@@ -1706,6 +1838,7 @@ export default function PastHistory() {
             setHospitalizationReason
           }
           editable={
+            !isHydrating &&
             savingSection !==
             "hospitalization"
           }
@@ -1720,6 +1853,7 @@ export default function PastHistory() {
             setHospitalizationDuration
           }
           editable={
+            !isHydrating &&
             savingSection !==
             "hospitalization"
           }
@@ -1730,6 +1864,7 @@ export default function PastHistory() {
             hospitalizationDate
           }
           disabled={
+            !isHydrating &&
             savingSection !==
             null
           }
@@ -1816,6 +1951,7 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
+                  isHydrating ||
                   isSaving
                 }
                 onPress={() => {
@@ -1849,6 +1985,7 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
+                  isHydrating ||
                   isSaving
                 }
                 onPress={() =>
@@ -1892,6 +2029,7 @@ export default function PastHistory() {
             setOperationName
           }
           editable={
+            !isHydrating &&
             savingSection !==
             "operation"
           }
@@ -1906,6 +2044,7 @@ export default function PastHistory() {
             setOperationIndication
           }
           editable={
+            !isHydrating &&
             savingSection !==
             "operation"
           }
@@ -1916,6 +2055,7 @@ export default function PastHistory() {
             operationDate
           }
           disabled={
+            !isHydrating &&
             savingSection !==
             null
           }
@@ -2002,6 +2142,7 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
+                  isHydrating ||
                   isSaving
                 }
                 onPress={() => {
@@ -2035,6 +2176,7 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
+                  isHydrating ||
                   isSaving
                 }
                 onPress={() =>
@@ -2078,6 +2220,7 @@ export default function PastHistory() {
             setTransfusionReason
           }
           editable={
+            !isHydrating &&
             savingSection !==
             "transfusion"
           }
@@ -2092,6 +2235,7 @@ export default function PastHistory() {
             setTransfusionReaction
           }
           editable={
+            !isHydrating &&
             savingSection !==
             "transfusion"
           }
@@ -2102,6 +2246,7 @@ export default function PastHistory() {
             transfusionDate
           }
           disabled={
+            !isHydrating &&
             savingSection !==
             null
           }
@@ -2189,6 +2334,7 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
+                  isHydrating ||
                   isSaving
                 }
                 onPress={() => {
@@ -2222,6 +2368,7 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
+                  isHydrating ||
                   isSaving
                 }
                 onPress={() =>
@@ -2265,6 +2412,7 @@ export default function PastHistory() {
             setTraumaType
           }
           editable={
+            !isHydrating &&
             savingSection !==
             "trauma"
           }
@@ -2279,6 +2427,7 @@ export default function PastHistory() {
             setTraumaComplications
           }
           editable={
+            !isHydrating &&
             savingSection !==
             "trauma"
           }
@@ -2289,6 +2438,7 @@ export default function PastHistory() {
             traumaDate
           }
           disabled={
+            !isHydrating &&
             savingSection !==
             null
           }
@@ -2375,6 +2525,7 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
+                  isHydrating ||
                   isSaving
                 }
                 onPress={() => {
@@ -2408,6 +2559,7 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
+                  isHydrating ||
                   isSaving
                 }
                 onPress={() =>
@@ -2451,6 +2603,7 @@ export default function PastHistory() {
             setIcuReason
           }
           editable={
+            !isHydrating &&
             savingSection !==
             "icu"
           }
@@ -2465,6 +2618,7 @@ export default function PastHistory() {
             setIcuDuration
           }
           editable={
+            !isHydrating &&
             savingSection !==
             "icu"
           }
@@ -2475,6 +2629,7 @@ export default function PastHistory() {
             icuDate
           }
           disabled={
+            !isHydrating &&
             savingSection !==
             null
           }
@@ -2612,6 +2767,7 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
+                  isHydrating ||
                   isSaving
                 }
                 onPress={() => {
@@ -2648,6 +2804,7 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
+                  isHydrating ||
                   isSaving
                 }
                 onPress={() =>

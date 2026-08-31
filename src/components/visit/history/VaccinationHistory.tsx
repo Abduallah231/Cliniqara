@@ -1,5 +1,9 @@
 import { useVisitStore } from "@/store/visitStore";
-import { StyleSheet, Text, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
@@ -9,8 +13,14 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
-import { useEffect, useRef, useState } from "react";
-import { getVaccinationHistory } from "@/services/visitApi";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  getVaccinationHistory,
+} from "@/services/visitApi";
 import useVaccinationHistoryAutoSave from "@/hooks/useVaccinationHistoryAutoSave";
 
 export default function VaccinationHistory() {
@@ -22,96 +32,130 @@ export default function VaccinationHistory() {
   const vaccinationHistory =
     visit.history.vaccinationHistory;
 
-  const patientId = visit.patient?.id;
+  const patientId =
+    visit.patient?.id;
 
-  const [isHydrating, setIsHydrating] = useState(false);
-
-  useVaccinationHistoryAutoSave({
-    patientId,
-    vaccinationHistory,
+  // ======================================================
+  // Hydration / Auto-save
+  // ======================================================
+  const [
     isHydrating,
-  });
+    setIsHydrating,
+  ] = useState(true);
 
-  const isLoadingHistory = useRef(false);
-  const loadedPatientId = useRef<string | null>(null);
+  const {
+    isAutoSaving,
+  } =
+    useVaccinationHistoryAutoSave({
+      patientId,
+      vaccinationHistory,
+      isHydrating,
+    });
 
+  const isLoadingHistory =
+    useRef(false);
+
+  const loadedPatientId =
+    useRef<string | null>(null);
+
+  // ======================================================
+  // Load Vaccination History
+  // ======================================================
   useEffect(() => {
     if (
       !patientId ||
-      loadedPatientId.current === patientId
+      loadedPatientId.current ===
+        patientId
     ) {
       return;
     }
 
-    const loadVaccinationHistory = async () => {
-      try {
-        isLoadingHistory.current = true;
-        setIsHydrating(true);
+    const loadVaccinationHistory =
+      async () => {
+        try {
+          isLoadingHistory.current =
+            true;
 
-        const data =
-          await getVaccinationHistory(patientId);
+          setIsHydrating(true);
 
-        if (!data) {
-          loadedPatientId.current = patientId;
-          return;
+          const data =
+            await getVaccinationHistory(
+              patientId,
+            );
+
+          if (!data) {
+            loadedPatientId.current =
+              patientId;
+            return;
+          }
+
+          updateVaccinationField(
+            "vaccinationStatus",
+            data.vaccinationStatus ??
+              null,
+          );
+
+          updateVaccinationField(
+            "missedVaccines",
+            data.missedVaccines ?? [],
+          );
+
+          updateVaccinationField(
+            "partialReason",
+            data.partialReason ??
+              null,
+          );
+
+          updateVaccinationField(
+            "partialOtherDetails",
+            data.partialOtherDetails ??
+              null,
+          );
+
+          updateVaccinationField(
+            "unvaccinatedReason",
+            data.unvaccinatedReason ??
+              null,
+          );
+
+          updateVaccinationField(
+            "unvaccinatedOtherDetails",
+            data.unvaccinatedOtherDetails ??
+              null,
+          );
+
+          updateVaccinationField(
+            "previousReaction",
+            data.previousReaction ??
+              null,
+          );
+
+          updateVaccinationField(
+            "reactionSeverity",
+            data.reactionSeverity ??
+              null,
+          );
+
+          updateVaccinationField(
+            "reactionDetails",
+            data.reactionDetails ??
+              null,
+          );
+
+          loadedPatientId.current =
+            patientId;
+        } catch (error) {
+          console.error(
+            "Failed to load vaccination history:",
+            error,
+          );
+        } finally {
+          isLoadingHistory.current =
+            false;
+
+          setIsHydrating(false);
         }
-
-        updateVaccinationField(
-          "vaccinationStatus",
-          data.vaccinationStatus ?? null,
-        );
-
-        updateVaccinationField(
-          "missedVaccines",
-          data.missedVaccines ?? [],
-        );
-
-        updateVaccinationField(
-          "partialReason",
-          data.partialReason ?? null,
-        );
-
-        updateVaccinationField(
-          "partialOtherDetails",
-          data.partialOtherDetails ?? null,
-        );
-
-        updateVaccinationField(
-          "unvaccinatedReason",
-          data.unvaccinatedReason ?? null,
-        );
-
-        updateVaccinationField(
-          "unvaccinatedOtherDetails",
-          data.unvaccinatedOtherDetails ?? null,
-        );
-
-        updateVaccinationField(
-          "previousReaction",
-          data.previousReaction ?? null,
-        );
-
-        updateVaccinationField(
-          "reactionSeverity",
-          data.reactionSeverity ?? null,
-        );
-
-        updateVaccinationField(
-          "reactionDetails",
-          data.reactionDetails ?? null,
-        );
-
-        loadedPatientId.current = patientId;
-      } catch (error) {
-        console.error(
-          "Failed to load vaccination history:",
-          error,
-        );
-      } finally {
-        isLoadingHistory.current = false;
-        setIsHydrating(false);
-      }
-    };
+      };
 
     loadVaccinationHistory();
   }, [
@@ -119,6 +163,9 @@ export default function VaccinationHistory() {
     updateVaccinationField,
   ]);
 
+  // ======================================================
+  // Helpers
+  // ======================================================
   const updateField = (
     field: any,
     value: any,
@@ -129,7 +176,9 @@ export default function VaccinationHistory() {
     );
   };
 
-  const getValue = (field: string) =>
+  const getValue = (
+    field: string,
+  ) =>
     vaccinationHistory?.[
       field as keyof typeof vaccinationHistory
     ] ?? null;
@@ -139,35 +188,67 @@ export default function VaccinationHistory() {
     value: string,
   ) => {
     const current =
-      (getValue(field) as string[]) ?? [];
+      (getValue(field) as string[]) ??
+      [];
 
     if (value === "Unknown") {
-      updateField(field, ["Unknown"]);
+      updateField(
+        field,
+        ["Unknown"],
+      );
       return;
     }
 
-    let updated = current.filter(
-      (item) => item !== "Unknown",
-    );
-
-    if (updated.includes(value)) {
-      updated = updated.filter(
-        (item) => item !== value,
+    let updated =
+      current.filter(
+        (item) =>
+          item !== "Unknown",
       );
+
+    if (
+      updated.includes(value)
+    ) {
+      updated =
+        updated.filter(
+          (item) =>
+            item !== value,
+        );
     } else {
       updated.push(value);
     }
 
-    updateField(field, updated);
+    updateField(
+      field,
+      updated,
+    );
   };
 
+  // ======================================================
+  // Render
+  // ======================================================
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+    >
+      {/* ==================================================
+          HYDRATION
+      ================================================== */}
+      {isHydrating && (
+        <Text
+          style={
+            styles.statusText
+          }
+        >
+          Loading vaccination history...
+        </Text>
+      )}
+
       {/* =========================
           Vaccination Status
       ========================= */}
-
-      <SectionHeader title="Vaccination Status" />
+      <SectionHeader
+        title="Vaccination Status"
+      />
 
       <View style={styles.row}>
         {[
@@ -179,12 +260,14 @@ export default function VaccinationHistory() {
           <AppChip
             key={item}
             label={
-              item === "UP_TO_DATE"
+              item ===
+              "UP_TO_DATE"
                 ? "Up to Date"
                 : item ===
                   "PARTIALLY_VACCINATED"
                 ? "Partially Vaccinated"
-                : item === "UNVACCINATED"
+                : item ===
+                  "UNVACCINATED"
                 ? "Unvaccinated"
                 : "Unknown"
             }
@@ -193,6 +276,9 @@ export default function VaccinationHistory() {
                 "vaccinationStatus",
               ) === item
             }
+            disabled={
+              isHydrating
+            }
             onPress={() => {
               updateField(
                 "vaccinationStatus",
@@ -200,7 +286,8 @@ export default function VaccinationHistory() {
               );
 
               if (
-                item === "UP_TO_DATE" ||
+                item ===
+                  "UP_TO_DATE" ||
                 item === "UNKNOWN"
               ) {
                 updateField(
@@ -245,7 +332,8 @@ export default function VaccinationHistory() {
               }
 
               if (
-                item === "UNVACCINATED"
+                item ===
+                "UNVACCINATED"
               ) {
                 updateField(
                   "missedVaccines",
@@ -269,17 +357,21 @@ export default function VaccinationHistory() {
 
       {getValue(
         "vaccinationStatus",
-      ) !== "UNKNOWN" && <Divider />}
+      ) !== "UNKNOWN" && (
+        <Divider />
+      )}
 
       {/* =========================
           Partially Vaccinated
       ========================= */}
-
       {getValue(
         "vaccinationStatus",
-      ) === "PARTIALLY_VACCINATED" && (
+      ) ===
+        "PARTIALLY_VACCINATED" && (
         <>
-          <SectionHeader title="Missed Vaccines" />
+          <SectionHeader
+            title="Missed Vaccines"
+          />
 
           <View style={styles.row}>
             {[
@@ -299,8 +391,12 @@ export default function VaccinationHistory() {
                 selected={(
                   (getValue(
                     "missedVaccines",
-                  ) as string[]) ?? []
+                  ) as string[]) ??
+                  []
                 ).includes(item)}
+                disabled={
+                  isHydrating
+                }
                 onPress={() =>
                   toggleMultiSelectWithNone(
                     "missedVaccines",
@@ -339,7 +435,8 @@ export default function VaccinationHistory() {
                     : item ===
                       "PARENT_REFUSED"
                     ? "Parent Refused"
-                    : item === "UNKNOWN"
+                    : item ===
+                      "UNKNOWN"
                     ? "Unknown"
                     : "Other"
                 }
@@ -347,6 +444,9 @@ export default function VaccinationHistory() {
                   getValue(
                     "partialReason",
                   ) === item
+                }
+                disabled={
+                  isHydrating
                 }
                 onPress={() =>
                   updateField(
@@ -367,6 +467,9 @@ export default function VaccinationHistory() {
                   "partialOtherDetails",
                 ) as string) ?? ""
               }
+              editable={
+                !isHydrating
+              }
               onChangeText={(value) =>
                 updateField(
                   "partialOtherDetails",
@@ -384,7 +487,6 @@ export default function VaccinationHistory() {
       {/* =========================
           Unvaccinated
       ========================= */}
-
       {getValue(
         "vaccinationStatus",
       ) === "UNVACCINATED" && (
@@ -411,7 +513,8 @@ export default function VaccinationHistory() {
                     : item ===
                       "ACCESS_PROBLEMS"
                     ? "Access Problems"
-                    : item === "UNKNOWN"
+                    : item ===
+                      "UNKNOWN"
                     ? "Unknown"
                     : "Other"
                 }
@@ -419,6 +522,9 @@ export default function VaccinationHistory() {
                   getValue(
                     "unvaccinatedReason",
                   ) === item
+                }
+                disabled={
+                  isHydrating
                 }
                 onPress={() =>
                   updateField(
@@ -439,6 +545,9 @@ export default function VaccinationHistory() {
                   "unvaccinatedOtherDetails",
                 ) as string) ?? ""
               }
+              editable={
+                !isHydrating
+              }
               onChangeText={(value) =>
                 updateField(
                   "unvaccinatedOtherDetails",
@@ -456,12 +565,13 @@ export default function VaccinationHistory() {
       {/* =========================
           Previous Vaccine Reaction
       ========================= */}
-
       {getValue(
         "vaccinationStatus",
       ) !== "UNKNOWN" && (
         <>
-          <SectionHeader title="Previous Vaccine Reaction" />
+          <SectionHeader
+            title="Previous Vaccine Reaction"
+          />
 
           <View style={styles.row}>
             {[
@@ -481,6 +591,9 @@ export default function VaccinationHistory() {
                   getValue(
                     "previousReaction",
                   ) === item.value
+                }
+                disabled={
+                  isHydrating
                 }
                 onPress={() => {
                   updateField(
@@ -510,7 +623,9 @@ export default function VaccinationHistory() {
             <>
               <Divider />
 
-              <Text style={styles.label}>
+              <Text
+                style={styles.label}
+              >
                 Severity
               </Text>
 
@@ -525,7 +640,8 @@ export default function VaccinationHistory() {
                     label={
                       item === "MILD"
                         ? "Mild"
-                        : item === "MODERATE"
+                        : item ===
+                          "MODERATE"
                         ? "Moderate"
                         : "Severe"
                     }
@@ -533,6 +649,9 @@ export default function VaccinationHistory() {
                       getValue(
                         "reactionSeverity",
                       ) === item
+                    }
+                    disabled={
+                      isHydrating
                     }
                     onPress={() =>
                       updateField(
@@ -550,6 +669,9 @@ export default function VaccinationHistory() {
                     "reactionDetails",
                   ) as string) ?? ""
                 }
+                editable={
+                  !isHydrating
+                }
                 onChangeText={(value) =>
                   updateField(
                     "reactionDetails",
@@ -562,22 +684,53 @@ export default function VaccinationHistory() {
           )}
         </>
       )}
+
+      {/* ==================================================
+          AUTO SAVE STATUS
+      ================================================== */}
+      {isAutoSaving && (
+        <Text
+          style={
+            styles.savingText
+          }
+        >
+          Saving changes...
+        </Text>
+      )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    gap: SPACING.sm,
-  },
-  row: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: SPACING.xs,
-  },
-  label: {
-    fontSize: TYPOGRAPHY.small,
-    fontWeight: "600",
-    color: COLORS.text,
-  },
-});
+const styles =
+  StyleSheet.create({
+    container: {
+      gap: SPACING.sm,
+    },
+
+    row: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: SPACING.xs,
+    },
+
+    label: {
+      fontSize:
+        TYPOGRAPHY.small,
+      fontWeight: "600",
+      color: COLORS.text,
+    },
+
+    statusText: {
+      fontSize:
+        TYPOGRAPHY.small,
+      color:
+        COLORS.secondaryText,
+    },
+
+    savingText: {
+      fontSize:
+        TYPOGRAPHY.small,
+      color:
+        COLORS.secondaryText,
+    },
+  });
