@@ -1,21 +1,16 @@
 import {
   IsArray,
   IsBoolean,
-  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  AllergySeverity,
-  AllergyType,
-} from '@prisma/client';
 
 export class PatientAllergyDto {
-  @IsEnum(AllergyType)
-  type!: AllergyType;
+  @IsString()
+  type!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -25,8 +20,8 @@ export class PatientAllergyDto {
   @IsString()
   reaction?: string;
 
-  @IsEnum(AllergySeverity)
-  severity!: AllergySeverity;
+  @IsString()
+  severity!: string;
 
   @IsOptional()
   @IsString()

@@ -10,14 +10,7 @@ import {
   Min,
   ValidateIf,
 } from 'class-validator';
-
-import {
-  AgeUnit,
-  Gender,
-  MaritalStatus,
-  PatientIdentifierType,
-} from '@prisma/client';
-
+import { Gender } from '@prisma/client';
 import { Type } from 'class-transformer';
 
 export class CreatePatientDto {
@@ -25,13 +18,12 @@ export class CreatePatientDto {
   // Identification
   // =========================
 
-  @IsEnum(PatientIdentifierType)
-  identifierType!: PatientIdentifierType;
+  @IsString()
+  identifierType!: string;
 
   @ValidateIf(
     (o) =>
-      o.identifierType !==
-      PatientIdentifierType.UNKNOWN,
+      o.identifierType !== 'UNKNOWN',
   )
   @IsString()
   @IsNotEmpty()
@@ -40,8 +32,7 @@ export class CreatePatientDto {
 
   @ValidateIf(
     (o) =>
-      o.identifierType ===
-      PatientIdentifierType.OTHER,
+      o.identifierType === 'OTHER',
   )
   @IsString()
   @IsNotEmpty()
@@ -77,19 +68,18 @@ export class CreatePatientDto {
     (o) =>
       o.estimatedAgeValue !== undefined,
   )
-  @IsEnum(AgeUnit)
-  estimatedAgeUnit?: AgeUnit;
+  @IsString()
+  estimatedAgeUnit?: string;
 
   @ValidateIf(
     (o) =>
-      o.identifierType !==
-      PatientIdentifierType.NATIONAL_ID,
+      o.identifierType !== 'NATIONAL_ID',
   )
   @IsEnum(Gender)
   gender?: Gender;
 
-  @IsEnum(MaritalStatus)
-  maritalStatus!: MaritalStatus;
+  @IsString()
+  maritalStatus!: string;
 
   @IsOptional()
   @IsInt()

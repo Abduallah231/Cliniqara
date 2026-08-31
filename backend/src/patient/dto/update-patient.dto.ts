@@ -11,10 +11,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import {
-  AgeUnit,
   Gender,
-  MaritalStatus,
-  PatientIdentifierType,
 } from '@prisma/client';
 import { Type } from 'class-transformer';
 
@@ -32,8 +29,8 @@ export class UpdatePatientDto {
    * prevent changing it.
    */
   @IsOptional()
-  @IsEnum(PatientIdentifierType)
-  identifierType?: PatientIdentifierType;
+  @IsString()
+  identifierType?: string;
 
   /**
    * Identifier number can be supplied when
@@ -48,7 +45,7 @@ export class UpdatePatientDto {
     (o) =>
       o.identifierType !== undefined &&
       o.identifierType !==
-        PatientIdentifierType.UNKNOWN,
+        'UNKNOWN',
   )
   @IsString()
   @IsNotEmpty()
@@ -58,7 +55,7 @@ export class UpdatePatientDto {
   @ValidateIf(
     (o) =>
       o.identifierType ===
-      PatientIdentifierType.OTHER,
+      'OTHER',
   )
   @IsString()
   @IsNotEmpty()
@@ -113,9 +110,9 @@ export class UpdatePatientDto {
     (o) =>
       o.estimatedAgeValue !== undefined,
   )
-  @IsEnum(AgeUnit)
   @IsOptional()
-  estimatedAgeUnit?: AgeUnit;
+  @IsString()
+  estimatedAgeUnit?: string;
 
   /**
    * Gender follows CreatePatientDto rules.
@@ -131,8 +128,8 @@ export class UpdatePatientDto {
    * Marital status is freely editable.
    */
   @IsOptional()
-  @IsEnum(MaritalStatus)
-  maritalStatus?: MaritalStatus;
+  @IsString()
+  maritalStatus?: string;
 
   @IsOptional()
   @IsInt()

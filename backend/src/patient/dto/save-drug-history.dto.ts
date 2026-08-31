@@ -1,7 +1,6 @@
 import {
   IsArray,
   IsBoolean,
-  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -10,10 +9,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  DurationUnit,
-  MedicationCompliance,
-} from '@prisma/client';
 
 export class PatientMedicationDto {
   @IsString()
@@ -30,8 +25,8 @@ export class PatientMedicationDto {
   durationValue?: number;
 
   @IsOptional()
-  @IsEnum(DurationUnit)
-  durationUnit?: DurationUnit;
+  @IsString()
+  durationUnit?: string;
 
   @IsOptional()
   @IsString()
@@ -45,8 +40,8 @@ export class SaveDrugHistoryDto {
   medications!: PatientMedicationDto[];
 
   @IsOptional()
-  @IsEnum(MedicationCompliance)
-  medicationCompliance?: MedicationCompliance;
+  @IsString()
+  medicationCompliance?: string;
 
   @IsBoolean()
   selfMedication!: boolean;

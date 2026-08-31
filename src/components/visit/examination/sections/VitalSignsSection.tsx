@@ -48,14 +48,11 @@ export default function VitalSignsSection() {
         <View style={styles.row}>
           <View style={styles.half}>
             <AppTextField
-              value={
-                vitalSigns.bloodPressure.systolic
-              }
+              value={vitalSigns.systolicBP}
               onChangeText={(value) =>
                 updateBloodPressure(
                   value,
-                  vitalSigns.bloodPressure
-                    .diastolic
+                  vitalSigns.diastolicBP
                 )
               }
               keyboardType="numeric"
@@ -65,13 +62,10 @@ export default function VitalSignsSection() {
 
           <View style={styles.half}>
             <AppTextField
-              value={
-                vitalSigns.bloodPressure.diastolic
-              }
+              value={vitalSigns.diastolicBP}
               onChangeText={(value) =>
                 updateBloodPressure(
-                  vitalSigns.bloodPressure
-                    .systolic,
+                  vitalSigns.systolicBP,
                   value
                 )
               }

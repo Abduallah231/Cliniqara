@@ -1,18 +1,17 @@
-import { Type } from "class-transformer";
+import { Type } from 'class-transformer';
+
 import {
   ArrayMaxSize,
   IsArray,
-  IsEnum,
   IsOptional,
   IsString,
   MaxLength,
   ValidateNested,
-} from "class-validator";
-import { SystemType } from "@prisma/client";
+} from 'class-validator';
 
 export class RelatedSystemItemDto {
-  @IsEnum(SystemType)
-  system!: SystemType;
+  @IsString()
+  system!: string;
 
   @IsArray()
   @IsString({ each: true })

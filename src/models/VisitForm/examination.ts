@@ -20,27 +20,17 @@ export interface DynamicFieldValue {
 // Vital Signs
 // ======================================================
 
-export interface BloodPressure {
-  systolic: string;
-  diastolic: string;
-}
-
 export interface VitalSigns {
-  bloodPressure: BloodPressure;
-
+  systolicBP: string;
+  diastolicBP: string;
   heartRate: string;
   pulseRhythm: string;
-
+  respiratoryRate: string;
   spo2: string;
   oxygenSource: string;
-
   temperature: string;
   temperatureRoute: string;
-
-  respiratoryRate: string;
-
   bloodGlucose: string;
-
   weight: string;
   height: string;
   bmi: string;
@@ -122,24 +112,16 @@ export interface Examination {
 export function createEmptyExamination(): Examination {
   return {
     vitalSigns: {
-      bloodPressure: {
-        systolic: "",
-        diastolic: "",
-      },
-
+      systolicBP: "",
+      diastolicBP: "",
       heartRate: "",
       pulseRhythm: "",
-
+      respiratoryRate: "",
       spo2: "",
       oxygenSource: "",
-
       temperature: "",
       temperatureRoute: "",
-
-      respiratoryRate: "",
-
       bloodGlucose: "",
-
       weight: "",
       height: "",
       bmi: "",

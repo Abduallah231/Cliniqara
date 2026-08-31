@@ -1,19 +1,10 @@
 import {
-  BleedingDuration,
-  CycleRegularity,
-  DysmenorrheaSeverity,
-  MenstrualFlow,
-  PainStart,
-} from "@prisma/client";
-
-import {
   IsArray,
   IsBoolean,
-  IsEnum,
   IsInt,
   IsOptional,
   IsString,
-} from "class-validator";
+} from 'class-validator';
 
 export class SaveMenstrualHistoryDto {
   @IsOptional()
@@ -21,28 +12,28 @@ export class SaveMenstrualHistoryDto {
   ageAtMenarche?: number | null;
 
   @IsOptional()
-  @IsEnum(CycleRegularity)
-  cycleRegularity?: CycleRegularity | null;
+  @IsString()
+  cycleRegularity?: string | null;
 
   @IsOptional()
   @IsInt()
   cycleLength?: number | null;
 
   @IsOptional()
-  @IsEnum(BleedingDuration)
-  bleedingDuration?: BleedingDuration | null;
+  @IsString()
+  bleedingDuration?: string | null;
 
   @IsOptional()
-  @IsEnum(MenstrualFlow)
-  menstrualFlow?: MenstrualFlow | null;
+  @IsString()
+  menstrualFlow?: string | null;
 
   @IsOptional()
-  @IsEnum(DysmenorrheaSeverity)
-  dysmenorrhea?: DysmenorrheaSeverity | null;
+  @IsString()
+  dysmenorrhea?: string | null;
 
   @IsOptional()
-  @IsEnum(PainStart)
-  painStarts?: PainStart | null;
+  @IsString()
+  painStarts?: string | null;
 
   @IsOptional()
   @IsArray()

@@ -1,21 +1,10 @@
 import {
   IsArray,
-  IsEnum,
   IsInt,
   IsOptional,
   IsString,
   Min,
 } from 'class-validator';
-import {
-  AlcoholFrequency,
-  AlcoholStatus,
-  LivingCondition,
-  PhysicalActivityLevel,
-  SleepDuration,
-  SmokingStatus,
-  SocialSupportLevel,
-  SexualHistoryStatus,
-} from '@prisma/client';
 
 export class SaveSocialHistoryDto {
   // =========================
@@ -23,8 +12,8 @@ export class SaveSocialHistoryDto {
   // =========================
 
   @IsOptional()
-  @IsEnum(SmokingStatus)
-  smoking?: SmokingStatus;
+  @IsString()
+  smoking?: string;
 
   @IsOptional()
   @IsInt()
@@ -46,12 +35,12 @@ export class SaveSocialHistoryDto {
   // =========================
 
   @IsOptional()
-  @IsEnum(AlcoholStatus)
-  alcohol?: AlcoholStatus;
+  @IsString()
+  alcohol?: string;
 
   @IsOptional()
-  @IsEnum(AlcoholFrequency)
-  alcoholFrequency?: AlcoholFrequency;
+  @IsString()
+  alcoholFrequency?: string;
 
   @IsOptional()
   @IsInt()
@@ -63,8 +52,8 @@ export class SaveSocialHistoryDto {
   // =========================
 
   @IsOptional()
-  @IsEnum(LivingCondition)
-  livingCondition?: LivingCondition;
+  @IsString()
+  livingCondition?: string;
 
   @IsOptional()
   @IsString()
@@ -87,8 +76,8 @@ export class SaveSocialHistoryDto {
   // =========================
 
   @IsOptional()
-  @IsEnum(PhysicalActivityLevel)
-  physicalActivity?: PhysicalActivityLevel;
+  @IsString()
+  physicalActivity?: string;
 
   @IsOptional()
   @IsString()
@@ -99,8 +88,8 @@ export class SaveSocialHistoryDto {
   // =========================
 
   @IsOptional()
-  @IsEnum(SleepDuration)
-  sleepDuration?: SleepDuration;
+  @IsString()
+  sleepDuration?: string;
 
   @IsOptional()
   @IsString()
@@ -111,8 +100,8 @@ export class SaveSocialHistoryDto {
   // =========================
 
   @IsOptional()
-  @IsEnum(SocialSupportLevel)
-  socialSupport?: SocialSupportLevel;
+  @IsString()
+  socialSupport?: string;
 
   @IsOptional()
   @IsString()
@@ -123,8 +112,8 @@ export class SaveSocialHistoryDto {
   // =========================
 
   @IsOptional()
-  @IsEnum(SexualHistoryStatus)
-  sexualHistory?: SexualHistoryStatus;
+  @IsString()
+  sexualHistory?: string;
 
   @IsOptional()
   @IsString()

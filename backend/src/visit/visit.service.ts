@@ -2,25 +2,27 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from "@nestjs/common";
+} from '@nestjs/common';
+
 import {
   AccountType,
   DoctorLevel,
   MembershipStatus,
-  SystemType,
   VisitStatus,
-} from "@prisma/client";
-import { PrismaService } from "../prisma/prisma.service";
-import { CancelVisitDto } from "./dto/cancel-visit.dto";
-import { ChangeDoctorDto } from "./dto/change-doctor.dto";
-import { CompleteVisitDto } from "./dto/complete-visit.dto";
-import { CreateWaitingVisitDto } from "./dto/create-waiting-visit.dto";
-import { GetVisitDto } from "./dto/get-visit.dto";
-import { SaveVisitChiefComplaintDto } from "./dto/save-visit-chief-complaint.dto";
-import { StartVisitDto } from "./dto/start-visit.dto";
-import { SaveRelatedSystemsDto } from "./dto/save-related-systems.dto";
-import { SavePediatricHistoryDto } from "./dto/save-pediatric-history.dto";
-import { SaveMenstrualHistoryDto } from "./dto/save-menstrual-history.dto";
+} from '@prisma/client';
+
+import { PrismaService } from '../prisma/prisma.service';
+
+import { CancelVisitDto } from './dto/cancel-visit.dto';
+import { ChangeDoctorDto } from './dto/change-doctor.dto';
+import { CompleteVisitDto } from './dto/complete-visit.dto';
+import { CreateWaitingVisitDto } from './dto/create-waiting-visit.dto';
+import { GetVisitDto } from './dto/get-visit.dto';
+import { SaveVisitChiefComplaintDto } from './dto/save-visit-chief-complaint.dto';
+import { StartVisitDto } from './dto/start-visit.dto';
+import { SaveRelatedSystemsDto } from './dto/save-related-systems.dto';
+import { SavePediatricHistoryDto } from './dto/save-pediatric-history.dto';
+import { SaveMenstrualHistoryDto } from './dto/save-menstrual-history.dto';
 
 @Injectable()
 export class VisitService {
@@ -35,7 +37,7 @@ export class VisitService {
       await this.prisma.clinicMember.findFirst({
         where: {
           userId: currentUserId,
-          status: "ACTIVE",
+          status: 'ACTIVE',
         },
         select: {
           clinicId: true,
@@ -44,7 +46,7 @@ export class VisitService {
 
     if (!membership) {
       throw new NotFoundException(
-        "You are not an active member of a clinic.",
+        'You are not an active member of a clinic.',
       );
     }
 
@@ -55,17 +57,18 @@ export class VisitService {
     currentUserId: string,
     clinicId: string,
   ) {
-    const membership = await this.prisma.clinicMember.findFirst({
-      where: {
-        userId: currentUserId,
-        clinicId,
-        status: "ACTIVE",
-      },
-    });
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId,
+          status: 'ACTIVE',
+        },
+      });
 
     if (!membership) {
       throw new NotFoundException(
-        "You are not an active member of this clinic.",
+        'You are not an active member of this clinic.',
       );
     }
 
@@ -82,7 +85,7 @@ export class VisitService {
         where: {
           userId: currentUserId,
           clinicId,
-          status: "ACTIVE",
+          status: 'ACTIVE',
         },
         include: {
           user: true,
@@ -91,23 +94,23 @@ export class VisitService {
 
     if (!membership) {
       throw new NotFoundException(
-        "You are not an active member of this clinic.",
+        'You are not an active member of this clinic.',
       );
     }
 
     /*
-    * Only a verified doctor can enter
-    * the clinical visit.
-    *
-    * Interns and Reception accounts
-    * are not allowed to enter the visit.
-    */
+     * Only a verified doctor can enter
+     * the clinical visit.
+     *
+     * Interns and Reception accounts
+     * are not allowed to enter the visit.
+     */
     if (
       membership.user.accountType !==
       AccountType.DOCTOR
     ) {
       throw new BadRequestException(
-        "You are not allowed to enter this visit.",
+        'You are not allowed to enter this visit.',
       );
     }
 
@@ -116,17 +119,20 @@ export class VisitService {
       DoctorLevel.DOCTOR
     ) {
       throw new BadRequestException(
-        "Only verified doctors can enter a clinical visit.",
+        'Only verified doctors can enter a clinical visit.',
       );
     }
 
     /*
-    * A doctor can only access a visit
-    * assigned to that doctor.
-    */
-    if (visitDoctorId !== currentUserId) {
+     * A doctor can only access a visit
+     * assigned to that doctor.
+     */
+    if (
+      visitDoctorId !==
+      currentUserId
+    ) {
       throw new BadRequestException(
-        "This visit is assigned to another doctor.",
+        'This visit is assigned to another doctor.',
       );
     }
 
@@ -134,263 +140,246 @@ export class VisitService {
   }
 
   async createWaitingVisit(
-  dto: CreateWaitingVisitDto,
-  currentUserId: string,
-  accountType: AccountType,
-) {
-  const patient = await this.prisma.patient.findUnique({
-    where: {
-      id: dto.patientId,
-    },
-  });
-
-  const clinicId = await this.getActiveClinicId(currentUserId);
-
-  if (!patient) {
-    throw new NotFoundException("Patient not found.");
-  }
-
-  if (patient.clinicId !== clinicId) {
-    throw new NotFoundException(
-      "Patient does not belong to this clinic.",
-    );
-  }
-
-  const clinic = await this.prisma.clinic.findUnique({
-    where: {
-      id: clinicId,
-    },
-  });
-
-  if (!clinic) {
-    throw new NotFoundException("Clinic not found.");
-  }
-
-  let doctorId = dto.doctorId;
-
-  if (accountType === AccountType.DOCTOR) {
-    if (doctorId && doctorId !== currentUserId) {
-      throw new BadRequestException(
-        "A doctor can only add patients to their own waiting list.",
-      );
-    }
-
-    doctorId = currentUserId;
-  }
-
-  if (accountType === AccountType.RECEPTION && !doctorId) {
-    throw new BadRequestException(
-      "Doctor must be selected for waiting visit.",
-    );
-  }
-
-  if (!doctorId) {
-    throw new BadRequestException(
-      "Doctor must be selected for waiting visit.",
-    );
-  }
-
-  const doctorMembership =
-    await this.prisma.clinicMember.findFirst({
-      where: {
-        userId: doctorId,
-        clinicId,
-        status: "ACTIVE",
-      },
-      include: {
-        user: true,
-      },
-    });
-
-  if (!doctorMembership) {
-    throw new BadRequestException(
-      "Selected doctor is not an active member of this clinic.",
-    );
-  }
-
-  if (
-    doctorMembership.user.accountType !==
-    AccountType.DOCTOR
-  ) {
-    throw new BadRequestException(
-      "Selected user is not a doctor.",
-    );
-  }
-
-  const openVisit = await this.prisma.visit.findFirst({
-    where: {
-      patientId: dto.patientId,
-      clinicId: clinicId,
-      visitStatus: {
-        in: [
-          VisitStatus.WAITING,
-          VisitStatus.IN_PROGRESS,
-        ],
-      },
-    },
-  });
-
-  if (openVisit) {
-    throw new BadRequestException(
-      "Patient already has an open visit.",
-    );
-  }
-  
-console.log("CREATE VISIT DEBUG", {
-  patientId: dto.patientId,
-  clinicId,
-  currentUserId,
-  patientClinicId: patient.clinicId,
-});
-
-  const visit = await this.prisma.$transaction(async (tx) => {
-  const currentClinic = await tx.clinic.findUnique({
-    where: {
-      id: clinicId,
-    },
-  });
-
-  if (!currentClinic) {
-    throw new NotFoundException("Clinic not found.");
-  }
-
-  const visitNumber = currentClinic.nextVisitNumber;
-
-  const visitCode = `VIS-${visitNumber
-    .toString()
-    .padStart(6, "0")}`;
-
-    const newVisit = await tx.visit.create({
-    data: {
-      visitCode,
-      patientId: dto.patientId,
-      clinicId: clinicId,
-      createdById: currentUserId,
-      doctorId: doctorId!,
-      visitStatus: VisitStatus.WAITING,
-      notes: dto.notes,
-    },
-  });
-    await tx.clinic.update({
-    where: {
-      id: clinicId,
-    },
-    data: {
-      nextVisitNumber: {
-        increment: 1,
-      },
-    },
-  });
-
-  return newVisit;
-});
-return visit;
-}
-
-async startVisit(
-  dto: StartVisitDto,
-  currentUserId: string,
-) {
-
-  const visit = await this.prisma.visit.findUnique({
-    where: {
-      id: dto.visitId,
-    },
-  });
-
-  if (!visit) {
-    throw new NotFoundException("Visit not found.");
-  }
-
-  if (visit.visitStatus === VisitStatus.COMPLETED) {
-    throw new BadRequestException(
-      "Completed visit cannot be started.",
-    );
-  }
-
-  if (visit.visitStatus === VisitStatus.CANCELLED) {
-    throw new BadRequestException(
-      "Cancelled visit cannot be started.",
-    );
-  }
-
-  if (visit.visitStatus === VisitStatus.IN_PROGRESS) {
-    throw new BadRequestException(
-      "Visit is already in progress.",
-    );
-  }
-
-  await this.getClinicalVisitAccess(
-    currentUserId,
-    visit.clinicId,
-    visit.doctorId,
-  );
-
-  if (visit.doctorId !== currentUserId) {
-    throw new BadRequestException(
-      "You are not assigned to this visit.",
-    );
-  }
-
-  const updatedVisit = await this.prisma.visit.update({
-    where: {
-      id: visit.id,
-    },
-    data: {
-      visitStatus: VisitStatus.IN_PROGRESS,
-      startedAt: new Date(),
-    },
-  });
-
-  return updatedVisit;
-
-  }
-
-  async completeVisit(
-    dto: CompleteVisitDto,
+    dto: CreateWaitingVisitDto,
     currentUserId: string,
+    accountType: AccountType,
   ) {
-
-    const visit = await this.prisma.visit.findUnique({
-      where: {
-        id: dto.visitId,
-      },
-    });
-
-    if (!visit) {
-      throw new NotFoundException("Visit not found.");
-    }
-
-    const membership =
-      await this.prisma.clinicMember.findFirst({
+    const patient =
+      await this.prisma.patient.findUnique({
         where: {
-          userId: currentUserId,
-          clinicId: visit.clinicId,
-          status: "ACTIVE",
+          id: dto.patientId,
         },
       });
 
-    if (!membership) {
+    const clinicId =
+      await this.getActiveClinicId(
+        currentUserId,
+      );
+
+    if (!patient) {
       throw new NotFoundException(
-        "You are not an active member of this clinic.",
+        'Patient not found.',
       );
     }
 
-    if (visit.visitStatus === VisitStatus.COMPLETED) {
-      throw new BadRequestException(
-        "Visit is already completed.",
+    if (
+      patient.clinicId !==
+      clinicId
+    ) {
+      throw new NotFoundException(
+        'Patient does not belong to this clinic.',
       );
     }
 
-    if (visit.visitStatus === VisitStatus.CANCELLED) {
-      throw new BadRequestException(
-        "Cancelled visit cannot be completed.",
+    const clinic =
+      await this.prisma.clinic.findUnique({
+        where: {
+          id: clinicId,
+        },
+      });
+
+    if (!clinic) {
+      throw new NotFoundException(
+        'Clinic not found.',
       );
     }
 
-    if (visit.visitStatus !== VisitStatus.IN_PROGRESS) {
+    let doctorId = dto.doctorId;
+
+    if (
+      accountType ===
+      AccountType.DOCTOR
+    ) {
+      if (
+        doctorId &&
+        doctorId !== currentUserId
+      ) {
+        throw new BadRequestException(
+          'A doctor can only add patients to their own waiting list.',
+        );
+      }
+
+      doctorId =
+        currentUserId;
+    }
+
+    if (
+      accountType ===
+        AccountType.RECEPTION &&
+      !doctorId
+    ) {
       throw new BadRequestException(
-        "Visit must be in progress before completion.",
+        'Doctor must be selected for waiting visit.',
+      );
+    }
+
+    if (!doctorId) {
+      throw new BadRequestException(
+        'Doctor must be selected for waiting visit.',
+      );
+    }
+
+    const doctorMembership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: doctorId,
+          clinicId,
+          status: 'ACTIVE',
+        },
+        include: {
+          user: true,
+        },
+      });
+
+    if (!doctorMembership) {
+      throw new BadRequestException(
+        'Selected doctor is not an active member of this clinic.',
+      );
+    }
+
+    if (
+      doctorMembership.user.accountType !==
+      AccountType.DOCTOR
+    ) {
+      throw new BadRequestException(
+        'Selected user is not a doctor.',
+      );
+    }
+
+    const openVisit =
+      await this.prisma.visit.findFirst({
+        where: {
+          patientId:
+            dto.patientId,
+          clinicId,
+          visitStatus: {
+            in: [
+              VisitStatus.WAITING,
+              VisitStatus.IN_PROGRESS,
+            ],
+          },
+        },
+      });
+
+    if (openVisit) {
+      throw new BadRequestException(
+        'Patient already has an open visit.',
+      );
+    }
+
+    console.log(
+      'CREATE VISIT DEBUG',
+      {
+        patientId:
+          dto.patientId,
+        clinicId,
+        currentUserId,
+        patientClinicId:
+          patient.clinicId,
+      },
+    );
+
+    const visit =
+      await this.prisma.$transaction(
+        async (tx) => {
+          const currentClinic =
+            await tx.clinic.findUnique({
+              where: {
+                id: clinicId,
+              },
+            });
+
+          if (!currentClinic) {
+            throw new NotFoundException(
+              'Clinic not found.',
+            );
+          }
+
+          const visitNumber =
+            currentClinic.nextVisitNumber;
+
+          const visitCode =
+            `VIS-${visitNumber
+              .toString()
+              .padStart(6, '0')}`;
+
+          const newVisit =
+            await tx.visit.create({
+              data: {
+                visitCode,
+                patientId:
+                  dto.patientId,
+                clinicId,
+                createdById:
+                  currentUserId,
+                doctorId:
+                  doctorId!,
+                visitStatus:
+                  VisitStatus.WAITING,
+                notes:
+                  dto.notes,
+              },
+            });
+
+          await tx.clinic.update({
+            where: {
+              id: clinicId,
+            },
+            data: {
+              nextVisitNumber: {
+                increment: 1,
+              },
+            },
+          });
+
+          return newVisit;
+        },
+      );
+
+    return visit;
+  }
+
+  async startVisit(
+    dto: StartVisitDto,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: dto.visitId,
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        'Visit not found.',
+      );
+    }
+
+    if (
+      visit.visitStatus ===
+      VisitStatus.COMPLETED
+    ) {
+      throw new BadRequestException(
+        'Completed visit cannot be started.',
+      );
+    }
+
+    if (
+      visit.visitStatus ===
+      VisitStatus.CANCELLED
+    ) {
+      throw new BadRequestException(
+        'Cancelled visit cannot be started.',
+      );
+    }
+
+    if (
+      visit.visitStatus ===
+      VisitStatus.IN_PROGRESS
+    ) {
+      throw new BadRequestException(
+        'Visit is already in progress.',
       );
     }
 
@@ -400,77 +389,187 @@ async startVisit(
       visit.doctorId,
     );
 
-    if (visit.doctorId !== currentUserId) {
+    if (
+      visit.doctorId !==
+      currentUserId
+    ) {
       throw new BadRequestException(
-        "You are not assigned to this visit.",
+        'You are not assigned to this visit.',
       );
     }
 
-    const updatedVisit = await this.prisma.visit.update({
-      where: {
-        id: visit.id,
-      },
-      data: {
-        visitStatus: VisitStatus.COMPLETED,
-        completedAt: new Date(),
-      },
-    });
+    const updatedVisit =
+      await this.prisma.visit.update({
+        where: {
+          id: visit.id,
+        },
+        data: {
+          visitStatus:
+            VisitStatus.IN_PROGRESS,
+          startedAt:
+            new Date(),
+        },
+      });
 
     return updatedVisit;
-
   }
 
-  async cancelVisit(
-    dto: CancelVisitDto,
+  async completeVisit(
+    dto: CompleteVisitDto,
     currentUserId: string,
   ) {
-    const visit = await this.prisma.visit.findUnique({
-      where: {
-        id: dto.visitId,
-      },
-    });
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: dto.visitId,
+        },
+      });
 
     if (!visit) {
-      throw new NotFoundException("Visit not found.");
+      throw new NotFoundException(
+        'Visit not found.',
+      );
     }
 
     const membership =
       await this.prisma.clinicMember.findFirst({
         where: {
           userId: currentUserId,
-          clinicId: visit.clinicId,
-          status: "ACTIVE",
+          clinicId:
+            visit.clinicId,
+          status: 'ACTIVE',
         },
       });
 
     if (!membership) {
       throw new NotFoundException(
-        "You are not an active member of this clinic.",
+        'You are not an active member of this clinic.',
       );
     }
 
-    if (visit.visitStatus === VisitStatus.COMPLETED) {
+    if (
+      visit.visitStatus ===
+      VisitStatus.COMPLETED
+    ) {
       throw new BadRequestException(
-        "Completed visit cannot be cancelled.",
+        'Visit is already completed.',
       );
     }
 
-    if (visit.visitStatus === VisitStatus.CANCELLED) {
+    if (
+      visit.visitStatus ===
+      VisitStatus.CANCELLED
+    ) {
       throw new BadRequestException(
-        "Visit is already cancelled.",
+        'Cancelled visit cannot be completed.',
       );
     }
 
-    const updatedVisit = await this.prisma.visit.update({
-      where: {
-        id: visit.id,
-      },
-      data: {
-        visitStatus: VisitStatus.CANCELLED,
-        cancelledAt: new Date(),
-        cancellationReason: dto.reason,
-      },
-    });
+    if (
+      visit.visitStatus !==
+      VisitStatus.IN_PROGRESS
+    ) {
+      throw new BadRequestException(
+        'Visit must be in progress before completion.',
+      );
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    if (
+      visit.doctorId !==
+      currentUserId
+    ) {
+      throw new BadRequestException(
+        'You are not assigned to this visit.',
+      );
+    }
+
+    const updatedVisit =
+      await this.prisma.visit.update({
+        where: {
+          id: visit.id,
+        },
+        data: {
+          visitStatus:
+            VisitStatus.COMPLETED,
+          completedAt:
+            new Date(),
+        },
+      });
+
+    return updatedVisit;
+  }
+
+  async cancelVisit(
+    dto: CancelVisitDto,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: dto.visitId,
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        'Visit not found.',
+      );
+    }
+
+    const membership =
+      await this.prisma.clinicMember.findFirst({
+        where: {
+          userId: currentUserId,
+          clinicId:
+            visit.clinicId,
+          status: 'ACTIVE',
+        },
+      });
+
+    if (!membership) {
+      throw new NotFoundException(
+        'You are not an active member of this clinic.',
+      );
+    }
+
+    if (
+      visit.visitStatus ===
+      VisitStatus.COMPLETED
+    ) {
+      throw new BadRequestException(
+        'Completed visit cannot be cancelled.',
+      );
+    }
+
+    if (
+      visit.visitStatus ===
+      VisitStatus.CANCELLED
+    ) {
+      throw new BadRequestException(
+        'Visit is already cancelled.',
+      );
+    }
+
+    const updatedVisit =
+      await this.prisma.visit.update({
+        where: {
+          id: visit.id,
+        },
+        data: {
+          visitStatus:
+            VisitStatus.CANCELLED,
+          cancelledAt:
+            new Date(),
+          cancellationReason:
+            dto.reason,
+        },
+      });
 
     return updatedVisit;
   }
@@ -479,53 +578,67 @@ async startVisit(
     dto: ChangeDoctorDto,
     currentUserId: string,
   ) {
-    const visit = await this.prisma.visit.findUnique({
-      where: {
-        id: dto.visitId,
-      },
-    });
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: dto.visitId,
+        },
+      });
 
     if (!visit) {
-      throw new NotFoundException("Visit not found.");
+      throw new NotFoundException(
+        'Visit not found.',
+      );
     }
 
-    const membership = await this.getVisitMembership(
-      currentUserId,
-      visit.clinicId,
-    );
+    const membership =
+      await this.getVisitMembership(
+        currentUserId,
+        visit.clinicId,
+      );
 
     const canCancel =
-      membership.clinicRole === "OWNER" ||
-      membership.clinicRole === "RECEPTION" ||
-      visit.doctorId === currentUserId;
+      membership.clinicRole ===
+        'OWNER' ||
+      membership.clinicRole ===
+        'RECEPTION' ||
+      visit.doctorId ===
+        currentUserId;
 
     if (!canCancel) {
       throw new BadRequestException(
-        "You are not allowed to cancel this visit.",
+        'You are not allowed to cancel this visit.',
       );
     }
 
     if (
-      membership.clinicRole !== "OWNER" &&
-      membership.clinicRole !== "RECEPTION"
+      membership.clinicRole !==
+        'OWNER' &&
+      membership.clinicRole !==
+        'RECEPTION'
     ) {
       throw new BadRequestException(
-        "Only the clinic owner or assistant can change the assigned doctor.",
+        'Only the clinic owner or assistant can change the assigned doctor.',
       );
     }
 
-    if (visit.visitStatus !== VisitStatus.WAITING) {
+    if (
+      visit.visitStatus !==
+      VisitStatus.WAITING
+    ) {
       throw new BadRequestException(
-        "Doctor can only be changed while visit is waiting.",
+        'Doctor can only be changed while visit is waiting.',
       );
     }
 
     const doctorMembership =
       await this.prisma.clinicMember.findFirst({
         where: {
-          userId: dto.doctorId,
-          clinicId: visit.clinicId,
-          status: "ACTIVE",
+          userId:
+            dto.doctorId,
+          clinicId:
+            visit.clinicId,
+          status: 'ACTIVE',
         },
         include: {
           user: true,
@@ -534,19 +647,25 @@ async startVisit(
 
     if (!doctorMembership) {
       throw new BadRequestException(
-        "Selected doctor is not an active member of this clinic.",
+        'Selected doctor is not an active member of this clinic.',
       );
     }
 
-    const doctor = doctorMembership.user;
+    const doctor =
+      doctorMembership.user;
 
     if (!doctor) {
-      throw new NotFoundException("Doctor not found.");
+      throw new NotFoundException(
+        'Doctor not found.',
+      );
     }
 
-    if (doctor.accountType !== AccountType.DOCTOR) {
+    if (
+      doctor.accountType !==
+      AccountType.DOCTOR
+    ) {
       throw new BadRequestException(
-        "Selected user is not a doctor.",
+        'Selected user is not a doctor.',
       );
     }
 
@@ -555,7 +674,8 @@ async startVisit(
         id: dto.visitId,
       },
       data: {
-        doctorId: dto.doctorId,
+        doctorId:
+          dto.doctorId,
       },
     });
   }
@@ -569,13 +689,13 @@ async startVisit(
         where: {
           userId: currentUserId,
           clinicId,
-          status: "ACTIVE",
+          status: 'ACTIVE',
         },
       });
 
     if (!membership) {
       throw new NotFoundException(
-        "You are not an active member of this clinic.",
+        'You are not an active member of this clinic.',
       );
     }
 
@@ -594,7 +714,7 @@ async startVisit(
         doctor: true,
       },
       orderBy: {
-        createdAt: "asc",
+        createdAt: 'asc',
       },
     });
   }
@@ -604,7 +724,9 @@ async startVisit(
     currentUserId: string,
   ) {
     const clinicId =
-      await this.getActiveClinicId(currentUserId);
+      await this.getActiveClinicId(
+        currentUserId,
+      );
 
     const visit =
       await this.prisma.visit.findFirst({
@@ -619,7 +741,7 @@ async startVisit(
           },
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       });
 
@@ -635,29 +757,32 @@ async startVisit(
         where: {
           userId: currentUserId,
           clinicId,
-          status: "ACTIVE",
+          status: 'ACTIVE',
         },
       });
 
     if (!membership) {
       throw new NotFoundException(
-        "You are not an active member of this clinic.",
+        'You are not an active member of this clinic.',
       );
     }
 
-    const now = new Date();
+    const now =
+      new Date();
 
-    const startOfDay = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-    );
+    const startOfDay =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+      );
 
-    const startOfNextDay = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + 1,
-    );
+    const startOfNextDay =
+      new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1,
+      );
 
     const count =
       await this.prisma.visit.count({
@@ -677,38 +802,43 @@ async startVisit(
     dto: GetVisitDto,
     currentUserId: string,
   ) {
-    const visit = await this.prisma.visit.findUnique({
-      where: {
-        id: dto.visitId,
-      },
-      include: {
-        patient: true,
-        doctor: true,
-        clinic: true,
-        chiefComplaint: {
-          include: {
-            chiefComplaint: true,
-            analysis: true,
-          },
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: dto.visitId,
         },
-        relatedSystems: true,
-        systematicReview: true,
-        menstrualHistory: true,
-        pediatricHistory: true,
-        vitalSigns: true,
-        generalInspection: true,
-        regionalExaminations: true,
-        systemExaminations: true,
-        diagnosis: true,
-        investigations: true,
-        procedures: true,
-        referrals: true,
-        prescription: true,
-      },
-    });
+        include: {
+          patient: true,
+          doctor: true,
+          clinic: true,
+
+          chiefComplaint: {
+            include: {
+              chiefComplaint: true,
+              analysis: true,
+            },
+          },
+
+          relatedSystems: true,
+          systematicReview: true,
+          menstrualHistory: true,
+          pediatricHistory: true,
+          vitalSigns: true,
+          generalInspection: true,
+          regionalExaminations: true,
+          systemExaminations: true,
+          diagnosis: true,
+          investigations: true,
+          procedures: true,
+          referrals: true,
+          prescription: true,
+        },
+      });
 
     if (!visit) {
-      throw new NotFoundException("Visit not found.");
+      throw new NotFoundException(
+        'Visit not found.',
+      );
     }
 
     await this.getClinicalVisitAccess(
@@ -725,34 +855,39 @@ async startVisit(
     dto: SaveRelatedSystemsDto,
     currentUserId: string,
   ) {
-    const visit = await this.prisma.visit.findUnique({
-      where: {
-        id: visitId,
-      },
-      select: {
-        id: true,
-        clinicId: true,
-        doctorId: true,
-        visitStatus: true,
-      },
-    });
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+          visitStatus: true,
+        },
+      });
 
     if (!visit) {
-      throw new NotFoundException("Visit not found.");
+      throw new NotFoundException(
+        'Visit not found.',
+      );
     }
 
     const membership =
       await this.prisma.clinicMember.findFirst({
         where: {
           userId: currentUserId,
-          clinicId: visit.clinicId,
-          status: MembershipStatus.ACTIVE,
+          clinicId:
+            visit.clinicId,
+          status:
+            MembershipStatus.ACTIVE,
         },
       });
 
     if (!membership) {
       throw new NotFoundException(
-        "You are not an active member of this clinic.",
+        'You are not an active member of this clinic.',
       );
     }
 
@@ -762,99 +897,132 @@ async startVisit(
       visit.doctorId,
     );
 
-    if (visit.visitStatus !== VisitStatus.IN_PROGRESS) {
+    if (
+      visit.visitStatus !==
+      VisitStatus.IN_PROGRESS
+    ) {
       throw new BadRequestException(
-        "Related system symptoms can only be saved for an in-progress visit.",
+        'Related system symptoms can only be saved for an in-progress visit.',
       );
     }
 
-    // Prevent duplicate systems inside the same request.
-    const systems = dto.systems.map(
-      (item) => item.system,
+    // Prevent duplicate systems inside
+    // the same request.
+    const systems =
+      dto.systems.map(
+        (item) =>
+          item.system,
+      );
+
+    const uniqueSystems =
+      new Set(systems);
+
+    if (
+      uniqueSystems.size !==
+      systems.length
+    ) {
+      throw new BadRequestException(
+        'Duplicate systems are not allowed.',
+      );
+    }
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        // Replace the complete current state.
+        await tx.visitRelatedSystem.deleteMany(
+          {
+            where: {
+              visitId,
+            },
+          },
+        );
+
+        if (
+          dto.systems.length ===
+          0
+        ) {
+          return [];
+        }
+
+        await tx.visitRelatedSystem.createMany(
+          {
+            data: dto.systems.map(
+              (item) => ({
+                visitId,
+                system:
+                  item.system,
+                symptoms:
+                  item.symptoms,
+                otherFinding:
+                  item.otherFinding ??
+                  null,
+              }),
+            ),
+          },
+        );
+
+        return tx.visitRelatedSystem.findMany(
+          {
+            where: {
+              visitId,
+            },
+            orderBy: {
+              system: 'asc',
+            },
+          },
+        );
+      },
     );
-
-    const uniqueSystems = new Set(systems);
-
-    if (uniqueSystems.size !== systems.length) {
-      throw new BadRequestException(
-        "Duplicate systems are not allowed.",
-      );
-    }
-
-    return this.prisma.$transaction(async (tx) => {
-      // Replace the complete current state.
-      await tx.visitRelatedSystem.deleteMany({
-        where: {
-          visitId,
-        },
-      });
-
-      if (dto.systems.length === 0) {
-        return [];
-      }
-
-      await tx.visitRelatedSystem.createMany({
-        data: dto.systems.map((item) => ({
-          visitId,
-          system: item.system,
-          symptoms: item.symptoms,
-          otherFinding:
-            item.otherFinding ?? null,
-        })),
-      });
-
-      return tx.visitRelatedSystem.findMany({
-        where: {
-          visitId,
-        },
-        orderBy: {
-          system: "asc",
-        },
-      });
-    });
   }
 
   async getRelatedSystems(
     visitId: string,
     currentUserId: string,
   ) {
-    const visit = await this.prisma.visit.findUnique({
-      where: {
-        id: visitId,
-      },
-      select: {
-        id: true,
-        clinicId: true,
-      },
-    });
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+        },
+      });
 
     if (!visit) {
-      throw new NotFoundException("Visit not found.");
+      throw new NotFoundException(
+        'Visit not found.',
+      );
     }
 
     const membership =
       await this.prisma.clinicMember.findFirst({
         where: {
           userId: currentUserId,
-          clinicId: visit.clinicId,
-          status: MembershipStatus.ACTIVE,
+          clinicId:
+            visit.clinicId,
+          status:
+            MembershipStatus.ACTIVE,
         },
       });
 
     if (!membership) {
       throw new NotFoundException(
-        "You are not an active member of this clinic.",
+        'You are not an active member of this clinic.',
       );
     }
 
-    return this.prisma.visitRelatedSystem.findMany({
-      where: {
-        visitId,
+    return this.prisma.visitRelatedSystem.findMany(
+      {
+        where: {
+          visitId,
+        },
+        orderBy: {
+          system: 'asc',
+        },
       },
-      orderBy: {
-        system: "asc",
-      },
-    });
+    );
   }
 
   async saveChiefComplaint(
@@ -862,28 +1030,32 @@ async startVisit(
     dto: SaveVisitChiefComplaintDto,
     currentUserId: string,
   ) {
-    const visit = await this.prisma.visit.findUnique({
-      where: {
-        id: visitId,
-      },
-    });
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+      });
 
     if (!visit) {
-      throw new NotFoundException("Visit not found.");
+      throw new NotFoundException(
+        'Visit not found.',
+      );
     }
 
     const membership =
       await this.prisma.clinicMember.findFirst({
         where: {
           userId: currentUserId,
-          clinicId: visit.clinicId,
-          status: "ACTIVE",
+          clinicId:
+            visit.clinicId,
+          status: 'ACTIVE',
         },
       });
 
     if (!membership) {
       throw new NotFoundException(
-        "You are not an active member of this clinic.",
+        'You are not an active member of this clinic.',
       );
     }
 
@@ -893,135 +1065,163 @@ async startVisit(
       visit.doctorId,
     );
 
-    if (visit.visitStatus !== VisitStatus.IN_PROGRESS) {
+    if (
+      visit.visitStatus !==
+      VisitStatus.IN_PROGRESS
+    ) {
       throw new BadRequestException(
-        "Chief complaint can only be saved for an in-progress visit.",
+        'Chief complaint can only be saved for an in-progress visit.',
       );
     }
 
     const complaint =
-      await this.prisma.chiefComplaintMaster.findUnique({
-        where: {
-          id: dto.chiefComplaintId,
+      await this.prisma.chiefComplaintMaster.findUnique(
+        {
+          where: {
+            id:
+              dto.chiefComplaintId,
+          },
+          include: {
+            template: true,
+          },
         },
-        include: {
-          template: true,
-        },
-      });
+      );
 
     if (!complaint) {
       throw new NotFoundException(
-        "Chief complaint not found.",
+        'Chief complaint not found.',
       );
     }
 
-    const existing =
-      await this.prisma.visitChiefComplaint.findUnique({
-        where: {
-          visitId,
-        },
-      });
+    return this.prisma.$transaction(
+      async (tx) => {
+        const existing =
+          await tx.visitChiefComplaint.findUnique(
+            {
+              where: {
+                visitId,
+              },
+            },
+          );
 
-    if (
-      existing &&
-      existing.chiefComplaintId === dto.chiefComplaintId
-    ) {
-      // Same complaint.
-      // Continue normally.
-    }
+        /*
+         * If the selected complaint changed,
+         * remove the old analysis first.
+         */
+        if (
+          existing &&
+          existing.chiefComplaintId !==
+            dto.chiefComplaintId
+        ) {
+          await tx.visitComplaintAnalysis.deleteMany(
+            {
+              where: {
+                visitChiefComplaintId:
+                  existing.id,
+              },
+            },
+          );
+        }
 
-    return this.prisma.$transaction(async (tx) => {
-      const existing =
-        await tx.visitChiefComplaint.findUnique({
-          where: {
-            visitId,
-          },
-        });
+        const chiefComplaint =
+          await tx.visitChiefComplaint.upsert(
+            {
+              where: {
+                visitId,
+              },
 
-      /*
-      * If the selected complaint changed,
-      * remove the old analysis first.
-      */
-      if (
-        existing &&
-        existing.chiefComplaintId !==
-          dto.chiefComplaintId
-      ) {
-        await tx.visitComplaintAnalysis.deleteMany({
-          where: {
-            visitChiefComplaintId: existing.id,
-          },
-        });
-      }
+              create: {
+                visitId,
 
-      const chiefComplaint =
-        await tx.visitChiefComplaint.upsert({
-          where: {
-            visitId,
-          },
-          create: {
-            visitId,
-            chiefComplaintId:
-              dto.chiefComplaintId,
-            durationValue:
-              dto.durationValue,
-            durationUnit:
-              dto.durationUnit,
-          },
-          update: {
-            chiefComplaintId:
-              dto.chiefComplaintId,
+                chiefComplaintId:
+                  dto.chiefComplaintId,
 
-            ...(dto.durationValue !== undefined && {
-              durationValue:
-                dto.durationValue,
-            }),
+                durationValue:
+                  dto.durationValue,
 
-            ...(dto.durationUnit !== undefined && {
-              durationUnit:
-                dto.durationUnit,
-            }),
-          },
-        });
+                durationUnit:
+                  dto.durationUnit,
+              },
 
-      /*
-      * Analysis is saved only when answers
-      * are actually supplied.
-      */
-      if (
-        dto.answers !== undefined &&
-        complaint.template
-      ) {
-        await tx.visitComplaintAnalysis.upsert({
-          where: {
-            visitChiefComplaintId: chiefComplaint.id,
-          },
-          create: {
-            visitChiefComplaintId: chiefComplaint.id,
-            templateCode: complaint.code,
-            templateVersion: complaint.template.version,
-            values: dto.answers,
-          },
-          update: {
-            templateCode:
-              complaint.code,
-            templateVersion:
-              complaint.template.version,
-            values: dto.answers,
-          },
-        });
-      }
+              update: {
+                chiefComplaintId:
+                  dto.chiefComplaintId,
 
-      return tx.visitChiefComplaint.findUnique({
-        where: {
-          id: chiefComplaint.id,
-        },
-        include: {
-          chiefComplaint: true,
-          analysis: true,
-        },
-      });
-    });
+                ...(dto.durationValue !==
+                  undefined && {
+                  durationValue:
+                    dto.durationValue,
+                }),
+
+                ...(dto.durationUnit !==
+                  undefined && {
+                  durationUnit:
+                    dto.durationUnit,
+                }),
+              },
+            },
+          );
+
+        /*
+         * Analysis is saved only when answers
+         * are actually supplied.
+         */
+        if (
+          dto.answers !==
+            undefined &&
+          complaint.template
+        ) {
+          await tx.visitComplaintAnalysis.upsert(
+            {
+              where: {
+                visitChiefComplaintId:
+                  chiefComplaint.id,
+              },
+
+              create: {
+                visitChiefComplaintId:
+                  chiefComplaint.id,
+
+                templateCode:
+                  complaint.code,
+
+                templateVersion:
+                  complaint.template.version,
+
+                values:
+                  dto.answers,
+              },
+
+              update: {
+                templateCode:
+                  complaint.code,
+
+                templateVersion:
+                  complaint.template.version,
+
+                values:
+                  dto.answers,
+              },
+            },
+          );
+        }
+
+        return tx.visitChiefComplaint.findUnique(
+          {
+            where: {
+              id:
+                chiefComplaint.id,
+            },
+            include: {
+              chiefComplaint:
+                true,
+              analysis:
+                true,
+            },
+          },
+        );
+      },
+    );
   }
 
   async getChiefComplaint(
@@ -1029,28 +1229,32 @@ async startVisit(
     chiefComplaintId: string,
     currentUserId: string,
   ) {
-    const visit = await this.prisma.visit.findUnique({
-      where: {
-        id: visitId,
-      },
-    });
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+      });
 
     if (!visit) {
-      throw new NotFoundException("Visit not found.");
+      throw new NotFoundException(
+        'Visit not found.',
+      );
     }
 
     const membership =
       await this.prisma.clinicMember.findFirst({
         where: {
           userId: currentUserId,
-          clinicId: visit.clinicId,
-          status: "ACTIVE",
+          clinicId:
+            visit.clinicId,
+          status: 'ACTIVE',
         },
       });
 
     if (!membership) {
       throw new NotFoundException(
-        "You are not an active member of this clinic.",
+        'You are not an active member of this clinic.',
       );
     }
 
@@ -1060,16 +1264,20 @@ async startVisit(
       visit.doctorId,
     );
 
-    return this.prisma.visitChiefComplaint.findFirst({
-      where: {
-        visitId,
-        chiefComplaintId,
+    return this.prisma.visitChiefComplaint.findFirst(
+      {
+        where: {
+          visitId,
+          chiefComplaintId,
+        },
+        include: {
+          chiefComplaint:
+            true,
+          analysis:
+            true,
+        },
       },
-      include: {
-        chiefComplaint: true,
-        analysis: true,
-      },
-    });
+    );
   }
 
   async savePediatricHistory(
@@ -1077,18 +1285,23 @@ async startVisit(
     dto: SavePediatricHistoryDto,
     currentUserId: string,
   ) {
-    const visit = await this.prisma.visit.findUnique({
-      where: { id: visitId },
-      select: {
-        id: true,
-        clinicId: true,
-        doctorId: true,
-        visitStatus: true,
-      },
-    });
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+          visitStatus: true,
+        },
+      });
 
     if (!visit) {
-      throw new NotFoundException("Visit not found.");
+      throw new NotFoundException(
+        'Visit not found.',
+      );
     }
 
     await this.getClinicalVisitAccess(
@@ -1097,39 +1310,53 @@ async startVisit(
       visit.doctorId,
     );
 
-    if (visit.visitStatus !== VisitStatus.IN_PROGRESS) {
+    if (
+      visit.visitStatus !==
+      VisitStatus.IN_PROGRESS
+    ) {
       throw new BadRequestException(
-        "Pediatric history can only be saved for an in-progress visit.",
+        'Pediatric history can only be saved for an in-progress visit.',
       );
     }
 
-    return this.prisma.visitPediatricHistory.upsert({
-      where: { visitId },
-      create: {
-        visitId,
-        ...dto,
+    return this.prisma.visitPediatricHistory.upsert(
+      {
+        where: {
+          visitId,
+        },
+
+        create: {
+          visitId,
+          ...dto,
+        },
+
+        update: {
+          ...dto,
+        },
       },
-      update: {
-        ...dto,
-      },
-    });
+    );
   }
 
   async getPediatricHistory(
     visitId: string,
     currentUserId: string,
   ) {
-    const visit = await this.prisma.visit.findUnique({
-      where: { id: visitId },
-      select: {
-        id: true,
-        clinicId: true,
-        doctorId: true,
-      },
-    });
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+        },
+      });
 
     if (!visit) {
-      throw new NotFoundException("Visit not found.");
+      throw new NotFoundException(
+        'Visit not found.',
+      );
     }
 
     await this.getClinicalVisitAccess(
@@ -1138,9 +1365,13 @@ async startVisit(
       visit.doctorId,
     );
 
-    return this.prisma.visitPediatricHistory.findUnique({
-      where: { visitId },
-    });
+    return this.prisma.visitPediatricHistory.findUnique(
+      {
+        where: {
+          visitId,
+        },
+      },
+    );
   }
 
   async saveMenstrualHistory(
@@ -1148,18 +1379,23 @@ async startVisit(
     dto: SaveMenstrualHistoryDto,
     currentUserId: string,
   ) {
-    const visit = await this.prisma.visit.findUnique({
-      where: { id: visitId },
-      select: {
-        id: true,
-        clinicId: true,
-        doctorId: true,
-        visitStatus: true,
-      },
-    });
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+          visitStatus: true,
+        },
+      });
 
     if (!visit) {
-      throw new NotFoundException("Visit not found.");
+      throw new NotFoundException(
+        'Visit not found.',
+      );
     }
 
     await this.getClinicalVisitAccess(
@@ -1168,25 +1404,36 @@ async startVisit(
       visit.doctorId,
     );
 
-    if (visit.visitStatus !== VisitStatus.IN_PROGRESS) {
+    if (
+      visit.visitStatus !==
+      VisitStatus.IN_PROGRESS
+    ) {
       throw new BadRequestException(
-        "Menstrual history can only be saved for an in-progress visit.",
+        'Menstrual history can only be saved for an in-progress visit.',
       );
     }
 
-    return this.prisma.visitMenstrualHistory.upsert({
-      where: { visitId },
-      create: {
-        visitId,
-        painRelievedBy: [],
-        associatedSymptoms: [],
-        pmsSymptoms: [],
-        ...dto,
+    return this.prisma.visitMenstrualHistory.upsert(
+      {
+        where: {
+          visitId,
+        },
+
+        create: {
+          visitId,
+
+          painRelievedBy: [],
+          associatedSymptoms: [],
+          pmsSymptoms: [],
+
+          ...dto,
+        },
+
+        update: {
+          ...dto,
+        },
       },
-      update: {
-        ...dto,
-      },
-    });
+    );
   }
 
   async getMenstrualHistory(

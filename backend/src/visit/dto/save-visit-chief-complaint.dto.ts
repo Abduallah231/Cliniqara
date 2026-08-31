@@ -1,12 +1,10 @@
 import {
-  IsEnum,
   IsInt,
   IsObject,
   IsOptional,
   IsString,
   Min,
 } from "class-validator";
-import { DurationUnit } from "@prisma/client";
 
 export class SaveVisitChiefComplaintDto {
   @IsString()
@@ -18,8 +16,8 @@ export class SaveVisitChiefComplaintDto {
   durationValue?: number;
 
   @IsOptional()
-  @IsEnum(DurationUnit)
-  durationUnit?: DurationUnit;
+  @IsString()
+  durationUnit?: string;
 
   @IsOptional()
   @IsObject()

@@ -4,22 +4,26 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import {
+  Gender,
   MembershipStatus,
-  PatientIdentifierType,
   Prisma,
 } from '@prisma/client';
-import { parseEgyptianNationalId } from '../../utils/egyptian-national-id.util';
+
 import { PrismaService } from '../../prisma/prisma.service';
-import { VerifyNationalIdDto } from '../dto/verify-national-id.dto';
+import { parseEgyptianNationalId } from '../../utils/egyptian-national-id.util';
+
 import { CreatePatientDto } from '../dto/create-patient.dto';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
-import { SaveVaccinationHistoryDto } from "../dto/save-vaccination-history.dto";
-import { SavePastHistoryDto } from '../dto/save-past-history.dto';
-import { SaveDrugHistoryDto } from '../dto/save-drug-history.dto';
+import { VerifyNationalIdDto } from '../dto/verify-national-id.dto';
+
 import { SaveAllergyHistoryDto } from '../dto/save-allergy-history.dto';
+import { SaveDrugHistoryDto } from '../dto/save-drug-history.dto';
 import { SaveFamilyHistoryDto } from '../dto/save-family-history.dto';
+import { SavePastHistoryDto } from '../dto/save-past-history.dto';
 import { SaveSocialHistoryDto } from '../dto/save-social-history.dto';
+import { SaveVaccinationHistoryDto } from '../dto/save-vaccination-history.dto';
 
 @Injectable()
 export class PatientService {
@@ -44,7 +48,7 @@ export class PatientService {
   }
 
   private sanitizePatient<T extends {
-    identifierNumber?: string | null;
+      identifierNumber?: string | null;
   }>(patient: T) {
     return {
       ...patient,
@@ -95,14 +99,14 @@ export class PatientService {
     patientId: string,
   ) {
     const patient = await this.prisma.patient.findUnique({
-      where: {
-        id: patientId,
-      },
-      select: {
-        id: true,
-        clinicId: true,
-      },
-    });
+        where: {
+          id: patientId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+        },
+      });
 
     if (!patient) {
       throw new NotFoundException('Patient not found');
@@ -164,8 +168,7 @@ export class PatientService {
     }
 
     if (
-      dto.identifierType !==
-      PatientIdentifierType.OTHER
+      dto.identifierType !== 'OTHER'
     ) {
       dto.documentType = undefined;
     }
@@ -176,10 +179,8 @@ export class PatientService {
       documentType: dto.documentType,
       fullName: dto.fullName,
       dateOfBirth: dto.dateOfBirth,
-      estimatedAgeValue:
-        dto.estimatedAgeValue,
-      estimatedAgeUnit:
-        dto.estimatedAgeUnit,
+      estimatedAgeValue: dto.estimatedAgeValue,
+      estimatedAgeUnit: dto.estimatedAgeUnit,
       maritalStatus: dto.maritalStatus,
       childrenCount: dto.childrenCount,
       phone: dto.phone,
@@ -190,13 +191,14 @@ export class PatientService {
       streetAddress: dto.streetAddress,
     };
 
-    let patientData: typeof basePatientData & {
-      gender: import('@prisma/client').Gender;
-    };
+    let patientData:
+      typeof basePatientData & {
+        gender: Gender;
+      };
 
     if (
       dto.identifierType ===
-      PatientIdentifierType.NATIONAL_ID
+      'NATIONAL_ID'
     ) {
       if (!dto.identifierNumber) {
         throw new BadRequestException(
@@ -207,9 +209,10 @@ export class PatientService {
       const existingPatient =
         await this.prisma.patient.findFirst({
           where: {
-            clinicId: membership.clinicId,
+            clinicId:
+              membership.clinicId,
             identifierType:
-              PatientIdentifierType.NATIONAL_ID,
+              'NATIONAL_ID',
             identifierNumber:
               dto.identifierNumber,
           },
@@ -259,17 +262,23 @@ export class PatientService {
     return this.prisma.$transaction(
       async (tx) => {
         const patientCode =
-          await this.generatePatientCode(tx);
+          await this.generatePatientCode(
+            tx,
+          );
 
-        const patient = await tx.patient.create({
-          data: {
-            clinicId: membership.clinicId,
-            patientCode,
-            ...patientData,
-          },
-        });
+        const patient =
+          await tx.patient.create({
+            data: {
+              clinicId:
+                membership.clinicId,
+              patientCode,
+              ...patientData,
+            },
+          });
 
-        return this.sanitizePatient(patient);
+        return this.sanitizePatient(
+          patient,
+        );
       },
     );
   }
@@ -287,15 +296,17 @@ export class PatientService {
     const patients =
       await this.prisma.patient.findMany({
         where: {
-          clinicId: membership.clinicId,
+          clinicId:
+            membership.clinicId,
         },
         orderBy: {
           createdAt: 'desc',
         },
       });
 
-    return patients.map((patient) =>
-      this.sanitizePatient(patient),
+    return patients.map(
+      (patient) =>
+        this.sanitizePatient(patient),
     );
   }
 
@@ -314,7 +325,8 @@ export class PatientService {
       await this.prisma.patient.findFirst({
         where: {
           id,
-          clinicId: membership.clinicId,
+          clinicId:
+            membership.clinicId,
         },
       });
 
@@ -324,7 +336,9 @@ export class PatientService {
       );
     }
 
-    return this.sanitizePatient(patient);
+    return this.sanitizePatient(
+      patient,
+    );
   }
 
   async update(
@@ -343,7 +357,8 @@ export class PatientService {
       await this.prisma.patient.findFirst({
         where: {
           id,
-          clinicId: membership.clinicId,
+          clinicId:
+            membership.clinicId,
         },
       });
 
@@ -355,7 +370,7 @@ export class PatientService {
 
     const currentIsNationalId =
       patient.identifierType ===
-      PatientIdentifierType.NATIONAL_ID;
+      'NATIONAL_ID';
 
     const requestedIdentifierType =
       dto.identifierType ??
@@ -367,9 +382,10 @@ export class PatientService {
 
     if (
       currentIsNationalId &&
-      dto.identifierType !== undefined &&
       dto.identifierType !==
-        PatientIdentifierType.NATIONAL_ID
+        undefined &&
+      dto.identifierType !==
+        'NATIONAL_ID'
     ) {
       throw new BadRequestException(
         'Patient identifier type cannot be changed because the patient has a National ID.',
@@ -383,7 +399,8 @@ export class PatientService {
 
     if (currentIsNationalId) {
       if (
-        dto.identifierNumber !== undefined &&
+        dto.identifierNumber !==
+          undefined &&
         dto.identifierNumber !==
           patient.identifierNumber
       ) {
@@ -392,22 +409,29 @@ export class PatientService {
         );
       }
 
-      if (dto.dateOfBirth !== undefined) {
+      if (
+        dto.dateOfBirth !==
+        undefined
+      ) {
         throw new BadRequestException(
           'Date of birth cannot be changed for a patient with a National ID.',
         );
       }
 
       if (
-        dto.estimatedAgeValue !== undefined ||
-        dto.estimatedAgeUnit !== undefined
+        dto.estimatedAgeValue !==
+          undefined ||
+        dto.estimatedAgeUnit !==
+          undefined
       ) {
         throw new BadRequestException(
           'Age cannot be changed for a patient with a National ID.',
         );
       }
 
-      if (dto.gender !== undefined) {
+      if (
+        dto.gender !== undefined
+      ) {
         throw new BadRequestException(
           'Gender cannot be changed for a patient with a National ID.',
         );
@@ -419,12 +443,14 @@ export class PatientService {
     // =========================================
 
     let nationalIdData:
-      | ReturnType<typeof parseEgyptianNationalId>
+      | ReturnType<
+          typeof parseEgyptianNationalId
+        >
       | undefined;
 
     if (
       requestedIdentifierType ===
-      PatientIdentifierType.NATIONAL_ID
+      'NATIONAL_ID'
     ) {
       const nationalId =
         dto.identifierNumber ??
@@ -452,10 +478,12 @@ export class PatientService {
       const existingPatient =
         await this.prisma.patient.findFirst({
           where: {
-            clinicId: membership.clinicId,
+            clinicId:
+              membership.clinicId,
             identifierType:
-              PatientIdentifierType.NATIONAL_ID,
-            identifierNumber: nationalId,
+              'NATIONAL_ID',
+            identifierNumber:
+              nationalId,
             id: {
               not: patient.id,
             },
@@ -478,7 +506,7 @@ export class PatientService {
 
     if (
       requestedIdentifierType !==
-        PatientIdentifierType.NATIONAL_ID &&
+        'NATIONAL_ID' &&
       !currentIsNationalId
     ) {
       const finalDateOfBirth =
@@ -494,7 +522,8 @@ export class PatientService {
         patient.estimatedAgeUnit;
 
       const finalGender =
-        dto.gender ?? patient.gender;
+        dto.gender ??
+        patient.gender;
 
       if (
         finalDateOfBirth === null &&
@@ -506,7 +535,8 @@ export class PatientService {
       }
 
       if (
-        finalEstimatedAgeValue !== null &&
+        finalEstimatedAgeValue !==
+          null &&
         !finalEstimatedAgeUnit
       ) {
         throw new BadRequestException(
@@ -527,8 +557,9 @@ export class PatientService {
 
     const documentType =
       requestedIdentifierType ===
-      PatientIdentifierType.OTHER
-        ? dto.documentType !== undefined
+      'OTHER'
+        ? dto.documentType !==
+            undefined
           ? dto.documentType
           : patient.documentType
         : null;
@@ -537,108 +568,120 @@ export class PatientService {
     // Build update data
     // =========================================
 
-    const data: Prisma.PatientUpdateInput = {
-      ...(dto.fullName !== undefined && {
-        fullName: dto.fullName,
-      }),
+    const data: Prisma.PatientUpdateInput =
+      {
+        ...(dto.fullName !==
+          undefined && {
+          fullName:
+            dto.fullName,
+        }),
 
-      ...(dto.identifierType !==
-        undefined && {
-        identifierType:
-          dto.identifierType,
-      }),
+        ...(dto.identifierType !==
+          undefined && {
+          identifierType:
+            dto.identifierType,
+        }),
 
-      ...(dto.identifierNumber !==
-        undefined && {
-        identifierNumber:
-          dto.identifierNumber,
-      }),
+        ...(dto.identifierNumber !==
+          undefined && {
+          identifierNumber:
+            dto.identifierNumber,
+        }),
 
-      ...(dto.documentType !==
-        undefined ||
-        dto.identifierType !==
-          undefined
-        ? {
-            documentType,
-          }
-        : {}),
+        ...(dto.documentType !==
+            undefined ||
+          dto.identifierType !==
+            undefined
+          ? {
+              documentType,
+            }
+          : {}),
 
-      ...(dto.dateOfBirth !==
-        undefined && {
-        dateOfBirth:
-          dto.dateOfBirth,
-      }),
+        ...(dto.dateOfBirth !==
+          undefined && {
+          dateOfBirth:
+            dto.dateOfBirth,
+        }),
 
-      ...(dto.estimatedAgeValue !==
-        undefined && {
-        estimatedAgeValue:
-          dto.estimatedAgeValue,
-      }),
+        ...(dto.estimatedAgeValue !==
+          undefined && {
+          estimatedAgeValue:
+            dto.estimatedAgeValue,
+        }),
 
-      ...(dto.estimatedAgeUnit !==
-        undefined && {
-        estimatedAgeUnit:
-          dto.estimatedAgeUnit,
-      }),
+        ...(dto.estimatedAgeUnit !==
+          undefined && {
+          estimatedAgeUnit:
+            dto.estimatedAgeUnit,
+        }),
 
-      ...(dto.gender !== undefined && {
-        gender: dto.gender,
-      }),
+        ...(dto.gender !==
+          undefined && {
+          gender:
+            dto.gender,
+        }),
 
-      ...(dto.maritalStatus !==
-        undefined && {
-        maritalStatus:
-          dto.maritalStatus,
-      }),
+        ...(dto.maritalStatus !==
+          undefined && {
+          maritalStatus:
+            dto.maritalStatus,
+        }),
 
-      ...(dto.childrenCount !==
-        undefined && {
-        childrenCount:
-          dto.childrenCount,
-      }),
+        ...(dto.childrenCount !==
+          undefined && {
+          childrenCount:
+            dto.childrenCount,
+        }),
 
-      ...(dto.phone !== undefined && {
-        phone: dto.phone,
-      }),
+        ...(dto.phone !==
+          undefined && {
+          phone:
+            dto.phone,
+        }),
 
-      ...(dto.occupation !==
-        undefined && {
-        occupation:
-          dto.occupation,
-      }),
+        ...(dto.occupation !==
+          undefined && {
+          occupation:
+            dto.occupation,
+        }),
 
-      ...(dto.governorate !==
-        undefined && {
-        governorate:
-          dto.governorate,
-      }),
+        ...(dto.governorate !==
+          undefined && {
+          governorate:
+            dto.governorate,
+        }),
 
-      ...(dto.city !== undefined && {
-        city: dto.city,
-      }),
+        ...(dto.city !==
+          undefined && {
+          city:
+            dto.city,
+        }),
 
-      ...(dto.district !==
-        undefined && {
-        district:
-          dto.district,
-      }),
+        ...(dto.district !==
+          undefined && {
+          district:
+            dto.district,
+        }),
 
-      ...(dto.streetAddress !==
-        undefined && {
-        streetAddress:
-          dto.streetAddress,
-      }),
+        ...(dto.streetAddress !==
+          undefined && {
+          streetAddress:
+            dto.streetAddress,
+        }),
 
-      // National ID always determines these values.
-      ...(nationalIdData && {
-        dateOfBirth:
-          nationalIdData.dateOfBirth,
-        gender:
-          nationalIdData.gender,
-        estimatedAgeValue: null,
-        estimatedAgeUnit: null,
-      }),
-    };
+        // National ID always determines
+        // these values.
+        ...(nationalIdData && {
+          dateOfBirth:
+            nationalIdData.dateOfBirth,
+          gender:
+            nationalIdData.gender,
+          estimatedAgeValue:
+            null,
+          estimatedAgeUnit:
+            null,
+        }),
+      };
 
     return this.prisma.patient.update({
       where: {
@@ -670,7 +713,9 @@ export class PatientService {
     const patients =
       await this.prisma.patient.findMany({
         where: {
-          clinicId: membership.clinicId,
+          clinicId:
+            membership.clinicId,
+
           OR: [
             {
               patientCode: {
@@ -696,14 +741,17 @@ export class PatientService {
             },
           ],
         },
+
         orderBy: {
           createdAt: 'desc',
         },
+
         take: 20,
       });
 
-    return patients.map((patient) =>
-      this.sanitizePatient(patient),
+    return patients.map(
+      (patient) =>
+        this.sanitizePatient(patient),
     );
   }
 
@@ -721,7 +769,11 @@ export class PatientService {
     const nationalId =
       dto.nationalId.trim();
 
-    if (!/^\d{14}$/.test(nationalId)) {
+    if (
+      !/^\d{14}$/.test(
+        nationalId,
+      )
+    ) {
       throw new BadRequestException(
         'National ID must be exactly 14 digits.',
       );
@@ -745,11 +797,16 @@ export class PatientService {
     const existingPatient =
       await this.prisma.patient.findFirst({
         where: {
-          clinicId: membership.clinicId,
+          clinicId:
+            membership.clinicId,
+
           identifierType:
-            PatientIdentifierType.NATIONAL_ID,
-          identifierNumber: nationalId,
+            'NATIONAL_ID',
+
+          identifierNumber:
+            nationalId,
         },
+
         select: {
           id: true,
           patientCode: true,
@@ -759,19 +816,27 @@ export class PatientService {
 
     return {
       valid: true,
-      alreadyExists: !!existingPatient,
+
+      alreadyExists:
+        !!existingPatient,
+
       existingPatient:
         existingPatient
           ? {
-              id: existingPatient.id,
+              id:
+                existingPatient.id,
+
               patientCode:
                 existingPatient.patientCode,
+
               fullName:
                 existingPatient.fullName,
             }
           : null,
+
       dateOfBirth:
         nationalIdData.dateOfBirth,
+
       gender:
         nationalIdData.gender,
     };
@@ -790,6 +855,7 @@ export class PatientService {
     // =========================================
     // Basic validation
     // =========================================
+
     if (!dto.vaccinationStatus) {
       throw new BadRequestException(
         'Vaccination status is required.',
@@ -799,19 +865,29 @@ export class PatientService {
     // =========================================
     // PARTIALLY VACCINATED
     // =========================================
-    let missedVaccines: string[] = [];
+
+    let missedVaccines: string[] =
+      [];
+
     let partialReason:
       | SaveVaccinationHistoryDto['partialReason']
       | undefined;
-    let partialOtherDetails: string | undefined;
+
+    let partialOtherDetails:
+      | string
+      | undefined;
 
     if (
       dto.vaccinationStatus ===
       'PARTIALLY_VACCINATED'
     ) {
-      missedVaccines = dto.missedVaccines ?? [];
+      missedVaccines =
+        dto.missedVaccines ?? [];
 
-      if (missedVaccines.length === 0) {
+      if (
+        missedVaccines.length ===
+        0
+      ) {
         throw new BadRequestException(
           'At least one missed vaccine is required for a partially vaccinated patient.',
         );
@@ -823,12 +899,16 @@ export class PatientService {
         );
       }
 
-      partialReason = dto.partialReason;
+      partialReason =
+        dto.partialReason;
 
       if (
-        dto.partialReason === 'OTHER'
+        dto.partialReason ===
+        'OTHER'
       ) {
-        if (!dto.partialOtherDetails?.trim()) {
+        if (
+          !dto.partialOtherDetails?.trim()
+        ) {
           throw new BadRequestException(
             'Other reason details are required.',
           );
@@ -842,9 +922,11 @@ export class PatientService {
     // =========================================
     // UNVACCINATED
     // =========================================
+
     let unvaccinatedReason:
       | SaveVaccinationHistoryDto['unvaccinatedReason']
       | undefined;
+
     let unvaccinatedOtherDetails:
       | string
       | undefined;
@@ -853,7 +935,9 @@ export class PatientService {
       dto.vaccinationStatus ===
       'UNVACCINATED'
     ) {
-      if (!dto.unvaccinatedReason) {
+      if (
+        !dto.unvaccinatedReason
+      ) {
         throw new BadRequestException(
           'Reason is required for an unvaccinated patient.',
         );
@@ -863,7 +947,8 @@ export class PatientService {
         dto.unvaccinatedReason;
 
       if (
-        dto.unvaccinatedReason === 'OTHER'
+        dto.unvaccinatedReason ===
+        'OTHER'
       ) {
         if (
           !dto.unvaccinatedOtherDetails?.trim()
@@ -881,21 +966,30 @@ export class PatientService {
     // =========================================
     // PREVIOUS VACCINE REACTION
     // =========================================
+
     let reactionSeverity:
       | SaveVaccinationHistoryDto['reactionSeverity']
       | undefined;
+
     let reactionDetails:
       | string
       | undefined;
 
-    if (dto.previousReaction === true) {
-      if (!dto.reactionSeverity) {
+    if (
+      dto.previousReaction ===
+      true
+    ) {
+      if (
+        !dto.reactionSeverity
+      ) {
         throw new BadRequestException(
           'Reaction severity is required when previous reaction is yes.',
         );
       }
 
-      if (!dto.reactionDetails?.trim()) {
+      if (
+        !dto.reactionDetails?.trim()
+      ) {
         throw new BadRequestException(
           'Reaction details are required when previous reaction is yes.',
         );
@@ -911,53 +1005,62 @@ export class PatientService {
     // =========================================
     // Upsert patient vaccination history
     // =========================================
-    return this.prisma.patientVaccinationHistory.upsert({
-      where: {
-        patientId,
+
+    return this.prisma.patientVaccinationHistory.upsert(
+      {
+        where: {
+          patientId,
+        },
+
+        create: {
+          patientId,
+
+          vaccinationStatus:
+            dto.vaccinationStatus,
+
+          missedVaccines,
+
+          partialReason,
+
+          partialOtherDetails,
+
+          unvaccinatedReason,
+
+          unvaccinatedOtherDetails,
+
+          previousReaction:
+            dto.previousReaction ??
+            false,
+
+          reactionSeverity,
+
+          reactionDetails,
+        },
+
+        update: {
+          vaccinationStatus:
+            dto.vaccinationStatus,
+
+          missedVaccines,
+
+          partialReason,
+
+          partialOtherDetails,
+
+          unvaccinatedReason,
+
+          unvaccinatedOtherDetails,
+
+          previousReaction:
+            dto.previousReaction ??
+            false,
+
+          reactionSeverity,
+
+          reactionDetails,
+        },
       },
-
-      create: {
-        patientId,
-
-        vaccinationStatus:
-          dto.vaccinationStatus,
-
-        missedVaccines,
-
-        partialReason,
-        partialOtherDetails,
-
-        unvaccinatedReason,
-        unvaccinatedOtherDetails,
-
-        previousReaction:
-          dto.previousReaction ?? false,
-
-        reactionSeverity,
-        reactionDetails,
-      },
-
-      update: {
-        vaccinationStatus:
-          dto.vaccinationStatus,
-
-        // Clear old conditional data when
-        // vaccination status changes.
-        missedVaccines,
-
-        partialReason,
-        partialOtherDetails,
-
-        unvaccinatedReason,
-        unvaccinatedOtherDetails,
-
-        previousReaction:
-          dto.previousReaction ?? false,
-
-        reactionSeverity,
-        reactionDetails,
-      },
-    });
+    );
   }
 
   async getVaccinationHistory(
@@ -969,11 +1072,13 @@ export class PatientService {
       patientId,
     );
 
-    return this.prisma.patientVaccinationHistory.findUnique({
-      where: {
-        patientId,
+    return this.prisma.patientVaccinationHistory.findUnique(
+      {
+        where: {
+          patientId,
+        },
       },
-    });
+    );
   }
 
   async savePastHistory(
@@ -992,195 +1097,294 @@ export class PatientService {
         // Remove previous Past History
         // =========================================
 
-        await tx.patientChronicDisease.deleteMany({
-          where: {
-            patientId,
+        await tx.patientChronicDisease.deleteMany(
+          {
+            where: {
+              patientId,
+            },
           },
-        });
+        );
 
-        await tx.patientHospitalization.deleteMany({
-          where: {
-            patientId,
+        await tx.patientHospitalization.deleteMany(
+          {
+            where: {
+              patientId,
+            },
           },
-        });
+        );
 
-        await tx.patientOperation.deleteMany({
-          where: {
-            patientId,
+        await tx.patientOperation.deleteMany(
+          {
+            where: {
+              patientId,
+            },
           },
-        });
+        );
 
-        await tx.patientBloodTransfusion.deleteMany({
-          where: {
-            patientId,
+        await tx.patientBloodTransfusion.deleteMany(
+          {
+            where: {
+              patientId,
+            },
           },
-        });
+        );
 
-        await tx.patientMajorTrauma.deleteMany({
-          where: {
-            patientId,
+        await tx.patientMajorTrauma.deleteMany(
+          {
+            where: {
+              patientId,
+            },
           },
-        });
+        );
 
-        await tx.patientICUAdmission.deleteMany({
-          where: {
-            patientId,
+        await tx.patientICUAdmission.deleteMany(
+          {
+            where: {
+              patientId,
+            },
           },
-        });
+        );
 
         // =========================================
         // Create Chronic Diseases
         // =========================================
 
-        if (dto.chronicDiseases.length > 0) {
-          await tx.patientChronicDisease.createMany({
-            data: dto.chronicDiseases.map(
-              (disease) => ({
-                patientId,
-                diseaseCode:
-                  disease.diseaseCode,
-                diseaseName:
-                  disease.diseaseName,
-                notes:
-                  disease.notes?.trim() || null,
-              }),
-            ),
-          });
+        if (
+          dto.chronicDiseases.length >
+          0
+        ) {
+          await tx.patientChronicDisease.createMany(
+            {
+              data:
+                dto.chronicDiseases.map(
+                  (disease) => ({
+                    patientId,
+
+                    diseaseCode:
+                      disease.diseaseCode,
+
+                    diseaseName:
+                      disease.diseaseName,
+
+                    notes:
+                      disease.notes?.trim() ||
+                      null,
+                  }),
+                ),
+            },
+          );
         }
 
         // =========================================
         // Create Hospitalizations
         // =========================================
 
-        if (dto.hospitalizations.length > 0) {
-          await tx.patientHospitalization.createMany({
-            data: dto.hospitalizations.map(
-              (item) => ({
-                patientId,
-                reason: item.reason.trim(),
-                date: item.date
-                  ? new Date(item.date)
-                  : null,
-                duration:
-                  item.duration?.trim() || null,
-                notes:
-                  item.notes?.trim() || null,
-              }),
-            ),
-          });
+        if (
+          dto.hospitalizations.length >
+          0
+        ) {
+          await tx.patientHospitalization.createMany(
+            {
+              data:
+                dto.hospitalizations.map(
+                  (item) => ({
+                    patientId,
+
+                    reason:
+                      item.reason.trim(),
+
+                    date: item.date
+                      ? new Date(
+                          item.date,
+                        )
+                      : null,
+
+                    duration:
+                      item.duration?.trim() ||
+                      null,
+
+                    notes:
+                      item.notes?.trim() ||
+                      null,
+                  }),
+                ),
+            },
+          );
         }
 
         // =========================================
         // Create Operations
         // =========================================
 
-        if (dto.operations.length > 0) {
-          await tx.patientOperation.createMany({
-            data: dto.operations.map(
-              (item) => ({
-                patientId,
-                operationName:
-                  item.operationName.trim(),
-                date: item.date
-                  ? new Date(item.date)
-                  : null,
-                indication:
-                  item.indication?.trim() || null,
-                notes:
-                  item.notes?.trim() || null,
-              }),
-            ),
-          });
+        if (
+          dto.operations.length >
+          0
+        ) {
+          await tx.patientOperation.createMany(
+            {
+              data:
+                dto.operations.map(
+                  (item) => ({
+                    patientId,
+
+                    operationName:
+                      item.operationName.trim(),
+
+                    date: item.date
+                      ? new Date(
+                          item.date,
+                        )
+                      : null,
+
+                    indication:
+                      item.indication?.trim() ||
+                      null,
+
+                    notes:
+                      item.notes?.trim() ||
+                      null,
+                  }),
+                ),
+            },
+          );
         }
 
         // =========================================
         // Create Blood Transfusions
         // =========================================
 
-        if (dto.bloodTransfusions.length > 0) {
-          await tx.patientBloodTransfusion.createMany({
-            data: dto.bloodTransfusions.map(
-              (item) => ({
-                patientId,
-                reason:
-                  item.reason?.trim() || null,
-                date: item.date
-                  ? new Date(item.date)
-                  : null,
-                reaction:
-                  item.reaction?.trim() || null,
-                notes:
-                  item.notes?.trim() || null,
-              }),
-            ),
-          });
+        if (
+          dto.bloodTransfusions.length >
+          0
+        ) {
+          await tx.patientBloodTransfusion.createMany(
+            {
+              data:
+                dto.bloodTransfusions.map(
+                  (item) => ({
+                    patientId,
+
+                    reason:
+                      item.reason?.trim() ||
+                      null,
+
+                    date: item.date
+                      ? new Date(
+                          item.date,
+                        )
+                      : null,
+
+                    reaction:
+                      item.reaction?.trim() ||
+                      null,
+
+                    notes:
+                      item.notes?.trim() ||
+                      null,
+                  }),
+                ),
+            },
+          );
         }
 
         // =========================================
         // Create Major Traumas
         // =========================================
 
-        if (dto.majorTraumas.length > 0) {
-          await tx.patientMajorTrauma.createMany({
-            data: dto.majorTraumas.map(
-              (item) => ({
-                patientId,
-                traumaType:
-                  item.traumaType.trim(),
-                date: item.date
-                  ? new Date(item.date)
-                  : null,
-                complications:
-                  item.complications?.trim() ||
-                  null,
-                notes:
-                  item.notes?.trim() || null,
-              }),
-            ),
-          });
+        if (
+          dto.majorTraumas.length >
+          0
+        ) {
+          await tx.patientMajorTrauma.createMany(
+            {
+              data:
+                dto.majorTraumas.map(
+                  (item) => ({
+                    patientId,
+
+                    traumaType:
+                      item.traumaType.trim(),
+
+                    date: item.date
+                      ? new Date(
+                          item.date,
+                        )
+                      : null,
+
+                    complications:
+                      item.complications?.trim() ||
+                      null,
+
+                    notes:
+                      item.notes?.trim() ||
+                      null,
+                  }),
+                ),
+            },
+          );
         }
 
         // =========================================
         // Create ICU Admissions
         // =========================================
 
-        if (dto.icuAdmissions.length > 0) {
-          await tx.patientICUAdmission.createMany({
-            data: dto.icuAdmissions.map(
-              (item) => ({
-                patientId,
-                reason: item.reason.trim(),
-                date: item.date
-                  ? new Date(item.date)
-                  : null,
-                duration:
-                  item.duration?.trim() || null,
-                ventilatorSupport:
-                  item.ventilatorSupport ?? false,
-                notes:
-                  item.notes?.trim() || null,
-              }),
-            ),
-          });
+        if (
+          dto.icuAdmissions.length >
+          0
+        ) {
+          await tx.patientICUAdmission.createMany(
+            {
+              data:
+                dto.icuAdmissions.map(
+                  (item) => ({
+                    patientId,
+
+                    reason:
+                      item.reason.trim(),
+
+                    date: item.date
+                      ? new Date(
+                          item.date,
+                        )
+                      : null,
+
+                    duration:
+                      item.duration?.trim() ||
+                      null,
+
+                    ventilatorSupport:
+                      item.ventilatorSupport ??
+                      false,
+
+                    notes:
+                      item.notes?.trim() ||
+                      null,
+                  }),
+                ),
+            },
+          );
         }
 
         // =========================================
         // Return complete Past History
         // =========================================
 
-        return tx.patient.findUnique({
-          where: {
-            id: patientId,
+        return tx.patient.findUnique(
+          {
+            where: {
+              id: patientId,
+            },
+
+            select: {
+              chronicDiseases: true,
+              hospitalizations: true,
+              operations: true,
+              bloodTransfusions: true,
+              majorTraumas: true,
+              icuAdmissions: true,
+            },
           },
-          select: {
-            chronicDiseases: true,
-            hospitalizations: true,
-            operations: true,
-            bloodTransfusions: true,
-            majorTraumas: true,
-            icuAdmissions: true,
-          },
-        });
+        );
       },
     );
   }
@@ -1194,19 +1398,22 @@ export class PatientService {
       patientId,
     );
 
-    return this.prisma.patient.findUnique({
-      where: {
-        id: patientId,
+    return this.prisma.patient.findUnique(
+      {
+        where: {
+          id: patientId,
+        },
+
+        select: {
+          chronicDiseases: true,
+          hospitalizations: true,
+          operations: true,
+          bloodTransfusions: true,
+          majorTraumas: true,
+          icuAdmissions: true,
+        },
       },
-      select: {
-        chronicDiseases: true,
-        hospitalizations: true,
-        operations: true,
-        bloodTransfusions: true,
-        majorTraumas: true,
-        icuAdmissions: true,
-      },
-    });
+    );
   }
 
   async saveDrugHistory(
@@ -1232,7 +1439,8 @@ export class PatientService {
       !dto.selfMedication &&
       dto.selfMedicationDetails
     ) {
-      dto.selfMedicationDetails = undefined;
+      dto.selfMedicationDetails =
+        undefined;
     }
 
     if (
@@ -1248,33 +1456,53 @@ export class PatientService {
       !dto.takesSupplements &&
       dto.supplementDetails
     ) {
-      dto.supplementDetails = undefined;
+      dto.supplementDetails =
+        undefined;
     }
 
     return this.prisma.$transaction(
       async (tx) => {
-        await tx.patientMedication.deleteMany({
-          where: {
-            patientId,
-          },
-        });
-
-        if (dto.medications.length > 0) {
-          await tx.patientMedication.createMany({
-            data: dto.medications.map((medication) => ({
+        await tx.patientMedication.deleteMany(
+          {
+            where: {
               patientId,
-              medicationName:
-                medication.medicationName.trim(),
-              dose:
-                medication.dose?.trim() || null,
-              durationValue:
-                medication.durationValue ?? null,
-              durationUnit:
-                medication.durationUnit ?? null,
-              notes:
-                medication.notes?.trim() || null,
-            })),
-          });
+            },
+          },
+        );
+
+        if (
+          dto.medications.length >
+          0
+        ) {
+          await tx.patientMedication.createMany(
+            {
+              data:
+                dto.medications.map(
+                  (medication) => ({
+                    patientId,
+
+                    medicationName:
+                      medication.medicationName.trim(),
+
+                    dose:
+                      medication.dose?.trim() ||
+                      null,
+
+                    durationValue:
+                      medication.durationValue ??
+                      null,
+
+                    durationUnit:
+                      medication.durationUnit ??
+                      null,
+
+                    notes:
+                      medication.notes?.trim() ||
+                      null,
+                  }),
+                ),
+            },
+          );
         }
 
         const patient =
@@ -1282,9 +1510,11 @@ export class PatientService {
             where: {
               id: patientId,
             },
+
             data: {
               medicationCompliance:
-                dto.medicationCompliance ?? null,
+                dto.medicationCompliance ??
+                null,
 
               selfMedication:
                 dto.selfMedication,
@@ -1304,6 +1534,7 @@ export class PatientService {
                     null
                   : null,
             },
+
             select: {
               medications: true,
               medicationCompliance: true,
@@ -1328,19 +1559,22 @@ export class PatientService {
       patientId,
     );
 
-    return this.prisma.patient.findUnique({
-      where: {
-        id: patientId,
+    return this.prisma.patient.findUnique(
+      {
+        where: {
+          id: patientId,
+        },
+
+        select: {
+          medications: true,
+          medicationCompliance: true,
+          selfMedication: true,
+          selfMedicationDetails: true,
+          takesSupplements: true,
+          supplementDetails: true,
+        },
       },
-      select: {
-        medications: true,
-        medicationCompliance: true,
-        selfMedication: true,
-        selfMedicationDetails: true,
-        takesSupplements: true,
-        supplementDetails: true,
-      },
-    });
+    );
   }
 
   async saveAllergyHistory(
@@ -1371,10 +1605,10 @@ export class PatientService {
       );
     }
 
-    if (
-      dto.hasAllergy
-    ) {
-      for (const allergy of dto.allergies) {
+    if (dto.hasAllergy) {
+      for (
+        const allergy of dto.allergies
+      ) {
         if (
           allergy.type === 'OTHER' &&
           !allergy.allergen.trim()
@@ -1388,48 +1622,58 @@ export class PatientService {
 
     return this.prisma.$transaction(
       async (tx) => {
-        await tx.patientAllergy.deleteMany({
-          where: {
-            patientId,
+        await tx.patientAllergy.deleteMany(
+          {
+            where: {
+              patientId,
+            },
           },
-        });
+        );
 
         if (
           dto.hasAllergy &&
-          dto.allergies.length > 0
+          dto.allergies.length >
+            0
         ) {
-          await tx.patientAllergy.createMany({
-            data: dto.allergies.map(
-              (allergy) => ({
-                patientId,
+          await tx.patientAllergy.createMany(
+            {
+              data:
+                dto.allergies.map(
+                  (allergy) => ({
+                    patientId,
 
-                type: allergy.type,
+                    type:
+                      allergy.type,
 
-                allergen:
-                  allergy.allergen.trim(),
+                    allergen:
+                      allergy.allergen.trim(),
 
-                reaction:
-                  allergy.reaction?.trim() ||
-                  null,
+                    reaction:
+                      allergy.reaction?.trim() ||
+                      null,
 
-                severity:
-                  allergy.severity,
+                    severity:
+                      allergy.severity,
 
-                notes:
-                  allergy.notes?.trim() ||
-                  null,
-              }),
-            ),
-          });
+                    notes:
+                      allergy.notes?.trim() ||
+                      null,
+                  }),
+                ),
+            },
+          );
         }
 
         return tx.patient.update({
           where: {
             id: patientId,
           },
+
           data: {
-            hasAllergy: dto.hasAllergy,
+            hasAllergy:
+              dto.hasAllergy,
           },
+
           select: {
             hasAllergy: true,
             allergies: true,
@@ -1448,15 +1692,18 @@ export class PatientService {
       patientId,
     );
 
-    return this.prisma.patient.findUnique({
-      where: {
-        id: patientId,
+    return this.prisma.patient.findUnique(
+      {
+        where: {
+          id: patientId,
+        },
+
+        select: {
+          hasAllergy: true,
+          allergies: true,
+        },
       },
-      select: {
-        hasAllergy: true,
-        allergies: true,
-      },
-    });
+    );
   }
 
   async saveFamilyHistory(
@@ -1469,9 +1716,12 @@ export class PatientService {
       patientId,
     );
 
-    for (const member of dto.familyHistory) {
+    for (
+      const member of dto.familyHistory
+    ) {
       if (
-        member.relation === 'OTHER' &&
+        member.relation ===
+          'OTHER' &&
         !member.otherRelation?.trim()
       ) {
         throw new BadRequestException(
@@ -1480,7 +1730,8 @@ export class PatientService {
       }
 
       if (
-        member.relation !== 'OTHER' &&
+        member.relation !==
+          'OTHER' &&
         member.otherRelation?.trim()
       ) {
         throw new BadRequestException(
@@ -1490,7 +1741,8 @@ export class PatientService {
 
       if (!member.alive) {
         if (
-          member.ageAtDeath === undefined &&
+          member.ageAtDeath ===
+            undefined &&
           !member.causeOfDeath?.trim()
         ) {
           throw new BadRequestException(
@@ -1501,7 +1753,8 @@ export class PatientService {
 
       if (member.alive) {
         if (
-          member.ageAtDeath !== undefined ||
+          member.ageAtDeath !==
+            undefined ||
           member.causeOfDeath?.trim()
         ) {
           throw new BadRequestException(
@@ -1513,67 +1766,78 @@ export class PatientService {
 
     return this.prisma.$transaction(
       async (tx) => {
-        await tx.patientFamilyHistory.deleteMany({
-          where: {
-            patientId,
+        await tx.patientFamilyHistory.deleteMany(
+          {
+            where: {
+              patientId,
+            },
           },
-        });
+        );
 
         if (
-          dto.familyHistory.length > 0
+          dto.familyHistory.length >
+          0
         ) {
-          await tx.patientFamilyHistory.createMany({
-            data: dto.familyHistory.map(
-              (member) => ({
-                patientId,
+          await tx.patientFamilyHistory.createMany(
+            {
+              data:
+                dto.familyHistory.map(
+                  (member) => ({
+                    patientId,
 
-                relation:
-                  member.relation,
+                    relation:
+                      member.relation,
 
-                otherRelation:
-                  member.relation === 'OTHER'
-                    ? member.otherRelation?.trim() ||
-                      null
-                    : null,
+                    otherRelation:
+                      member.relation ===
+                      'OTHER'
+                        ? member.otherRelation?.trim() ||
+                          null
+                        : null,
 
-                diseases:
-                  member.diseases
-                    .map((disease) =>
-                      disease.trim(),
-                    )
-                    .filter(Boolean),
+                    diseases:
+                      member.diseases
+                        .map(
+                          (disease) =>
+                            disease.trim(),
+                        )
+                        .filter(Boolean),
 
-                alive:
-                  member.alive,
+                    alive:
+                      member.alive,
 
-                ageAtDeath:
-                  member.alive
-                    ? null
-                    : member.ageAtDeath ??
+                    ageAtDeath:
+                      member.alive
+                        ? null
+                        : member.ageAtDeath ??
+                          null,
+
+                    causeOfDeath:
+                      member.alive
+                        ? null
+                        : member.causeOfDeath?.trim() ||
+                          null,
+
+                    notes:
+                      member.notes?.trim() ||
                       null,
-
-                causeOfDeath:
-                  member.alive
-                    ? null
-                    : member.causeOfDeath?.trim() ||
-                      null,
-
-                notes:
-                  member.notes?.trim() ||
-                  null,
-              }),
-            ),
-          });
+                  }),
+                ),
+            },
+          );
         }
 
-        return tx.patient.findUnique({
-          where: {
-            id: patientId,
+        return tx.patient.findUnique(
+          {
+            where: {
+              id: patientId,
+            },
+
+            select: {
+              familyHistory: true,
+            },
           },
-          select: {
-            familyHistory: true,
-          },
-        });
+        );
       },
     );
   }
@@ -1587,14 +1851,17 @@ export class PatientService {
       patientId,
     );
 
-    return this.prisma.patient.findUnique({
-      where: {
-        id: patientId,
+    return this.prisma.patient.findUnique(
+      {
+        where: {
+          id: patientId,
+        },
+
+        select: {
+          familyHistory: true,
+        },
       },
-      select: {
-        familyHistory: true,
-      },
-    });
+    );
   }
 
   async saveSocialHistory(
@@ -1612,10 +1879,12 @@ export class PatientService {
     // =========================
 
     if (
-      dto.smoking === 'CURRENT'
+      dto.smoking ===
+      'CURRENT'
     ) {
       if (
-        dto.cigarettesPerDay === undefined
+        dto.cigarettesPerDay ===
+          undefined
       ) {
         throw new BadRequestException(
           'Cigarettes per day is required for current smokers.',
@@ -1623,7 +1892,8 @@ export class PatientService {
       }
 
       if (
-        dto.yearsSmoking === undefined
+        dto.yearsSmoking ===
+          undefined
       ) {
         throw new BadRequestException(
           'Years of smoking is required for current smokers.',
@@ -1633,7 +1903,8 @@ export class PatientService {
 
     if (
       dto.smoking === 'FORMER' &&
-      dto.yearsSinceQuitting === undefined
+      dto.yearsSinceQuitting ===
+        undefined
     ) {
       throw new BadRequestException(
         'Years since quitting is required for former smokers.',
@@ -1643,9 +1914,14 @@ export class PatientService {
     if (
       dto.smoking === 'NEVER'
     ) {
-      dto.cigarettesPerDay = undefined;
-      dto.yearsSmoking = undefined;
-      dto.yearsSinceQuitting = undefined;
+      dto.cigarettesPerDay =
+        undefined;
+
+      dto.yearsSmoking =
+        undefined;
+
+      dto.yearsSinceQuitting =
+        undefined;
     }
 
     // =========================
@@ -1655,18 +1931,22 @@ export class PatientService {
     if (
       dto.alcohol === 'CURRENT'
     ) {
-      if (!dto.alcoholFrequency) {
+      if (
+        !dto.alcoholFrequency
+      ) {
         throw new BadRequestException(
           'Alcohol frequency is required for current alcohol use.',
         );
       }
 
-      dto.yearsSinceStopping = undefined;
+      dto.yearsSinceStopping =
+        undefined;
     }
 
     if (
       dto.alcohol === 'FORMER' &&
-      dto.yearsSinceStopping === undefined
+      dto.yearsSinceStopping ===
+        undefined
     ) {
       throw new BadRequestException(
         'Years since stopping is required for former alcohol use.',
@@ -1676,8 +1956,11 @@ export class PatientService {
     if (
       dto.alcohol === 'NO'
     ) {
-      dto.alcoholFrequency = undefined;
-      dto.yearsSinceStopping = undefined;
+      dto.alcoholFrequency =
+        undefined;
+
+      dto.yearsSinceStopping =
+        undefined;
     }
 
     // =========================
@@ -1686,13 +1969,16 @@ export class PatientService {
 
     const substanceUse =
       dto.substanceUse
-        .map((item) => item.trim())
+        .map((item) =>
+          item.trim(),
+        )
         .filter(Boolean);
 
     if (
       substanceUse.length === 0
     ) {
-      dto.substanceNotes = undefined;
+      dto.substanceNotes =
+        undefined;
     }
 
     // =========================
@@ -1700,7 +1986,8 @@ export class PatientService {
     // =========================
 
     if (
-      dto.livingCondition !== 'OTHER'
+      dto.livingCondition !==
+      'OTHER'
     ) {
       dto.livingConditionNotes =
         undefined;
@@ -1710,163 +1997,185 @@ export class PatientService {
     // Save
     // =========================
 
-    return this.prisma.patientSocialHistory.upsert({
-      where: {
-        patientId,
+    return this.prisma.patientSocialHistory.upsert(
+      {
+        where: {
+          patientId,
+        },
+
+        create: {
+          patientId,
+
+          smoking:
+            dto.smoking ?? null,
+
+          cigarettesPerDay:
+            dto.smoking === 'CURRENT'
+              ? dto.cigarettesPerDay ??
+                null
+              : null,
+
+          yearsSmoking:
+            dto.smoking === 'CURRENT' ||
+            dto.smoking === 'FORMER'
+              ? dto.yearsSmoking ??
+                null
+              : null,
+
+          yearsSinceQuitting:
+            dto.smoking === 'FORMER'
+              ? dto.yearsSinceQuitting ??
+                null
+              : null,
+
+          alcohol:
+            dto.alcohol ?? null,
+
+          alcoholFrequency:
+            dto.alcohol === 'CURRENT'
+              ? dto.alcoholFrequency ??
+                null
+              : null,
+
+          yearsSinceStopping:
+            dto.alcohol === 'FORMER'
+              ? dto.yearsSinceStopping ??
+                null
+              : null,
+
+          livingCondition:
+            dto.livingCondition ??
+            null,
+
+          livingConditionNotes:
+            dto.livingConditionNotes?.trim() ||
+            null,
+
+          substanceUse,
+
+          substanceNotes:
+            dto.substanceNotes?.trim() ||
+            null,
+
+          physicalActivity:
+            dto.physicalActivity ??
+            null,
+
+          physicalActivityNotes:
+            dto.physicalActivityNotes?.trim() ||
+            null,
+
+          sleepDuration:
+            dto.sleepDuration ??
+            null,
+
+          sleepNotes:
+            dto.sleepNotes?.trim() ||
+            null,
+
+          socialSupport:
+            dto.socialSupport ??
+            null,
+
+          socialSupportNotes:
+            dto.socialSupportNotes?.trim() ||
+            null,
+
+          sexualHistory:
+            dto.sexualHistory ??
+            null,
+
+          sexualHistoryNotes:
+            dto.sexualHistoryNotes?.trim() ||
+            null,
+        },
+
+        update: {
+          smoking:
+            dto.smoking ?? null,
+
+          cigarettesPerDay:
+            dto.smoking === 'CURRENT'
+              ? dto.cigarettesPerDay ??
+                null
+              : null,
+
+          yearsSmoking:
+            dto.smoking === 'CURRENT' ||
+            dto.smoking === 'FORMER'
+              ? dto.yearsSmoking ??
+                null
+              : null,
+
+          yearsSinceQuitting:
+            dto.smoking === 'FORMER'
+              ? dto.yearsSinceQuitting ??
+                null
+              : null,
+
+          alcohol:
+            dto.alcohol ?? null,
+
+          alcoholFrequency:
+            dto.alcohol === 'CURRENT'
+              ? dto.alcoholFrequency ??
+                null
+              : null,
+
+          yearsSinceStopping:
+            dto.alcohol === 'FORMER'
+              ? dto.yearsSinceStopping ??
+                null
+              : null,
+
+          livingCondition:
+            dto.livingCondition ??
+            null,
+
+          livingConditionNotes:
+            dto.livingConditionNotes?.trim() ||
+            null,
+
+          substanceUse,
+
+          substanceNotes:
+            dto.substanceNotes?.trim() ||
+            null,
+
+          physicalActivity:
+            dto.physicalActivity ??
+            null,
+
+          physicalActivityNotes:
+            dto.physicalActivityNotes?.trim() ||
+            null,
+
+          sleepDuration:
+            dto.sleepDuration ??
+            null,
+
+          sleepNotes:
+            dto.sleepNotes?.trim() ||
+            null,
+
+          socialSupport:
+            dto.socialSupport ??
+            null,
+
+          socialSupportNotes:
+            dto.socialSupportNotes?.trim() ||
+            null,
+
+          sexualHistory:
+            dto.sexualHistory ??
+            null,
+
+          sexualHistoryNotes:
+            dto.sexualHistoryNotes?.trim() ||
+            null,
+        },
       },
-
-      create: {
-        patientId,
-
-        smoking:
-          dto.smoking ?? null,
-
-        cigarettesPerDay:
-          dto.smoking === 'CURRENT'
-            ? dto.cigarettesPerDay ?? null
-            : null,
-
-        yearsSmoking:
-          dto.smoking === 'CURRENT' ||
-          dto.smoking === 'FORMER'
-            ? dto.yearsSmoking ?? null
-            : null,
-
-        yearsSinceQuitting:
-          dto.smoking === 'FORMER'
-            ? dto.yearsSinceQuitting ?? null
-            : null,
-
-        alcohol:
-          dto.alcohol ?? null,
-
-        alcoholFrequency:
-          dto.alcohol === 'CURRENT'
-            ? dto.alcoholFrequency ?? null
-            : null,
-
-        yearsSinceStopping:
-          dto.alcohol === 'FORMER'
-            ? dto.yearsSinceStopping ?? null
-            : null,
-
-        livingCondition:
-          dto.livingCondition ?? null,
-
-        livingConditionNotes:
-          dto.livingConditionNotes
-            ?.trim() || null,
-
-        substanceUse,
-
-        substanceNotes:
-          dto.substanceNotes?.trim() ||
-          null,
-
-        physicalActivity:
-          dto.physicalActivity ?? null,
-
-        physicalActivityNotes:
-          dto.physicalActivityNotes
-            ?.trim() || null,
-
-        sleepDuration:
-          dto.sleepDuration ?? null,
-
-        sleepNotes:
-          dto.sleepNotes?.trim() ||
-          null,
-
-        socialSupport:
-          dto.socialSupport ?? null,
-
-        socialSupportNotes:
-          dto.socialSupportNotes
-            ?.trim() || null,
-
-        sexualHistory:
-          dto.sexualHistory ?? null,
-
-        sexualHistoryNotes:
-          dto.sexualHistoryNotes
-            ?.trim() || null,
-      },
-
-      update: {
-        smoking:
-          dto.smoking ?? null,
-
-        cigarettesPerDay:
-          dto.smoking === 'CURRENT'
-            ? dto.cigarettesPerDay ?? null
-            : null,
-
-        yearsSmoking:
-          dto.smoking === 'CURRENT' ||
-          dto.smoking === 'FORMER'
-            ? dto.yearsSmoking ?? null
-            : null,
-
-        yearsSinceQuitting:
-          dto.smoking === 'FORMER'
-            ? dto.yearsSinceQuitting ?? null
-            : null,
-
-        alcohol:
-          dto.alcohol ?? null,
-
-        alcoholFrequency:
-          dto.alcohol === 'CURRENT'
-            ? dto.alcoholFrequency ?? null
-            : null,
-
-        yearsSinceStopping:
-          dto.alcohol === 'FORMER'
-            ? dto.yearsSinceStopping ?? null
-            : null,
-
-        livingCondition:
-          dto.livingCondition ?? null,
-
-        livingConditionNotes:
-          dto.livingConditionNotes
-            ?.trim() || null,
-
-        substanceUse,
-
-        substanceNotes:
-          dto.substanceNotes?.trim() ||
-          null,
-
-        physicalActivity:
-          dto.physicalActivity ?? null,
-
-        physicalActivityNotes:
-          dto.physicalActivityNotes
-            ?.trim() || null,
-
-        sleepDuration:
-          dto.sleepDuration ?? null,
-
-        sleepNotes:
-          dto.sleepNotes?.trim() ||
-          null,
-
-        socialSupport:
-          dto.socialSupport ?? null,
-
-        socialSupportNotes:
-          dto.socialSupportNotes
-            ?.trim() || null,
-
-        sexualHistory:
-          dto.sexualHistory ?? null,
-
-        sexualHistoryNotes:
-          dto.sexualHistoryNotes
-            ?.trim() || null,
-      },
-    });
+    );
   }
 
   async getSocialHistory(
@@ -1879,9 +2188,9 @@ export class PatientService {
     );
 
     return this.prisma.patientSocialHistory.findUnique({
-      where: {
-        patientId,
-      },
+        where: {
+          patientId,
+        },
     });
   }
 

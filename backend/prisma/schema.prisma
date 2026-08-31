@@ -49,38 +49,11 @@ enum WeekDay {
   FRIDAY
 }
 
-// =========================
-// Patient
-// =========================
-
-enum Gender {
-  MALE
-  FEMALE
+enum InvestigationStatus {
+  REQUESTED
+  COMPLETED
+  CANCELLED
 }
-
-enum PatientIdentifierType {
-  NATIONAL_ID
-  PASSPORT
-  OTHER
-  UNKNOWN
-}
-
-enum AgeUnit {
-  YEARS
-  MONTHS
-  DAYS
-}
-
-enum MaritalStatus {
-  SINGLE
-  MARRIED
-  DIVORCED
-  WIDOWED
-}
-
-// =========================
-// Visit
-// =========================
 
 enum VisitStatus {
   WAITING
@@ -89,320 +62,14 @@ enum VisitStatus {
   CANCELLED
 }
 
-enum DurationUnit {
-  HOURS
-  DAYS
-  WEEKS
-  MONTHS
-  YEARS
+enum Gender {
+  MALE
+  FEMALE
 }
 
 // =========================
-// Patient History
+// User
 // =========================
-
-enum MedicationCompliance {
-  GOOD
-  POOR
-  IRREGULAR
-}
-
-enum AllergyType {
-  DRUG
-  FOOD
-  ENVIRONMENTAL
-  OTHER
-}
-
-enum AllergySeverity {
-  MILD
-  MODERATE
-  SEVERE
-  ANAPHYLAXIS
-}
-
-enum FamilyRelation {
-  FATHER
-  MOTHER
-  BROTHER
-  SISTER
-  SON
-  DAUGHTER
-  GRANDFATHER
-  GRANDMOTHER
-  UNCLE
-  AUNT
-  COUSIN
-  OTHER
-}
-
-enum SmokingStatus {
-  NEVER
-  CURRENT
-  FORMER
-}
-
-enum AlcoholStatus {
-  NO
-  CURRENT
-  FORMER
-}
-
-enum AlcoholFrequency {
-  OCCASIONAL
-  WEEKLY
-  DAILY
-  HEAVY
-}
-
-enum LivingCondition {
-  LIVES_ALONE
-  LIVES_WITH_FAMILY
-  NURSING_HOME
-  HOMELESS
-  OTHER
-}
-
-enum PhysicalActivityLevel {
-  SEDENTARY
-  LIGHT
-  MODERATE
-  HEAVY
-}
-
-enum SleepDuration {
-  LESS_THAN_5
-  HOURS_5_TO_7
-  HOURS_7_TO_9
-  MORE_THAN_9
-}
-
-enum SocialSupportLevel {
-  GOOD
-  LIMITED
-  NO_SUPPORT
-  CAREGIVER_AVAILABLE
-}
-
-enum SexualHistoryStatus {
-  NOT_DISCUSSED
-  SEXUALLY_ACTIVE
-  NOT_ACTIVE
-}
-
-enum VaccinationStatus {
-  UP_TO_DATE
-  PARTIALLY_VACCINATED
-  UNVACCINATED
-  UNKNOWN
-}
-
-enum VaccinationReason {
-  MISSED_APPOINTMENT
-  VACCINE_UNAVAILABLE
-  MEDICAL_CONTRAINDICATION
-  PARENT_REFUSED
-  ACCESS_PROBLEMS
-  UNKNOWN
-  OTHER
-}
-
-enum ReactionSeverity {
-  MILD
-  MODERATE
-  SEVERE
-}
-
-// =========================
-// Pediatric & Obstetric
-// =========================
-
-enum AntenatalCare {
-  REGULAR
-  IRREGULAR
-  NONE
-  UNKNOWN
-}
-
-enum SmokingExposure {
-  NO
-  PASSIVE
-  MATERNAL_SMOKING
-}
-
-enum GestationalAge {
-  TERM
-  PRETERM
-  POST_TERM
-  UNKNOWN
-}
-
-enum DeliveryMode {
-  NORMAL_VAGINAL
-  CESAREAN
-  INSTRUMENTAL
-  UNKNOWN
-}
-
-enum DevelopmentStatus {
-  NORMAL
-  DELAYED
-  UNKNOWN
-}
-
-enum DelayType {
-  GROSS_MOTOR
-  FINE_MOTOR
-  SPEECH
-  SOCIAL
-  MULTIPLE
-}
-
-enum SchoolPerformance {
-  GOOD
-  AVERAGE
-  POOR
-}
-
-enum SchoolAttendance {
-  REGULAR
-  IRREGULAR
-}
-
-// =========================
-// Menstrual History
-// =========================
-
-enum CycleRegularity {
-  REGULAR
-  IRREGULAR
-  UNKNOWN
-}
-
-enum BleedingDuration {
-  LESS_THAN_3_DAYS
-  DAYS_3_TO_7
-  MORE_THAN_7_DAYS
-}
-
-enum MenstrualFlow {
-  SCANTY
-  NORMAL
-  HEAVY
-  FLOODING
-}
-
-enum DysmenorrheaSeverity {
-  NONE
-  MILD
-  MODERATE
-  SEVERE
-}
-
-enum PainStart {
-  BEFORE_MENSES
-  FIRST_DAY
-  THROUGHOUT_MENSES
-}
-
-// =========================
-// Clinical Examination
-// =========================
-
-enum SystemType {
-  GENERAL
-  CVS
-  CHEST
-  GIT
-  RENAL
-  NEURO
-  MUSCULOSKELETAL
-  ENDOCRINE
-  HEMATOLOGY
-  SKIN
-  GYNECOLOGY
-  OBSTETRIC
-  ENT
-  OPHTHALMOLOGY
-}
-
-enum PulseRhythm {
-  REGULAR
-  IRREGULAR
-}
-
-enum OxygenSource {
-  ROOM_AIR
-  OXYGEN
-}
-
-enum TemperatureRoute {
-  ORAL
-  AXILLARY
-  TYMPANIC
-  TEMPORAL
-  RECTAL
-}
-
-enum ConsciousnessLevel {
-  CONSCIOUS
-  DROWSY
-  CONFUSED
-  COMATOSE
-}
-
-enum GeneralAppearance {
-  NORMAL
-  ILL
-  TOXIC
-  DISTRESSED
-}
-
-enum HydrationStatus {
-  NORMAL
-  MILD
-  MODERATE
-  SEVERE
-}
-
-enum BodyBuild {
-  AVERAGE
-  THIN
-  OBESE
-  ATHLETIC
-}
-
-enum NourishmentStatus {
-  WELL_NOURISHED
-  MALNOURISHED
-}
-
-enum RegionalExaminationArea {
-  HEAD
-  NECK
-  UPPER_LIMB
-  LOWER_LIMB
-}
-
-enum ExaminationSystem {
-  ABDOMEN
-  CHEST
-  CVS
-  ENDOCRINE
-  ENT
-  GYNECOLOGY
-  MUSCULOSKELETAL
-  NEUROLOGY
-  OBSTETRIC
-  OPHTHALMOLOGY
-  SKIN
-}
-
-enum InvestigationStatus {
-  REQUESTED
-  COMPLETED
-  CANCELLED
-}
 
 model User {
   id String @id @default(uuid())
@@ -458,6 +125,10 @@ model User {
   @@map("users")
 }
 
+// =========================
+// Clinic
+// =========================
+
 model Clinic {
   id String @id @default(uuid())
 
@@ -498,6 +169,10 @@ model Clinic {
   @@map("clinics")
 }
 
+// =========================
+// Clinic Member
+// =========================
+
 model ClinicMember {
   id String @id @default(uuid())
 
@@ -523,6 +198,10 @@ model ClinicMember {
   @@map("clinic_members")
 }
 
+// =========================
+// Clinic Working Shift
+// =========================
+
 model ClinicWorkingShift {
   id String @id @default(uuid())
 
@@ -539,6 +218,10 @@ model ClinicWorkingShift {
   @@index([workingDayId])
   @@map("clinic_working_shifts")
 }
+
+// =========================
+// Clinic Working Day
+// =========================
 
 model ClinicWorkingDay {
   id String @id @default(uuid())
@@ -559,6 +242,10 @@ model ClinicWorkingDay {
   @@map("clinic_working_days")
 }
 
+// =========================
+// Clinic Join Code
+// =========================
+
 model ClinicJoinCode {
   id String @id @default(uuid())
 
@@ -577,6 +264,10 @@ model ClinicJoinCode {
   @@map("clinic_join_codes")
 }
 
+// =========================
+// Patient
+// =========================
+
 model Patient {
   id String @id @default(uuid())
 
@@ -586,16 +277,16 @@ model Patient {
 
   fullName String
 
-  identifierType   PatientIdentifierType
+  identifierType   String
   identifierNumber String?
   documentType     String?
 
   dateOfBirth       DateTime?
   estimatedAgeValue Int?
-  estimatedAgeUnit  AgeUnit?
+  estimatedAgeUnit  String?
 
   gender        Gender
-  maritalStatus MaritalStatus
+  maritalStatus String
   childrenCount Int?
 
   phone      String?
@@ -623,10 +314,10 @@ model Patient {
 
   // Drug History
   medications           PatientMedication[]
-  medicationCompliance  MedicationCompliance?
-  selfMedication        Boolean               @default(false)
+  medicationCompliance  String?
+  selfMedication        Boolean @default(false)
   selfMedicationDetails String?
-  takesSupplements      Boolean               @default(false)
+  takesSupplements      Boolean @default(false)
   supplementDetails     String?
 
   // Allergy History
@@ -636,7 +327,7 @@ model Patient {
   // Family History
   familyHistory PatientFamilyHistory[]
 
-  // social History
+  // Social History
   socialHistory PatientSocialHistory?
 
   // Vaccination History
@@ -649,6 +340,10 @@ model Patient {
   @@index([phone])
   @@map("patients")
 }
+
+// =========================
+// Visit
+// =========================
 
 model Visit {
   id String @id @default(uuid())
@@ -693,12 +388,14 @@ model Visit {
   // Pediatric History
   pediatricHistory VisitPediatricHistory?
 
+  // Examination
   vitalSigns        VisitVitalSigns?
   generalInspection VisitGeneralInspection?
 
   regionalExaminations VisitRegionalExamination[]
   systemExaminations   VisitSystemExamination[]
 
+  // Assessment
   diagnosis VisitDiagnosis?
 
   investigations VisitInvestigation[]
@@ -715,6 +412,10 @@ model Visit {
   @@index([visitStatus])
   @@map("visits")
 }
+
+// =========================
+// Patient Chronic Disease
+// =========================
 
 model PatientChronicDisease {
   id String @id @default(uuid())
@@ -736,6 +437,10 @@ model PatientChronicDisease {
   @@map("patient_chronic_diseases")
 }
 
+// =========================
+// Patient Hospitalization
+// =========================
+
 model PatientHospitalization {
   id String @id @default(uuid())
 
@@ -755,6 +460,10 @@ model PatientHospitalization {
   @@index([patientId])
   @@map("patient_hospitalizations")
 }
+
+// =========================
+// Patient Operation
+// =========================
 
 model PatientOperation {
   id String @id @default(uuid())
@@ -776,6 +485,10 @@ model PatientOperation {
   @@map("patient_operations")
 }
 
+// =========================
+// Patient Blood Transfusion
+// =========================
+
 model PatientBloodTransfusion {
   id String @id @default(uuid())
 
@@ -795,6 +508,10 @@ model PatientBloodTransfusion {
   @@index([patientId])
   @@map("patient_blood_transfusions")
 }
+
+// =========================
+// Patient Major Trauma
+// =========================
 
 model PatientMajorTrauma {
   id String @id @default(uuid())
@@ -816,6 +533,10 @@ model PatientMajorTrauma {
   @@map("patient_major_traumas")
 }
 
+// =========================
+// Patient ICU Admission
+// =========================
+
 model PatientICUAdmission {
   id String @id @default(uuid())
 
@@ -824,7 +545,7 @@ model PatientICUAdmission {
   reason            String
   date              DateTime?
   duration          String?
-  ventilatorSupport Boolean   @default(false)
+  ventilatorSupport Boolean @default(false)
 
   notes String?
 
@@ -837,6 +558,10 @@ model PatientICUAdmission {
   @@map("patient_icu_admissions")
 }
 
+// =========================
+// Patient Medication
+// =========================
+
 model PatientMedication {
   id String @id @default(uuid())
 
@@ -846,7 +571,7 @@ model PatientMedication {
   dose           String?
 
   durationValue Int?
-  durationUnit  DurationUnit?
+  durationUnit  String?
 
   notes String?
 
@@ -859,15 +584,19 @@ model PatientMedication {
   @@map("patient_medications")
 }
 
+// =========================
+// Patient Allergy
+// =========================
+
 model PatientAllergy {
   id String @id @default(uuid())
 
   patientId String
 
-  type     AllergyType
+  type     String
   allergen String
   reaction String?
-  severity AllergySeverity
+  severity String
 
   notes String?
 
@@ -882,12 +611,16 @@ model PatientAllergy {
   @@map("patient_allergies")
 }
 
+// =========================
+// Patient Family History
+// =========================
+
 model PatientFamilyHistory {
   id String @id @default(uuid())
 
   patientId String
 
-  relation      FamilyRelation
+  relation      String
   otherRelation String?
 
   diseases String[]
@@ -909,36 +642,40 @@ model PatientFamilyHistory {
   @@map("patient_family_history")
 }
 
+// =========================
+// Patient Social History
+// =========================
+
 model PatientSocialHistory {
   id String @id @default(uuid())
 
   patientId String @unique
 
-  smoking            SmokingStatus?
+  smoking            String?
   cigarettesPerDay   Int?
   yearsSmoking       Int?
   yearsSinceQuitting Int?
 
-  alcohol            AlcoholStatus?
-  alcoholFrequency   AlcoholFrequency?
+  alcohol            String?
+  alcoholFrequency   String?
   yearsSinceStopping Int?
 
-  livingCondition      LivingCondition?
+  livingCondition      String?
   livingConditionNotes String?
 
   substanceUse   String[]
   substanceNotes String?
 
-  physicalActivity      PhysicalActivityLevel?
+  physicalActivity      String?
   physicalActivityNotes String?
 
-  sleepDuration SleepDuration?
+  sleepDuration String?
   sleepNotes    String?
 
-  socialSupport      SocialSupportLevel?
+  socialSupport      String?
   socialSupportNotes String?
 
-  sexualHistory      SexualHistoryStatus?
+  sexualHistory      String?
   sexualHistoryNotes String?
 
   createdAt DateTime @default(now())
@@ -949,24 +686,28 @@ model PatientSocialHistory {
   @@map("patient_social_history")
 }
 
+// =========================
+// Patient Vaccination History
+// =========================
+
 model PatientVaccinationHistory {
   id String @id @default(uuid())
 
   patientId String @unique
 
-  vaccinationStatus VaccinationStatus?
+  vaccinationStatus String?
 
   missedVaccines String[]
 
-  partialReason       VaccinationReason?
+  partialReason       String?
   partialOtherDetails String?
 
-  unvaccinatedReason       VaccinationReason?
+  unvaccinatedReason       String?
   unvaccinatedOtherDetails String?
 
   previousReaction Boolean?
 
-  reactionSeverity ReactionSeverity?
+  reactionSeverity String?
   reactionDetails  String?
 
   createdAt DateTime @default(now())
@@ -977,6 +718,10 @@ model PatientVaccinationHistory {
   @@map("patient_vaccination_history")
 }
 
+// =========================
+// Visit Menstrual History
+// =========================
+
 model VisitMenstrualHistory {
   id String @id @default(uuid())
 
@@ -984,15 +729,15 @@ model VisitMenstrualHistory {
 
   ageAtMenarche Int?
 
-  cycleRegularity CycleRegularity?
+  cycleRegularity String?
   cycleLength     Int?
 
-  bleedingDuration BleedingDuration?
-  menstrualFlow    MenstrualFlow?
+  bleedingDuration String?
+  menstrualFlow    String?
 
-  dysmenorrhea DysmenorrheaSeverity?
+  dysmenorrhea String?
 
-  painStarts     PainStart?
+  painStarts     String?
   painRelievedBy String[]
 
   associatedSymptoms String[]
@@ -1012,6 +757,10 @@ model VisitMenstrualHistory {
   @@map("visit_menstrual_history")
 }
 
+// =========================
+// Visit Pediatric History
+// =========================
+
 model VisitPediatricHistory {
   id String @id @default(uuid())
 
@@ -1021,7 +770,7 @@ model VisitPediatricHistory {
   // Prenatal History
   // =========================
 
-  antenatalCare      AntenatalCare?
+  antenatalCare      String?
   antenatalCareNotes String?
 
   maternalIllnesses    String[]
@@ -1033,7 +782,7 @@ model VisitPediatricHistory {
   drugIntake        Boolean?
   drugIntakeDetails String?
 
-  smokingExposure SmokingExposure?
+  smokingExposure String?
 
   alcoholExposure        Boolean?
   alcoholExposureDetails String?
@@ -1042,10 +791,10 @@ model VisitPediatricHistory {
   // Birth History
   // =========================
 
-  gestationalAge   GestationalAge?
+  gestationalAge   String?
   gestationalWeeks Int?
 
-  deliveryMode DeliveryMode?
+  deliveryMode String?
 
   birthWeight Int?
 
@@ -1077,9 +826,9 @@ model VisitPediatricHistory {
   // Development History
   // =========================
 
-  development DevelopmentStatus?
+  development String?
 
-  delayType    DelayType?
+  delayType    String?
   delayDetails String?
 
   // =========================
@@ -1090,10 +839,10 @@ model VisitPediatricHistory {
 
   grade String?
 
-  schoolPerformance        SchoolPerformance?
+  schoolPerformance        String?
   schoolPerformanceDetails String?
 
-  schoolAttendance       SchoolAttendance?
+  schoolAttendance       String?
   schoolAttendanceReason String?
 
   createdAt DateTime @default(now())
@@ -1116,7 +865,7 @@ model VisitChiefComplaint {
   chiefComplaintId String
 
   durationValue Int?
-  durationUnit DurationUnit?
+  durationUnit String?
 
   analysis VisitComplaintAnalysis?
 
@@ -1154,6 +903,10 @@ model ChiefComplaintMaster {
   @@index([name])
   @@map("chief_complaint_master")
 }
+
+// =========================
+// Chief Complaint Template
+// =========================
 
 model ChiefComplaintTemplate {
   id String @id @default(uuid())
@@ -1204,7 +957,7 @@ model VisitRelatedSystem {
 
   visitId String
 
-  system SystemType
+  system String
 
   symptoms String[]
 
@@ -1217,12 +970,16 @@ model VisitRelatedSystem {
   @@map("visit_related_systems")
 }
 
+// =========================
+// Systematic Review
+// =========================
+
 model VisitSystematicReview {
   id String @id @default(uuid())
 
   visitId String
 
-  system SystemType
+  system String
 
   symptoms String[]
 
@@ -1233,6 +990,10 @@ model VisitSystematicReview {
   @@map("visit_systematic_review")
 }
 
+// =========================
+// Vital Signs
+// =========================
+
 model VisitVitalSigns {
   id String @id @default(uuid())
 
@@ -1242,15 +1003,15 @@ model VisitVitalSigns {
   diastolicBP Int?
 
   heartRate   Int?
-  pulseRhythm PulseRhythm?
+  pulseRhythm String?
 
   respiratoryRate Int?
 
   spo2         Int?
-  oxygenSource OxygenSource?
+  oxygenSource String?
 
-  temperature      Decimal?          @db.Decimal(4, 1)
-  temperatureRoute TemperatureRoute?
+  temperature      Decimal? @db.Decimal(4, 1)
+  temperatureRoute String?
 
   bloodGlucose Int?
 
@@ -1267,20 +1028,20 @@ model VisitVitalSigns {
   @@map("visit_vital_signs")
 }
 
+// =========================
+// General Inspection
+// =========================
+
 model VisitGeneralInspection {
   id String @id @default(uuid())
 
   visitId String @unique
 
-  consciousness ConsciousnessLevel?
-
-  appearance GeneralAppearance?
-
-  hydration HydrationStatus?
-
-  bodyBuild BodyBuild?
-
-  nourishment NourishmentStatus?
+  consciousness String?
+  appearance    String?
+  hydration     String?
+  bodyBuild     String?
+  nourishment   String?
 
   findings String[]
 
@@ -1294,12 +1055,16 @@ model VisitGeneralInspection {
   @@map("visit_general_inspection")
 }
 
+// =========================
+// Regional Examination
+// =========================
+
 model VisitRegionalExamination {
   id String @id @default(uuid())
 
   visitId String
 
-  area RegionalExaminationArea
+  area String
 
   findings String[]
 
@@ -1315,12 +1080,16 @@ model VisitRegionalExamination {
   @@map("visit_regional_examinations")
 }
 
+// =========================
+// System Examination
+// =========================
+
 model VisitSystemExamination {
   id String @id @default(uuid())
 
   visitId String
 
-  system ExaminationSystem
+  system String
 
   fields Json
 
@@ -1333,6 +1102,10 @@ model VisitSystemExamination {
   @@index([visitId])
   @@map("visit_system_examinations")
 }
+
+// =========================
+// Diagnosis
+// =========================
 
 model VisitDiagnosis {
   id String @id @default(uuid())
@@ -1353,6 +1126,10 @@ model VisitDiagnosis {
   @@map("visit_diagnoses")
 }
 
+// =========================
+// Investigation
+// =========================
+
 model VisitInvestigation {
   id String @id @default(uuid())
 
@@ -1368,7 +1145,7 @@ model VisitInvestigation {
 
   notes String?
 
-  requestedAt DateTime  @default(now())
+  requestedAt DateTime @default(now())
   completedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -1380,6 +1157,10 @@ model VisitInvestigation {
   @@index([status])
   @@map("visit_investigations")
 }
+
+// =========================
+// Procedure
+// =========================
 
 model VisitProcedure {
   id String @id @default(uuid())
@@ -1397,6 +1178,10 @@ model VisitProcedure {
   @@map("visit_procedures")
 }
 
+// =========================
+// Referral
+// =========================
+
 model VisitReferral {
   id String @id @default(uuid())
 
@@ -1412,6 +1197,10 @@ model VisitReferral {
   @@index([visitId])
   @@map("visit_referrals")
 }
+
+// =========================
+// Prescription
+// =========================
 
 model VisitPrescription {
   id String @id @default(uuid())
@@ -1434,6 +1223,10 @@ model VisitPrescription {
   @@map("visit_prescriptions")
 }
 
+// =========================
+// Prescription Medication
+// =========================
+
 model VisitPrescriptionMedication {
   id String @id @default(uuid())
 
@@ -1454,8 +1247,12 @@ model VisitPrescriptionMedication {
   @@map("visit_prescription_medications")
 }
 
+// =========================
+// System Counter
+// =========================
+
 model SystemCounter {
-  id        String   @id
+  id        String @id
   value     Int      @default(0)
   updatedAt DateTime @updatedAt
 

@@ -1,37 +1,30 @@
 import {
   IsArray,
   IsBoolean,
-  IsEnum,
   IsOptional,
   IsString,
 } from "class-validator";
 
-import {
-  ReactionSeverity,
-  VaccinationReason,
-  VaccinationStatus,
-} from "@prisma/client";
-
 export class SaveVaccinationHistoryDto {
   @IsOptional()
-  @IsEnum(VaccinationStatus)
-  vaccinationStatus?: VaccinationStatus;
+  @IsString()
+  vaccinationStatus?: string;
 
   @IsArray()
   @IsString({ each: true })
   missedVaccines!: string[];
 
   @IsOptional()
-  @IsEnum(VaccinationReason)
-  partialReason?: VaccinationReason;
+  @IsString()
+  partialReason?: string;
 
   @IsOptional()
   @IsString()
   partialOtherDetails?: string;
 
   @IsOptional()
-  @IsEnum(VaccinationReason)
-  unvaccinatedReason?: VaccinationReason;
+  @IsString()
+  unvaccinatedReason?: string;
 
   @IsOptional()
   @IsString()
@@ -42,8 +35,8 @@ export class SaveVaccinationHistoryDto {
   previousReaction?: boolean;
 
   @IsOptional()
-  @IsEnum(ReactionSeverity)
-  reactionSeverity?: ReactionSeverity;
+  @IsString()
+  reactionSeverity?: string;
 
   @IsOptional()
   @IsString()

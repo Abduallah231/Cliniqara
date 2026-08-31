@@ -1,27 +1,15 @@
 import {
-  AntenatalCare,
-  DeliveryMode,
-  DevelopmentStatus,
-  DelayType,
-  GestationalAge,
-  SchoolAttendance,
-  SchoolPerformance,
-  SmokingExposure,
-} from "@prisma/client";
-
-import {
   IsArray,
   IsBoolean,
-  IsEnum,
   IsNumber,
   IsOptional,
   IsString,
-} from "class-validator";
+} from 'class-validator';
 
 export class SavePediatricHistoryDto {
   @IsOptional()
-  @IsEnum(AntenatalCare)
-  antenatalCare?: AntenatalCare;
+  @IsString()
+  antenatalCare?: string;
 
   @IsOptional()
   @IsString()
@@ -54,8 +42,8 @@ export class SavePediatricHistoryDto {
   drugIntakeDetails?: string;
 
   @IsOptional()
-  @IsEnum(SmokingExposure)
-  smokingExposure?: SmokingExposure;
+  @IsString()
+  smokingExposure?: string;
 
   @IsOptional()
   @IsBoolean()
@@ -66,16 +54,16 @@ export class SavePediatricHistoryDto {
   alcoholExposureDetails?: string;
 
   @IsOptional()
-  @IsEnum(GestationalAge)
-  gestationalAge?: GestationalAge;
+  @IsString()
+  gestationalAge?: string;
 
   @IsOptional()
   @IsNumber()
   gestationalWeeks?: number;
 
   @IsOptional()
-  @IsEnum(DeliveryMode)
-  deliveryMode?: DeliveryMode;
+  @IsString()
+  deliveryMode?: string;
 
   @IsOptional()
   @IsNumber()
@@ -124,12 +112,12 @@ export class SavePediatricHistoryDto {
   feedingTypes?: string[];
 
   @IsOptional()
-  @IsEnum(DevelopmentStatus)
-  development?: DevelopmentStatus;
+  @IsString()
+  development?: string;
 
   @IsOptional()
-  @IsEnum(DelayType)
-  delayType?: DelayType;
+  @IsString()
+  delayType?: string;
 
   @IsOptional()
   @IsString()
@@ -144,16 +132,16 @@ export class SavePediatricHistoryDto {
   grade?: string;
 
   @IsOptional()
-  @IsEnum(SchoolPerformance)
-  schoolPerformance?: SchoolPerformance;
+  @IsString()
+  schoolPerformance?: string;
 
   @IsOptional()
   @IsString()
   schoolPerformanceDetails?: string;
 
   @IsOptional()
-  @IsEnum(SchoolAttendance)
-  schoolAttendance?: SchoolAttendance;
+  @IsString()
+  schoolAttendance?: string;
 
   @IsOptional()
   @IsString()

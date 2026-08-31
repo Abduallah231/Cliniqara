@@ -1648,16 +1648,14 @@ removeICUAdmission: (id) =>
           examination: {
             ...state.visit.examination,
             vitalSigns: {
-              ...state.visit.examination
-                .vitalSigns,
-              bloodPressure: {
-                systolic,
-                diastolic,
-              },
+              ...state.visit.examination.vitalSigns,
+              systolicBP: systolic,
+              diastolicBP: diastolic,
             },
           },
         },
-      })),
+      })
+    ),
 
       updateGeneralInspection: (
         updates
