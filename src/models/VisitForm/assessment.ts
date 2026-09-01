@@ -76,10 +76,18 @@ export interface ProceduresReferrals {
 // ======================================================
 // Prescription
 // ======================================================
+ 
+export type PrescriptionDurationUnit =
+  | "DAYS"
+  | "WEEKS"
+  | "MONTHS"
+  | "YEARS";
 
 export interface PrescriptionMedication {
   medication: string;
   instructions: string;
+  durationValue: string;
+  durationUnit: PrescriptionDurationUnit;
 }
 
 export interface Prescription {

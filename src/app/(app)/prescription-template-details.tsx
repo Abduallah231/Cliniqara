@@ -158,12 +158,6 @@ export default function PrescriptionTemplateDetails() {
                 style={styles.button}
                 onPress={() => {}}
               />
-
-              <AppButton
-                title="Use Template"
-                style={styles.button}
-                onPress={() => {}}
-              />
             </View>
           </>
         }

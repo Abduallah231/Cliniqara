@@ -5,8 +5,11 @@ import {
   Text,
   View,
 } from "react-native";
-import AppTextField from "@/components/common/AppTextField";
+
+import PrescriptionForm from "./PrescriptionForm";
+
 import { useVisitStore } from "@/store/visitStore";
+
 import {
   COLORS,
   RADIUS,
@@ -17,7 +20,8 @@ import {
 
 export default function PrescriptionSection() {
   const prescription = useVisitStore(
-    (state) => state.visit.assessment.prescription
+    (state) =>
+      state.visit.assessment.prescription
   );
 
   const addPrescriptionMedication =
@@ -56,229 +60,111 @@ export default function PrescriptionSection() {
         state.updatePrescriptionFollowUp
     );
 
-  const followUpOptions = [
-    "3 Days",
-    "1 Week",
-    "2 Weeks",
-    "1 Month",
-    "3 Months",
-    "PRN",
-  ];
+  // ======================================================
+  // Medication
+  // ======================================================
 
-  const addMedication = () =>
+  const addMedication = () => {
     addPrescriptionMedication({
       medication: "",
       instructions: "",
+      durationValue: "",
+      durationUnit: "DAYS",
     });
+  };
 
   const removeMedication = (
     index: number
   ) => {
     if (
-      prescription.medications
-        .length === 1
-    )
+      prescription.medications.length ===
+      1
+    ) {
       return;
+    }
 
-    removePrescriptionMedication(
-      index
-    );
-  };
-
-  const updateMedication = (
-    text: string,
-    index: number
-  ) => {
-    updatePrescriptionMedication(
-      index,
-      {
-        medication: text,
-      }
-    );
+    removePrescriptionMedication(index);
   };
 
   return (
     <View style={styles.container}>
+
+      {/* ==================================================
+          Import Prescription Template
+          This belongs to PrescriptionSection only
+      ================================================== */}
+
       <Pressable
         style={styles.templateButton}
+        onPress={() => {
+          // TODO:
+          // Open prescription templates
+        }}
       >
         <Ionicons
           name="library-outline"
           size={20}
           color={COLORS.primary}
         />
-        <Text
-          style={styles.templateText}
-        >
+
+        <Text style={styles.templateText}>
           Import Prescription Template
         </Text>
       </Pressable>
 
-      {prescription.medications.map(
-        (
-          medication,
-          index
-        ) => (
-          <View
-            key={index}
-            style={styles.card}
-          >
-            <View
-              style={
-                styles.cardHeader
-              }
-            >
-              <Ionicons
-                name="medical-outline"
-                size={20}
-                color={
-                  COLORS.primary
-                }
-              />
+      {/* ==================================================
+          Shared Prescription Form
+      ================================================== */}
 
-              <Text
-                style={
-                  styles.cardTitle
-                }
-              >
-                Medication{" "}
-                {index + 1}
-              </Text>
+      <PrescriptionForm
+        medications={
+          prescription.medications
+        }
+        advice={prescription.advice}
+        notes={prescription.notes}
+        followUp={prescription.followUp}
 
-              <Pressable
-                onPress={() =>
-                  removeMedication(
-                    index
-                  )
-                }
-              >
-                <Ionicons
-                  name="trash-outline"
-                  size={20}
-                  color="#ef4444"
-                />
-              </Pressable>
-            </View>
+        onAddMedication={
+          addMedication
+        }
 
-            <AppTextField
-            label="Medication"
-              placeholder="Paracetamol 500mg tab"
-              value={medication.medication}
-              onChangeText={(text) =>
-                updatePrescriptionMedication(index, {
-                  medication: text,
-                })
-              }
-            />
+        onUpdateMedication={(
+          index,
+          updates
+        ) =>
+          updatePrescriptionMedication(
+            index,
+            updates
+          )
+        }
 
-            <AppTextField
-              multiline
-              label="Instructions"
-              placeholder="قرص كل ٨ ساعات بعد الاكل لمدة ٥ ايام"
-              value={medication.instructions}
-              onChangeText={(text) =>
-                updatePrescriptionMedication(index, {
-                  instructions: text,
-                })
-              }
-            />
+        onRemoveMedication={
+          removeMedication
+        }
 
-          </View>
-        )
-      )}
-
-      <Pressable
-        style={styles.addButton}
-        onPress={addMedication}
-      >
-        <Ionicons
-          name="add-circle-outline"
-          size={20}
-          color={COLORS.white}
-        />
-        <Text
-          style={styles.addButtonText}
-        >
-          Add Medication
-        </Text>
-      </Pressable>
-
-      <Text style={styles.title}>
-        Advice
-      </Text>
-
-      <AppTextField
-        multiline
-        value={prescription.advice}
-        onChangeText={
+        onUpdateAdvice={
           updatePrescriptionAdvice
         }
-        placeholder="Patient advice..."
-      />
 
-      <Text style={styles.title}>
-        Notes
-      </Text>
-
-      <AppTextField
-        multiline
-        value={prescription.notes}
-        onChangeText={
+        onUpdateNotes={
           updatePrescriptionNotes
         }
-        placeholder="Additional notes..."
-      />
 
-      <Text style={styles.title}>
-        Follow Up
-      </Text>
-
-      <View style={styles.chips}>
-        {followUpOptions.map(
-          (item) => (
-            <Pressable
-              key={item}
-              style={[
-                styles.chip,
-                prescription.followUp ===
-                  item &&
-                  styles.selectedChip,
-              ]}
-              onPress={() =>
-                updatePrescriptionFollowUp(
-                  item
-                )
-              }
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  prescription.followUp ===
-                    item && {
-                      color:
-                        COLORS.white,
-                    },
-                ]}
-              >
-                {item}
-              </Text>
-            </Pressable>
-          )
-        )}
-      </View>
-
-            <AppTextField
-        placeholder="Custom follow up..."
-        value={prescription.followUp}
-        onChangeText={
+        onUpdateFollowUp={
           updatePrescriptionFollowUp
         }
       />
 
+      {/* ==================================================
+          Print Prescription
+          This belongs to PrescriptionSection only
+      ================================================== */}
+
       <Pressable
         style={styles.printButton}
         onPress={() => {
-          // TODO: Open prescription preview / print
+          // TODO:
+          // Open prescription preview / print
         }}
       >
         <Ionicons
@@ -287,10 +173,13 @@ export default function PrescriptionSection() {
           color={COLORS.primary}
         />
 
-        <Text style={styles.printButtonText}>
+        <Text
+          style={styles.printButtonText}
+        >
           Print Prescription
         </Text>
       </Pressable>
+
     </View>
   );
 }
@@ -300,22 +189,19 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
 
-  title: {
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
   templateButton: {
     height: 54,
     borderRadius: RADIUS.xl,
     borderWidth: 1,
     borderColor: COLORS.primary,
     backgroundColor: COLORS.card,
+
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+
     gap: SPACING.sm,
+
     ...SHADOW,
   },
 
@@ -325,88 +211,25 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  card: {
-    backgroundColor: COLORS.card,
-    borderRadius: RADIUS.xl,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: SPACING.md,
-    gap: SPACING.md,
-    ...SHADOW,
-  },
-
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.sm,
-  },
-
-  cardTitle: {
-    flex: 1,
-    fontSize: TYPOGRAPHY.body,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-
-  addButton: {
+  printButton: {
     height: 52,
     borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.primary,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.card,
+
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+
     gap: SPACING.sm,
+
     ...SHADOW,
   },
 
-  addButtonText: {
-    color: COLORS.white,
+  printButtonText: {
+    color: COLORS.primary,
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
   },
-
-  chips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: SPACING.sm,
-  },
-
-  chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-
-  selectedChip: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-
-  chipText: {
-    color: COLORS.text,
-    fontWeight: "600",
-    fontSize: TYPOGRAPHY.small,
-  },
-
-  printButton: {
-  height: 52,
-  borderRadius: RADIUS.lg,
-  borderWidth: 1,
-  borderColor: COLORS.primary,
-  backgroundColor: COLORS.card,
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: SPACING.sm,
-  ...SHADOW,
-},
-
-printButtonText: {
-  color: COLORS.primary,
-  fontSize: TYPOGRAPHY.body,
-  fontWeight: "700",
-},
 });

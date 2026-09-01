@@ -67,6 +67,12 @@ enum Gender {
   FEMALE
 }
 
+enum PrescriptionTemplateScope {
+  USER
+  CLINIC
+  GLOBAL
+}
+
 // =========================
 // User
 // =========================
@@ -120,6 +126,9 @@ model User {
   createdVisits Visit[] @relation("VisitCreatedBy")
   doctorVisits  Visit[] @relation("VisitDoctor")
 
+  prescriptionTemplates       PrescriptionTemplate[]
+  prescriptionTemplateFolders PrescriptionTemplateFolder[]
+
   @@index([accountType])
   @@index([verificationStatus])
   @@map("users")
@@ -163,6 +172,9 @@ model Clinic {
   patients        Patient[]
   visits          Visit[]
   joinCodes       ClinicJoinCode[]
+
+  prescriptionTemplates       PrescriptionTemplate[]
+  prescriptionTemplateFolders PrescriptionTemplateFolder[]
 
   @@index([createdById])
   @@index([city])
@@ -1153,9 +1165,31 @@ model VisitInvestigation {
 
   visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
+  images VisitInvestigationImage[]
+
   @@index([visitId])
   @@index([status])
   @@map("visit_investigations")
+}
+
+// =========================
+// Investigation Result Image
+// =========================
+
+model VisitInvestigationImage {
+  id String @id @default(uuid())
+
+  investigationId String
+
+  fileUrl   String
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  investigation VisitInvestigation @relation(  fields: [investigationId],  references: [id],  onDelete: Cascade)
+
+  @@index([investigationId])
+  @@map("visit_investigation_images")
 }
 
 // =========================
@@ -1199,6 +1233,103 @@ model VisitReferral {
 }
 
 // =========================
+// Prescription Template Folder
+// =========================
+
+model PrescriptionTemplateFolder {
+  id String @id @default(uuid())
+
+  name String
+
+  scope PrescriptionTemplateScope
+
+  userId   String?
+  clinicId String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(    fields: [userId],    references: [id],    onDelete: Cascade  )
+
+  clinic Clinic? @relation(  fields: [clinicId],  references: [id],  onDelete: Cascade)
+
+  templates PrescriptionTemplate[]
+
+  @@index([userId])
+  @@index([clinicId])
+  @@index([scope])
+  @@map("prescription_template_folders")
+}
+
+// =========================
+// Prescription Template
+// =========================
+
+model PrescriptionTemplate {
+  id String @id @default(uuid())
+
+  title String
+
+  scope PrescriptionTemplateScope
+
+  userId   String?
+  clinicId String?
+
+  folderId String?
+
+  advice   String?
+  notes    String?
+  followUp String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(   fields: [userId],  references: [id],  onDelete: Cascade)
+
+  clinic Clinic? @relation(  fields: [clinicId],  references: [id],  onDelete: Cascade)
+
+  folder PrescriptionTemplateFolder? @relation(  fields: [folderId],  references: [id],  onDelete: SetNull)
+
+  medications PrescriptionTemplateMedication[]
+
+  @@index([userId])
+  @@index([clinicId])
+  @@index([folderId])
+  @@index([scope])
+  @@map("prescription_templates")
+}
+
+// =========================
+// Prescription Template Medication
+// =========================
+
+model PrescriptionTemplateMedication {
+  id String @id @default(uuid())
+
+  templateId String
+
+  medication   String
+  instructions String?
+
+  durationValue Int?
+  durationUnit  String?
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  template PrescriptionTemplate @relation(  fields: [templateId],  references: [id],  onDelete: Cascade)
+
+  @@index([templateId])
+  @@map("prescription_template_medications")
+}
+
+// =========================
 // Prescription
 // =========================
 
@@ -1233,6 +1364,9 @@ model VisitPrescriptionMedication {
   prescriptionId String
 
   medication String
+
+  durationValue Int?
+  durationUnit  String?
 
   instructions String?
 

@@ -1,6 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
 import {
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -283,6 +284,37 @@ export default function InvestigationResultsScreen() {
                     />
                   </>
                 )}
+                <Pressable
+                  style={styles.imagePlaceholder}
+                  onPress={() =>
+                    Alert.alert(
+                      "Upload Result Image",
+                      "Image upload will be available in a future update."
+                    )
+                  }
+                >
+                  <Ionicons
+                    name="image-outline"
+                    size={24}
+                    color={COLORS.primary}
+                  />
+
+                  <View style={styles.imagePlaceholderText}>
+                    <Text style={styles.imagePlaceholderTitle}>
+                      Add Result Image
+                    </Text>
+
+                    <Text style={styles.imagePlaceholderSubtitle}>
+                      Upload an image of the investigation result
+                    </Text>
+                  </View>
+
+                  <Ionicons
+                    name="cloud-upload-outline"
+                    size={22}
+                    color={COLORS.secondaryText}
+                  />
+                </Pressable>
               </View>
             )}
           </View>
@@ -340,5 +372,34 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
+  },
+
+  imagePlaceholder: {
+    minHeight: 72,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.sm,
+    backgroundColor: COLORS.background,
+  },
+
+  imagePlaceholderText: {
+    flex: 1,
+    gap: 2,
+  },
+
+  imagePlaceholderTitle: {
+    fontSize: TYPOGRAPHY.body,
+    fontWeight: "600",
+    color: COLORS.text,
+  },
+
+  imagePlaceholderSubtitle: {
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.secondaryText,
   },
 });
