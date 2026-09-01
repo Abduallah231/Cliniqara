@@ -24,6 +24,10 @@ import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { AuthenticatedUser } from "../auth/interfaces/authenticated-user.interface";
 import { SavePediatricHistoryDto } from "./dto/save-pediatric-history.dto";
 import { SaveMenstrualHistoryDto } from "./dto/save-menstrual-history.dto";
+import { SaveVitalSignsDto } from "./dto/save-vital-signs.dto";
+import { SaveGeneralInspectionDto } from "./dto/save-general-inspection.dto";
+import { SaveRegionalExaminationDto } from "./dto/save-regional-examination.dto";
+import { SaveSystemExaminationDto } from "./dto/save-system-examination.dto";
 
 @Controller("visits")
 @UseGuards(JwtAuthGuard)
@@ -245,6 +249,106 @@ export class VisitController {
     @Param("visitId") visitId: string,
   ) {
     return this.visitService.getMenstrualHistory(
+      visitId,
+      user.id,
+    );
+  }
+
+  // =========================
+  // Examination
+  // =========================
+
+  @Put(":visitId/vital-signs")
+  saveVitalSigns(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveVitalSignsDto,
+  ) {
+    return this.visitService.saveVitalSigns(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/vital-signs")
+  getVitalSigns(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getVitalSigns(
+      visitId,
+      user.id,
+    );
+  }
+
+  @Put(":visitId/general-inspection")
+  saveGeneralInspection(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveGeneralInspectionDto,
+  ) {
+    return this.visitService.saveGeneralInspection(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/general-inspection")
+  getGeneralInspection(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getGeneralInspection(
+      visitId,
+      user.id,
+    );
+  }
+
+  @Put(":visitId/regional-examination")
+  saveRegionalExamination(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveRegionalExaminationDto,
+  ) {
+    return this.visitService.saveRegionalExamination(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/regional-examination")
+  getRegionalExamination(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getRegionalExamination(
+      visitId,
+      user.id,
+    );
+  }
+
+  @Put(":visitId/system-examination")
+  saveSystemExamination(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveSystemExaminationDto,
+  ) {
+    return this.visitService.saveSystemExamination(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/system-examination")
+  getSystemExamination(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getSystemExamination(
       visitId,
       user.id,
     );

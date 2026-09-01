@@ -22,6 +22,19 @@ import NeurologyExam from "../systems/NeurologyExam";
 import ObstetricExam from "../systems/ObstetricExam";
 import OphthalmologyExam from "../systems/OphthalmologyExam";
 import SkinExam from "../systems/SkinExam";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  getSystemExamination,
+} from "@/services/visitApi";
+
+import useSystemExaminationAutoSave, {
+  mapSystemExaminationFromBackend,
+} from "@/hooks/useSystemExaminationAutoSave";
 
 const SYSTEMS = [
   { id: "abdomen", label: "Abdomen" },
@@ -56,24 +69,107 @@ const SYSTEM_COMPONENTS = {
 } as const;
 
 export default function SystemExaminationSection() {
-  const selectedSystem =
+  const systemExamination =
     useVisitStore(
       (state) =>
         state.visit.examination
-          .systemExamination
-          .selectedSystem
-    ) as SystemId;
+          .systemExamination,
+    );
+
+  const selectedSystem =
+    systemExamination.selectedSystem as
+      | SystemId
+      | null;
 
   const updateSelectedSystem =
     useVisitStore(
       (state) =>
-        state.updateSelectedSystem
+        state.updateSelectedSystem,
     );
 
+  const setSystemExaminationSystems =
+    useVisitStore(
+      (state) =>
+        state.setSystemExaminationSystems,
+    );
+
+  const visitId = useVisitStore(
+    (state) => state.visit.metadata.id,
+  );
+
+  const [isHydrating, setIsHydrating] =
+    useState(false);
+
+  const loadedVisitId = useRef<
+    string | null
+  >(null);
+
+  useSystemExaminationAutoSave({
+    visitId,
+    systemExamination,
+    isHydrating,
+  });
+
+  useEffect(() => {
+    if (
+      !visitId ||
+      loadedVisitId.current === visitId
+    ) {
+      return;
+    }
+
+    const loadSystemExamination =
+      async () => {
+        try {
+          setIsHydrating(true);
+
+          const data =
+            await getSystemExamination(
+              visitId,
+            );
+
+          if (!data) {
+            loadedVisitId.current =
+              visitId;
+            return;
+          }
+
+          const mapped =
+            mapSystemExaminationFromBackend(
+              data,
+            );
+
+          if (
+            mapped.systems &&
+            Array.isArray(mapped.systems)
+          ) {
+            setSystemExaminationSystems(
+              mapped.systems,
+            );
+          }
+
+          loadedVisitId.current =
+            visitId;
+        } catch (error) {
+          console.error(
+            "Failed to load system examination:",
+            error,
+          );
+        } finally {
+          setIsHydrating(false);
+        }
+      };
+
+    loadSystemExamination();
+  }, [
+    visitId,
+    setSystemExaminationSystems,
+  ]);
+
   const SelectedSystem =
-    SYSTEM_COMPONENTS[
-      selectedSystem
-    ] ?? SYSTEM_COMPONENTS.cvs;
+    selectedSystem
+      ? SYSTEM_COMPONENTS[selectedSystem]
+      : null;
 
   return (
     <View style={styles.container}>
@@ -112,7 +208,7 @@ export default function SystemExaminationSection() {
           }}
         />
 
-        <SelectedSystem />
+        {SelectedSystem && <SelectedSystem />}
       </CollapsibleSection>
     </View>
   );

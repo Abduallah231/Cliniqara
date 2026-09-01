@@ -8,6 +8,7 @@ import {
   AccountType,
   DoctorLevel,
   MembershipStatus,
+  Prisma,
   VisitStatus,
 } from '@prisma/client';
 
@@ -23,6 +24,10 @@ import { StartVisitDto } from './dto/start-visit.dto';
 import { SaveRelatedSystemsDto } from './dto/save-related-systems.dto';
 import { SavePediatricHistoryDto } from './dto/save-pediatric-history.dto';
 import { SaveMenstrualHistoryDto } from './dto/save-menstrual-history.dto';
+import { SaveVitalSignsDto } from './dto/save-vital-signs.dto';
+import { SaveGeneralInspectionDto } from './dto/save-general-inspection.dto';
+import { SaveRegionalExaminationDto } from './dto/save-regional-examination.dto';
+import { SaveSystemExaminationDto } from './dto/save-system-examination.dto';
 
 @Injectable()
 export class VisitService {
@@ -1461,6 +1466,448 @@ export class VisitService {
 
     return this.prisma.visitMenstrualHistory.findUnique({
       where: { visitId },
+    });
+  }
+
+  async saveVitalSigns(
+    visitId: string,
+    dto: SaveVitalSignsDto,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+          visitStatus: true,
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        'Visit not found.',
+      );
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    if (
+      visit.visitStatus !==
+      VisitStatus.IN_PROGRESS
+    ) {
+      throw new BadRequestException(
+        'Vital signs can only be saved for an in-progress visit.',
+      );
+    }
+
+    return this.prisma.visitVitalSigns.upsert({
+      where: {
+        visitId,
+      },
+      create: {
+        visitId,
+        ...dto,
+      },
+      update: {
+        ...dto,
+      },
+    });
+  }
+
+  async getVitalSigns(
+    visitId: string,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        'Visit not found.',
+      );
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    return this.prisma.visitVitalSigns.findUnique({
+      where: {
+        visitId,
+      },
+    });
+  }
+
+  async saveGeneralInspection(
+    visitId: string,
+    dto: SaveGeneralInspectionDto,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+          visitStatus: true,
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        'Visit not found.',
+      );
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    if (
+      visit.visitStatus !==
+      VisitStatus.IN_PROGRESS
+    ) {
+      throw new BadRequestException(
+        'General inspection can only be saved for an in-progress visit.',
+      );
+    }
+
+    return this.prisma.visitGeneralInspection.upsert({
+      where: {
+        visitId,
+      },
+      create: {
+        visitId,
+        ...dto,
+      },
+      update: {
+        ...dto,
+      },
+    });
+  }
+
+  async getGeneralInspection(
+    visitId: string,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        'Visit not found.',
+      );
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    return this.prisma.visitGeneralInspection.findUnique({
+      where: {
+        visitId,
+      },
+    });
+  }
+
+  async saveRegionalExamination(
+    visitId: string,
+    dto: SaveRegionalExaminationDto,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+          visitStatus: true,
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        'Visit not found.',
+      );
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    if (
+      visit.visitStatus !==
+      VisitStatus.IN_PROGRESS
+    ) {
+      throw new BadRequestException(
+        'Regional examination can only be saved for an in-progress visit.',
+      );
+    }
+
+    const areas =
+      dto.regionalExaminations.map(
+        (item) => item.area,
+      );
+
+    const uniqueAreas =
+      new Set(areas);
+
+    if (
+      uniqueAreas.size !==
+      areas.length
+    ) {
+      throw new BadRequestException(
+        'Duplicate regional examination areas are not allowed.',
+      );
+    }
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        await tx.visitRegionalExamination.deleteMany({
+          where: {
+            visitId,
+          },
+        });
+
+        if (
+          dto.regionalExaminations.length ===
+          0
+        ) {
+          return [];
+        }
+
+        await tx.visitRegionalExamination.createMany({
+          data: dto.regionalExaminations.map(
+            (item) => ({
+              visitId,
+              area: item.area,
+              findings: item.findings,
+              notes:
+                item.notes ??
+                null,
+            }),
+          ),
+        });
+
+        return tx.visitRegionalExamination.findMany({
+          where: {
+            visitId,
+          },
+          orderBy: {
+            area: 'asc',
+          },
+        });
+      },
+    );
+  }
+
+  async getRegionalExamination(
+    visitId: string,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        'Visit not found.',
+      );
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    return this.prisma.visitRegionalExamination.findMany({
+      where: {
+        visitId,
+      },
+      orderBy: {
+        area: 'asc',
+      },
+    });
+  }
+
+  async saveSystemExamination(
+    visitId: string,
+    dto: SaveSystemExaminationDto,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+          visitStatus: true,
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        'Visit not found.',
+      );
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    if (
+      visit.visitStatus !==
+      VisitStatus.IN_PROGRESS
+    ) {
+      throw new BadRequestException(
+        'System examination can only be saved for an in-progress visit.',
+      );
+    }
+
+    const systems =
+      dto.systems.map(
+        (item) => item.system,
+      );
+
+    const uniqueSystems =
+      new Set(systems);
+
+    if (
+      uniqueSystems.size !==
+      systems.length
+    ) {
+      throw new BadRequestException(
+        'Duplicate system examinations are not allowed.',
+      );
+    }
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        await tx.visitSystemExamination.deleteMany({
+          where: {
+            visitId,
+          },
+        });
+
+        if (
+          dto.systems.length ===
+          0
+        ) {
+          return [];
+        }
+
+        await tx.visitSystemExamination.createMany({
+          data: dto.systems.map(
+            (item) => ({
+              visitId,
+              system: item.system,
+              fields:
+                item.fields as Prisma.InputJsonValue,
+            }),
+          ),
+        });
+
+        return tx.visitSystemExamination.findMany({
+          where: {
+            visitId,
+          },
+          orderBy: {
+            system: 'asc',
+          },
+        });
+      },
+    );
+  }
+
+  async getSystemExamination(
+    visitId: string,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          id: true,
+          clinicId: true,
+          doctorId: true,
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        'Visit not found.',
+      );
+    }
+
+    await this.getClinicalVisitAccess(
+      currentUserId,
+      visit.clinicId,
+      visit.doctorId,
+    );
+
+    return this.prisma.visitSystemExamination.findMany({
+      where: {
+        visitId,
+      },
+      orderBy: {
+        system: 'asc',
+      },
     });
   }
 }

@@ -410,3 +410,161 @@ export async function getPastHistory(
   );
   return data;
 }
+
+// ======================================================
+// Examination - Vital Signs
+// ======================================================
+
+export type SaveVitalSignsInput = {
+  systolicBP?: number | null;
+  diastolicBP?: number | null;
+  heartRate?: number | null;
+  pulseRhythm?: string | null;
+  respiratoryRate?: number | null;
+  spo2?: number | null;
+  oxygenSource?: string | null;
+  temperature?: number | null;
+  temperatureRoute?: string | null;
+  bloodGlucose?: number | null;
+  weight?: number | null;
+  height?: number | null;
+  bmi?: number | null;
+};
+
+export async function saveVitalSigns(
+  visitId: string,
+  dto: SaveVitalSignsInput,
+) {
+  const { data } = await api.put(
+    `/visits/${visitId}/vital-signs`,
+    dto,
+  );
+
+  return data;
+}
+
+export async function getVitalSigns(
+  visitId: string,
+) {
+  const { data } = await api.get(
+    `/visits/${visitId}/vital-signs`,
+  );
+
+  return data;
+}
+
+
+// ======================================================
+// Examination - General Inspection
+// ======================================================
+
+export type SaveGeneralInspectionInput = {
+  consciousness?: string | null;
+  appearance?: string | null;
+  hydration?: string | null;
+  bodyBuild?: string | null;
+  nourishment?: string | null;
+  findings?: string[];
+  edemaLocations?: string[];
+};
+
+export async function saveGeneralInspection(
+  visitId: string,
+  dto: SaveGeneralInspectionInput,
+) {
+  const { data } = await api.put(
+    `/visits/${visitId}/general-inspection`,
+    dto,
+  );
+
+  return data;
+}
+
+export async function getGeneralInspection(
+  visitId: string,
+) {
+  const { data } = await api.get(
+    `/visits/${visitId}/general-inspection`,
+  );
+
+  return data;
+}
+
+
+// ======================================================
+// Examination - Regional Examination
+// ======================================================
+
+export type RegionalExaminationArea =
+  | "HEAD"
+  | "NECK"
+  | "UPPER_LIMB"
+  | "LOWER_LIMB";
+
+export type RegionalExaminationItem = {
+  area: RegionalExaminationArea;
+  findings: string[];
+  notes?: string | null;
+};
+
+export type SaveRegionalExaminationInput = {
+  regionalExaminations: RegionalExaminationItem[];
+};
+
+export async function saveRegionalExamination(
+  visitId: string,
+  dto: SaveRegionalExaminationInput,
+): Promise<RegionalExaminationItem[]> {
+  const { data } = await api.put(
+    `/visits/${visitId}/regional-examination`,
+    dto,
+  );
+
+  return data;
+}
+
+export async function getRegionalExamination(
+  visitId: string,
+): Promise<RegionalExaminationItem[]> {
+  const { data } = await api.get(
+    `/visits/${visitId}/regional-examination`,
+  );
+
+  return data;
+}
+
+
+// ======================================================
+// Examination - System Examination
+// ======================================================
+
+export type SystemExaminationItem = {
+  system: string;
+  fields: Record<string, unknown>;
+};
+
+export type SaveSystemExaminationInput = {
+  systems: SystemExaminationItem[];
+};
+
+export async function saveSystemExamination(
+  visitId: string,
+  dto: SaveSystemExaminationInput,
+): Promise<SystemExaminationItem[]> {
+  const { data } = await api.put(
+    `/visits/${visitId}/system-examination`,
+    dto,
+  );
+
+  return data;
+}
+
+export async function getSystemExamination(
+  visitId: string,
+): Promise<SystemExaminationItem[]> {
+  const { data } = await api.get(
+    `/visits/${visitId}/system-examination`,
+  );
+
+  return data;
+}

@@ -22,6 +22,7 @@ import {
   VitalSigns,
   GeneralInspection,
   RegionalExamination,
+  ExaminationSystem,
 } from "@/models/VisitForm/examination";
 import {
   Diagnosis,
@@ -315,6 +316,10 @@ updateSystemExaminationField: (
   fieldLabel: string,
   value: DynamicValue,
   unit?: string
+) => void;
+
+setSystemExaminationSystems: (
+  systems: ExaminationSystem[]
 ) => void;
 
 // ======================================================
@@ -1927,6 +1932,23 @@ removeICUAdmission: (id) =>
             },
           };
         }),
+      
+    setSystemExaminationSystems: (
+        systems
+      ) =>
+        set((state) => ({
+          visit: {
+            ...state.visit,
+            examination: {
+              ...state.visit.examination,
+              systemExamination: {
+                ...state.visit.examination
+                  .systemExamination,
+                systems,
+              },
+            },
+          },
+        })),
 
       updatePrimaryDiagnosis: (diagnosis) =>
   set((state) => ({

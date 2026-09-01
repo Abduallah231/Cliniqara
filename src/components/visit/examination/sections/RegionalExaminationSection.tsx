@@ -13,6 +13,19 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  getRegionalExamination,
+} from "@/services/visitApi";
+
+import useRegionalExaminationAutoSave, {
+  mapRegionalExaminationFromBackend,
+} from "@/hooks/useRegionalExaminationAutoSave";
 
 type RegionalSection =
   | "head"
@@ -99,6 +112,95 @@ function Section({
 }
 
 export default function RegionalExaminationSection() {
+  const regionalExamination =
+    useVisitStore(
+      (state) =>
+        state.visit.examination
+          .regionalExamination,
+    );
+
+  const updateRegionalSection =
+    useVisitStore(
+      (state) =>
+        state.updateRegionalSection,
+    );
+
+  const visitId = useVisitStore(
+    (state) => state.visit.metadata.id,
+  );
+
+  const [isHydrating, setIsHydrating] =
+    useState(false);
+
+  const loadedVisitId = useRef<
+    string | null
+  >(null);
+
+  useRegionalExaminationAutoSave({
+    visitId,
+    regionalExamination,
+    isHydrating,
+  });
+
+  useEffect(() => {
+    if (
+      !visitId ||
+      loadedVisitId.current === visitId
+    ) {
+      return;
+    }
+
+    const loadRegionalExamination =
+      async () => {
+        try {
+          setIsHydrating(true);
+
+          const data =
+            await getRegionalExamination(
+              visitId,
+            );
+
+          if (!data) {
+            loadedVisitId.current =
+              visitId;
+            return;
+          }
+
+          const values =
+            mapRegionalExaminationFromBackend(
+              data,
+            );
+
+          Object.entries(values).forEach(
+            ([section, value]) => {
+              if (!value) {
+                return;
+              }
+
+              updateRegionalSection(
+                section as keyof typeof regionalExamination,
+                value,
+              );
+            },
+          );
+
+          loadedVisitId.current =
+            visitId;
+        } catch (error) {
+          console.error(
+            "Failed to load regional examination:",
+            error,
+          );
+        } finally {
+          setIsHydrating(false);
+        }
+      };
+
+    loadRegionalExamination();
+  }, [
+    visitId,
+    updateRegionalSection,
+  ]);
   return (
     <View style={styles.container}>
       <CollapsibleSection
@@ -113,7 +215,7 @@ export default function RegionalExaminationSection() {
         defaultExpanded={false}
       >
 
-                <Section
+        <Section
           title="Head Examination"
           section="head"
           items={[

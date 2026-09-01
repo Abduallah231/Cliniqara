@@ -14,6 +14,11 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import { useEffect, useRef, useState } from "react";
+import { getVitalSigns } from "@/services/visitApi";
+import useVitalSignsAutoSave, {
+  mapVitalSignsFromBackend,
+} from "@/hooks/useVitalSignsAutoSave";
 
 export default function VitalSignsSection() {
   const vitalSigns = useVisitStore(
@@ -27,6 +32,68 @@ export default function VitalSignsSection() {
   const updateBloodPressure = useVisitStore(
     (state) => state.updateBloodPressure
   );
+
+  const visitId = useVisitStore(
+    (state) => state.visit.metadata.id,
+  );
+
+  const [isHydrating, setIsHydrating] =
+    useState(false);
+
+  const loadedVisitId = useRef<string | null>(
+    null,
+  );
+
+  useVitalSignsAutoSave({
+    visitId,
+    vitalSigns,
+    isHydrating,
+  });
+
+  useEffect(() => {
+    if (
+      !visitId ||
+      loadedVisitId.current === visitId
+    ) {
+      return;
+    }
+
+    const loadVitalSigns = async () => {
+      try {
+        setIsHydrating(true);
+
+        const data = await getVitalSigns(
+          visitId,
+        );
+
+        if (!data) {
+          loadedVisitId.current = visitId;
+          return;
+        }
+
+        const values =
+          mapVitalSignsFromBackend(
+            data as Record<string, unknown>,
+          );
+
+        updateVitalSigns(values);
+
+        loadedVisitId.current = visitId;
+      } catch (error) {
+        console.error(
+          "Failed to load vital signs:",
+          error,
+        );
+      } finally {
+        setIsHydrating(false);
+      }
+    };
+
+    loadVitalSigns();
+  }, [
+    visitId,
+    updateVitalSigns,
+  ]);
 
   return (
     <View style={styles.container}>
@@ -93,7 +160,6 @@ export default function VitalSignsSection() {
               <AppChip
                 label="Regular"
                 selected={
-                  !vitalSigns.pulseRhythm ||
                   vitalSigns.pulseRhythm === "Regular"
                 }
                 onPress={() =>
@@ -136,7 +202,6 @@ export default function VitalSignsSection() {
               <AppChip
                 label="Room Air"
                 selected={
-                  !vitalSigns.oxygenSource ||
                   vitalSigns.oxygenSource === "Room Air"
                 }
                 onPress={() =>
@@ -201,7 +266,7 @@ export default function VitalSignsSection() {
           ))}
         </View>
 
-                <View style={styles.row}>
+        <View style={styles.row}>
           <View style={styles.half}>
             <AppTextField
               label="Respiratory Rate"

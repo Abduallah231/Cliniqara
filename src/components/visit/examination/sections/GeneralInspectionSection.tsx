@@ -14,6 +14,18 @@ import {
   Text,
   View,
 } from "react-native";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import {
+  getGeneralInspection,
+} from "@/services/visitApi";
+
+import useGeneralInspectionAutoSave, {
+  mapGeneralInspectionFromBackend,
+} from "@/hooks/useGeneralInspectionAutoSave";
 
 export default function GeneralInspectionSection() {
   const generalInspection =
@@ -41,6 +53,72 @@ export default function GeneralInspectionSection() {
         state.toggleEdemaLocation
     );
 
+  const visitId = useVisitStore(
+    (state) => state.visit.metadata.id,
+  );
+
+  const [isHydrating, setIsHydrating] =
+    useState(false);
+
+  const loadedVisitId = useRef<string | null>(
+    null,
+  );
+
+  useGeneralInspectionAutoSave({
+    visitId,
+    generalInspection,
+    isHydrating,
+  });
+
+  useEffect(() => {
+    if (
+      !visitId ||
+      loadedVisitId.current === visitId
+    ) {
+      return;
+    }
+
+    const loadGeneralInspection =
+      async () => {
+        try {
+          setIsHydrating(true);
+
+          const data =
+            await getGeneralInspection(
+              visitId,
+            );
+
+          if (!data) {
+            loadedVisitId.current =
+              visitId;
+            return;
+          }
+
+          const values =
+            mapGeneralInspectionFromBackend(
+              data as Record<string, unknown>,
+            );
+
+          updateGeneralInspection(values);
+
+          loadedVisitId.current =
+            visitId;
+        } catch (error) {
+          console.error(
+            "Failed to load general inspection:",
+            error,
+          );
+        } finally {
+          setIsHydrating(false);
+        }
+      };
+
+    loadGeneralInspection();
+  }, [
+    visitId,
+    updateGeneralInspection,
+  ]);
+
   return (
     <View style={styles.container}>
       <CollapsibleSection
@@ -60,7 +138,6 @@ export default function GeneralInspectionSection() {
           <AppChip
             label="Conscious"
             selected={
-              !generalInspection.consciousness ||
               generalInspection.consciousness ===
                 "Conscious"
             }
@@ -123,7 +200,6 @@ export default function GeneralInspectionSection() {
           <AppChip
             label="Normal"
             selected={
-              !generalInspection.appearance ||
               generalInspection.appearance ===
                 "Normal"
             }
@@ -185,7 +261,6 @@ export default function GeneralInspectionSection() {
           <AppChip
             label="Normal"
             selected={
-              !generalInspection.hydration ||
               generalInspection.hydration ===
                 "Normal"
             }
@@ -245,7 +320,6 @@ export default function GeneralInspectionSection() {
           <AppChip
             label="Average"
             selected={
-              !generalInspection.bodyBuild ||
               generalInspection.bodyBuild ===
                 "Average"
             }
@@ -305,7 +379,6 @@ export default function GeneralInspectionSection() {
           <AppChip
             label="Well Nourished"
             selected={
-              !generalInspection.nourishment ||
               generalInspection.nourishment ===
                 "Well Nourished"
             }
