@@ -133,20 +133,6 @@ export default function InvestigationResultsScreen({
         "Upload Result Image",
         "The current visit is not available.",
       );
-
-      return;
-    }
-
-    /**
-     * A newly added investigation does not have
-     * a database ID until the first autosave.
-     */
-    if (!investigation.id) {
-      Alert.alert(
-        "Save Investigation First",
-        "Please wait a moment for the investigation to be saved before adding an image.",
-      );
-
       return;
     }
 
@@ -159,20 +145,16 @@ export default function InvestigationResultsScreen({
           "Permission Required",
           "Please allow photo library access to select an investigation result image.",
         );
-
         return;
       }
 
       const result =
-        await ImagePicker.launchImageLibraryAsync(
-          {
-            mediaTypes:
-              ["images"],
-            allowsEditing: false,
-            quality: 0.9,
-            selectionLimit: 1,
-          },
-        );
+        await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ["images"],
+          allowsEditing: false,
+          quality: 0.9,
+          selectionLimit: 1,
+        });
 
       if (
         result.canceled ||
@@ -181,29 +163,60 @@ export default function InvestigationResultsScreen({
         return;
       }
 
-      const asset =
-        result.assets[0];
+      const asset = result.assets[0];
+
+      /*
+      * Always read the latest investigation
+      * from Zustand before uploading.
+      *
+      * This prevents using a stale/local ID
+      * from an old render.
+      */
+      const latestInvestigations =
+        useVisitStore
+          .getState()
+          .visit.assessment
+          .investigations
+          .requestedInvestigations;
+
+      const latestInvestigation =
+        latestInvestigations.find(
+          (item) =>
+            item.id === investigation.id ||
+            item.name === investigation.name,
+        );
+
+      const latestInvestigationId =
+        latestInvestigation?.id;
+
+      if (!latestInvestigationId) {
+        Alert.alert(
+          "Save Investigation First",
+          "Please wait a moment for the investigation to be saved before adding an image.",
+        );
+        return;
+      }
 
       setUploadingInvestigationId(
-        investigation.id,
+        latestInvestigationId,
       );
 
       const fileUrl =
         await uploadInvestigationImage(
           asset.uri,
           visitId,
-          investigation.id,
+          latestInvestigationId,
         );
 
       addInvestigationImage(
-        investigation.id,
+        latestInvestigationId,
         {
           fileUrl,
         },
       );
 
       updateInvestigationStatus(
-        investigation.id,
+        latestInvestigationId,
         "completed",
       );
     } catch (error: any) {

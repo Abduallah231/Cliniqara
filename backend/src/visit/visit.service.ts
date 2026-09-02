@@ -277,17 +277,17 @@ export class VisitService {
       );
     }
 
-    console.log(
-      'CREATE VISIT DEBUG',
-      {
-        patientId:
-          dto.patientId,
-        clinicId,
-        currentUserId,
-        patientClinicId:
-          patient.clinicId,
-      },
-    );
+    // console.log(
+    //   'CREATE VISIT DEBUG',
+    //   {
+    //     patientId:
+    //       dto.patientId,
+    //     clinicId,
+    //     currentUserId,
+    //     patientClinicId:
+    //       patient.clinicId,
+    //   },
+    // );
 
     const visit =
       await this.prisma.$transaction(
@@ -2103,6 +2103,29 @@ export class VisitService {
             },
           });
 
+          // console.log(
+          //   "INVESTIGATIONS DB BEFORE SAVE:",
+          //   existingInvestigations.map(
+          //     (item) => ({
+          //       id: item.id,
+          //       name: item.name,
+          //       visitId: item.visitId,
+          //     }),
+          //   ),
+          // );
+
+          // console.log(
+          //   "INVESTIGATIONS FRONTEND INPUT:",
+          //   dto.investigations.map(
+          //     (item) => ({
+          //       id: item.id,
+          //       name: item.name,
+          //       images:
+          //         item.images?.length ?? 0,
+          //     }),
+          //   ),
+          // );
+          
         const existingById =
           new Map(
             existingInvestigations.map(
@@ -2113,25 +2136,71 @@ export class VisitService {
             ),
           );
 
+        const existingByName =
+          new Map(
+            existingInvestigations.map(
+              (investigation) => [
+                investigation.name,
+                investigation,
+              ],
+            ),
+          );
+
         /*
-        * Make sure every ID supplied by the
-        * frontend actually belongs to this visit.
+        * Resolve investigation IDs.
+        *
+        * The frontend may temporarily hold an old/local ID
+        * for an investigation that already exists in this visit.
+        *
+        * If the supplied ID is not found in this visit,
+        * but the same investigation name exists in this visit,
+        * we treat it as the same investigation and keep
+        * the existing database ID.
         */
         for (
           const investigation of
             dto.investigations
         ) {
+          if (!investigation.id) {
+            continue;
+          }
+
           if (
-            investigation.id &&
-            !existingById.has(
+            existingById.has(
               investigation.id,
             )
           ) {
-            throw new BadRequestException(
-              "Investigation does not belong to this visit.",
-            );
+            continue;
           }
+
+          const sameNameInvestigation =
+            existingByName.get(
+              investigation.name,
+            );
+
+          if (sameNameInvestigation) {
+            investigation.id =
+              sameNameInvestigation.id;
+
+            continue;
+          }
+
+          throw new BadRequestException(
+            "Investigation does not belong to this visit.",
+          );
         }
+
+        // console.log(
+        //     "INVESTIGATIONS RESOLVED:",
+        //     dto.investigations.map(
+        //       (item) => ({
+        //         id: item.id,
+        //         name: item.name,
+        //         images:
+        //           item.images?.length ?? 0,
+        //       }),
+        //     ),
+        //   );
 
         /*
         * IDs that are still present after this
