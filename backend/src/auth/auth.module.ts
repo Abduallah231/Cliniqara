@@ -1,34 +1,56 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './controllers/auth.controller';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { RolesGuard } from './guards/roles.guard';
-import { AuthService } from './services/auth.service';
-import { JwtService } from './services/jwt.service';
-import { PasswordService } from './services/password.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { Module } from "@nestjs/common";
+import {
+  ConfigModule,
+  ConfigService,
+} from "@nestjs/config";
+import { JwtModule } from "@nestjs/jwt";
+import { PassportModule } from "@nestjs/passport";
+
+import { AuthController } from "./controllers/auth.controller";
+import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { RolesGuard } from "./guards/roles.guard";
+
+import { AuthService } from "./services/auth.service";
+import { JwtService } from "./services/jwt.service";
+import { PasswordService } from "./services/password.service";
+
+import { JwtStrategy } from "./strategies/jwt.strategy";
+
+import { UploadModule } from "../upload/upload.module";
+
 @Module({
   imports: [
     ConfigModule,
 
+    UploadModule,
+
     PassportModule.register({
-      defaultStrategy: 'jwt',
+      defaultStrategy: "jwt",
     }),
 
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET')!,
+
+      useFactory: (
+        config: ConfigService,
+      ) => ({
+        secret:
+          config.get<string>(
+            "JWT_SECRET",
+          )!,
+
         signOptions: {
-          expiresIn: '15m',
+          expiresIn: "15m",
         },
       }),
     }),
   ],
-  controllers: [AuthController],
+
+  controllers: [
+    AuthController,
+  ],
+
   providers: [
     AuthService,
     PasswordService,
@@ -37,10 +59,11 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     JwtAuthGuard,
     RolesGuard,
   ],
+
   exports: [
     AuthService,
     JwtAuthGuard,
     RolesGuard,
-  ]
+  ],
 })
 export class AuthModule {}

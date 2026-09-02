@@ -5,10 +5,16 @@ import {
   Text,
   View,
 } from "react-native";
+import { useEffect, useRef, useState } from "react";
 
 import PrescriptionForm from "./PrescriptionForm";
-
 import { useVisitStore } from "@/store/visitStore";
+import {
+  getPrescription,
+} from "@/services/visitApi";
+import {
+  mapPrescriptionFromBackend,
+} from "@/hooks/usePrescriptionAutoSave";
 
 import {
   COLORS,
@@ -18,52 +24,132 @@ import {
   TYPOGRAPHY,
 } from "@/theme";
 
+import { router } from "expo-router";
+
+import usePrescriptionAutoSave from "@/hooks/usePrescriptionAutoSave";
+
 export default function PrescriptionSection() {
   const prescription = useVisitStore(
     (state) =>
-      state.visit.assessment.prescription
+      state.visit.assessment.prescription,
+  );
+
+  const setVisit = useVisitStore(
+    (state) => state.setVisit,
   );
 
   const addPrescriptionMedication =
     useVisitStore(
       (state) =>
-        state.addPrescriptionMedication
+        state.addPrescriptionMedication,
     );
 
   const updatePrescriptionMedication =
     useVisitStore(
       (state) =>
-        state.updatePrescriptionMedication
+        state.updatePrescriptionMedication,
     );
 
   const removePrescriptionMedication =
     useVisitStore(
       (state) =>
-        state.removePrescriptionMedication
+        state.removePrescriptionMedication,
     );
 
   const updatePrescriptionAdvice =
     useVisitStore(
       (state) =>
-        state.updatePrescriptionAdvice
+        state.updatePrescriptionAdvice,
     );
 
   const updatePrescriptionNotes =
     useVisitStore(
       (state) =>
-        state.updatePrescriptionNotes
+        state.updatePrescriptionNotes,
     );
 
   const updatePrescriptionFollowUp =
     useVisitStore(
       (state) =>
-        state.updatePrescriptionFollowUp
+        state.updatePrescriptionFollowUp,
     );
+
+  const visitId =
+    useVisitStore(
+      (state) => state.visit.metadata.id,
+    );
+
+  const [isHydrating, setIsHydrating] =
+    useState(false);
+
+  const loadedVisitId =
+    useRef<string | null>(null);
+
+  usePrescriptionAutoSave({
+    visitId,
+    prescription,
+    isHydrating,
+  });
+
+  // ======================================================
+  // Load Prescription
+  // ======================================================
+  useEffect(() => {
+    if (
+      !visitId ||
+      loadedVisitId.current === visitId
+    ) {
+      return;
+    }
+
+    const loadPrescription = async () => {
+      try {
+        setIsHydrating(true);
+
+        const data =
+          await getPrescription(visitId);
+
+        /*
+         * No prescription has been saved
+         * for this visit yet.
+         *
+         * Keep the current empty UI state.
+         */
+        if (!data) {
+          loadedVisitId.current = visitId;
+          return;
+        }
+
+        const mappedPrescription =
+          mapPrescriptionFromBackend(data);
+
+        setVisit({
+          ...useVisitStore.getState().visit,
+          assessment: {
+            ...useVisitStore.getState()
+              .visit.assessment,
+            prescription:
+              mappedPrescription,
+          },
+        });
+
+        loadedVisitId.current = visitId;
+      } catch (error) {
+        console.error(
+          "Failed to load prescription:",
+          error,
+        );
+      } finally {
+        setIsHydrating(false);
+      }
+    };
+
+    loadPrescription();
+  }, [visitId, setVisit]);
 
   // ======================================================
   // Medication
   // ======================================================
-
   const addMedication = () => {
     addPrescriptionMedication({
       medication: "",
@@ -74,8 +160,12 @@ export default function PrescriptionSection() {
   };
 
   const removeMedication = (
-    index: number
+    index: number,
   ) => {
+    /*
+     * Keep at least one medication card
+     * in the current UI.
+     */
     if (
       prescription.medications.length ===
       1
@@ -88,17 +178,24 @@ export default function PrescriptionSection() {
 
   return (
     <View style={styles.container}>
-
       {/* ==================================================
           Import Prescription Template
           This belongs to PrescriptionSection only
       ================================================== */}
-
       <Pressable
         style={styles.templateButton}
         onPress={() => {
-          // TODO:
-          // Open prescription templates
+          if (!visitId) {
+            return;
+          }
+
+          router.push({
+            pathname:
+              "/prescription-template-import",
+            params: {
+              visitId,
+            },
+          });
         }}
       >
         <Ionicons
@@ -115,7 +212,6 @@ export default function PrescriptionSection() {
       {/* ==================================================
           Shared Prescription Form
       ================================================== */}
-
       <PrescriptionForm
         medications={
           prescription.medications
@@ -123,33 +219,27 @@ export default function PrescriptionSection() {
         advice={prescription.advice}
         notes={prescription.notes}
         followUp={prescription.followUp}
-
         onAddMedication={
           addMedication
         }
-
         onUpdateMedication={(
           index,
-          updates
+          updates,
         ) =>
           updatePrescriptionMedication(
             index,
-            updates
+            updates,
           )
         }
-
         onRemoveMedication={
           removeMedication
         }
-
         onUpdateAdvice={
           updatePrescriptionAdvice
         }
-
         onUpdateNotes={
           updatePrescriptionNotes
         }
-
         onUpdateFollowUp={
           updatePrescriptionFollowUp
         }
@@ -159,7 +249,6 @@ export default function PrescriptionSection() {
           Print Prescription
           This belongs to PrescriptionSection only
       ================================================== */}
-
       <Pressable
         style={styles.printButton}
         onPress={() => {
@@ -174,12 +263,13 @@ export default function PrescriptionSection() {
         />
 
         <Text
-          style={styles.printButtonText}
+          style={
+            styles.printButtonText
+          }
         >
           Print Prescription
         </Text>
       </Pressable>
-
     </View>
   );
 }
@@ -195,13 +285,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primary,
     backgroundColor: COLORS.card,
-
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-
     gap: SPACING.sm,
-
     ...SHADOW,
   },
 
@@ -217,13 +304,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primary,
     backgroundColor: COLORS.card,
-
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-
     gap: SPACING.sm,
-
     ...SHADOW,
   },
 

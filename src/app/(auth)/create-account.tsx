@@ -21,7 +21,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { uploadImage } from "@/services/uploadApi";
+import {
+  uploadNationalIdImage,
+  uploadMedicalLicenseImage,
+} from "@/services/uploadApi";
 import AppDropdown from "@/components/common/AppDropdown";
 import { SelectionOption } from "@/models/selection";
 
@@ -264,12 +267,16 @@ export default function CreateAccountScreen() {
 
     if (idFrontName) {
       uploadedNationalIdImage =
-        await uploadImage(idFrontName);
+        await uploadNationalIdImage(
+          idFrontName,
+        );
     }
 
     if (medicalLicenseImage) {
       uploadedMedicalLicenseImage =
-        await uploadImage(medicalLicenseImage);
+        await uploadMedicalLicenseImage(
+          medicalLicenseImage,
+        );
     }
 
     const user = await register({

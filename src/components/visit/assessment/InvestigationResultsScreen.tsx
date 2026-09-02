@@ -1,16 +1,25 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import {
   Alert,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+
 import AppTextField from "@/components/common/AppTextField";
+
 import investigationsData from "@/data/investigations";
+
+import { getApiFileUrl } from "@/services/api";
+import { uploadInvestigationImage } from "@/services/uploadApi";
+
 import { useVisitStore } from "@/store/visitStore";
+
 import {
   COLORS,
   RADIUS,
@@ -19,42 +28,77 @@ import {
   TYPOGRAPHY,
 } from "@/theme";
 
-export default function InvestigationResultsScreen() {
-  const investigationsState = useVisitStore(
-    (state) =>
-      state.visit.assessment.investigations
-  );
+interface Props {
+  visitId?: string;
+}
+
+export default function InvestigationResultsScreen({
+  visitId,
+}: Props) {
+  const investigationsState =
+    useVisitStore(
+      (state) =>
+        state.visit.assessment
+          .investigations,
+    );
 
   const updateInvestigationResult =
     useVisitStore(
       (state) =>
-        state.updateInvestigationResult
+        state.updateInvestigationResult,
     );
 
   const updateInvestigationStatus =
     useVisitStore(
       (state) =>
-        state.updateInvestigationStatus
+        state.updateInvestigationStatus,
+    );
+
+  const addInvestigationImage =
+    useVisitStore(
+      (state) =>
+        state.addInvestigationImage,
+    );
+
+  const removeInvestigationImage =
+    useVisitStore(
+      (state) =>
+        state.removeInvestigationImage,
     );
 
   const [expandedItem, setExpandedItem] =
     useState<string | null>(null);
 
+  const [uploadingInvestigationId, setUploadingInvestigationId] =
+    useState<string | null>(null);
+
+  const getInvestigationIdentifier = (
+    investigation: {
+      id?: string;
+      name: string;
+    },
+  ) => {
+    return (
+      investigation.id ??
+      investigation.name
+    );
+  };
+
   const getResultValue = (
     investigationId: string,
-    fieldId: string
+    fieldId: string,
   ) => {
     const result =
       investigationsState.results.find(
         (item) =>
           item.investigationId ===
-          investigationId
+          investigationId,
       );
 
     return (
       result?.values.find(
         (field) =>
-          field.fieldId === fieldId
+          field.fieldId === fieldId,
       )?.value ?? ""
     );
   };
@@ -63,18 +107,145 @@ export default function InvestigationResultsScreen() {
     investigationId: string,
     fieldId: string,
     fieldLabel: string,
-    value: string
+    value: string,
   ) => {
     updateInvestigationResult(
       investigationId,
       fieldId,
       fieldLabel,
-      value
+      value,
     );
 
     updateInvestigationStatus(
       investigationId,
-      "completed"
+      "completed",
+    );
+  };
+
+  const pickAndUploadImage = async (
+    investigation: {
+      id?: string;
+      name: string;
+    },
+  ) => {
+    if (!visitId) {
+      Alert.alert(
+        "Upload Result Image",
+        "The current visit is not available.",
+      );
+
+      return;
+    }
+
+    /**
+     * A newly added investigation does not have
+     * a database ID until the first autosave.
+     */
+    if (!investigation.id) {
+      Alert.alert(
+        "Save Investigation First",
+        "Please wait a moment for the investigation to be saved before adding an image.",
+      );
+
+      return;
+    }
+
+    try {
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        Alert.alert(
+          "Permission Required",
+          "Please allow photo library access to select an investigation result image.",
+        );
+
+        return;
+      }
+
+      const result =
+        await ImagePicker.launchImageLibraryAsync(
+          {
+            mediaTypes:
+              ["images"],
+            allowsEditing: false,
+            quality: 0.9,
+            selectionLimit: 1,
+          },
+        );
+
+      if (
+        result.canceled ||
+        !result.assets?.length
+      ) {
+        return;
+      }
+
+      const asset =
+        result.assets[0];
+
+      setUploadingInvestigationId(
+        investigation.id,
+      );
+
+      const fileUrl =
+        await uploadInvestigationImage(
+          asset.uri,
+          visitId,
+          investigation.id,
+        );
+
+      addInvestigationImage(
+        investigation.id,
+        {
+          fileUrl,
+        },
+      );
+
+      updateInvestigationStatus(
+        investigation.id,
+        "completed",
+      );
+    } catch (error: any) {
+      console.error(
+        "INVESTIGATION IMAGE UPLOAD FAILED:",
+        error?.response?.data ??
+          error,
+      );
+
+      Alert.alert(
+        "Upload Failed",
+        "Could not upload the investigation result image. Please try again.",
+      );
+    } finally {
+      setUploadingInvestigationId(
+        null,
+      );
+    }
+  };
+
+  const confirmRemoveImage = (
+    investigationId: string,
+    fileUrl: string,
+  ) => {
+    Alert.alert(
+      "Remove Image",
+      "Remove this result image?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: () =>
+            removeInvestigationImage(
+              investigationId,
+              fileUrl,
+            ),
+        },
+      ],
     );
   };
 
@@ -91,24 +262,40 @@ export default function InvestigationResultsScreen() {
 
       {investigationsState.requestedInvestigations.map(
         (investigation) => {
+          const investigationId =
+            getInvestigationIdentifier(
+              investigation,
+            );
+
+          const accordionId =
+            investigation.name;
+
           const expanded =
             expandedItem ===
-            investigation.name;
+            accordionId;
 
           const investigationInfo =
             investigationsData.find(
               (item) =>
                 item.name ===
-                investigation.name
+                investigation.name,
             );
 
           const type =
             investigationInfo?.type ??
             "single";
 
+          const images =
+            investigation.images ??
+            [];
+
+          const isUploading =
+            uploadingInvestigationId ===
+            investigation.id;
+
           return (
             <View
-              key={investigation.name}
+              key={accordionId}
               style={styles.card}
             >
               <Pressable
@@ -117,7 +304,7 @@ export default function InvestigationResultsScreen() {
                   setExpandedItem(
                     expanded
                       ? null
-                      : investigation.name
+                      : accordionId,
                   )
                 }
               >
@@ -162,33 +349,35 @@ export default function InvestigationResultsScreen() {
                     styles.content
                   }
                 >
-                  {type === "single" && (
+                  {type ===
+                    "single" && (
                     <AppTextField
                       placeholder="Result"
                       value={String(
                         getResultValue(
-                          investigation.name,
-                          "result"
-                        )
+                          investigationId,
+                          "result",
+                        ),
                       )}
                       onChangeText={(
-                        text
+                        text,
                       ) =>
                         updateResult(
-                          investigation.name,
+                          investigationId,
                           "result",
                           "Result",
-                          text
+                          text,
                         )
                       }
                     />
                   )}
 
-                  {type === "multi" && (
+                  {type ===
+                    "multi" && (
                     <>
                       {investigationInfo?.fields?.map(
                         (
-                          field: string
+                          field: string,
                         ) => (
                           <AppTextField
                             key={field}
@@ -197,129 +386,229 @@ export default function InvestigationResultsScreen() {
                             }
                             value={String(
                               getResultValue(
-                                investigation.name,
-                                field
-                              )
+                                investigationId,
+                                field,
+                              ),
                             )}
                             onChangeText={(
-                              text
+                              text,
                             ) =>
                               updateResult(
-                                investigation.name,
+                                investigationId,
                                 field,
                                 field,
-                                text
+                                text,
                               )
                             }
                           />
-                        )
+                        ),
                       )}
                     </>
                   )}
 
-                  {type === "text" && (
+                  {type ===
+                    "text" && (
                     <AppTextField
                       multiline
                       placeholder="Interpretation"
                       value={String(
                         getResultValue(
-                          investigation.name,
-                          "interpretation"
-                        )
+                          investigationId,
+                          "interpretation",
+                        ),
                       )}
                       onChangeText={(
-                        text
+                        text,
                       ) =>
                         updateResult(
-                          investigation.name,
+                          investigationId,
                           "interpretation",
                           "Interpretation",
-                          text
+                          text,
                         )
                       }
                     />
                   )}
 
-                  {type === "report" && (
+                  {type ===
+                    "report" && (
                     <>
-                                        <AppTextField
-                      placeholder="Body Part / Region"
-                      value={String(
-                        getResultValue(
-                          investigation.name,
-                          "region"
-                        )
-                      )}
-                      onChangeText={(
-                        text
-                      ) =>
-                        updateResult(
-                          investigation.name,
-                          "region",
-                          "Body Part / Region",
-                          text
-                        )
+                      <AppTextField
+                        placeholder="Body Part / Region"
+                        value={String(
+                          getResultValue(
+                            investigationId,
+                            "region",
+                          ),
+                        )}
+                        onChangeText={(
+                          text,
+                        ) =>
+                          updateResult(
+                            investigationId,
+                            "region",
+                            "Body Part / Region",
+                            text,
+                          )
+                        }
+                      />
+
+                      <AppTextField
+                        multiline
+                        placeholder="Report"
+                        value={String(
+                          getResultValue(
+                            investigationId,
+                            "report",
+                          ),
+                        )}
+                        onChangeText={(
+                          text,
+                        ) =>
+                          updateResult(
+                            investigationId,
+                            "report",
+                            "Report",
+                            text,
+                          )
+                        }
+                      />
+                    </>
+                  )}
+
+                  {/* ======================================================
+                      Result Images
+                      ====================================================== */}
+
+                  {images.length >
+                    0 && (
+                    <View
+                      style={
+                        styles.imagesSection
+                      }
+                    >
+                      <Text
+                        style={
+                          styles.imagesTitle
+                        }
+                      >
+                        Result Images
+                      </Text>
+
+                      <View
+                        style={
+                          styles.imagesGrid
+                        }
+                      >
+                        {images.map(
+                          (
+                            image,
+                            index,
+                          ) => (
+                            <View
+                              key={`${image.fileUrl}-${index}`}
+                              style={
+                                styles.imageCard
+                              }
+                            >
+                              <Image
+                                source={{
+                                  uri: getApiFileUrl(
+                                    image.fileUrl,
+                                  ),
+                                }}
+                                style={styles.resultImage}
+                                resizeMode="cover"
+                              />
+
+                              <Pressable
+                                style={
+                                  styles.removeImageButton
+                                }
+                                onPress={() =>
+                                  investigation.id &&
+                                  confirmRemoveImage(
+                                    investigation.id,
+                                    image.fileUrl,
+                                  )
+                                }
+                              >
+                                <Ionicons
+                                  name="close"
+                                  size={
+                                    18
+                                  }
+                                  color={
+                                    "#FFFFFF"
+                                  }
+                                />
+                              </Pressable>
+                            </View>
+                          ),
+                        )}
+                      </View>
+                    </View>
+                  )}
+
+                  <Pressable
+                    style={[
+                      styles.imagePlaceholder,
+                      isUploading &&
+                        styles.imagePlaceholderDisabled,
+                    ]}
+                    disabled={
+                      isUploading
+                    }
+                    onPress={() =>
+                      pickAndUploadImage(
+                        investigation,
+                      )
+                    }
+                  >
+                    <Ionicons
+                      name={
+                        isUploading
+                          ? "cloud-upload-outline"
+                          : "image-outline"
+                      }
+                      size={22}
+                      color={
+                        COLORS.primary
                       }
                     />
 
-                    <AppTextField
-                      multiline
-                      placeholder="Report"
-                      value={String(
-                        getResultValue(
-                          investigation.name,
-                          "report"
-                        )
-                      )}
-                      onChangeText={(
-                        text
-                      ) =>
-                        updateResult(
-                          investigation.name,
-                          "report",
-                          "Report",
-                          text
-                        )
+                    <View
+                      style={
+                        styles.imagePlaceholderText
                       }
-                    />
-                  </>
-                )}
-                <Pressable
-                  style={styles.imagePlaceholder}
-                  onPress={() =>
-                    Alert.alert(
-                      "Upload Result Image",
-                      "Image upload will be available in a future update."
-                    )
-                  }
-                >
-                  <Ionicons
-                    name="image-outline"
-                    size={24}
-                    color={COLORS.primary}
-                  />
+                    >
+                      <Text
+                        style={
+                          styles.imagePlaceholderTitle
+                        }
+                      >
+                        {isUploading
+                          ? "Uploading..."
+                          : "Add Result Image"}
+                      </Text>
 
-                  <View style={styles.imagePlaceholderText}>
-                    <Text style={styles.imagePlaceholderTitle}>
-                      Add Result Image
-                    </Text>
-
-                    <Text style={styles.imagePlaceholderSubtitle}>
-                      Upload an image of the investigation result
-                    </Text>
-                  </View>
-
-                  <Ionicons
-                    name="cloud-upload-outline"
-                    size={22}
-                    color={COLORS.secondaryText}
-                  />
-                </Pressable>
-              </View>
-            )}
-          </View>
-        );
-      })}
+                      <Text
+                        style={
+                          styles.imagePlaceholderSubtitle
+                        }
+                      >
+                        {investigation.id
+                          ? "Upload an image of the investigation result"
+                          : "Save the investigation first to add an image"}
+                      </Text>
+                    </View>
+                  </Pressable>
+                </View>
+              )}
+            </View>
+          );
+        },
+      )}
     </ScrollView>
   );
 }
@@ -363,6 +652,7 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
+    flex: 1,
   },
 
   content: {
@@ -384,7 +674,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: SPACING.sm,
-    backgroundColor: COLORS.background,
+    backgroundColor:
+      COLORS.background,
+  },
+
+  imagePlaceholderDisabled: {
+    opacity: 0.6,
   },
 
   imagePlaceholderText: {
@@ -401,5 +696,51 @@ const styles = StyleSheet.create({
   imagePlaceholderSubtitle: {
     fontSize: TYPOGRAPHY.small,
     color: COLORS.secondaryText,
+  },
+
+  imagesSection: {
+    gap: SPACING.sm,
+  },
+
+  imagesTitle: {
+    fontSize: TYPOGRAPHY.body,
+    fontWeight: "600",
+    color: COLORS.text,
+  },
+
+  imagesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: SPACING.sm,
+  },
+
+  imageCard: {
+    width: 110,
+    height: 110,
+    borderRadius: RADIUS.lg,
+    overflow: "hidden",
+    backgroundColor:
+      COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    position: "relative",
+  },
+
+  resultImage: {
+    width: "100%",
+    height: "100%",
+  },
+
+  removeImageButton: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor:
+      "rgba(0,0,0,0.65)",
   },
 });

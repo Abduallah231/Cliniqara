@@ -21,7 +21,12 @@ import InvestigationSection from "./assessment/InvestigationSection";
 import PrescriptionSection from "./assessment/PrescriptionSection";
 import ProceduresReferralsSection from "./assessment/ProceduresReferrals";
 
-export default function AssessmentTab() {
+interface Props {
+  visitId?: string;
+}
+export default function AssessmentTab({
+  visitId,
+}: Props) {
 
   const [
   showInvestigationResults,
@@ -125,7 +130,7 @@ export default function AssessmentTab() {
         />
 
         {showInvestigationResults && (
-          <InvestigationResultsScreen />
+          <InvestigationResultsScreen visitId={visitId} />
         )}
       </CollapsibleSection>
 

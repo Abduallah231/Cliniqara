@@ -5,68 +5,119 @@ import {
   Text,
   View,
 } from "react-native";
+import { useEffect, useState } from "react";
+
 import AppTextField from "@/components/common/AppTextField";
+
 import { useVisitStore } from "@/store/visitStore";
-import {
-  COLORS,
-  RADIUS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+
+import { useProceduresReferralsAutoSave } from "@/hooks/useProceduresReferralsAutoSave";
+
+import { COLORS, RADIUS, SHADOW, SPACING, TYPOGRAPHY } from "@/theme";
 
 export default function ProceduresReferralsSection() {
-  const procedures =
-    useVisitStore(
-      (state) =>
-        state.visit.assessment
-          .proceduresReferrals
-          .procedures
-    );
+  const procedures = useVisitStore(
+    state =>
+      state.visit.assessment
+        .proceduresReferrals.procedures
+  );
 
-  const referrals =
-    useVisitStore(
-      (state) =>
-        state.visit.assessment
-          .proceduresReferrals
-          .referrals
-    );
+  const referrals = useVisitStore(
+    state =>
+      state.visit.assessment
+        .proceduresReferrals.referrals
+  );
 
   const addProcedure =
-    useVisitStore(
-      (state) =>
-        state.addProcedure
-    );
+    useVisitStore(state => state.addProcedure);
 
   const updateProcedure =
-    useVisitStore(
-      (state) =>
-        state.updateProcedure
-    );
+    useVisitStore(state => state.updateProcedure);
 
   const removeProcedure =
-    useVisitStore(
-      (state) =>
-        state.removeProcedure
-    );
+    useVisitStore(state => state.removeProcedure);
 
   const addReferral =
-    useVisitStore(
-      (state) =>
-        state.addReferral
-    );
+    useVisitStore(state => state.addReferral);
 
   const updateReferral =
-    useVisitStore(
-      (state) =>
-        state.updateReferral
-    );
+    useVisitStore(state => state.updateReferral);
 
   const removeReferral =
-    useVisitStore(
-      (state) =>
-        state.removeReferral
-    );
+    useVisitStore(state => state.removeReferral);
+
+  /*
+   * ==========================================
+   * VISIT ID
+   * ==========================================
+   */
+
+  const visitId = useVisitStore(
+    state => state.visit.metadata.id
+  );
+
+  /*
+   * ==========================================
+   * HYDRATION
+   * ==========================================
+   */
+
+  const [
+    isHydrating,
+    setIsHydrating,
+  ] = useState(true);
+
+  const [
+    loadedVisitId,
+    setLoadedVisitId,
+  ] = useState<string | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    /*
+     * No visit yet.
+     */
+    if (!visitId) {
+      setIsHydrating(false);
+      setLoadedVisitId(undefined);
+      return;
+    }
+
+    /*
+     * Already loaded this visit.
+     */
+    if (loadedVisitId === visitId) {
+      return;
+    }
+
+    setIsHydrating(true);
+    setLoadedVisitId(undefined);
+
+    /*
+     * The actual GET + Zustand hydration
+     * is handled by the autosave hook.
+     *
+     * Give it one render cycle to complete
+     * before enabling autosave.
+     */
+    const timer = setTimeout(() => {
+      setLoadedVisitId(visitId);
+      setIsHydrating(false);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [
+    visitId,
+    loadedVisitId,
+  ]);
+
+  useProceduresReferralsAutoSave({
+    visitId,
+    isHydrating,
+  });
 
   return (
     <View style={styles.container}>
@@ -74,65 +125,48 @@ export default function ProceduresReferralsSection() {
         Procedures
       </Text>
 
-      {procedures.map(
-        (item, index) => (
-          <View
-            key={index}
-            style={styles.card}
-          >
-            <View
-              style={
-                styles.cardHeader
+      {procedures.map((item, index) => (
+        <View
+          key={index}
+          style={styles.card}
+        >
+          <View style={styles.cardHeader}>
+            <Ionicons
+              name="construct-outline"
+              size={20}
+              color={COLORS.primary}
+            />
+
+            <Text style={styles.cardTitle}>
+              Procedure {index + 1}
+            </Text>
+
+            <Pressable
+              onPress={() =>
+                removeProcedure(index)
               }
             >
               <Ionicons
-                name="construct-outline"
+                name="trash-outline"
                 size={20}
-                color={
-                  COLORS.primary
-                }
+                color="#ef4444"
               />
-
-              <Text
-                style={
-                  styles.cardTitle
-                }
-              >
-                Procedure{" "}
-                {index + 1}
-              </Text>
-
-              <Pressable
-                onPress={() =>
-                  removeProcedure(
-                    index
-                  )
-                }
-              >
-                <Ionicons
-                  name="trash-outline"
-                  size={20}
-                  color="#ef4444"
-                />
-              </Pressable>
-            </View>
-
-            <AppTextField
-              multiline
-              placeholder="Procedure details..."
-              value={item.details}
-              onChangeText={(
-                text
-              ) =>
-                updateProcedure(
-                  index,
-                  text
-                )
-              }
-            />
+            </Pressable>
           </View>
-        )
-      )}
+
+          <AppTextField
+            multiline
+            placeholder="Procedure details..."
+            value={item.details}
+            onChangeText={text =>
+              updateProcedure(
+                index,
+                text
+              )
+            }
+          />
+        </View>
+      ))}
 
       <Pressable
         style={styles.button}
@@ -148,9 +182,7 @@ export default function ProceduresReferralsSection() {
           color={COLORS.white}
         />
 
-        <Text
-          style={styles.buttonText}
-        >
+        <Text style={styles.buttonText}>
           Add Procedure
         </Text>
       </Pressable>
@@ -159,66 +191,50 @@ export default function ProceduresReferralsSection() {
         Referrals
       </Text>
 
-      {referrals.map(
-        (item, index) => (
-          <View
-            key={index}
-            style={styles.card}
-          >
-            <View
-              style={
-                styles.cardHeader
+      {referrals.map((item, index) => (
+        <View
+          key={index}
+          style={styles.card}
+        >
+          <View style={styles.cardHeader}>
+            <Ionicons
+              name="people-outline"
+              size={20}
+              color={COLORS.primary}
+            />
+
+            <Text style={styles.cardTitle}>
+              Referral {index + 1}
+            </Text>
+
+            <Pressable
+              onPress={() =>
+                removeReferral(index)
               }
             >
               <Ionicons
-                name="people-outline"
+                name="trash-outline"
                 size={20}
-                color={
-                  COLORS.primary
-                }
+                color="#ef4444"
               />
-
-              <Text
-                style={
-                  styles.cardTitle
-                }
-              >
-                Referral{" "}
-                {index + 1}
-              </Text>
-
-              <Pressable
-                onPress={() =>
-                  removeReferral(
-                    index
-                  )
-                }
-              >
-                <Ionicons
-                  name="trash-outline"
-                  size={20}
-                  color="#ef4444"
-                />
-              </Pressable>
-            </View>
-
-            <AppTextField
-              multiline
-              placeholder="Referral details..."
-              value={item.details}
-              onChangeText={(
-                text
-              ) =>
-                updateReferral(
-                  index,
-                  text
-                )
-              }
-            />
+            </Pressable>
           </View>
-        )
-      )}
-            <Pressable
+
+          <AppTextField
+            multiline
+            placeholder="Referral details..."
+            value={item.details}
+            onChangeText={text =>
+              updateReferral(
+                index,
+                text
+              )
+            }
+          />
+        </View>
+      ))}
+
+      <Pressable
         style={styles.button}
         onPress={() =>
           addReferral({
@@ -232,9 +248,7 @@ export default function ProceduresReferralsSection() {
           color={COLORS.white}
         />
 
-        <Text
-          style={styles.buttonText}
-        >
+        <Text style={styles.buttonText}>
           Add Referral
         </Text>
       </Pressable>

@@ -14,53 +14,148 @@ import {
   View,
 } from "react-native";
 import DiagnosisCard from "./DiagnosisCard";
+import { useEffect, useRef, useState } from "react";
+import { getDiagnosis } from "@/services/visitApi";
+import useDiagnosisAutoSave, {
+  mapDiagnosisFromBackend,
+} from "@/hooks/useDiagnosisAutoSave";
 
 export default function DiagnosisSection() {
   const diagnosis = useVisitStore(
     (state) =>
-      state.visit.assessment.diagnosis
+      state.visit.assessment.diagnosis,
   );
 
   const updatePrimaryDiagnosis =
     useVisitStore(
       (state) =>
-        state.updatePrimaryDiagnosis
+        state.updatePrimaryDiagnosis,
     );
 
   const addDifferentialDiagnosis =
     useVisitStore(
       (state) =>
-        state.addDifferentialDiagnosis
+        state.addDifferentialDiagnosis,
     );
 
   const removeDifferentialDiagnosis =
     useVisitStore(
       (state) =>
-        state.removeDifferentialDiagnosis
+        state.removeDifferentialDiagnosis,
     );
 
-  const diagnosisOptions = diagnoses.map((item) => ({
-    id: item.name,
-    label: item.name,
-  }));
-
-  const primaryOptions = diagnosisOptions.filter(
-    (item) =>
-      item.label !== diagnosis.primaryDiagnosis?.diagnosis
+  const visitId = useVisitStore(
+    (state) => state.visit.metadata.id,
   );
+
+  const [isHydrating, setIsHydrating] =
+    useState(false);
+
+  const loadedVisitId = useRef<string | null>(
+    null,
+  );
+
+  useDiagnosisAutoSave({
+    visitId,
+    diagnosis,
+    isHydrating,
+  });
+
+  useEffect(() => {
+    if (
+      !visitId ||
+      loadedVisitId.current === visitId
+    ) {
+      return;
+    }
+
+    const loadDiagnosis = async () => {
+      try {
+        setIsHydrating(true);
+
+        const data =
+          await getDiagnosis(visitId);
+
+        if (!data) {
+          loadedVisitId.current = visitId;
+          return;
+        }
+
+        const mappedDiagnosis =
+          mapDiagnosisFromBackend(data);
+
+        updatePrimaryDiagnosis(
+          mappedDiagnosis.primaryDiagnosis,
+        );
+
+        mappedDiagnosis.differentialDiagnoses.forEach(
+          (item) => {
+            addDifferentialDiagnosis(item);
+          },
+        );
+
+        loadedVisitId.current = visitId;
+      } catch (error: any) {
+        console.error(
+          "Failed to load diagnosis:",
+          error?.response?.data ?? error,
+        );
+      } finally {
+        setIsHydrating(false);
+      }
+    };
+
+    loadDiagnosis();
+  }, [
+    visitId,
+    updatePrimaryDiagnosis,
+    addDifferentialDiagnosis,
+  ]);
+
+  /*
+   * Important:
+   *
+   * diagnoses.ts may contain duplicate ICD codes
+   * for different diagnosis names.
+   *
+   * Therefore the dropdown uses the diagnosis name
+   * as its UI id, while the real ICD code is taken
+   * from the original diagnoses array on selection.
+   */
+  const diagnosisOptions = diagnoses.map(
+    (item) => ({
+      id: item.name,
+      label: item.name,
+    }),
+  );
+
+  const primaryOptions =
+    diagnosisOptions.filter(
+      (item) =>
+        item.label !==
+        diagnosis.primaryDiagnosis
+          ?.diagnosis,
+    );
 
   const differentialOptions =
     diagnosisOptions.filter(
       (item) =>
         !diagnosis.differentialDiagnoses.some(
           (d) =>
-            d.diagnosis === item.label
-        )
+            d.diagnosis === item.label,
+        ),
     );
+
+  const findDiagnosisByName = (
+    name: string,
+  ) => {
+    return diagnoses.find(
+      (item) => item.name === name,
+    );
+  };
 
   return (
     <View style={styles.container}>
-
       <Text style={styles.title}>
         Primary Diagnosis
       </Text>
@@ -70,32 +165,43 @@ export default function DiagnosisSection() {
         selected={
           diagnosis.primaryDiagnosis
             ? {
-                id: diagnosis.primaryDiagnosis.diagnosis,
-                label: diagnosis.primaryDiagnosis.diagnosis,
+                id:
+                  diagnosis.primaryDiagnosis
+                    .diagnosis,
+                label:
+                  diagnosis.primaryDiagnosis
+                    .diagnosis,
               }
             : undefined
         }
         options={primaryOptions}
-        onChange={(item) =>
+        onChange={(item) => {
+          const selectedDiagnosis =
+            findDiagnosisByName(item.id);
+
+          if (!selectedDiagnosis) {
+            return;
+          }
+
           updatePrimaryDiagnosis({
-            code: item.id,
-            diagnosis: item.label,
-          })
-        }
+            code: selectedDiagnosis.code,
+            diagnosis:
+              selectedDiagnosis.name,
+          });
+        }}
       />
 
       {diagnosis.primaryDiagnosis && (
         <DiagnosisCard
           title="Primary Diagnosis"
           diagnosis={
-            diagnosis
-              .primaryDiagnosis
+            diagnosis.primaryDiagnosis
               .diagnosis
           }
           icon="medical-outline"
           onRemove={() =>
             updatePrimaryDiagnosis(
-              undefined
+              undefined,
             )
           }
         />
@@ -108,20 +214,27 @@ export default function DiagnosisSection() {
       <AppDropdown
         placeholder="Search differential diagnosis..."
         selected={undefined}
-        options={
-          differentialOptions
-        }
-        onChange={(item) =>
+        options={differentialOptions}
+        onChange={(item) => {
+          const selectedDiagnosis =
+            findDiagnosisByName(item.id);
+
+          if (!selectedDiagnosis) {
+            return;
+          }
+
           addDifferentialDiagnosis({
-            code: item.id,
-            diagnosis: item.label,
-          })
-        }
+            code: selectedDiagnosis.code,
+            diagnosis:
+              selectedDiagnosis.name,
+          });
+        }}
       />
-            {diagnosis.differentialDiagnoses.map(
+
+      {diagnosis.differentialDiagnoses.map(
         (item) => (
           <DiagnosisCard
-            key={item.diagnosis}
+            key={`${item.code}-${item.diagnosis}`}
             title="Differential Diagnosis"
             diagnosis={
               item.diagnosis
@@ -129,11 +242,11 @@ export default function DiagnosisSection() {
             icon="git-compare-outline"
             onRemove={() =>
               removeDifferentialDiagnosis(
-                item.diagnosis
+                item.diagnosis,
               )
             }
           />
-        )
+        ),
       )}
     </View>
   );

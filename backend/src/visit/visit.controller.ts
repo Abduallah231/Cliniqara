@@ -28,6 +28,11 @@ import { SaveVitalSignsDto } from "./dto/save-vital-signs.dto";
 import { SaveGeneralInspectionDto } from "./dto/save-general-inspection.dto";
 import { SaveRegionalExaminationDto } from "./dto/save-regional-examination.dto";
 import { SaveSystemExaminationDto } from "./dto/save-system-examination.dto";
+import { SaveDiagnosisDto } from "./dto/save-diagnosis.dto";
+import { SaveInvestigationsDto } from "./dto/save-investigations.dto";
+import { SaveProceduresDto } from "./dto/save-procedures.dto";
+import { SaveReferralsDto } from "./dto/save-referrals.dto";
+import { SavePrescriptionDto } from "./dto/save-prescription.dto";
 
 @Controller("visits")
 @UseGuards(JwtAuthGuard)
@@ -349,6 +354,135 @@ export class VisitController {
     @Param("visitId") visitId: string,
   ) {
     return this.visitService.getSystemExamination(
+      visitId,
+      user.id,
+    );
+  }
+
+  // =========================
+  // Assessment
+  // =========================
+
+  // Diagnosis
+  @Put(":visitId/diagnosis")
+  async saveDiagnosis(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveDiagnosisDto,
+  ) {
+    return this.visitService.saveDiagnosis(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/diagnosis")
+  async getDiagnosis(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getDiagnosis(
+      visitId,
+      user.id,
+    );
+  }
+
+  // Investigations
+  @Put(":visitId/investigations")
+  async saveInvestigations(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveInvestigationsDto,
+  ) {
+    return this.visitService.saveInvestigations(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/investigations")
+  async getInvestigations(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getInvestigations(
+      visitId,
+      user.id,
+    );
+  }
+
+  // Procedures
+  @Put(":visitId/procedures")
+  async saveProcedures(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveProceduresDto,
+  ) {
+    return this.visitService.saveProcedures(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/procedures")
+  async getProcedures(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getProcedures(
+      visitId,
+      user.id,
+    );
+  }
+
+  // Referrals
+  @Put(":visitId/referrals")
+  async saveReferrals(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SaveReferralsDto,
+  ) {
+    return this.visitService.saveReferrals(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/referrals")
+  async getReferrals(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getReferrals(
+      visitId,
+      user.id,
+    );
+  }
+
+  // Prescription
+  @Put(":visitId/prescription")
+  async savePrescription(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+    @Body() dto: SavePrescriptionDto,
+  ) {
+    return this.visitService.savePrescription(
+      visitId,
+      dto,
+      user.id,
+    );
+  }
+
+  @Get(":visitId/prescription")
+  async getPrescription(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("visitId") visitId: string,
+  ) {
+    return this.visitService.getPrescription(
       visitId,
       user.id,
     );

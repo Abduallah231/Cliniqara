@@ -27,6 +27,8 @@ import {
 import {
   Diagnosis,
   Investigation,
+  InvestigationImage,
+  InvestigationResult,
   Procedure,
   Referral,
   PrescriptionMedication,
@@ -365,6 +367,15 @@ setAiSuggestedInvestigations: (
   investigations: Investigation[]
 ) => void;
 
+setInvestigationsAssessment: (
+  requestedInvestigations: Investigation[],
+  results: InvestigationResult[],
+) => void;
+
+reconcileInvestigationsPersistence: (
+  persistedInvestigations: Investigation[],
+) => void;
+
 // ======================================================
 // Investigation Results
 // ======================================================
@@ -379,6 +390,24 @@ updateInvestigationResult: (
 
 removeInvestigationResult: (
   investigationId: string
+) => void;
+
+// ======================================================
+// Investigation Images
+// ======================================================
+addInvestigationImage: (
+  investigationId: string,
+  image: InvestigationImage
+) => void;
+
+removeInvestigationImage: (
+  investigationId: string,
+  fileUrl: string
+) => void;
+
+setInvestigationImages: (
+  investigationId: string,
+  images: InvestigationImage[]
 ) => void;
 
 // ======================================================
@@ -398,6 +427,10 @@ removeProcedure: (
   index: number
 ) => void;
 
+setProcedures: (
+  procedures: Procedure[]
+) => void;
+
 // ======================================================
 // Referrals
 // ======================================================
@@ -413,6 +446,10 @@ updateReferral: (
 
 removeReferral: (
   index: number
+) => void;
+
+setReferrals: (
+  referrals: Referral[]
 ) => void;
 
 // ======================================================
@@ -2028,6 +2065,122 @@ setAiSuggestedDiagnoses: (diagnoses) =>
     },
   })),
 
+  setInvestigationsAssessment: (
+  requestedInvestigations,
+  results,
+) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      assessment: {
+        ...state.visit.assessment,
+        investigations: {
+          ...state.visit.assessment.investigations,
+          requestedInvestigations,
+          results,
+        },
+      },
+    },
+  })),
+
+  reconcileInvestigationsPersistence: (
+  persistedInvestigations,
+) =>
+  set((state) => {
+    const currentInvestigations =
+      state.visit.assessment.investigations;
+
+    const persistedByName = new Map(
+      persistedInvestigations.map(
+        (investigation) => [
+          investigation.name,
+          investigation,
+        ],
+      ),
+    );
+
+    const currentRequested =
+      currentInvestigations
+        .requestedInvestigations;
+
+    const idMap = new Map<
+      string,
+      string
+    >();
+
+    const reconciledRequested =
+      currentRequested.map(
+        (current) => {
+          const persisted =
+            persistedByName.get(
+              current.name,
+            );
+
+          if (!persisted) {
+            return current;
+          }
+
+          const oldIdentifier =
+            current.id ??
+            current.name;
+
+          if (persisted.id) {
+            idMap.set(
+              oldIdentifier,
+              persisted.id,
+            );
+          }
+
+          return {
+            ...current,
+            id: persisted.id,
+            code:
+              current.code ??
+              persisted.code,
+            images:
+              persisted.images ??
+              current.images ??
+              [],
+          };
+        },
+      );
+
+    const reconciledResults =
+      currentInvestigations.results.map(
+        (result) => {
+          const newId =
+            idMap.get(
+              result.investigationId,
+            );
+
+          if (!newId) {
+            return result;
+          }
+
+          return {
+            ...result,
+            investigationId: newId,
+          };
+        },
+      );
+
+    return {
+      visit: {
+        ...state.visit,
+        assessment: {
+          ...state.visit.assessment,
+          investigations: {
+            ...currentInvestigations,
+            requestedInvestigations:
+              reconciledRequested,
+            results:
+              reconciledResults,
+          },
+        },
+      },
+    };
+  }),
+
     addRequestedInvestigation: (investigation) =>
   set((state) => ({
     visit: {
@@ -2040,33 +2193,66 @@ setAiSuggestedDiagnoses: (diagnoses) =>
             ...state.visit.assessment
               .investigations
               .requestedInvestigations,
-            investigation,
+            {
+              ...investigation,
+              images: investigation.images ?? [],
+            },
           ],
         },
       },
     },
   })),
 
-removeRequestedInvestigation: (name) =>
-  set((state) => ({
-    visit: {
-      ...state.visit,
-      assessment: {
-        ...state.visit.assessment,
-        investigations: {
-          ...state.visit.assessment.investigations,
-          requestedInvestigations:
-            state.visit.assessment.investigations.requestedInvestigations.filter(
-              (item) => item.name !== name
-            ),
+removeRequestedInvestigation: (identifier) =>
+  set((state) => {
+    const requested =
+      state.visit.assessment.investigations
+        .requestedInvestigations;
+
+    const investigation =
+      requested.find(
+        (item) =>
+          item.id === identifier ||
+          item.name === identifier,
+      );
+
+    if (!investigation) {
+      return state;
+    }
+
+    const investigationId =
+      investigation.id ?? investigation.name;
+
+    return {
+      visit: {
+        ...state.visit,
+        assessment: {
+          ...state.visit.assessment,
+          investigations: {
+            ...state.visit.assessment.investigations,
+
+            requestedInvestigations:
+              requested.filter(
+                (item) =>
+                  item.id !== identifier &&
+                  item.name !== identifier,
+              ),
+
+            results:
+              state.visit.assessment.investigations.results.filter(
+                (item) =>
+                  item.investigationId !==
+                  investigationId,
+              ),
+          },
         },
       },
-    },
-  })),
+    };
+  }),
 
 updateInvestigationStatus: (
-  name,
-  status
+  identifier,
+  status,
 ) =>
   set((state) => ({
     visit: {
@@ -2076,15 +2262,17 @@ updateInvestigationStatus: (
         investigations: {
           ...state.visit.assessment.investigations,
           requestedInvestigations:
-            state.visit.assessment.investigations.requestedInvestigations.map(
-              (item) =>
-                item.name === name
-                  ? {
-                      ...item,
-                      status,
-                    }
-                  : item
-            ),
+            state.visit.assessment.investigations
+              .requestedInvestigations.map(
+                (item) =>
+                  item.id === identifier ||
+                  item.name === identifier
+                    ? {
+                        ...item,
+                        status,
+                      }
+                    : item,
+              ),
         },
       },
     },
@@ -2219,6 +2407,120 @@ removeInvestigationResult: (
     },
   })),
 
+      // ======================================================
+// Investigation Images
+// ======================================================
+addInvestigationImage: (
+  investigationId,
+  image,
+) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      assessment: {
+        ...state.visit.assessment,
+        investigations: {
+          ...state.visit.assessment.investigations,
+          requestedInvestigations:
+            state.visit.assessment.investigations
+              .requestedInvestigations.map(
+                (investigation) =>
+                  investigation.id ===
+                  investigationId
+                    ? {
+                        ...investigation,
+                        images: [
+                          ...(investigation.images ?? []),
+                          {
+                            ...image,
+                            sortOrder:
+                              image.sortOrder ??
+                              (
+                                investigation.images ??
+                                []
+                              ).length,
+                          },
+                        ],
+                      }
+                    : investigation,
+              ),
+        },
+      },
+    },
+  })),
+
+removeInvestigationImage: (
+  investigationId,
+  fileUrl,
+) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      assessment: {
+        ...state.visit.assessment,
+        investigations: {
+          ...state.visit.assessment.investigations,
+          requestedInvestigations:
+            state.visit.assessment.investigations
+              .requestedInvestigations.map(
+                (investigation) =>
+                  investigation.id ===
+                  investigationId
+                    ? {
+                        ...investigation,
+                        images: (
+                          investigation.images ?? []
+                        )
+                          .filter(
+                            (image) =>
+                              image.fileUrl !==
+                              fileUrl,
+                          )
+                          .map(
+                            (
+                              image,
+                              index,
+                            ) => ({
+                              ...image,
+                              sortOrder: index,
+                            }),
+                          ),
+                      }
+                    : investigation,
+              ),
+        },
+      },
+    },
+  })),
+
+setInvestigationImages: (
+  investigationId,
+  images,
+) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      assessment: {
+        ...state.visit.assessment,
+        investigations: {
+          ...state.visit.assessment.investigations,
+          requestedInvestigations:
+            state.visit.assessment.investigations
+              .requestedInvestigations.map(
+                (investigation) =>
+                  investigation.id ===
+                  investigationId
+                    ? {
+                        ...investigation,
+                        images,
+                      }
+                    : investigation,
+              ),
+        },
+      },
+    },
+  })),
+
     addProcedure: (procedure) =>
   set((state) => ({
     visit: {
@@ -2287,6 +2589,21 @@ removeProcedure: (index) =>
     },
   })),
 
+  setProcedures: (procedures) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      assessment: {
+        ...state.visit.assessment,
+        proceduresReferrals: {
+          ...state.visit.assessment
+            .proceduresReferrals,
+          procedures,
+        },
+      },
+    },
+  })),
+
     addReferral: (referral) =>
   set((state) => ({
     visit: {
@@ -2350,6 +2667,21 @@ removeReferral: (index) =>
               .referrals.filter(
                 (_, i) => i !== index
               ),
+        },
+      },
+    },
+  })),
+
+  setReferrals: (referrals) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      assessment: {
+        ...state.visit.assessment,
+        proceduresReferrals: {
+          ...state.visit.assessment
+            .proceduresReferrals,
+          referrals,
         },
       },
     },

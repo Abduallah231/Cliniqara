@@ -13,7 +13,7 @@ export interface DynamicFieldValue {
   fieldId: string;
   fieldLabel: string;
   value: DynamicValue;
-  unit?:string;
+  unit?: string;
 }
 
 // ======================================================
@@ -27,9 +27,7 @@ export interface Diagnosis {
 
 export interface DiagnosisAssessment {
   aiSuggestedDiagnoses: Diagnosis[];
-
   primaryDiagnosis?: Diagnosis;
-
   differentialDiagnoses: Diagnosis[];
 }
 
@@ -37,9 +35,29 @@ export interface DiagnosisAssessment {
 // Investigation
 // ======================================================
 
+export type InvestigationStatus =
+  | "requested"
+  | "completed"
+  | "cancelled";
+
+export interface InvestigationImage {
+  fileUrl: string;
+  sortOrder?: number;
+}
+
 export interface Investigation {
+  id?: string;
+  code?: string;
   name: string;
-  status: "requested" | "completed" | "cancelled";
+  status: InvestigationStatus;
+
+  /**
+   * Images attached to this investigation result.
+   *
+   * Optional for backward compatibility with existing
+   * investigation creation flows.
+   */
+  images?: InvestigationImage[];
 }
 
 export interface InvestigationResult {
@@ -49,9 +67,7 @@ export interface InvestigationResult {
 
 export interface InvestigationAssessment {
   aiSuggestedInvestigations: Investigation[];
-
   requestedInvestigations: Investigation[];
-
   results: InvestigationResult[];
 }
 
@@ -69,14 +85,13 @@ export interface Referral {
 
 export interface ProceduresReferrals {
   procedures: Procedure[];
-
   referrals: Referral[];
 }
 
 // ======================================================
 // Prescription
 // ======================================================
- 
+
 export type PrescriptionDurationUnit =
   | "DAYS"
   | "WEEKS"
@@ -92,11 +107,8 @@ export interface PrescriptionMedication {
 
 export interface Prescription {
   medications: PrescriptionMedication[];
-
   advice: string;
-
   notes: string;
-
   followUp: string;
 }
 
@@ -106,11 +118,8 @@ export interface Prescription {
 
 export interface Assessment {
   diagnosis: DiagnosisAssessment;
-
   investigations: InvestigationAssessment;
-
   proceduresReferrals: ProceduresReferrals;
-
   prescription: Prescription;
 }
 

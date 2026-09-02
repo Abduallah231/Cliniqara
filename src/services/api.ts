@@ -14,10 +14,30 @@ type RetryableRequestConfig =
 export const api = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  // headers: {
+  //   "Content-Type": "application/json",
+  // },
 });
+
+export function getApiFileUrl(
+  fileUrl: string,
+): string {
+  if (!fileUrl) {
+    return fileUrl;
+  }
+
+  if (
+    fileUrl.startsWith("http://") ||
+    fileUrl.startsWith("https://")
+  ) {
+    return fileUrl;
+  }
+
+  return `${API_CONFIG.BASE_URL.replace(
+    /\/$/,
+    "",
+  )}/${fileUrl.replace(/^\//, "")}`;
+}
 
 api.interceptors.request.use(async (config) => {
   const token =

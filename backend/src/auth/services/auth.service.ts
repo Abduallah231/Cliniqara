@@ -1,50 +1,70 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
-  BadRequestException,
-} from '@nestjs/common';
+} from "@nestjs/common";
 
-import { AccountType } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { LoginDto } from '../dto/login.dto';
-import { RegisterDto } from '../dto/register.dto';
-import { JwtService } from './jwt.service';
-import { PasswordService } from './password.service';
+import { AccountType } from "@prisma/client";
+
+import { PrismaService } from "../../prisma/prisma.service";
+
+import { LoginDto } from "../dto/login.dto";
+import { RegisterDto } from "../dto/register.dto";
+
+import { JwtService } from "./jwt.service";
+import { PasswordService } from "./password.service";
+
+import { UploadService } from "../../upload/upload.service";
 
 @Injectable()
 export class AuthService {
   constructor(
-  private readonly prisma: PrismaService,
-  private readonly passwordService: PasswordService,
-  private readonly jwtService: JwtService,
-) {}
+    private readonly prisma: PrismaService,
+
+    private readonly passwordService: PasswordService,
+
+    private readonly jwtService: JwtService,
+
+    private readonly uploadService: UploadService,
+  ) {}
+
   async register(dto: RegisterDto) {
-    dto.email = dto.email.trim().toLowerCase();
+    dto.email =
+      dto.email.trim().toLowerCase();
 
-    dto.phone = dto.phone.trim();
+    dto.phone =
+      dto.phone.trim();
 
-    dto.fullName = dto.fullName.trim();
+    dto.fullName =
+      dto.fullName.trim();
 
-    dto.nationalId = dto.nationalId?.trim();
+    dto.nationalId =
+      dto.nationalId?.trim();
 
-    dto.medicalLicenseNumber = dto.medicalLicenseNumber?.trim();
+    dto.medicalLicenseNumber =
+      dto.medicalLicenseNumber?.trim();
 
     if (
-      dto.accountType === AccountType.DOCTOR &&
+      dto.accountType ===
+        AccountType.DOCTOR &&
       !dto.doctorLevel
     ) {
       throw new BadRequestException(
-        'Doctor level is required',
+        "Doctor level is required",
       );
     }
 
-    if (dto.accountType === AccountType.RECEPTION) {
+    if (
+      dto.accountType ===
+      AccountType.RECEPTION
+    ) {
       dto.doctorLevel = undefined;
     }
 
     if (
-      dto.accountType === AccountType.DOCTOR &&
+      dto.accountType ===
+        AccountType.DOCTOR &&
       dto.doctorLevel === "DOCTOR" &&
       !dto.medicalLicenseNumber
     ) {
@@ -54,7 +74,8 @@ export class AuthService {
     }
 
     if (
-      dto.accountType === AccountType.DOCTOR &&
+      dto.accountType ===
+        AccountType.DOCTOR &&
       dto.doctorLevel === "DOCTOR" &&
       !dto.specialty
     ) {
@@ -64,7 +85,8 @@ export class AuthService {
     }
 
     if (
-      dto.accountType === AccountType.DOCTOR &&
+      dto.accountType ===
+        AccountType.DOCTOR &&
       dto.doctorLevel === "DOCTOR" &&
       !dto.professionalTitle
     ) {
@@ -73,25 +95,38 @@ export class AuthService {
       );
     }
 
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const existingUser =
+      await this.prisma.user.findUnique({
+        where: {
+          email: dto.email,
+        },
+      });
 
     if (existingUser) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException(
+        "Email already exists",
+      );
     }
 
-    const existingPhone = await this.prisma.user.findUnique({
-      where: {
-        phone: dto.phone,
-      },
-    });
+    const existingPhone =
+      await this.prisma.user.findUnique({
+        where: {
+          phone: dto.phone,
+        },
+      });
+
+    if (existingPhone) {
+      throw new ConflictException(
+        "Phone already exists",
+      );
+    }
 
     if (dto.nationalId) {
       const existingNationalId =
         await this.prisma.user.findFirst({
           where: {
-            nationalId: dto.nationalId,
+            nationalId:
+              dto.nationalId,
           },
         });
 
@@ -118,148 +153,263 @@ export class AuthService {
       }
     }
 
-    if (existingPhone) {
-      throw new ConflictException('Phone already exists');
+    const hashedPassword =
+      await this.passwordService.hash(
+        dto.password,
+      );
+
+    /*
+     * Create the user first.
+     *
+     * Images are uploaded before registration,
+     * so their URLs initially point to the
+     * pending area.
+     */
+    const user =
+      await this.prisma.user.create({
+        data: {
+          userCode:
+            crypto.randomUUID(),
+
+          accountType:
+            dto.accountType,
+
+          doctorLevel:
+            dto.doctorLevel,
+
+          fullName:
+            dto.fullName,
+
+          email:
+            dto.email,
+
+          phone:
+            dto.phone,
+
+          passwordHash:
+            hashedPassword,
+
+          nationalId:
+            dto.nationalId,
+
+          medicalLicenseNumber:
+            dto.medicalLicenseNumber,
+
+          specialty:
+            dto.specialty,
+
+          professionalTitle:
+            dto.professionalTitle,
+        },
+      });
+
+    try {
+      let nationalIdImage:
+        | string
+        | undefined;
+
+      let medicalLicenseImage:
+        | string
+        | undefined;
+
+      if (dto.nationalIdImage) {
+        nationalIdImage =
+          await this.uploadService.movePendingUserImage(
+            dto.nationalIdImage,
+            user.id,
+            "national-id",
+          );
+      }
+
+      if (
+        dto.medicalLicenseImage
+      ) {
+        medicalLicenseImage =
+          await this.uploadService.movePendingUserImage(
+            dto.medicalLicenseImage,
+            user.id,
+            "medical-license",
+          );
+      }
+
+      const updatedUser =
+        await this.prisma.user.update({
+          where: {
+            id: user.id,
+          },
+
+          data: {
+            nationalIdImage,
+            medicalLicenseImage,
+          },
+        });
+
+      const {
+        passwordHash,
+        ...safeUser
+      } = updatedUser;
+
+      return safeUser;
+    } catch (error) {
+      /*
+       * If image finalization fails,
+       * remove the created user so the
+       * registration does not remain half-complete.
+       */
+      await this.prisma.user
+        .delete({
+          where: {
+            id: user.id,
+          },
+        })
+        .catch(() => undefined);
+
+      throw error;
+    }
+  }
+
+  async login(dto: LoginDto) {
+    dto.email =
+      dto.email.trim().toLowerCase();
+
+    const user =
+      await this.prisma.user.findUnique({
+        where: {
+          email: dto.email,
+        },
+      });
+
+    if (!user) {
+      throw new UnauthorizedException(
+        "Invalid email or password",
+      );
     }
 
-    const hashedPassword = await this.passwordService.hash(dto.password);
+    if (!user.isActive) {
+      throw new UnauthorizedException(
+        "Account is inactive",
+      );
+    }
 
-    const user = await this.prisma.user.create({
+    const isPasswordValid =
+      await this.passwordService.compare(
+        dto.password,
+        user.passwordHash,
+      );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(
+        "Invalid email or password",
+      );
+    }
+
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+
       data: {
-        userCode: crypto.randomUUID(),
-
-        accountType: dto.accountType,
-        doctorLevel: dto.doctorLevel,
-
-        fullName: dto.fullName,
-        email: dto.email,
-        phone: dto.phone,
-
-        passwordHash: hashedPassword,
-
-        nationalId: dto.nationalId,
-
-        medicalLicenseNumber:
-          dto.medicalLicenseNumber,
-
-        nationalIdImage:
-          dto.nationalIdImage,
-
-        medicalLicenseImage:
-          dto.medicalLicenseImage,
-
-        specialty: dto.specialty,
-
-        professionalTitle:
-          dto.professionalTitle,
+        lastLoginAt:
+          new Date(),
       },
     });
-    const { passwordHash, ...safeUser } = user;
-    return safeUser;
-}
 
-async login(dto: LoginDto) {
-  dto.email = dto.email.trim().toLowerCase();
-  const user = await this.prisma.user.findUnique({
-    where: {
-      email: dto.email,
-    },
-  });
-
-  if (!user) {
-    throw new UnauthorizedException('Invalid email or password');
-  }
-
-  if (!user.isActive) {
-    throw new UnauthorizedException('Account is inactive');
-  }
-
-  const isPasswordValid = await this.passwordService.compare(
-    dto.password,
-    user.passwordHash,
-  );
-
-  if (!isPasswordValid) {
-    throw new UnauthorizedException('Invalid email or password');
-  }
-
-  await this.prisma.user.update({
-    where: {
-      id: user.id,
-    },
-    data: {
-      lastLoginAt: new Date(),
-    },
-  });
-
-  const payload = {
-    sub: user.id,
-    accountType: user.accountType,
-    doctorLevel: user.doctorLevel,
-  };
-
-  const accessToken = this.jwtService.generateAccessToken(payload);
-
-  const refreshToken = this.jwtService.generateRefreshToken(payload);
-
-  const { passwordHash, ...safeUser } = user;
-
-  return {
-    message: 'Login successful',
-    accessToken,
-    refreshToken,
-    user: safeUser,
-  };
-}
-
-async refresh(refreshToken: string) {
-  let payload;
-
-  try {
-    payload =
-      this.jwtService.verifyRefreshToken(
-        refreshToken,
-      );
-  } catch {
-    throw new UnauthorizedException(
-      'Invalid or expired refresh token',
-    );
-  }
-
-  if (payload.tokenType !== 'REFRESH') {
-    throw new UnauthorizedException(
-      'Invalid refresh token',
-    );
-  }
-
-  const user = await this.prisma.user.findUnique({
-    where: {
-      id: payload.sub,
-    },
-    select: {
-      id: true,
-      accountType: true,
-      doctorLevel: true,
-      isActive: true,
-    },
-  });
-
-  if (!user || !user.isActive) {
-    throw new UnauthorizedException(
-      'Account is inactive',
-    );
-  }
-
-  const accessToken =
-    this.jwtService.generateAccessToken({
+    const payload = {
       sub: user.id,
-      accountType: user.accountType,
-      doctorLevel: user.doctorLevel,
-    });
+      accountType:
+        user.accountType,
+      doctorLevel:
+        user.doctorLevel,
+    };
 
-  return {
-    accessToken,
-  };
-}
+    const accessToken =
+      this.jwtService.generateAccessToken(
+        payload,
+      );
 
+    const refreshToken =
+      this.jwtService.generateRefreshToken(
+        payload,
+      );
+
+    const {
+      passwordHash,
+      ...safeUser
+    } = user;
+
+    return {
+      message:
+        "Login successful",
+
+      accessToken,
+
+      refreshToken,
+
+      user: safeUser,
+    };
+  }
+
+  async refresh(
+    refreshToken: string,
+  ) {
+    let payload;
+
+    try {
+      payload =
+        this.jwtService.verifyRefreshToken(
+          refreshToken,
+        );
+    } catch {
+      throw new UnauthorizedException(
+        "Invalid or expired refresh token",
+      );
+    }
+
+    if (
+      payload.tokenType !==
+      "REFRESH"
+    ) {
+      throw new UnauthorizedException(
+        "Invalid refresh token",
+      );
+    }
+
+    const user =
+      await this.prisma.user.findUnique({
+        where: {
+          id: payload.sub,
+        },
+
+        select: {
+          id: true,
+          accountType: true,
+          doctorLevel: true,
+          isActive: true,
+        },
+      });
+
+    if (
+      !user ||
+      !user.isActive
+    ) {
+      throw new UnauthorizedException(
+        "Account is inactive",
+      );
+    }
+
+    const accessToken =
+      this.jwtService.generateAccessToken(
+        {
+          sub: user.id,
+          accountType:
+            user.accountType,
+          doctorLevel:
+            user.doctorLevel,
+        },
+      );
+
+    return {
+      accessToken,
+    };
+  }
 }

@@ -5,9 +5,12 @@ import {
   Text,
   View,
 } from "react-native";
+
 import AppDropdown from "@/components/common/AppDropdown";
 import investigations from "@/data/investigations";
 import { useVisitStore } from "@/store/visitStore";
+import useInvestigationsAutoSave from "@/hooks/useInvestigationsAutoSave";
+
 import {
   COLORS,
   RADIUS,
@@ -23,42 +26,46 @@ type Props = {
 export default function InvestigationSection({
   onOpenResults,
 }: Props) {
-  const investigationsState =
-    useVisitStore(
-      (state) =>
-        state.visit.assessment
-          .investigations
-    );
+  const visitId = useVisitStore(
+    (state) => state.visit.metadata.id,
+  );
 
-  const addRequestedInvestigation =
-    useVisitStore(
-      (state) =>
-        state.addRequestedInvestigation
-    );
+  const investigationsState = useVisitStore(
+    (state) =>
+      state.visit.assessment.investigations,
+  );
+
+  const addRequestedInvestigation = useVisitStore(
+    (state) => state.addRequestedInvestigation,
+  );
 
   const removeRequestedInvestigation =
     useVisitStore(
       (state) =>
-        state.removeRequestedInvestigation
+        state.removeRequestedInvestigation,
     );
 
-  const investigationOptions =
-    investigations
-      .filter(
-        (item) =>
-          !investigationsState.requestedInvestigations.some(
-            (x) =>
-              x.name === item.name
-          )
-      )
-      .map((item) => ({
-        id: item.name,
-        label: item.name,
-      }));
+  useInvestigationsAutoSave({
+    visitId,
+    requestedInvestigations:
+      investigationsState.requestedInvestigations,
+    results: investigationsState.results,
+  });
+
+  const investigationOptions = investigations
+    .filter(
+      (item) =>
+        !investigationsState.requestedInvestigations.some(
+          (x) => x.name === item.name,
+        ),
+    )
+    .map((item) => ({
+      id: item.name,
+      label: item.name,
+    }));
 
   return (
     <View style={styles.container}>
-      
       <Text style={styles.title}>
         Search Investigation
       </Text>
@@ -66,9 +73,7 @@ export default function InvestigationSection({
       <AppDropdown
         placeholder="Search investigation..."
         selected={undefined}
-        options={
-          investigationOptions
-        }
+        options={investigationOptions}
         onChange={(item) =>
           addRequestedInvestigation({
             name: item.label,
@@ -78,44 +83,29 @@ export default function InvestigationSection({
       />
 
       <Text style={styles.title}>
-        Requested
-        Investigations
+        Requested Investigations
       </Text>
 
       {investigationsState.requestedInvestigations.map(
         (item) => (
           <View
-            key={item.name}
+            key={item.id ?? item.name}
             style={styles.card}
           >
-            <View
-              style={
-                styles.cardHeader
-              }
-            >
+            <View style={styles.cardHeader}>
               <Ionicons
                 name="flask-outline"
                 size={20}
-                color={
-                  COLORS.primary
-                }
+                color={COLORS.primary}
               />
 
-              <View
-                style={{ flex: 1 }}
-              >
-                <Text
-                  style={
-                    styles.cardTitle
-                  }
-                >
+              <View style={{ flex: 1 }}>
+                <Text style={styles.cardTitle}>
                   {item.name}
                 </Text>
 
                 <Text
-                  style={
-                    styles.cardSubtitle
-                  }
+                  style={styles.cardSubtitle}
                 >
                   {item.status}
                 </Text>
@@ -124,25 +114,23 @@ export default function InvestigationSection({
               <Pressable
                 onPress={() =>
                   removeRequestedInvestigation(
-                    item.name
+                    item.id ?? item.name,
                   )
                 }
               >
                 <Ionicons
                   name="close-circle"
                   size={22}
-                  color={
-                    COLORS.danger
-                  }
+                  color={COLORS.danger}
                 />
               </Pressable>
             </View>
           </View>
-        )
+        ),
       )}
-            {investigationsState
-        .requestedInvestigations
-        .length > 0 && (
+
+      {investigationsState
+        .requestedInvestigations.length > 0 && (
         <Pressable
           style={styles.openButton}
           onPress={onOpenResults}
@@ -152,10 +140,9 @@ export default function InvestigationSection({
             size={20}
             color={COLORS.white}
           />
+
           <Text
-            style={
-              styles.openButtonText
-            }
+            style={styles.openButtonText}
           >
             Enter Results
           </Text>
@@ -174,23 +161,6 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
-  },
-
-  aiCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: RADIUS.xl,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: SPACING.md,
-    alignItems: "center",
-    gap: SPACING.sm,
-    ...SHADOW,
-  },
-
-  emptyText: {
-    fontSize: TYPOGRAPHY.small,
-    color: COLORS.secondaryText,
-    textAlign: "center",
   },
 
   card: {

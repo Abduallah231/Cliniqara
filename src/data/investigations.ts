@@ -676,7 +676,7 @@ const investigations: Investigation[] = [
   // ======================================================
 
   {
-    name: "Urinalysis",
+    name: "Urine Analysis",
     type: "multi",
     fields: [
       "Color",

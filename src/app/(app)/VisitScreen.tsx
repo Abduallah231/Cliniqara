@@ -197,7 +197,7 @@ export default function VisitScreen() {
         return <ExaminationTab />;
 
       case "assessment":
-        return <AssessmentTab />;
+        return <AssessmentTab visitId={resolvedVisitId} />;
     }
   };
 
