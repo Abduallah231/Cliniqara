@@ -841,7 +841,18 @@ export class VisitService {
           investigations: true,
           procedures: true,
           referrals: true,
-          prescription: true,
+          prescription: {
+            include: {
+              medications: {
+                orderBy: {
+                  sortOrder: 'asc',
+                },
+                include: {
+                  drug: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -2726,36 +2737,120 @@ export class VisitService {
 
     return this.prisma.$transaction(
       async (tx) => {
+        /*
+        * Validate every selected drug against
+        * the current active drug catalog.
+        *
+        * The frontend sends only drugId.
+        * The backend resolves the actual
+        * commercial name from the database.
+        */
+        const drugIds = dto.medications.map(
+          (medication) =>
+            medication.drugId,
+        );
+
+        const uniqueDrugIds = new Set(
+          drugIds,
+        );
+
+        /*
+        * Fetch all selected drugs in one query.
+        */
+        const drugs =
+          uniqueDrugIds.size > 0
+            ? await tx.drug.findMany({
+                where: {
+                  id: {
+                    in: Array.from(
+                      uniqueDrugIds,
+                    ),
+                  },
+                  isActive: true,
+                },
+                select: {
+                  id: true,
+                  commercialNameEn: true,
+                },
+              })
+            : [];
+
+        const drugsById =
+          new Map(
+            drugs.map((drug) => [
+              drug.id,
+              drug,
+            ]),
+          );
+
+        /*
+        * Make sure every submitted drugId
+        * belongs to an active drug.
+        */
+        for (
+          const medication of
+            dto.medications
+        ) {
+          const drug =
+            drugsById.get(
+              medication.drugId,
+            );
+
+          if (!drug) {
+            throw new NotFoundException(
+              `Drug not found or inactive: ${medication.drugId}`,
+            );
+          }
+        }
+
+        /*
+        * Create or update the prescription.
+        */
         const prescription =
           await tx.visitPrescription.upsert({
             where: {
               visitId,
             },
+
             create: {
               visitId,
+
               advice:
                 dto.advice ??
                 null,
+
               notes:
                 dto.notes ??
                 null,
+
               followUp:
                 dto.followUp ??
                 null,
             },
+
             update: {
               advice:
                 dto.advice ??
                 null,
+
               notes:
                 dto.notes ??
                 null,
+
               followUp:
                 dto.followUp ??
                 null,
             },
           });
 
+        /*
+        * Replace the medication list.
+        *
+        * Existing prescription medication
+        * records are intentionally replaced
+        * because the current frontend sends
+        * the complete prescription state.
+        */
         await tx.visitPrescriptionMedication.deleteMany(
           {
             where: {
@@ -2773,37 +2868,74 @@ export class VisitService {
             {
               data:
                 dto.medications.map(
-                  (medication, index) => ({
-                    prescriptionId:
-                      prescription.id,
-                    medication:
-                      medication.medication,
-                    instructions:
-                      medication.instructions ??
-                      null,
-                    durationValue:
-                      medication.durationValue ??
-                      null,
-                    durationUnit:
-                      medication.durationUnit ??
-                      null,
-                    sortOrder:
-                      medication.sortOrder ??
-                      index,
-                  }),
+                  (
+                    medication,
+                    index,
+                  ) => {
+                    const drug =
+                      drugsById.get(
+                        medication.drugId,
+                      )!;
+
+                    return {
+                      prescriptionId:
+                        prescription.id,
+
+                      /*
+                      * Snapshot.
+                      *
+                      * This preserves the exact
+                      * product name that was prescribed
+                      * even if the drug catalog changes later.
+                      */
+                      medication:
+                        drug.commercialNameEn,
+
+                      /*
+                      * Current catalog reference.
+                      */
+                      drugId:
+                        drug.id,
+
+                      instructions:
+                        medication.instructions ??
+                        null,
+
+                      durationValue:
+                        medication.durationValue ??
+                        null,
+
+                      durationUnit:
+                        medication.durationUnit ??
+                        null,
+
+                      sortOrder:
+                        medication.sortOrder ??
+                        index,
+                    };
+                  },
                 ),
             },
           );
         }
 
+        /*
+        * Return the complete persisted prescription,
+        * including the linked Drug records.
+        */
         return tx.visitPrescription.findUnique({
           where: {
             id: prescription.id,
           },
+
           include: {
             medications: {
               orderBy: {
                 sortOrder: 'asc',
+              },
+
+              include: {
+                drug: true,
               },
             },
           },
@@ -2821,6 +2953,7 @@ export class VisitService {
         where: {
           id: visitId,
         },
+
         select: {
           id: true,
           clinicId: true,
@@ -2840,17 +2973,24 @@ export class VisitService {
       visit.doctorId,
     );
 
-    return this.prisma.visitPrescription.findUnique({
-      where: {
-        visitId,
-      },
-      include: {
-        medications: {
-          orderBy: {
-            sortOrder: 'asc',
+    return this.prisma.visitPrescription.findUnique(
+      {
+        where: {
+          visitId,
+        },
+
+        include: {
+          medications: {
+            orderBy: {
+              sortOrder: 'asc',
+            },
+
+            include: {
+              drug: true,
+            },
           },
         },
       },
-    });
+    );
   }
 }

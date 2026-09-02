@@ -11,6 +11,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UploadModule } from "./upload/upload.module";
 import { VisitModule } from "./visit/visit.module";
 import { PrescriptionTemplateModule } from './prescription-template/prescription-template.module';
+import { DrugsModule } from './drugs/drugs.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -26,6 +28,7 @@ import { PrescriptionTemplateModule } from './prescription-template/prescription
     UploadModule,
     DoctorModule,
     PrescriptionTemplateModule,
+    DrugsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

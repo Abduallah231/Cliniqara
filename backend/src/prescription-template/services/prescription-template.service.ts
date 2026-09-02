@@ -3,19 +3,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import {
-  AccountType,
   ClinicRole,
   MembershipStatus,
-  PrescriptionTemplateScope,
+  PrescriptionTemplateScope
 } from '@prisma/client';
 
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { CreatePrescriptionTemplateDto } from '../dto/create-prescription-template.dto';
-import { UpdatePrescriptionTemplateDto } from '../dto/update-prescription-template.dto';
 import { CreatePrescriptionTemplateFolderDto } from '../dto/create-prescription-template-folder.dto';
+import { CreatePrescriptionTemplateDto } from '../dto/create-prescription-template.dto';
 import { UpdatePrescriptionTemplateFolderDto } from '../dto/update-prescription-template-folder.dto';
+import { UpdatePrescriptionTemplateDto } from '../dto/update-prescription-template.dto';
 
 @Injectable()
 export class PrescriptionTemplateService {
@@ -28,16 +28,17 @@ export class PrescriptionTemplateService {
   // =========================================================
 
   private async getUser(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-      select: {
-        id: true,
-        accountType: true,
-        isActive: true,
-      },
-    });
+    const user =
+      await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          id: true,
+          accountType: true,
+          isActive: true,
+        },
+      });
 
     if (!user || !user.isActive) {
       throw new NotFoundException(
@@ -57,7 +58,8 @@ export class PrescriptionTemplateService {
         where: {
           userId,
           clinicId,
-          status: MembershipStatus.ACTIVE,
+          status:
+            MembershipStatus.ACTIVE,
           clinic: {
             isActive: true,
           },
@@ -83,7 +85,8 @@ export class PrescriptionTemplateService {
           userId,
           clinicId,
           clinicRole: ClinicRole.OWNER,
-          status: MembershipStatus.ACTIVE,
+          status:
+            MembershipStatus.ACTIVE,
           clinic: {
             isActive: true,
           },
@@ -99,31 +102,100 @@ export class PrescriptionTemplateService {
     return membership;
   }
 
+  /**
+   * Resolve all selected drugs and make sure
+   * they are active before saving them into
+   * prescription templates.
+   */
+  private async resolveDrugs(
+    drugIds: string[],
+  ) {
+    const uniqueDrugIds = new Set(
+      drugIds,
+    );
+
+    if (uniqueDrugIds.size === 0) {
+      return new Map<
+        string,
+        {
+          id: string;
+          commercialNameEn: string;
+        }
+      >();
+    }
+
+    const drugs =
+      await this.prisma.drug.findMany({
+        where: {
+          id: {
+            in: Array.from(
+              uniqueDrugIds,
+            ),
+          },
+          isActive: true,
+        },
+        select: {
+          id: true,
+          commercialNameEn: true,
+        },
+      });
+
+    const drugsById =
+      new Map(
+        drugs.map((drug) => [
+          drug.id,
+          drug,
+        ]),
+      );
+
+    for (const drugId of drugIds) {
+      if (!drugsById.has(drugId)) {
+        throw new NotFoundException(
+          `Drug not found or inactive: ${drugId}`,
+        );
+      }
+    }
+
+    return drugsById;
+  }
+
   // =========================================================
   // Templates - User
   // =========================================================
 
-  async getUserTemplates(userId: string) {
+  async getUserTemplates(
+    userId: string,
+  ) {
     await this.getUser(userId);
 
-    return this.prisma.prescriptionTemplate.findMany({
-      where: {
-        scope: PrescriptionTemplateScope.USER,
-        userId,
-        isActive: true,
-      },
-      include: {
-        folder: true,
-        medications: {
-          orderBy: {
-            sortOrder: 'asc',
+    return this.prisma.prescriptionTemplate.findMany(
+      {
+        where: {
+          scope:
+            PrescriptionTemplateScope.USER,
+          userId,
+          isActive: true,
+        },
+
+        include: {
+          folder: true,
+
+          medications: {
+            orderBy: {
+              sortOrder: 'asc',
+            },
+
+            include: {
+              drug: true,
+            },
           },
         },
+
+        orderBy: {
+          updatedAt: 'desc',
+        },
       },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    });
+    );
   }
 
   async createUserTemplate(
@@ -134,14 +206,17 @@ export class PrescriptionTemplateService {
 
     if (dto.folderId) {
       const folder =
-        await this.prisma.prescriptionTemplateFolder.findFirst({
-          where: {
-            id: dto.folderId,
-            scope: PrescriptionTemplateScope.USER,
-            userId,
-            isActive: true,
+        await this.prisma.prescriptionTemplateFolder.findFirst(
+          {
+            where: {
+              id: dto.folderId,
+              scope:
+                PrescriptionTemplateScope.USER,
+              userId,
+              isActive: true,
+            },
           },
-        });
+        );
 
       if (!folder) {
         throw new NotFoundException(
@@ -150,42 +225,88 @@ export class PrescriptionTemplateService {
       }
     }
 
-    return this.prisma.prescriptionTemplate.create({
-      data: {
-        title: dto.title,
-        scope: PrescriptionTemplateScope.USER,
-        userId,
-        folderId: dto.folderId,
-        advice: dto.advice,
-        notes: dto.notes,
-        followUp: dto.followUp,
+    const drugsById =
+      await this.resolveDrugs(
+        dto.medications.map(
+          (medication) =>
+            medication.drugId,
+        ),
+      );
 
-        medications: {
-          create: dto.medications.map(
-            (medication, index) => ({
-              medication:
-                medication.medication,
-              instructions:
-                medication.instructions,
-              durationValue:
-                medication.durationValue,
-              durationUnit:
-                medication.durationUnit,
-              sortOrder:
-                medication.sortOrder ?? index,
-            }),
-          ),
+    return this.prisma.prescriptionTemplate.create(
+      {
+        data: {
+          title: dto.title,
+
+          scope:
+            PrescriptionTemplateScope.USER,
+
+          userId,
+
+          folderId:
+            dto.folderId,
+
+          advice:
+            dto.advice,
+
+          notes:
+            dto.notes,
+
+          followUp:
+            dto.followUp,
+
+          medications: {
+            create:
+              dto.medications.map(
+                (
+                  medication,
+                  index,
+                ) => {
+                  const drug =
+                    drugsById.get(
+                      medication.drugId,
+                    )!;
+
+                  return {
+                    drugId:
+                      drug.id,
+
+                    medication:
+                      drug.commercialNameEn,
+
+                    instructions:
+                      medication.instructions,
+
+                    durationValue:
+                      medication.durationValue,
+
+                    durationUnit:
+                      medication.durationUnit,
+
+                    sortOrder:
+                      medication.sortOrder ??
+                      index,
+                  };
+                },
+              ),
+          },
         },
-      },
-      include: {
-        folder: true,
-        medications: {
-          orderBy: {
-            sortOrder: 'asc',
+
+        include: {
+          folder: true,
+
+          medications: {
+            orderBy: {
+              sortOrder: 'asc',
+            },
+
+            include: {
+              drug: true,
+            },
           },
         },
       },
-    });
+    );
   }
 
   // =========================================================
@@ -201,24 +322,36 @@ export class PrescriptionTemplateService {
       clinicId,
     );
 
-    return this.prisma.prescriptionTemplate.findMany({
-      where: {
-        scope: PrescriptionTemplateScope.CLINIC,
-        clinicId,
-        isActive: true,
-      },
-      include: {
-        folder: true,
-        medications: {
-          orderBy: {
-            sortOrder: 'asc',
+    return this.prisma.prescriptionTemplate.findMany(
+      {
+        where: {
+          scope:
+            PrescriptionTemplateScope.CLINIC,
+
+          clinicId,
+
+          isActive: true,
+        },
+
+        include: {
+          folder: true,
+
+          medications: {
+            orderBy: {
+              sortOrder: 'asc',
+            },
+
+            include: {
+              drug: true,
+            },
           },
         },
+
+        orderBy: {
+          updatedAt: 'desc',
+        },
       },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    });
+    );
   }
 
   async createClinicTemplate(
@@ -233,14 +366,20 @@ export class PrescriptionTemplateService {
 
     if (dto.folderId) {
       const folder =
-        await this.prisma.prescriptionTemplateFolder.findFirst({
-          where: {
-            id: dto.folderId,
-            scope: PrescriptionTemplateScope.CLINIC,
-            clinicId,
-            isActive: true,
+        await this.prisma.prescriptionTemplateFolder.findFirst(
+          {
+            where: {
+              id: dto.folderId,
+
+              scope:
+                PrescriptionTemplateScope.CLINIC,
+
+              clinicId,
+
+              isActive: true,
+            },
           },
-        });
+        );
 
       if (!folder) {
         throw new NotFoundException(
@@ -249,42 +388,88 @@ export class PrescriptionTemplateService {
       }
     }
 
-    return this.prisma.prescriptionTemplate.create({
-      data: {
-        title: dto.title,
-        scope: PrescriptionTemplateScope.CLINIC,
-        clinicId,
-        folderId: dto.folderId,
-        advice: dto.advice,
-        notes: dto.notes,
-        followUp: dto.followUp,
+    const drugsById =
+      await this.resolveDrugs(
+        dto.medications.map(
+          (medication) =>
+            medication.drugId,
+        ),
+      );
 
-        medications: {
-          create: dto.medications.map(
-            (medication, index) => ({
-              medication:
-                medication.medication,
-              instructions:
-                medication.instructions,
-              durationValue:
-                medication.durationValue,
-              durationUnit:
-                medication.durationUnit,
-              sortOrder:
-                medication.sortOrder ?? index,
-            }),
-          ),
+    return this.prisma.prescriptionTemplate.create(
+      {
+        data: {
+          title: dto.title,
+
+          scope:
+            PrescriptionTemplateScope.CLINIC,
+
+          clinicId,
+
+          folderId:
+            dto.folderId,
+
+          advice:
+            dto.advice,
+
+          notes:
+            dto.notes,
+
+          followUp:
+            dto.followUp,
+
+          medications: {
+            create:
+              dto.medications.map(
+                (
+                  medication,
+                  index,
+                ) => {
+                  const drug =
+                    drugsById.get(
+                      medication.drugId,
+                    )!;
+
+                  return {
+                    drugId:
+                      drug.id,
+
+                    medication:
+                      drug.commercialNameEn,
+
+                    instructions:
+                      medication.instructions,
+
+                    durationValue:
+                      medication.durationValue,
+
+                    durationUnit:
+                      medication.durationUnit,
+
+                    sortOrder:
+                      medication.sortOrder ??
+                      index,
+                  };
+                },
+              ),
+          },
         },
-      },
-      include: {
-        folder: true,
-        medications: {
-          orderBy: {
-            sortOrder: 'asc',
+
+        include: {
+          folder: true,
+
+          medications: {
+            orderBy: {
+              sortOrder: 'asc',
+            },
+
+            include: {
+              drug: true,
+            },
           },
         },
       },
-    });
+    );
   }
 
   // =========================================================
@@ -292,23 +477,34 @@ export class PrescriptionTemplateService {
   // =========================================================
 
   async getGlobalTemplates() {
-    return this.prisma.prescriptionTemplate.findMany({
-      where: {
-        scope: PrescriptionTemplateScope.GLOBAL,
-        isActive: true,
-      },
-      include: {
-        folder: true,
-        medications: {
-          orderBy: {
-            sortOrder: 'asc',
+    return this.prisma.prescriptionTemplate.findMany(
+      {
+        where: {
+          scope:
+            PrescriptionTemplateScope.GLOBAL,
+
+          isActive: true,
+        },
+
+        include: {
+          folder: true,
+
+          medications: {
+            orderBy: {
+              sortOrder: 'asc',
+            },
+
+            include: {
+              drug: true,
+            },
           },
         },
+
+        orderBy: {
+          updatedAt: 'desc',
+        },
       },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    });
+    );
   }
 
   // =========================================================
@@ -320,21 +516,32 @@ export class PrescriptionTemplateService {
     templateId: string,
   ) {
     const template =
-      await this.prisma.prescriptionTemplate.findUnique({
-        where: {
-          id: templateId,
-        },
-        include: {
-          folder: true,
-          medications: {
-            orderBy: {
-              sortOrder: 'asc',
+      await this.prisma.prescriptionTemplate.findUnique(
+        {
+          where: {
+            id: templateId,
+          },
+
+          include: {
+            folder: true,
+
+            medications: {
+              orderBy: {
+                sortOrder: 'asc',
+              },
+
+              include: {
+                drug: true,
+              },
             },
           },
         },
-      });
+      );
 
-    if (!template || !template.isActive) {
+    if (
+      !template ||
+      !template.isActive
+    ) {
       throw new NotFoundException(
         'Prescription template not found',
       );
@@ -351,7 +558,10 @@ export class PrescriptionTemplateService {
       template.scope ===
       PrescriptionTemplateScope.USER
     ) {
-      if (template.userId !== userId) {
+      if (
+        template.userId !==
+        userId
+      ) {
         throw new NotFoundException(
           'Prescription template not found',
         );
@@ -393,13 +603,18 @@ export class PrescriptionTemplateService {
     dto: UpdatePrescriptionTemplateDto,
   ) {
     const template =
-      await this.prisma.prescriptionTemplate.findUnique({
-        where: {
-          id: templateId,
+      await this.prisma.prescriptionTemplate.findUnique(
+        {
+          where: {
+            id: templateId,
+          },
         },
-      });
+      );
 
-    if (!template || !template.isActive) {
+    if (
+      !template ||
+      !template.isActive
+    ) {
       throw new NotFoundException(
         'Prescription template not found',
       );
@@ -418,7 +633,10 @@ export class PrescriptionTemplateService {
       template.scope ===
       PrescriptionTemplateScope.USER
     ) {
-      if (template.userId !== userId) {
+      if (
+        template.userId !==
+        userId
+      ) {
         throw new NotFoundException(
           'Prescription template not found',
         );
@@ -426,14 +644,20 @@ export class PrescriptionTemplateService {
 
       if (dto.folderId) {
         const folder =
-          await this.prisma.prescriptionTemplateFolder.findFirst({
-            where: {
-              id: dto.folderId,
-              scope: PrescriptionTemplateScope.USER,
-              userId,
-              isActive: true,
+          await this.prisma.prescriptionTemplateFolder.findFirst(
+            {
+              where: {
+                id: dto.folderId,
+
+                scope:
+                  PrescriptionTemplateScope.USER,
+
+                userId,
+
+                isActive: true,
+              },
             },
-          });
+          );
 
         if (!folder) {
           throw new NotFoundException(
@@ -460,14 +684,21 @@ export class PrescriptionTemplateService {
 
       if (dto.folderId) {
         const folder =
-          await this.prisma.prescriptionTemplateFolder.findFirst({
-            where: {
-              id: dto.folderId,
-              scope: PrescriptionTemplateScope.CLINIC,
-              clinicId: template.clinicId,
-              isActive: true,
+          await this.prisma.prescriptionTemplateFolder.findFirst(
+            {
+              where: {
+                id: dto.folderId,
+
+                scope:
+                  PrescriptionTemplateScope.CLINIC,
+
+                clinicId:
+                  template.clinicId,
+
+                isActive: true,
+              },
             },
-          });
+          );
 
         if (!folder) {
           throw new NotFoundException(
@@ -479,7 +710,74 @@ export class PrescriptionTemplateService {
 
     return this.prisma.$transaction(
       async (tx) => {
-        if (dto.medications !== undefined) {
+        let drugsById:
+          | Map<
+              string,
+              {
+                id: string;
+                commercialNameEn: string;
+              }
+            >
+          | undefined;
+
+        if (
+          dto.medications !==
+          undefined
+        ) {
+          const drugIds =
+            dto.medications.map(
+              (medication) =>
+                medication.drugId,
+            );
+
+          const uniqueDrugIds =
+            new Set(drugIds);
+
+          const drugs =
+            uniqueDrugIds.size > 0
+              ? await tx.drug.findMany({
+                  where: {
+                    id: {
+                      in: Array.from(
+                        uniqueDrugIds,
+                      ),
+                    },
+
+                    isActive: true,
+                  },
+
+                  select: {
+                    id: true,
+                    commercialNameEn:
+                      true,
+                  },
+                })
+              : [];
+
+          drugsById =
+            new Map(
+              drugs.map(
+                (drug) => [
+                  drug.id,
+                  drug,
+                ],
+              ),
+            );
+
+          for (
+            const drugId of drugIds
+          ) {
+            if (
+              !drugsById.has(
+                drugId,
+              )
+            ) {
+              throw new NotFoundException(
+                `Drug not found or inactive: ${drugId}`,
+              );
+            }
+          }
+
           await tx.prescriptionTemplateMedication.deleteMany(
             {
               where: {
@@ -489,65 +787,103 @@ export class PrescriptionTemplateService {
           );
         }
 
-        return tx.prescriptionTemplate.update({
-          where: {
-            id: templateId,
-          },
-          data: {
-            ...(dto.title !== undefined && {
-              title: dto.title,
-            }),
+        return tx.prescriptionTemplate.update(
+          {
+            where: {
+              id: templateId,
+            },
 
-            ...(dto.folderId !== undefined && {
-              folderId: dto.folderId,
-            }),
+            data: {
+              ...(dto.title !==
+                undefined && {
+                title: dto.title,
+              }),
 
-            ...(dto.advice !== undefined && {
-              advice: dto.advice,
-            }),
+              ...(dto.folderId !==
+                undefined && {
+                folderId:
+                  dto.folderId,
+              }),
 
-            ...(dto.notes !== undefined && {
-              notes: dto.notes,
-            }),
+              ...(dto.advice !==
+                undefined && {
+                advice:
+                  dto.advice,
+              }),
 
-            ...(dto.followUp !== undefined && {
-              followUp: dto.followUp,
-            }),
+              ...(dto.notes !==
+                undefined && {
+                notes:
+                  dto.notes,
+              }),
 
-            ...(dto.isActive !== undefined && {
-              isActive: dto.isActive,
-            }),
+              ...(dto.followUp !==
+                undefined && {
+                followUp:
+                  dto.followUp,
+              }),
 
-            ...(dto.medications !== undefined && {
+              ...(dto.isActive !==
+                undefined && {
+                isActive:
+                  dto.isActive,
+              }),
+
+              ...(dto.medications !==
+                undefined && {
+                medications: {
+                  create:
+                    dto.medications.map(
+                      (
+                        medication,
+                        index,
+                      ) => {
+                        const drug =
+                          drugsById!.get(
+                            medication.drugId,
+                          )!;
+
+                        return {
+                          drugId:
+                            drug.id,
+
+                          medication:
+                            drug.commercialNameEn,
+
+                          instructions:
+                            medication.instructions,
+
+                          durationValue:
+                            medication.durationValue,
+
+                          durationUnit:
+                            medication.durationUnit,
+
+                          sortOrder:
+                            medication.sortOrder ??
+                            index,
+                        };
+                      },
+                    ),
+                },
+              }),
+            },
+
+            include: {
+              folder: true,
+
               medications: {
-                create: dto.medications.map(
-                  (medication, index) => ({
-                    medication:
-                      medication.medication,
-                    instructions:
-                      medication.instructions,
-                    durationValue:
-                      medication.durationValue,
-                    durationUnit:
-                      medication.durationUnit,
-                    sortOrder:
-                      medication.sortOrder ??
-                      index,
-                  }),
-                ),
-              },
-            }),
-          },
+                orderBy: {
+                  sortOrder: 'asc',
+                },
 
-          include: {
-            folder: true,
-            medications: {
-              orderBy: {
-                sortOrder: 'asc',
+                include: {
+                  drug: true,
+                },
               },
             },
           },
-        });
+        );
       },
     );
   }
@@ -561,13 +897,18 @@ export class PrescriptionTemplateService {
     templateId: string,
   ) {
     const template =
-      await this.prisma.prescriptionTemplate.findUnique({
-        where: {
-          id: templateId,
+      await this.prisma.prescriptionTemplate.findUnique(
+        {
+          where: {
+            id: templateId,
+          },
         },
-      });
+      );
 
-    if (!template || !template.isActive) {
+    if (
+      !template ||
+      !template.isActive
+    ) {
       throw new NotFoundException(
         'Prescription template not found',
       );
@@ -586,7 +927,10 @@ export class PrescriptionTemplateService {
       template.scope ===
       PrescriptionTemplateScope.USER
     ) {
-      if (template.userId !== userId) {
+      if (
+        template.userId !==
+        userId
+      ) {
         throw new NotFoundException(
           'Prescription template not found',
         );
@@ -609,50 +953,68 @@ export class PrescriptionTemplateService {
       );
     }
 
-    return this.prisma.prescriptionTemplate.update({
-      where: {
-        id: templateId,
+    return this.prisma.prescriptionTemplate.update(
+      {
+        where: {
+          id: templateId,
+        },
+
+        data: {
+          isActive: false,
+        },
       },
-      data: {
-        isActive: false,
-      },
-    });
+    );
   }
 
   // =========================================================
   // Folders - User
   // =========================================================
 
-  async getUserFolders(userId: string) {
+  async getUserFolders(
+    userId: string,
+  ) {
     await this.getUser(userId);
 
-    return this.prisma.prescriptionTemplateFolder.findMany({
-      where: {
-        scope: PrescriptionTemplateScope.USER,
-        userId,
-        isActive: true,
-      },
-      include: {
-        templates: {
-          where: {
-            isActive: true,
-          },
-          include: {
-            medications: {
-              orderBy: {
-                sortOrder: 'asc',
+    return this.prisma.prescriptionTemplateFolder.findMany(
+      {
+        where: {
+          scope:
+            PrescriptionTemplateScope.USER,
+
+          userId,
+
+          isActive: true,
+        },
+
+        include: {
+          templates: {
+            where: {
+              isActive: true,
+            },
+
+            include: {
+              medications: {
+                orderBy: {
+                  sortOrder: 'asc',
+                },
+
+                include: {
+                  drug: true,
+                },
               },
             },
-          },
-          orderBy: {
-            updatedAt: 'desc',
+
+            orderBy: {
+              updatedAt: 'desc',
+            },
           },
         },
+
+        orderBy: {
+          name: 'asc',
+        },
       },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    );
   }
 
   async createUserFolder(
@@ -661,13 +1023,18 @@ export class PrescriptionTemplateService {
   ) {
     await this.getUser(userId);
 
-    return this.prisma.prescriptionTemplateFolder.create({
-      data: {
-        name: dto.name,
-        scope: PrescriptionTemplateScope.USER,
-        userId,
+    return this.prisma.prescriptionTemplateFolder.create(
+      {
+        data: {
+          name: dto.name,
+
+          scope:
+            PrescriptionTemplateScope.USER,
+
+          userId,
+        },
       },
-    });
+    );
   }
 
   // =========================================================
@@ -683,33 +1050,46 @@ export class PrescriptionTemplateService {
       clinicId,
     );
 
-    return this.prisma.prescriptionTemplateFolder.findMany({
-      where: {
-        scope: PrescriptionTemplateScope.CLINIC,
-        clinicId,
-        isActive: true,
-      },
-      include: {
-        templates: {
-          where: {
-            isActive: true,
-          },
-          include: {
-            medications: {
-              orderBy: {
-                sortOrder: 'asc',
+    return this.prisma.prescriptionTemplateFolder.findMany(
+      {
+        where: {
+          scope:
+            PrescriptionTemplateScope.CLINIC,
+
+          clinicId,
+
+          isActive: true,
+        },
+
+        include: {
+          templates: {
+            where: {
+              isActive: true,
+            },
+
+            include: {
+              medications: {
+                orderBy: {
+                  sortOrder: 'asc',
+                },
+
+                include: {
+                  drug: true,
+                },
               },
             },
-          },
-          orderBy: {
-            updatedAt: 'desc',
+
+            orderBy: {
+              updatedAt: 'desc',
+            },
           },
         },
+
+        orderBy: {
+          name: 'asc',
+        },
       },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    );
   }
 
   async createClinicFolder(
@@ -722,13 +1102,18 @@ export class PrescriptionTemplateService {
       clinicId,
     );
 
-    return this.prisma.prescriptionTemplateFolder.create({
-      data: {
-        name: dto.name,
-        scope: PrescriptionTemplateScope.CLINIC,
-        clinicId,
+    return this.prisma.prescriptionTemplateFolder.create(
+      {
+        data: {
+          name: dto.name,
+
+          scope:
+            PrescriptionTemplateScope.CLINIC,
+
+          clinicId,
+        },
       },
-    });
+    );
   }
 
   // =========================================================
@@ -736,32 +1121,44 @@ export class PrescriptionTemplateService {
   // =========================================================
 
   async getGlobalFolders() {
-    return this.prisma.prescriptionTemplateFolder.findMany({
-      where: {
-        scope: PrescriptionTemplateScope.GLOBAL,
-        isActive: true,
-      },
-      include: {
-        templates: {
-          where: {
-            isActive: true,
-          },
-          include: {
-            medications: {
-              orderBy: {
-                sortOrder: 'asc',
+    return this.prisma.prescriptionTemplateFolder.findMany(
+      {
+        where: {
+          scope:
+            PrescriptionTemplateScope.GLOBAL,
+
+          isActive: true,
+        },
+
+        include: {
+          templates: {
+            where: {
+              isActive: true,
+            },
+
+            include: {
+              medications: {
+                orderBy: {
+                  sortOrder: 'asc',
+                },
+
+                include: {
+                  drug: true,
+                },
               },
             },
-          },
-          orderBy: {
-            updatedAt: 'desc',
+
+            orderBy: {
+              updatedAt: 'desc',
+            },
           },
         },
+
+        orderBy: {
+          name: 'asc',
+        },
       },
-      orderBy: {
-        name: 'asc',
-      },
-    });
+    );
   }
 
   // =========================================================
@@ -774,13 +1171,18 @@ export class PrescriptionTemplateService {
     dto: UpdatePrescriptionTemplateFolderDto,
   ) {
     const folder =
-      await this.prisma.prescriptionTemplateFolder.findUnique({
-        where: {
-          id: folderId,
+      await this.prisma.prescriptionTemplateFolder.findUnique(
+        {
+          where: {
+            id: folderId,
+          },
         },
-      });
+      );
 
-    if (!folder || !folder.isActive) {
+    if (
+      !folder ||
+      !folder.isActive
+    ) {
       throw new NotFoundException(
         'Prescription template folder not found',
       );
@@ -799,7 +1201,10 @@ export class PrescriptionTemplateService {
       folder.scope ===
       PrescriptionTemplateScope.USER
     ) {
-      if (folder.userId !== userId) {
+      if (
+        folder.userId !==
+        userId
+      ) {
         throw new NotFoundException(
           'Prescription template folder not found',
         );
@@ -822,19 +1227,26 @@ export class PrescriptionTemplateService {
       );
     }
 
-    return this.prisma.prescriptionTemplateFolder.update({
-      where: {
-        id: folderId,
+    return this.prisma.prescriptionTemplateFolder.update(
+      {
+        where: {
+          id: folderId,
+        },
+
+        data: {
+          ...(dto.name !==
+            undefined && {
+            name: dto.name,
+          }),
+
+          ...(dto.isActive !==
+            undefined && {
+            isActive:
+              dto.isActive,
+          }),
+        },
       },
-      data: {
-        ...(dto.name !== undefined && {
-          name: dto.name,
-        }),
-        ...(dto.isActive !== undefined && {
-          isActive: dto.isActive,
-        }),
-      },
-    });
+    );
   }
 
   // =========================================================
@@ -846,13 +1258,18 @@ export class PrescriptionTemplateService {
     folderId: string,
   ) {
     const folder =
-      await this.prisma.prescriptionTemplateFolder.findUnique({
-        where: {
-          id: folderId,
+      await this.prisma.prescriptionTemplateFolder.findUnique(
+        {
+          where: {
+            id: folderId,
+          },
         },
-      });
+      );
 
-    if (!folder || !folder.isActive) {
+    if (
+      !folder ||
+      !folder.isActive
+    ) {
       throw new NotFoundException(
         'Prescription template folder not found',
       );
@@ -871,7 +1288,10 @@ export class PrescriptionTemplateService {
       folder.scope ===
       PrescriptionTemplateScope.USER
     ) {
-      if (folder.userId !== userId) {
+      if (
+        folder.userId !==
+        userId
+      ) {
         throw new NotFoundException(
           'Prescription template folder not found',
         );
@@ -894,13 +1314,16 @@ export class PrescriptionTemplateService {
       );
     }
 
-    return this.prisma.prescriptionTemplateFolder.update({
-      where: {
-        id: folderId,
+    return this.prisma.prescriptionTemplateFolder.update(
+      {
+        where: {
+          id: folderId,
+        },
+
+        data: {
+          isActive: false,
+        },
       },
-      data: {
-        isActive: false,
-      },
-    });
+    );
   }
 }

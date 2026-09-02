@@ -1,15 +1,19 @@
 import {
   IsArray,
   IsInt,
+  IsNotEmpty,
   IsOptional,
   IsString,
+  Min,
   ValidateNested,
 } from 'class-validator';
+
 import { Type } from 'class-transformer';
 
 export class PrescriptionMedicationDto {
   @IsString()
-  medication!: string;
+  @IsNotEmpty()
+  drugId!: string;
 
   @IsOptional()
   @IsString()
@@ -17,6 +21,7 @@ export class PrescriptionMedicationDto {
 
   @IsOptional()
   @IsInt()
+  @Min(0)
   durationValue?: number;
 
   @IsOptional()
@@ -25,6 +30,7 @@ export class PrescriptionMedicationDto {
 
   @IsOptional()
   @IsInt()
+  @Min(0)
   sortOrder?: number;
 }
 

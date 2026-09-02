@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -12,7 +13,7 @@ import { Type } from 'class-transformer';
 export class UpdatePrescriptionTemplateMedicationDto {
   @IsString()
   @IsNotEmpty()
-  medication!: string;
+  drugId!: string;
 
   @IsOptional()
   @IsString()
@@ -58,9 +59,12 @@ export class UpdatePrescriptionTemplateDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => UpdatePrescriptionTemplateMedicationDto)
+  @Type(
+    () => UpdatePrescriptionTemplateMedicationDto,
+  )
   medications?: UpdatePrescriptionTemplateMedicationDto[];
 
   @IsOptional()
+  @IsBoolean()
   isActive?: boolean;
 }

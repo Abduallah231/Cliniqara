@@ -12,7 +12,7 @@ import { Type } from 'class-transformer';
 export class CreatePrescriptionTemplateMedicationDto {
   @IsString()
   @IsNotEmpty()
-  medication!: string;
+  drugId!: string;
 
   @IsOptional()
   @IsString()
@@ -56,6 +56,8 @@ export class CreatePrescriptionTemplateDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreatePrescriptionTemplateMedicationDto)
+  @Type(
+    () => CreatePrescriptionTemplateMedicationDto,
+  )
   medications!: CreatePrescriptionTemplateMedicationDto[];
 }

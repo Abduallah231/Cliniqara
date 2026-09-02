@@ -597,6 +597,43 @@ model PatientMedication {
 }
 
 // =========================
+// Drug Catalog
+// =========================
+
+model Drug {
+  id String @id @default(uuid())
+
+  // Unique product identifier from the GitHub dataset.
+  // Keep the complete value including strength, dosage form and pack.
+  commercialNameEn String @unique
+
+  commercialNameAr String?
+  scientificName   String?
+  manufacturer     String?
+  drugClass        String?
+  route            String?
+  priceEgp         Decimal? @db.Decimal(10, 2)
+
+  source       String  @default("github-egyptian-drug-database")
+  sourceRowKey String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  prescriptionTemplateMedications PrescriptionTemplateMedication[]
+  visitPrescriptionMedications     VisitPrescriptionMedication[]
+
+  @@index([scientificName])
+  @@index([manufacturer])
+  @@index([drugClass])
+  @@index([route])
+  @@index([isActive])
+  @@map("drugs")
+}
+
+// =========================
 // Patient Allergy
 // =========================
 
@@ -1312,7 +1349,14 @@ model PrescriptionTemplateMedication {
 
   templateId String
 
-  medication   String
+  // Snapshot of the selected product name.
+  // This preserves what was prescribed even if the drug catalog changes later.
+  medication String
+
+  // Reference to the current drug catalog product.
+  // Nullable to keep old prescription templates compatible.
+  drugId String?
+
   instructions String?
 
   durationValue Int?
@@ -1323,12 +1367,14 @@ model PrescriptionTemplateMedication {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  template PrescriptionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  template PrescriptionTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  drug Drug?  @relation(fields: [drugId], references: [id], onDelete: SetNull)
 
   @@index([templateId])
+  @@index([drugId])
   @@map("prescription_template_medications")
 }
-
 // =========================
 // Prescription
 // =========================
@@ -1363,7 +1409,12 @@ model VisitPrescriptionMedication {
 
   prescriptionId String
 
+  // Snapshot of the selected product name.
   medication String
+
+  // Reference to the drug catalog.
+  // Nullable for backward compatibility with old prescriptions.
+  drugId        String?
 
   durationValue Int?
   durationUnit  String?
@@ -1375,9 +1426,12 @@ model VisitPrescriptionMedication {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  prescription VisitPrescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  prescription VisitPrescription  @relation(  fields: [prescriptionId],  references: [id],  onDelete: Cascade)
+
+  drug Drug?  @relation(fields: [drugId], references: [id], onDelete: SetNull)
 
   @@index([prescriptionId])
+  @@index([drugId])
   @@map("visit_prescription_medications")
 }
 
