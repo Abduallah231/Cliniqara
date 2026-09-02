@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -19,9 +19,19 @@ import TemplateFolderSection from "@/components/prescription-templates/TemplateF
 import TemplateSearchFilters from "@/components/prescription-templates/TemplateSearchFilters";
 
 import {
-  prescriptionTemplates,
-  templateFolders,
-} from "@/data";
+  createClinicTemplateFolder,
+  createUserTemplateFolder,
+  getClinicTemplateFolders,
+  getClinicTemplates,
+  getGlobalTemplateFolders,
+  getGlobalTemplates,
+  getUserTemplateFolders,
+  getUserTemplates,
+  type PrescriptionTemplate,
+  type PrescriptionTemplateFolder,
+} from "@/services/prescriptionTemplateApi";
+
+import { useClinicStore } from "@/store/clinicStore";
 
 import {
   COLORS,
@@ -54,70 +64,191 @@ const tabs: {
 ];
 
 export default function PrescriptionsScreen() {
+  const currentClinicId =
+    useClinicStore(
+      (state) => state.currentClinicId,
+    );
+
   const [search, setSearch] =
     useState("");
 
   const [activeTab, setActiveTab] =
     useState<TemplateTab>("MY");
 
+  const [templates, setTemplates] =
+    useState<PrescriptionTemplate[]>(
+      [],
+    );
+
+  const [folders, setFolders] =
+    useState<PrescriptionTemplateFolder[]>(
+      [],
+    );
+
+  const [loading, setLoading] =
+    useState(false);
+
   const [
     showFolderDialog,
     setShowFolderDialog,
   ] = useState(false);
 
-  /*
-   * ======================================================
-   * Temporary Data
-   * ======================================================
-   *
-   * Currently using local mock data.
-   *
-   * Later:
-   *
-   * MY     -> userId
-   * CLINIC -> current clinicId
-   * GLOBAL -> system templates
-   */
+  // ======================================================
+  // Load Templates
+  // ======================================================
 
-  const templates = useMemo(() => {
-    return prescriptionTemplates.filter(
-      (template) =>
-        template.title
-          .toLowerCase()
-          .includes(
-            search.toLowerCase()
-          )
-    );
-  }, [search]);
+  useEffect(() => {
+    let cancelled = false;
 
-  /*
-   * ======================================================
-   * Current Tab Templates
-   * ======================================================
-   *
-   * For now all tabs use the same mock data.
-   * Backend filtering will be added later.
-   */
+    const loadTemplates = async () => {
+      setLoading(true);
 
-  const currentTemplates =
+      try {
+        let loadedTemplates: PrescriptionTemplate[] =
+          [];
+
+        let loadedFolders: PrescriptionTemplateFolder[] =
+          [];
+
+        if (activeTab === "MY") {
+          const [
+            userTemplates,
+            userFolders,
+          ] = await Promise.all([
+            getUserTemplates(),
+            getUserTemplateFolders(),
+          ]);
+
+          loadedTemplates =
+            userTemplates;
+
+          loadedFolders =
+            userFolders;
+        }
+
+        if (
+          activeTab === "CLINIC"
+        ) {
+          if (!currentClinicId) {
+            loadedTemplates = [];
+            loadedFolders = [];
+          } else {
+            const [
+              clinicTemplates,
+              clinicFolders,
+            ] = await Promise.all([
+              getClinicTemplates(
+                currentClinicId,
+              ),
+              getClinicTemplateFolders(
+                currentClinicId,
+              ),
+            ]);
+
+            loadedTemplates =
+              clinicTemplates;
+
+            loadedFolders =
+              clinicFolders;
+          }
+        }
+
+        if (
+          activeTab === "GLOBAL"
+        ) {
+          const [
+            globalTemplates,
+            globalFolders,
+          ] = await Promise.all([
+            getGlobalTemplates(),
+            getGlobalTemplateFolders(),
+          ]);
+
+          loadedTemplates =
+            globalTemplates;
+
+          loadedFolders =
+            globalFolders;
+        }
+
+        if (!cancelled) {
+          setTemplates(
+            loadedTemplates,
+          );
+
+          setFolders(
+            loadedFolders,
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load prescription templates:",
+          error,
+        );
+
+        if (!cancelled) {
+          setTemplates([]);
+          setFolders([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadTemplates();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    activeTab,
+    currentClinicId,
+  ]);
+
+  // ======================================================
+  // Search
+  // ======================================================
+
+  const filteredTemplates =
     useMemo(() => {
-      return templates;
-    }, [templates]);
+      const query =
+        search.trim().toLowerCase();
+
+      if (!query) {
+        return templates;
+      }
+
+      return templates.filter(
+        (template) =>
+          template.title
+            .toLowerCase()
+            .includes(query) ||
+          template.medications.some(
+            (medication) =>
+              medication.medication
+                .toLowerCase()
+                .includes(query),
+          ),
+      );
+    }, [
+      templates,
+      search,
+    ]);
 
   const templatesWithoutFolder =
-    currentTemplates.filter(
+    filteredTemplates.filter(
       (template) =>
-        !template.folderId
+        !template.folderId,
     );
 
-  /*
-   * ======================================================
-   * Actions
-   * ======================================================
-   */
+  // ======================================================
+  // Actions
+  // ======================================================
 
   const handleTemplatePress = (
-    templateId: string
+    templateId: string,
   ) => {
     router.push({
       pathname:
@@ -129,6 +260,17 @@ export default function PrescriptionsScreen() {
   };
 
   const handleNewTemplate = () => {
+    if (activeTab === "GLOBAL") {
+      return;
+    }
+
+    if (
+      activeTab === "CLINIC" &&
+      !currentClinicId
+    ) {
+      return;
+    }
+
     router.push({
       pathname: "/new-template",
       params: {
@@ -137,15 +279,62 @@ export default function PrescriptionsScreen() {
     });
   };
 
+  const handleCreateFolder = async (
+    name: string,
+  ) => {
+    if (!name.trim()) {
+      return;
+    }
+
+    try {
+      if (activeTab === "MY") {
+        const folder =
+          await createUserTemplateFolder({
+            name: name.trim(),
+          });
+
+        setFolders((current) => [
+          ...current,
+          folder,
+        ]);
+      }
+
+      if (
+        activeTab === "CLINIC" &&
+        currentClinicId
+      ) {
+        const folder =
+          await createClinicTemplateFolder(
+            currentClinicId,
+            {
+              name: name.trim(),
+            },
+          );
+
+        setFolders((current) => [
+          ...current,
+          folder,
+        ]);
+      }
+
+      setShowFolderDialog(false);
+    } catch (error) {
+      console.error(
+        "Failed to create prescription template folder:",
+        error,
+      );
+    }
+  };
+
+  // ======================================================
+  // Render
+  // ======================================================
+
   return (
     <SafeAreaView
       style={styles.container}
       edges={["top", "bottom"]}
     >
-      {/* ==================================================
-          Top Bar
-      ================================================== */}
-
       <AppTopBar
         title="Prescription Templates"
         onBack={() =>
@@ -157,7 +346,7 @@ export default function PrescriptionsScreen() {
       />
 
       {/* ==================================================
-          Fixed Segmented Tabs
+          Tabs
       ================================================== */}
 
       <View
@@ -178,11 +367,12 @@ export default function PrescriptionsScreen() {
                   selected &&
                     styles.selectedSegment,
                 ]}
-                onPress={() =>
+                onPress={() => {
+                  setSearch("");
                   setActiveTab(
-                    tab.key
-                  )
-                }
+                    tab.key,
+                  );
+                }}
               >
                 <Text
                   style={[
@@ -200,7 +390,7 @@ export default function PrescriptionsScreen() {
       </View>
 
       {/* ==================================================
-          Scrollable Content
+          Content
       ================================================== */}
 
       <ScrollView
@@ -211,109 +401,124 @@ export default function PrescriptionsScreen() {
           false
         }
       >
-        {/* ==================================================
-            Search
-        ================================================== */}
-
         <TemplateSearchFilters
           search={search}
-          onSearchChange={setSearch}
+          onSearchChange={
+            setSearch
+          }
         />
 
         {/* ==================================================
-            Folder Templates
+            Loading
         ================================================== */}
 
-        {templateFolders.map(
-          (folder) => (
-            <TemplateFolderSection
-              key={folder.id}
-              folder={folder}
-              templates={currentTemplates.filter(
-                (template) =>
-                  template.folderId ===
-                  folder.id
-              )}
-              onTemplatePress={(
-                template
-              ) =>
-                handleTemplatePress(
-                  template.id
-                )
-              }
-            />
-          )
+        {loading && (
+          <Text
+            style={
+              styles.loadingText
+            }
+          >
+            Loading templates...
+          </Text>
         )}
+
+        {/* ==================================================
+            Folders
+        ================================================== */}
+
+        {!loading &&
+          folders.map(
+            (folder) => (
+              <TemplateFolderSection
+                key={folder.id}
+                folder={folder}
+                templates={filteredTemplates.filter(
+                  (template) =>
+                    template.folderId ===
+                    folder.id,
+                )}
+                onTemplatePress={(
+                  template,
+                ) =>
+                  handleTemplatePress(
+                    template.id,
+                  )
+                }
+              />
+            ),
+          )}
 
         {/* ==================================================
             Templates Without Folder
         ================================================== */}
 
-        {templatesWithoutFolder
-          .length > 0 && (
-          <>
-            <SectionHeader
-              title="Other"
-            />
+        {!loading &&
+          templatesWithoutFolder.length >
+            0 && (
+            <>
+              <SectionHeader title="Other" />
 
-            <View
-              style={styles.list}
-            >
-              {templatesWithoutFolder.map(
-                (template) => (
-                  <TemplateCard
-                    key={
-                      template.id
-                    }
-                    template={
-                      template
-                    }
-                    onPress={() =>
-                      handleTemplatePress(
+              <View
+                style={styles.list}
+              >
+                {templatesWithoutFolder.map(
+                  (template) => (
+                    <TemplateCard
+                      key={
                         template.id
-                      )
-                    }
-                  />
-                )
-              )}
-            </View>
-          </>
-        )}
+                      }
+                      template={
+                        template
+                      }
+                      onPress={() =>
+                        handleTemplatePress(
+                          template.id,
+                        )
+                      }
+                    />
+                  ),
+                )}
+              </View>
+            </>
+          )}
 
         {/* ==================================================
             Empty State
         ================================================== */}
 
-        {currentTemplates.length ===
-          0 && <EmptyTemplates />}
+        {!loading &&
+          filteredTemplates.length ===
+            0 && <EmptyTemplates />}
       </ScrollView>
 
       {/* ==================================================
           Bottom Actions
       ================================================== */}
 
-      <View style={styles.fab}>
-        <AppButton
-          title="New Section"
-          icon="folder-open-outline"
-          variant="secondary"
-          style={styles.button}
-          onPress={() =>
-            setShowFolderDialog(
-              true
-            )
-          }
-        />
+      {activeTab !== "GLOBAL" && (
+        <View style={styles.fab}>
+          <AppButton
+            title="New Section"
+            icon="folder-open-outline"
+            variant="secondary"
+            style={styles.button}
+            onPress={() =>
+              setShowFolderDialog(
+                true,
+              )
+            }
+          />
 
-        <AppButton
-          title="New Template"
-          icon="add-outline"
-          style={styles.button}
-          onPress={
-            handleNewTemplate
-          }
-        />
-      </View>
+          <AppButton
+            title="New Template"
+            icon="add-outline"
+            style={styles.button}
+            onPress={
+              handleNewTemplate
+            }
+          />
+        </View>
+      )}
 
       {/* ==================================================
           Folder Dialog
@@ -325,34 +530,12 @@ export default function PrescriptionsScreen() {
         }
         onClose={() =>
           setShowFolderDialog(
-            false
+            false,
           )
         }
-        onSave={(name) => {
-          /*
-           * TODO:
-           *
-           * Save folder through backend.
-           *
-           * The folder will later belong to:
-           *
-           * MY     -> user
-           * CLINIC -> current clinic
-           * GLOBAL -> system admin
-           */
-
-          console.log(
-            "SAVE FOLDER:",
-            {
-              name,
-              scope: activeTab,
-            }
-          );
-
-          setShowFolderDialog(
-            false
-          );
-        }}
+        onSave={
+          handleCreateFolder
+        }
       />
     </SafeAreaView>
   );
@@ -364,12 +547,6 @@ const styles = StyleSheet.create({
     backgroundColor:
       COLORS.background,
   },
-
-  /*
-   * ======================================================
-   * Fixed Tabs
-   * ======================================================
-   */
 
   tabsWrapper: {
     paddingHorizontal:
@@ -424,12 +601,6 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
 
-  /*
-   * ======================================================
-   * Scroll Content
-   * ======================================================
-   */
-
   content: {
     padding:
       SPACING.md,
@@ -443,11 +614,15 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
 
-  /*
-   * ======================================================
-   * Bottom Actions
-   * ======================================================
-   */
+  loadingText: {
+    color:
+      COLORS.secondaryText,
+    fontSize:
+      TYPOGRAPHY.small,
+    textAlign: "center",
+    paddingVertical:
+      SPACING.md,
+  },
 
   fab: {
     position: "absolute",

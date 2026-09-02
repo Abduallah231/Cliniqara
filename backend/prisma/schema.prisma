@@ -327,9 +327,9 @@ model Patient {
   // Drug History
   medications           PatientMedication[]
   medicationCompliance  String?
-  selfMedication        Boolean @default(false)
+  selfMedication        Boolean             @default(false)
   selfMedicationDetails String?
-  takesSupplements      Boolean @default(false)
+  takesSupplements      Boolean             @default(false)
   supplementDetails     String?
 
   // Allergy History
@@ -557,7 +557,7 @@ model PatientICUAdmission {
   reason            String
   date              DateTime?
   duration          String?
-  ventilatorSupport Boolean @default(false)
+  ventilatorSupport Boolean   @default(false)
 
   notes String?
 
@@ -877,16 +877,16 @@ model VisitChiefComplaint {
   chiefComplaintId String
 
   durationValue Int?
-  durationUnit String?
+  durationUnit  String?
 
   analysis VisitComplaintAnalysis?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visit Visit @relation(    fields: [visitId],    references: [id],    onDelete: Cascade  )
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
 
-  chiefComplaint ChiefComplaintMaster @relation(    fields: [chiefComplaintId],    references: [id]  )
+  chiefComplaint ChiefComplaintMaster @relation(fields: [chiefComplaintId], references: [id])
 
   @@index([chiefComplaintId])
   @@map("visit_chief_complaints")
@@ -946,7 +946,7 @@ model VisitComplaintAnalysis {
 
   visitChiefComplaintId String @unique
 
-  templateCode String
+  templateCode    String
   templateVersion Int
 
   values Json
@@ -954,7 +954,7 @@ model VisitComplaintAnalysis {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  visitChiefComplaint VisitChiefComplaint @relation(    fields: [visitChiefComplaintId],    references: [id],    onDelete: Cascade  )
+  visitChiefComplaint VisitChiefComplaint @relation(fields: [visitChiefComplaintId], references: [id], onDelete: Cascade)
 
   @@index([templateCode])
   @@map("visit_complaint_analysis")
@@ -1157,7 +1157,7 @@ model VisitInvestigation {
 
   notes String?
 
-  requestedAt DateTime @default(now())
+  requestedAt DateTime  @default(now())
   completedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -1182,11 +1182,11 @@ model VisitInvestigationImage {
   investigationId String
 
   fileUrl   String
-  sortOrder Int @default(0)
+  sortOrder Int    @default(0)
 
   createdAt DateTime @default(now())
 
-  investigation VisitInvestigation @relation(  fields: [investigationId],  references: [id],  onDelete: Cascade)
+  investigation VisitInvestigation @relation(fields: [investigationId], references: [id], onDelete: Cascade)
 
   @@index([investigationId])
   @@map("visit_investigation_images")
@@ -1251,9 +1251,9 @@ model PrescriptionTemplateFolder {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User? @relation(    fields: [userId],    references: [id],    onDelete: Cascade  )
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  clinic Clinic? @relation(  fields: [clinicId],  references: [id],  onDelete: Cascade)
+  clinic Clinic? @relation(fields: [clinicId], references: [id], onDelete: Cascade)
 
   templates PrescriptionTemplate[]
 
@@ -1288,11 +1288,11 @@ model PrescriptionTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User? @relation(   fields: [userId],  references: [id],  onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  clinic Clinic? @relation(  fields: [clinicId],  references: [id],  onDelete: Cascade)
+  clinic Clinic? @relation(fields: [clinicId], references: [id], onDelete: Cascade)
 
-  folder PrescriptionTemplateFolder? @relation(  fields: [folderId],  references: [id],  onDelete: SetNull)
+  folder PrescriptionTemplateFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
 
   medications PrescriptionTemplateMedication[]
 
@@ -1323,7 +1323,7 @@ model PrescriptionTemplateMedication {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  template PrescriptionTemplate @relation(  fields: [templateId],  references: [id],  onDelete: Cascade)
+  template PrescriptionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
   @@index([templateId])
   @@map("prescription_template_medications")
@@ -1386,7 +1386,7 @@ model VisitPrescriptionMedication {
 // =========================
 
 model SystemCounter {
-  id        String @id
+  id        String   @id
   value     Int      @default(0)
   updatedAt DateTime @updatedAt
 

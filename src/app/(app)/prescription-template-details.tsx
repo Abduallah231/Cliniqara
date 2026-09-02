@@ -1,10 +1,14 @@
-import { router, useLocalSearchParams } from "expo-router";
-import { useMemo } from "react";
 import {
-    FlatList,
-    StyleSheet,
-    Text,
-    View,
+  router,
+  useLocalSearchParams,
+} from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -13,32 +17,192 @@ import AppCard from "@/components/common/AppCard";
 import AppTopBar from "@/components/common/AppTopBar";
 import SectionHeader from "@/components/common/SectionHeader";
 
-import { prescriptionTemplates } from "@/data/prescriptionTemplates";
+import {
+  getPrescriptionTemplate,
+  type PrescriptionTemplate,
+} from "@/services/prescriptionTemplateApi";
 
 import {
-    COLORS,
-    SPACING,
-    TYPOGRAPHY
+  COLORS,
+  SPACING,
+  TYPOGRAPHY,
 } from "@/theme";
 
 export default function PrescriptionTemplateDetails() {
-  const { templateId } =
-    useLocalSearchParams();
+  const params =
+    useLocalSearchParams<{
+      templateId?: string;
+    }>();
 
-  const template = useMemo(
-    () =>
-      prescriptionTemplates.find(
-        (item) =>
-          item.id === templateId
-      ) ??
-      prescriptionTemplates[0],
-    [templateId]
-  );
+  const templateId =
+    Array.isArray(
+      params.templateId,
+    )
+      ? params.templateId[0]
+      : params.templateId;
+
+  const [
+    template,
+    setTemplate,
+  ] =
+    useState<PrescriptionTemplate | null>(
+      null,
+    );
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState(false);
+
+  // ======================================================
+  // Load Template
+  // ======================================================
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadTemplate = async () => {
+      if (!templateId) {
+        setError(true);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(false);
+
+      try {
+        const data =
+          await getPrescriptionTemplate(
+            templateId,
+          );
+
+        if (!cancelled) {
+          setTemplate(data);
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load prescription template:",
+          error,
+        );
+
+        if (!cancelled) {
+          setTemplate(null);
+          setError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadTemplate();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [templateId]);
+
+  // ======================================================
+  // Loading
+  // ======================================================
+
+  if (loading) {
+    return (
+      <SafeAreaView
+        style={styles.container}
+        edges={[
+          "top",
+          "bottom",
+        ]}
+      >
+        <AppTopBar
+          title="Template"
+          onBack={() =>
+            router.back()
+          }
+        />
+
+        <View
+          style={
+            styles.center
+          }
+        >
+          <ActivityIndicator
+            size="large"
+            color={
+              COLORS.primary
+            }
+          />
+
+          <Text
+            style={
+              styles.loadingText
+            }
+          >
+            Loading template...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ======================================================
+  // Error / Not Found
+  // ======================================================
+
+  if (error || !template) {
+    return (
+      <SafeAreaView
+        style={styles.container}
+        edges={[
+          "top",
+          "bottom",
+        ]}
+      >
+        <AppTopBar
+          title="Template"
+          onBack={() =>
+            router.back()
+          }
+        />
+
+        <View
+          style={styles.center}
+        >
+          <Text
+            style={
+              styles.errorTitle
+            }
+          >
+            Template not found
+          </Text>
+
+          <AppButton
+            title="Back"
+            variant="secondary"
+            onPress={() =>
+              router.back()
+            }
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ======================================================
+  // Render
+  // ======================================================
 
   return (
     <SafeAreaView
       style={styles.container}
-      edges={["top", "bottom"]}
+      edges={[
+        "top",
+        "bottom",
+      ]}
     >
       <AppTopBar
         title={template.title}
@@ -62,76 +226,98 @@ export default function PrescriptionTemplateDetails() {
           false
         }
         ListHeaderComponent={
-          <>
-            <SectionHeader title="Medications" />
-          </>
+          <SectionHeader title="Medications" />
         }
-        renderItem={({ item }) => (
-          <AppCard
-            style={styles.medicationCard}
-          >
-            <Text
-              style={styles.medicationName}
-            >
-              {item.name}
-            </Text>
+        renderItem={({ item }) => {
+          const duration =
+            item.durationValue !==
+              null &&
+            item.durationUnit
+              ? `${item.durationValue} ${item.durationUnit.toLowerCase()}`
+              : null;
 
-            <Text
-              style={styles.secondary}
+          return (
+            <AppCard
+              style={
+                styles.medicationCard
+              }
             >
-              {item.dose}
-            </Text>
+              <Text
+                style={
+                  styles.medicationName
+                }
+              >
+                {item.medication}
+              </Text>
 
-            <Text
-              style={styles.secondary}
-            >
-              {item.frequency}
-            </Text>
+              {!!item.instructions && (
+                <Text
+                  style={
+                    styles.secondary
+                  }
+                >
+                  {item.instructions}
+                </Text>
+              )}
 
-            <Text
-              style={styles.secondary}
-            >
-              {item.duration}
-            </Text>
-          </AppCard>
-        )}
+              {!!duration && (
+                <Text
+                  style={
+                    styles.secondary
+                  }
+                >
+                  Duration:{" "}
+                  {duration}
+                </Text>
+              )}
+            </AppCard>
+          );
+        }}
         ItemSeparatorComponent={() => (
           <View
             style={{
-              height: SPACING.md,
+              height:
+                SPACING.md,
             }}
           />
         )}
         ListFooterComponent={
           <>
-            <SectionHeader title="Patient Advice" />
+            {!!template.advice && (
+              <>
+                <SectionHeader title="Patient Advice" />
 
-            <AppCard>
-              {template.patientAdvice.map(
-                (item, index) => (
+                <AppCard>
                   <Text
-                    key={index}
                     style={
-                      styles.bullet
+                      styles.primaryText
                     }
                   >
-                    • {item}
+                    {
+                      template.advice
+                    }
                   </Text>
-                )
-              )}
-            </AppCard>
+                </AppCard>
+              </>
+            )}
 
-            <SectionHeader title="Follow-up" />
+            {!!template.followUp && (
+              <>
+                <SectionHeader title="Follow-up" />
 
-            <AppCard>
-              <Text
-                style={
-                  styles.primaryText
-                }
-              >
-                {template.followUp}
-              </Text>
-            </AppCard>
+                <AppCard>
+                  <Text
+                    style={
+                      styles.primaryText
+                    }
+                  >
+                    {
+                      template.followUp
+                    }
+                  </Text>
+                </AppCard>
+              </>
+            )}
 
             {!!template.notes && (
               <>
@@ -156,7 +342,18 @@ export default function PrescriptionTemplateDetails() {
                 title="Edit"
                 variant="secondary"
                 style={styles.button}
-                onPress={() => {}}
+                onPress={() =>
+                  router.push({
+                    pathname:
+                      "/new-template",
+                    params: {
+                      scope:
+                        template.scope,
+                      templateId:
+                        template.id,
+                    },
+                  })
+                }
               />
             </View>
           </>
@@ -177,6 +374,29 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     paddingBottom: 40,
     gap: SPACING.md,
+  },
+
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent:
+      "center",
+    padding: SPACING.lg,
+    gap: SPACING.md,
+  },
+
+  loadingText: {
+    color:
+      COLORS.secondaryText,
+    fontSize:
+      TYPOGRAPHY.small,
+  },
+
+  errorTitle: {
+    color: COLORS.text,
+    fontSize:
+      TYPOGRAPHY.body,
+    fontWeight: "700",
   },
 
   medicationCard: {
@@ -203,18 +423,11 @@ const styles = StyleSheet.create({
       TYPOGRAPHY.small,
   },
 
-  bullet: {
-    color: COLORS.text,
-    fontSize:
-      TYPOGRAPHY.body,
-    marginBottom:
-      SPACING.sm,
-  },
-
   actions: {
     flexDirection: "row",
     gap: SPACING.sm,
-    marginTop: SPACING.lg,
+    marginTop:
+      SPACING.lg,
   },
 
   button: {

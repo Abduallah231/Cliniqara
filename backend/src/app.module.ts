@@ -10,6 +10,7 @@ import { PatientModule } from './patient/patient.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { UploadModule } from "./upload/upload.module";
 import { VisitModule } from "./visit/visit.module";
+import { PrescriptionTemplateModule } from './prescription-template/prescription-template.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,6 +25,7 @@ import { VisitModule } from "./visit/visit.module";
     ChiefComplaintsModule,
     UploadModule,
     DoctorModule,
+    PrescriptionTemplateModule,
   ],
   controllers: [AppController],
   providers: [AppService],

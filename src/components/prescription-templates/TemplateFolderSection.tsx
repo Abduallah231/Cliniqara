@@ -6,12 +6,13 @@ import {
 } from "react-native";
 
 import SectionHeader from "@/components/common/SectionHeader";
-import TemplateCard from "./TemplateCard";
 
-import {
+import type {
   PrescriptionTemplate,
-  TemplateFolder,
-} from "@/models";
+  PrescriptionTemplateFolder,
+} from "@/services/prescriptionTemplateApi";
+
+import TemplateCard from "./TemplateCard";
 
 import {
   COLORS,
@@ -20,12 +21,10 @@ import {
 } from "@/theme";
 
 type Props = {
-  folder: TemplateFolder;
-
+  folder: PrescriptionTemplateFolder;
   templates: PrescriptionTemplate[];
-
   onTemplatePress: (
-    template: PrescriptionTemplate
+    template: PrescriptionTemplate,
   ) => void;
 };
 
@@ -39,33 +38,49 @@ export default function TemplateFolderSection({
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+    >
       <View style={styles.header}>
-        <SectionHeader title={folder.name} />
+        <SectionHeader
+          title={folder.name}
+        />
 
-        <View style={styles.count}>
+        <View
+          style={styles.count}
+        >
           <Ionicons
             name="folder-open-outline"
             size={16}
-            color={COLORS.secondaryText}
+            color={
+              COLORS.secondaryText
+            }
           />
 
-          <Text style={styles.countText}>
+          <Text
+            style={
+              styles.countText
+            }
+          >
             {templates.length}
           </Text>
         </View>
       </View>
 
       <View style={styles.list}>
-        {templates.map((template) => (
-          <TemplateCard
-            key={template.id}
-            template={template}
-            onPress={() =>
-              onTemplatePress(template)
-            }
-          />
-        ))}
+        {templates.map(
+          (template) => (
+            <TemplateCard
+              key={template.id}
+              template={template}
+              onPress={() =>
+                onTemplatePress(
+                  template,
+                )
+              }
+            />
+          ),
+        )}
       </View>
     </View>
   );
@@ -78,7 +93,8 @@ const styles = StyleSheet.create({
 
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent:
+      "space-between",
     alignItems: "center",
   },
 
@@ -89,8 +105,10 @@ const styles = StyleSheet.create({
   },
 
   countText: {
-    color: COLORS.secondaryText,
-    fontSize: TYPOGRAPHY.small,
+    color:
+      COLORS.secondaryText,
+    fontSize:
+      TYPOGRAPHY.small,
     fontWeight: "600",
   },
 

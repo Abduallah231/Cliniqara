@@ -35,7 +35,7 @@ export const prescriptionTemplates: PrescriptionTemplate[] = [
     folderId: "folder-2",
     title: "Type 2 Diabetes",
     medications: [
-      {
+      { 
         id: "1",
         name: "Metformin",
         dose: "500 mg",

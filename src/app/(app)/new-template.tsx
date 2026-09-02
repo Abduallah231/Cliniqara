@@ -1,6 +1,10 @@
-import { router } from "expo-router";
-import { useState } from "react";
 import {
+  router,
+  useLocalSearchParams,
+} from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,12 +24,75 @@ import PrescriptionForm, {
 } from "@/components/visit/assessment/PrescriptionForm";
 
 import {
+  createClinicTemplate,
+  createUserTemplate,
+  getClinicTemplateFolders,
+  getPrescriptionTemplate,
+  getUserTemplateFolders,
+  updatePrescriptionTemplate,
+  type PrescriptionTemplateFolder,
+  type PrescriptionTemplateScope,
+} from "@/services/prescriptionTemplateApi";
+
+import { useClinicStore } from "@/store/clinicStore";
+
+import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
 
+type TemplateScope =
+  | "MY"
+  | "CLINIC"
+  | "GLOBAL";
+
+const scopeToBackendScope = (
+  scope: TemplateScope,
+): PrescriptionTemplateScope => {
+  if (scope === "MY") {
+    return "USER";
+  }
+
+  if (scope === "CLINIC") {
+    return "CLINIC";
+  }
+
+  return "GLOBAL";
+};
+
 export default function NewTemplateScreen() {
+  const params =
+    useLocalSearchParams<{
+      scope?: string;
+      templateId?: string;
+    }>();
+
+  const currentClinicId =
+    useClinicStore(
+      (state) => state.currentClinicId,
+    );
+
+  const scope =
+    (Array.isArray(params.scope)
+      ? params.scope[0]
+      : params.scope) as
+      | TemplateScope
+      | undefined;
+
+  const templateId =
+    Array.isArray(
+      params.templateId,
+    )
+      ? params.templateId[0]
+      : params.templateId;
+
+  const isEditing =
+    !!templateId;
+
+  const effectiveScope =
+    scope ?? "MY";
+
   // ======================================================
   // General
   // ======================================================
@@ -33,8 +100,15 @@ export default function NewTemplateScreen() {
   const [title, setTitle] =
     useState("");
 
-  const [folder, setFolder] =
-    useState("None");
+  const [folderId, setFolderId] =
+    useState<string | null>(
+      null,
+    );
+
+  const [folders, setFolders] =
+    useState<PrescriptionTemplateFolder[]>(
+      [],
+    );
 
   // ======================================================
   // Prescription
@@ -62,6 +136,180 @@ export default function NewTemplateScreen() {
     useState("");
 
   // ======================================================
+  // State
+  // ======================================================
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const [error, setError] =
+    useState<string | null>(
+      null,
+    );
+
+  // ======================================================
+  // Load Folders + Existing Template
+  // ======================================================
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // --------------------------------------------------
+        // Global templates are read-only.
+        // --------------------------------------------------
+
+        if (
+          effectiveScope ===
+          "GLOBAL"
+        ) {
+          if (!cancelled) {
+            setError(
+              "Global templates are read-only.",
+            );
+          }
+
+          return;
+        }
+
+        // --------------------------------------------------
+        // Load folders
+        // --------------------------------------------------
+
+        let loadedFolders: PrescriptionTemplateFolder[] =
+          [];
+
+        if (
+          effectiveScope ===
+          "MY"
+        ) {
+          loadedFolders =
+            await getUserTemplateFolders();
+        }
+
+        if (
+          effectiveScope ===
+          "CLINIC"
+        ) {
+          if (!currentClinicId) {
+            throw new Error(
+              "No clinic is currently selected.",
+            );
+          }
+
+          loadedFolders =
+            await getClinicTemplateFolders(
+              currentClinicId,
+            );
+        }
+
+        if (!cancelled) {
+          setFolders(
+            loadedFolders,
+          );
+        }
+
+        // --------------------------------------------------
+        // Edit existing template
+        // --------------------------------------------------
+
+        if (isEditing) {
+          const template =
+            await getPrescriptionTemplate(
+              templateId!,
+            );
+
+          if (cancelled) {
+            return;
+          }
+
+          setTitle(
+            template.title,
+          );
+
+          setFolderId(
+            template.folderId ??
+              null,
+          );
+
+          setAdvice(
+            template.advice ??
+              "",
+          );
+
+          setNotes(
+            template.notes ??
+              "",
+          );
+
+          setFollowUp(
+            template.followUp ??
+              "",
+          );
+
+          setMedications(
+            template.medications.map(
+              (item) => ({
+                medication:
+                  item.medication,
+                instructions:
+                  item.instructions ??
+                  "",
+                durationValue:
+                  item.durationValue !==
+                  null
+                    ? String(
+                        item.durationValue,
+                      )
+                    : "",
+                durationUnit:
+                  item.durationUnit ??
+                  "DAYS",
+              }),
+            ),
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load template form:",
+          error,
+        );
+
+        if (!cancelled) {
+          setError(
+            error instanceof
+              Error
+              ? error.message
+              : "Failed to load template.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    effectiveScope,
+    currentClinicId,
+    isEditing,
+    templateId,
+  ]);
+
+  // ======================================================
   // Medication Actions
   // ======================================================
 
@@ -76,13 +324,13 @@ export default function NewTemplateScreen() {
           durationUnit:
             "DAYS",
         },
-      ]
+      ],
     );
   };
 
   const updateMedication = (
     index: number,
-    updates: Partial<PrescriptionFormMedication>
+    updates: Partial<PrescriptionFormMedication>,
   ) => {
     setMedications(
       (current) =>
@@ -93,16 +341,17 @@ export default function NewTemplateScreen() {
                   ...item,
                   ...updates,
                 }
-              : item
-        )
+              : item,
+        ),
     );
   };
 
   const removeMedication = (
-    index: number
+    index: number,
   ) => {
     if (
-      medications.length === 1
+      medications.length ===
+      1
     ) {
       return;
     }
@@ -111,8 +360,8 @@ export default function NewTemplateScreen() {
       (current) =>
         current.filter(
           (_, i) =>
-            i !== index
-        )
+            i !== index,
+        ),
     );
   };
 
@@ -121,25 +370,243 @@ export default function NewTemplateScreen() {
   // ======================================================
 
   const handleSaveTemplate =
-    () => {
-      const template = {
-        title,
-        folder,
-        medications,
-        advice,
-        notes,
-        followUp,
-      };
+    async () => {
+      setError(null);
 
-      // TODO:
-      // Connect this object
-      // to Template API / DB.
+      const cleanTitle =
+        title.trim();
 
-      console.log(
-        "SAVE TEMPLATE:",
-        template
-      );
+      if (!cleanTitle) {
+        setError(
+          "Please enter a template name.",
+        );
+        return;
+      }
+
+      const validMedications =
+        medications.filter(
+          (item) =>
+            item.medication.trim()
+              .length > 0,
+        );
+
+      if (
+        validMedications.length ===
+        0
+      ) {
+        setError(
+          "Please add at least one medication.",
+        );
+        return;
+      }
+
+      if (
+        effectiveScope ===
+        "GLOBAL"
+      ) {
+        setError(
+          "Global templates are read-only.",
+        );
+        return;
+      }
+
+      if (
+        effectiveScope ===
+          "CLINIC" &&
+        !currentClinicId
+      ) {
+        setError(
+          "No clinic is currently selected.",
+        );
+        return;
+      }
+
+      setSaving(true);
+
+      try {
+        const dto = {
+          title: cleanTitle,
+
+          folderId:
+            folderId ?? null,
+
+          advice:
+            advice.trim() ||
+            null,
+
+          notes:
+            notes.trim() ||
+            null,
+
+          followUp:
+            followUp.trim() ||
+            null,
+
+          medications:
+            validMedications.map(
+              (item, index) => ({
+                medication:
+                  item.medication.trim(),
+
+                instructions:
+                  item.instructions.trim(),
+
+                durationValue:
+                  item.durationValue.trim()
+                    ? Number(
+                        item.durationValue.trim(),
+                      )
+                    : null,
+
+                durationUnit:
+                  item.durationValue.trim()
+                    ? item.durationUnit
+                    : null,
+
+                sortOrder: index,
+              }),
+            ),
+        };
+
+        if (isEditing) {
+          await updatePrescriptionTemplate(
+            templateId!,
+            dto,
+          );
+        } else if (
+          effectiveScope ===
+          "MY"
+        ) {
+          await createUserTemplate(
+            dto,
+          );
+        } else if (
+          effectiveScope ===
+          "CLINIC" &&
+          currentClinicId
+        ) {
+          await createClinicTemplate(
+            currentClinicId,
+            dto,
+          );
+        }
+
+        router.replace(
+          "/prescriptions",
+        );
+      } catch (error) {
+        console.error(
+          "Failed to save prescription template:",
+          error,
+        );
+
+        setError(
+          error instanceof
+            Error
+            ? error.message
+            : "Failed to save template.",
+        );
+      } finally {
+        setSaving(false);
+      }
     };
+
+  // ======================================================
+  // Loading
+  // ======================================================
+
+  if (loading) {
+    return (
+      <SafeAreaView
+        style={styles.container}
+        edges={[
+          "top",
+          "bottom",
+        ]}
+      >
+        <AppTopBar
+          title={
+            isEditing
+              ? "Edit Template"
+              : "New Template"
+          }
+          onBack={() =>
+            router.back()
+          }
+        />
+
+        <View
+          style={styles.center}
+        >
+          <ActivityIndicator
+            size="large"
+            color={
+              COLORS.primary
+            }
+          />
+
+          <Text
+            style={
+              styles.loadingText
+            }
+          >
+            Loading...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ======================================================
+  // Global Read-only
+  // ======================================================
+
+  if (
+    effectiveScope ===
+    "GLOBAL"
+  ) {
+    return (
+      <SafeAreaView
+        style={styles.container}
+        edges={[
+          "top",
+          "bottom",
+        ]}
+      >
+        <AppTopBar
+          title="Global Template"
+          onBack={() =>
+            router.back()
+          }
+        />
+
+        <View
+          style={styles.center}
+        >
+          <Text
+            style={
+              styles.errorTitle
+            }
+          >
+            Global templates are
+            read-only.
+          </Text>
+
+          <AppButton
+            title="Back"
+            variant="secondary"
+            onPress={() =>
+              router.back()
+            }
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ======================================================
+  // Render
+  // ======================================================
 
   return (
     <SafeAreaView
@@ -149,12 +616,12 @@ export default function NewTemplateScreen() {
         "bottom",
       ]}
     >
-      {/* ==================================================
-          Top Bar
-      ================================================== */}
-
       <AppTopBar
-        title="New Template"
+        title={
+          isEditing
+            ? "Edit Template"
+            : "New Template"
+        }
         onBack={() =>
           router.back()
         }
@@ -180,6 +647,7 @@ export default function NewTemplateScreen() {
           }
         >
           <AppTextField
+            label="Template Name"
             placeholder="Template Name"
             value={title}
             onChangeText={
@@ -199,48 +667,31 @@ export default function NewTemplateScreen() {
             <AppChip
               label="None"
               selected={
-                folder ===
-                "None"
+                folderId === null
               }
               onPress={() =>
-                setFolder(
-                  "None"
-                )
+                setFolderId(null)
               }
             />
 
-            <AppChip
-              label="Internal Medicine"
-              selected={
-                folder ===
-                "Internal Medicine"
-              }
-              onPress={() =>
-                setFolder(
-                  "Internal Medicine"
-                )
-              }
-            />
-
-            <AppChip
-              label="Pediatrics"
-              selected={
-                folder ===
-                "Pediatrics"
-              }
-              onPress={() =>
-                setFolder(
-                  "Pediatrics"
-                )
-              }
-            />
+            {folders.map(
+              (folder) => (
+                <AppChip
+                  key={folder.id}
+                  label={folder.name}
+                  selected={
+                    folderId ===
+                    folder.id
+                  }
+                  onPress={() =>
+                    setFolderId(
+                      folder.id,
+                    )
+                  }
+                />
+              ),
+            )}
           </View>
-
-          <Text
-            style={styles.label}
-          >
-            Favorite
-          </Text>
         </AppCard>
 
         {/* ==================================================
@@ -277,12 +728,35 @@ export default function NewTemplateScreen() {
         />
 
         {/* ==================================================
-            Save Template
+            Error
+        ================================================== */}
+
+        {!!error && (
+          <Text
+            style={styles.errorText}
+          >
+            {error}
+          </Text>
+        )}
+
+        {/* ==================================================
+            Save
         ================================================== */}
 
         <AppButton
-          title="Save Template"
-          icon="save-outline"
+          title={
+            saving
+              ? "Saving..."
+              : isEditing
+                ? "Update Template"
+                : "Save Template"
+          }
+          icon={
+            saving
+              ? undefined
+              : "save-outline"
+          }
+          disabled={saving}
           onPress={
             handleSaveTemplate
           }
@@ -322,5 +796,36 @@ const styles = StyleSheet.create({
       "row",
     flexWrap: "wrap",
     gap: SPACING.sm,
+  },
+
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent:
+      "center",
+    padding: SPACING.lg,
+    gap: SPACING.md,
+  },
+
+  loadingText: {
+    color:
+      COLORS.secondaryText,
+    fontSize:
+      TYPOGRAPHY.small,
+  },
+
+  errorTitle: {
+    color: COLORS.text,
+    fontSize:
+      TYPOGRAPHY.body,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+
+  errorText: {
+    color: "#ef4444",
+    fontSize:
+      TYPOGRAPHY.small,
+    fontWeight: "600",
   },
 });
