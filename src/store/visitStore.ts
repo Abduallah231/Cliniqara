@@ -334,6 +334,13 @@ updatePrimaryDiagnosis(
 
 clearPrimaryDiagnosis: () => void;
 
+setDiagnosis: (
+  diagnosis: {
+    primaryDiagnosis?: Diagnosis;
+    differentialDiagnoses: Diagnosis[];
+  }
+) => void;
+
 addDifferentialDiagnosis: (
   diagnosis: Diagnosis
 ) => void;
@@ -1996,6 +2003,23 @@ removeICUAdmission: (id) =>
         diagnosis: {
           ...state.visit.assessment.diagnosis,
           primaryDiagnosis: diagnosis,
+        },
+      },
+    },
+  })),
+
+  setDiagnosis: (diagnosis) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      assessment: {
+        ...state.visit.assessment,
+        diagnosis: {
+          ...state.visit.assessment.diagnosis,
+          primaryDiagnosis:
+            diagnosis.primaryDiagnosis,
+          differentialDiagnoses:
+            diagnosis.differentialDiagnoses,
         },
       },
     },

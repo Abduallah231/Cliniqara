@@ -156,6 +156,7 @@ export default function AssessmentTab({
             color={COLORS.primary}
           />
         }
+        defaultExpanded
       >
         <PrescriptionSection />
       </CollapsibleSection>

@@ -38,6 +38,12 @@ export default function DiagnosisSection() {
         state.addDifferentialDiagnosis,
     );
 
+  const setDiagnosis =
+    useVisitStore(
+      (state) =>
+        state.setDiagnosis,
+    );
+
   const removeDifferentialDiagnosis =
     useVisitStore(
       (state) =>
@@ -77,6 +83,11 @@ export default function DiagnosisSection() {
           await getDiagnosis(visitId);
 
         if (!data) {
+          setDiagnosis({
+            primaryDiagnosis: undefined,
+            differentialDiagnoses: [],
+          });
+
           loadedVisitId.current = visitId;
           return;
         }
@@ -84,15 +95,7 @@ export default function DiagnosisSection() {
         const mappedDiagnosis =
           mapDiagnosisFromBackend(data);
 
-        updatePrimaryDiagnosis(
-          mappedDiagnosis.primaryDiagnosis,
-        );
-
-        mappedDiagnosis.differentialDiagnoses.forEach(
-          (item) => {
-            addDifferentialDiagnosis(item);
-          },
-        );
+        setDiagnosis(mappedDiagnosis);
 
         loadedVisitId.current = visitId;
       } catch (error: any) {
@@ -108,8 +111,7 @@ export default function DiagnosisSection() {
     loadDiagnosis();
   }, [
     visitId,
-    updatePrimaryDiagnosis,
-    addDifferentialDiagnosis,
+    setDiagnosis,
   ]);
 
   /*

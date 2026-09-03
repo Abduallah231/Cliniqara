@@ -165,6 +165,130 @@ export default function VisitScreen() {
       return;
     }
 
+    /*
+    * Always read the latest visit state directly
+    * from Zustand before completing the visit.
+    */
+    const currentVisit =
+      useVisitStore.getState().visit;
+
+    const missingRequirements: string[] = [];
+
+    // ======================================================
+    // 1. Chief Complaint
+    // ======================================================
+
+    const chiefComplaint =
+      currentVisit.history.chiefComplaint;
+
+    const hasChiefComplaint =
+      Boolean(
+        chiefComplaint.complaintId ||
+        chiefComplaint.complaintName?.trim(),
+      );
+
+    if (!hasChiefComplaint) {
+      missingRequirements.push(
+        "Chief Complaint",
+      );
+    }
+
+    // ======================================================
+    // 2. Diagnosis
+    // ======================================================
+
+    const diagnosis =
+      currentVisit.assessment.diagnosis;
+
+    const hasPrimaryDiagnosis =
+      Boolean(
+        diagnosis.primaryDiagnosis?.diagnosis?.trim(),
+      );
+
+    const hasDifferentialDiagnosis =
+      diagnosis.differentialDiagnoses.length >
+      0;
+
+    /*
+    * One diagnosis is enough:
+    *
+    * Primary Diagnosis
+    * OR
+    * at least one Differential Diagnosis
+    */
+    const hasDiagnosis =
+      hasPrimaryDiagnosis ||
+      hasDifferentialDiagnosis;
+
+    if (!hasDiagnosis) {
+      missingRequirements.push(
+        "Diagnosis",
+      );
+    }
+
+    // ======================================================
+    // 3. Prescription
+    // ======================================================
+
+    const prescription =
+      currentVisit.assessment.prescription;
+
+    const hasPrescriptionMedication =
+      prescription.medications.length > 0;
+
+    const hasPrescriptionAdvice =
+      Boolean(
+        prescription.advice?.trim(),
+      );
+
+    const hasPrescriptionNotes =
+      Boolean(
+        prescription.notes?.trim(),
+      );
+
+    const hasPrescriptionFollowUp =
+      Boolean(
+        prescription.followUp?.trim(),
+      );
+
+    /*
+    * Any prescription content is enough:
+    *
+    * Medication
+    * OR Advice
+    * OR Notes
+    * OR Follow-up
+    */
+    const hasPrescription =
+      hasPrescriptionMedication ||
+      hasPrescriptionAdvice ||
+      hasPrescriptionNotes ||
+      hasPrescriptionFollowUp;
+
+    if (!hasPrescription) {
+      missingRequirements.push(
+        "Prescription",
+      );
+    }
+
+    // ======================================================
+    // Validation result
+    // ======================================================
+
+    if (missingRequirements.length > 0) {
+      Alert.alert(
+        "Cannot Save Visit",
+        `Please complete:\n\n${missingRequirements
+          .map((item) => `• ${item}`)
+          .join("\n")}`,
+      );
+      return;
+    }
+
+    // ======================================================
+    // Complete visit
+    // ======================================================
+
     try {
       setCompletingVisit(true);
 
