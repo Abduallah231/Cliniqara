@@ -26,36 +26,6 @@ export type DynamicFieldValue = {
   unit?: string;
 };
 
-// ======================================================
-// Related Systems
-// ======================================================
-
-export type RelatedSystemType =
-  | "GENERAL"
-  | "CVS"
-  | "CHEST"
-  | "GIT"
-  | "RENAL"
-  | "NEURO"
-  | "MUSCULOSKELETAL"
-  | "ENDOCRINE"
-  | "HEMATOLOGY"
-  | "SKIN"
-  | "GYNECOLOGY"
-  | "OBSTETRIC"
-  | "ENT"
-  | "OPHTHALMOLOGY";
-
-export type RelatedSystemItem = {
-  system: RelatedSystemType;
-  symptoms: string[];
-  otherFinding?: string | null;
-};
-
-export type SaveRelatedSystemsInput = {
-  systems: RelatedSystemItem[];
-};
-
 export async function createWaitingVisit(
   patientId: string,
   doctorId?: string,
@@ -176,16 +146,94 @@ export async function getVisit(
 // Related Systems
 // ======================================================
 
+export type RelatedSystemType =
+  | "GENERAL"
+  | "CVS"
+  | "CHEST"
+  | "GIT"
+  | "RENAL"
+  | "NEURO"
+  | "MUSCULOSKELETAL"
+  | "ENDOCRINE"
+  | "HEMATOLOGY"
+  | "SKIN"
+  | "GYNECOLOGY"
+  | "OBSTETRIC"
+  | "ENT"
+  | "OPHTHALMOLOGY";
+
+export type RelatedSystemItem = {
+  system: RelatedSystemType;
+  symptoms: string[];
+  otherFinding?: string | null;
+};
+
+export type SaveRelatedSystemsInput = {
+  systems: RelatedSystemItem[];
+};
+
+/**
+ * Backend GET response.
+ *
+ * The backend may return database fields such as:
+ * - id
+ * - visitId
+ *
+ * These fields must never be passed back to the
+ * save DTO.
+ */
+type RelatedSystemResponse = {
+  id?: string;
+  visitId?: string;
+  system: RelatedSystemType;
+  symptoms: string[];
+  otherFinding?: string | null;
+};
+
 export async function saveRelatedSystems(
   visitId: string,
   dto: SaveRelatedSystemsInput,
 ): Promise<RelatedSystemItem[]> {
+  /**
+   * Only send fields that are allowed by the
+   * backend SaveRelatedSystemsDto.
+   *
+   * This intentionally strips backend/database fields
+   * such as `id` and `visitId`.
+   */
+  const payload: SaveRelatedSystemsInput = {
+    systems: dto.systems.map(
+      (item): RelatedSystemItem => ({
+        system: item.system,
+        symptoms: Array.isArray(item.symptoms)
+          ? item.symptoms
+          : [],
+        otherFinding:
+          item.otherFinding ?? null,
+      }),
+    ),
+  };
+
   const { data } = await api.put(
     `/visits/${visitId}/related-systems`,
-    dto,
+    payload,
   );
 
-  return data;
+  return Array.isArray(data)
+    ? data.map(
+        (
+          item: RelatedSystemResponse,
+        ): RelatedSystemItem => ({
+          system: item.system,
+          symptoms:
+            Array.isArray(item.symptoms)
+              ? item.symptoms
+              : [],
+          otherFinding:
+            item.otherFinding ?? null,
+        }),
+      )
+    : [];
 }
 
 export async function getRelatedSystems(
@@ -195,7 +243,43 @@ export async function getRelatedSystems(
     `/visits/${visitId}/related-systems`,
   );
 
-  return data;
+  /**
+   * Normalize the backend response before it
+   * reaches Zustand.
+   *
+   * Backend may return:
+   * {
+   *   id,
+   *   visitId,
+   *   system,
+   *   symptoms,
+   *   otherFinding
+   * }
+   *
+   * Store should contain only:
+   * {
+   *   system,
+   *   symptoms,
+   *   otherFinding
+   * }
+   */
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data.map(
+    (
+      item: RelatedSystemResponse,
+    ): RelatedSystemItem => ({
+      system: item.system,
+      symptoms:
+        Array.isArray(item.symptoms)
+          ? item.symptoms
+          : [],
+      otherFinding:
+        item.otherFinding ?? null,
+    }),
+  );
 }
 
 // ======================================================

@@ -5,31 +5,50 @@ interface Props {
   visitId?: string;
   chiefComplaintId?: string;
   answers: Record<string, any>;
+  isHydrating?: boolean;
 }
 
 export default function useComplaintAutoSave({
   visitId,
   chiefComplaintId,
   answers,
+  isHydrating = false,
 }: Props) {
   const previousComplaintId =
     useRef<string | undefined>(
       chiefComplaintId
     );
 
-  const skipNextSave = useRef(true);
+  const hydratedSignature =
+    useRef<string | null>(null);
+
+  const isFirstRender =
+    useRef(true);
 
   useEffect(() => {
-    if (!visitId || !chiefComplaintId) {
+    if (
+      !visitId ||
+      !chiefComplaintId
+    ) {
       return;
     }
 
     /*
-     * Chief complaint changed.
+     * First render:
+     * never autosave existing Zustand state.
+     */
+    if (isFirstRender.current) {
+      isFirstRender.current =
+        false;
+
+      return;
+    }
+
+    /*
+     * Complaint changed.
      *
-     * The analysis fields were cleared in
-     * visitStore, so do not autosave anything
-     * during this transition.
+     * The store clears the previous analysis.
+     * Do not save that transition.
      */
     if (
       previousComplaintId.current !==
@@ -38,33 +57,56 @@ export default function useComplaintAutoSave({
       previousComplaintId.current =
         chiefComplaintId;
 
-      skipNextSave.current = true;
+      hydratedSignature.current =
+        null;
+
+      return;
+    }
+
+    const signature =
+      JSON.stringify(answers);
+
+    /*
+     * Backend hydration.
+     */
+    if (isHydrating) {
+      hydratedSignature.current =
+        signature;
 
       return;
     }
 
     /*
-     * Skip the first render for this complaint.
+     * The current state is exactly what
+     * came from backend.
+     *
+     * Do not send it back immediately.
      */
-    if (skipNextSave.current) {
-      skipNextSave.current = false;
+    if (
+      hydratedSignature.current ===
+      signature
+    ) {
+      hydratedSignature.current =
+        null;
+
       return;
     }
 
-    const timer = setTimeout(() => {
-      saveChiefComplaint(
-        visitId,
-        chiefComplaintId,
-        {
-          answers,
-        },
-      ).catch((error) => {
-        console.error(
-          "AUTOSAVE FAILED:",
-          error,
-        );
-      });
-    }, 500);
+    const timer =
+      setTimeout(() => {
+        saveChiefComplaint(
+          visitId,
+          chiefComplaintId,
+          {
+            answers,
+          }
+        ).catch((error) => {
+          console.error(
+            "CHIEF COMPLAINT AUTOSAVE FAILED:",
+            error
+          );
+        });
+      }, 500);
 
     return () => {
       clearTimeout(timer);
@@ -72,6 +114,7 @@ export default function useComplaintAutoSave({
   }, [
     visitId,
     chiefComplaintId,
+    isHydrating,
     JSON.stringify(answers),
   ]);
 }

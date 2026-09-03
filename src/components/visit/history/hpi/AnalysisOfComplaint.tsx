@@ -1,10 +1,23 @@
 import { Text } from "react-native";
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import ComplaintTemplateRenderer from "@/features/complaints/components/ComplaintTemplateRenderer";
+
 import useComplaintAutoSave from "@/features/complaints/hooks/useComplaintAutoSave";
 
-import { getChiefComplaintTemplate } from "@/services/chiefComplaintApi";
+import {
+  getChiefComplaintTemplate,
+} from "@/services/chiefComplaintApi";
+
+import {
+  getChiefComplaint,
+} from "@/services/visitApi";
+
 import { useVisitStore } from "@/store/visitStore";
 
 import { ComplaintTemplate } from "@/features/complaints/models/ComplaintTemplate";
@@ -12,26 +25,59 @@ import { ComplaintTemplate } from "@/features/complaints/models/ComplaintTemplat
 import GenericAnalysis from "./GenericAnalysis";
 
 export default function AnalysisOfComplaint() {
-  const visit = useVisitStore(
-    (state) => state.visit
-  );
+  const visit =
+    useVisitStore(
+      (state) => state.visit
+    );
 
   const updateAnalysisField =
     useVisitStore(
-      (state) => state.updateAnalysisField
+      (state) =>
+        state.updateAnalysisField
+    );
+
+  const setAnalysisFields =
+    useVisitStore(
+      (state) =>
+        state.setAnalysisFields
     );
 
   const chiefComplaint =
     visit.history.chiefComplaint;
 
+  const visitId =
+    visit.metadata.id;
+
+  const complaintId =
+    chiefComplaint.complaintId;
+
   const [template, setTemplate] =
-    useState<ComplaintTemplate>();
+    useState<
+      ComplaintTemplate | undefined
+    >();
+
+  const [
+    isHydrating,
+    setIsHydrating,
+  ] = useState(false);
+
+  const loadedComplaintKey =
+    useRef<string | null>(null);
+
+  const requestId =
+    useRef(0);
+
+  /*
+   * ======================================================
+   * Load Template
+   * ======================================================
+   */
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadTemplate() {
-      if (!chiefComplaint.complaintId) {
+      if (!complaintId) {
         setTemplate(undefined);
         return;
       }
@@ -39,11 +85,13 @@ export default function AnalysisOfComplaint() {
       try {
         const data =
           await getChiefComplaintTemplate(
-            chiefComplaint.complaintId
+            complaintId
           );
 
         if (!cancelled) {
-          setTemplate(data.template);
+          setTemplate(
+            data.template
+          );
         }
       } catch (error) {
         if (!cancelled) {
@@ -62,40 +110,201 @@ export default function AnalysisOfComplaint() {
     return () => {
       cancelled = true;
     };
-  }, [chiefComplaint.complaintId]);
+  }, [complaintId]);
 
   /*
-   * visitStore is the single local source of truth.
+   * ======================================================
+   * Load Saved Analysis
+   * ======================================================
    *
-   * ComplaintTemplateRenderer expects an object:
-   * {
-   *   [fieldId]: value
-   * }
+   * This is independent from ChiefComplaint.tsx.
    *
-   * So we derive that object from the store.
+   * It only hydrates:
+   *
+   * data.analysis.values
+   *
    */
-  const values = useMemo(() => {
-    const result: Record<string, any> = {};
 
-    for (
-      const field of
-        visit.history.hpi.analysis.fields
+  useEffect(() => {
+    let cancelled = false;
+
+    if (
+      !visitId ||
+      !complaintId
     ) {
-      result[field.fieldId] = field.value;
+      loadedComplaintKey.current =
+        null;
+
+      setAnalysisFields([]);
+
+      return;
     }
 
-    return result;
+    const key =
+      `${visitId}:${complaintId}`;
+
+    /*
+     * Already hydrated for this
+     * visit + complaint.
+     */
+    if (
+      loadedComplaintKey.current ===
+      key
+    ) {
+      return;
+    }
+
+    const currentRequestId =
+      ++requestId.current;
+
+    async function loadAnalysis() {
+      setIsHydrating(true);
+
+      try {
+        const data =
+          await getChiefComplaint(
+            visitId,
+            complaintId
+          );
+
+        if (
+          cancelled ||
+          currentRequestId !==
+            requestId.current
+        ) {
+          return;
+        }
+
+        const backendValues =
+          data?.analysis?.values;
+
+        if (
+          !backendValues ||
+          typeof backendValues !==
+            "object" ||
+          Array.isArray(
+            backendValues
+          )
+        ) {
+          setAnalysisFields([]);
+
+          loadedComplaintKey.current =
+            key;
+
+          return;
+        }
+
+        const templateFields =
+          template?.sections?.flatMap(
+            (section: any) =>
+              section.fields ?? []
+          ) ?? [];
+
+        const fields =
+          Object.entries(
+            backendValues
+          ).map(
+            ([fieldId, value]) => {
+              const templateField =
+                templateFields.find(
+                  (field: any) =>
+                    field.fieldId ===
+                    fieldId
+                );
+
+              return {
+                fieldId,
+
+                fieldLabel:
+                  templateField
+                    ?.fieldLabel ??
+                  fieldId,
+
+                value:
+                  value as any,
+              };
+            }
+          );
+
+        setAnalysisFields(
+          fields
+        );
+
+        loadedComplaintKey.current =
+          key;
+      } catch (error) {
+        if (
+          !cancelled &&
+          currentRequestId ===
+            requestId.current
+        ) {
+          console.error(
+            "Failed to load chief complaint analysis:",
+            error
+          );
+
+          setAnalysisFields([]);
+
+          loadedComplaintKey.current =
+            key;
+        }
+      } finally {
+        if (
+          !cancelled &&
+          currentRequestId ===
+            requestId.current
+        ) {
+          setIsHydrating(false);
+        }
+      }
+    }
+
+    loadAnalysis();
+
+    return () => {
+      cancelled = true;
+    };
   }, [
-    visit.history.hpi.analysis.fields,
+    visitId,
+    complaintId,
+    template,
+    setAnalysisFields,
   ]);
 
+  /*
+   * ======================================================
+   * Store → Renderer
+   * ======================================================
+   */
 
+  const values =
+    useMemo(() => {
+      const result: Record<
+        string,
+        any
+      > = {};
+
+      for (
+        const field of
+          visit.history.hpi.analysis
+            .fields
+      ) {
+        result[field.fieldId] =
+          field.value;
+      }
+
+      return result;
+    }, [
+      visit.history.hpi.analysis
+        .fields,
+    ]);
 
   /*
-   * Renderer sends the fieldId + value.
-   * Store also needs fieldLabel, so we resolve it
-   * from the current template before updating the store.
+   * ======================================================
+   * Renderer → Store
+   * ======================================================
    */
+
   const handleChange = (
     fieldId: string,
     value: any,
@@ -105,35 +314,48 @@ export default function AnalysisOfComplaint() {
       return;
     }
 
-    const field = template.sections
-      ?.flatMap((section: any) =>
-        section.fields ?? []
-      )
-      .find(
-        (item: any) =>
-          item.fieldId === fieldId
-      );
+    const field =
+      template.sections
+        ?.flatMap(
+          (section: any) =>
+            section.fields ?? []
+        )
+        .find(
+          (item: any) =>
+            item.fieldId ===
+            fieldId
+        );
 
     updateAnalysisField(
       fieldId,
-      field?.fieldLabel ?? fieldId,
+      field?.fieldLabel ??
+        fieldId,
       value,
       unit
     );
   };
 
   /*
-   * Backend autosave uses the exact same values
-   * derived from visitStore.
+   * ======================================================
+   * Autosave
+   * ======================================================
    */
+
   useComplaintAutoSave({
-    visitId: visit.metadata.id,
+    visitId,
     chiefComplaintId:
-      chiefComplaint.complaintId,
+      complaintId,
     answers: values,
+    isHydrating,
   });
 
-  if (!chiefComplaint.complaintId) {
+  /*
+   * ======================================================
+   * UI
+   * ======================================================
+   */
+
+  if (!complaintId) {
     return (
       <Text>
         Please select a chief complaint first.
@@ -142,7 +364,9 @@ export default function AnalysisOfComplaint() {
   }
 
   if (!template) {
-    return <GenericAnalysis />;
+    return (
+      <GenericAnalysis />
+    );
   }
 
   return (

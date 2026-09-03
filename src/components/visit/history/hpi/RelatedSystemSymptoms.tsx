@@ -1,5 +1,6 @@
 import AppChip from "@/components/common/AppChip";
 import {
+  getRelatedSystems,
   saveRelatedSystems,
   type RelatedSystemItem,
   type RelatedSystemType,
@@ -70,121 +71,218 @@ export default function RelatedSystemSymptoms() {
   const [selectedSystem, setSelectedSystem] =
     useState<RelatedSystemType>("GENERAL");
 
-  const { visit } = useVisitStore();
+  const { visit, setRelatedSystems } =
+    useVisitStore();
 
   const systemsData =
     visit.history.hpi.relatedSystemSymptoms.systems;
 
   const visitId = visit.metadata.id;
 
-  /*
-   * Prevent saving immediately after loading
-   * the visit from the backend.
+  /**
+   * Prevent loading the same visit more than once
+   * while this component instance is mounted.
    */
-  const skipNextSave = useRef(true);
+  const loadedVisitId = useRef<string | null>(
+    null,
+  );
 
-  /*
-   * Serialization state.
+  /**
+   * Indicates that we are currently hydrating
+   * the Zustand store from the backend.
    *
-   * Only ONE save request is allowed
-   * to run at a time.
+   * Changes caused by hydration must NOT trigger
+   * autosave.
    */
-  const isSavingRef = useRef(false);
+  const isHydrating = useRef(false);
 
-  /*
-   * Indicates that the data changed while
-   * another save request was still running.
+  /**
+   * Used to skip the very first render.
    */
-  const pendingSaveRef = useRef(false);
+  const isFirstRender = useRef(true);
 
-  /*
-   * Always keep the latest version of systems data.
+  /**
+   * Signature of the state that came from backend.
+   *
+   * This prevents saving the exact same hydrated
+   * state back to the backend.
+   */
+  const hydratedSignature = useRef<
+    string | null
+  >(null);
+
+  /**
+   * Always keep the latest state available
+   * to the debounced save.
    */
   const latestSystemsRef =
-    useRef<RelatedSystemItem[]>(systemsData);
+    useRef<RelatedSystemItem[]>(
+      systemsData,
+    );
 
-  /*
-   * Keep the latest data available to the
-   * asynchronous save function.
-   */
   useEffect(() => {
-    latestSystemsRef.current = systemsData;
+    latestSystemsRef.current =
+      systemsData;
   }, [systemsData]);
 
-  /*
-   * Serialized autosave function.
-   */
-  const runSave = async () => {
-    if (!visitId) {
-      return;
-    }
-
-    /*
-     * If another save is already running,
-     * don't start a second request.
-     */
-    if (isSavingRef.current) {
-      pendingSaveRef.current = true;
-      return;
-    }
-
-    isSavingRef.current = true;
-    pendingSaveRef.current = false;
-
-    /*
-     * Take a snapshot of the latest data
-     * before starting the request.
-     */
-    const snapshot = latestSystemsRef.current;
-
-    try {
-      await saveRelatedSystems(visitId, {
-        systems: snapshot,
-      });
-    } catch (error) {
-      console.error(
-        "RELATED SYSTEMS AUTOSAVE FAILED:",
-        error,
-      );
-    } finally {
-      isSavingRef.current = false;
-
-      /*
-       * If the user changed anything while the
-       * previous request was running, schedule
-       * one more save for the latest state.
-       */
-      if (pendingSaveRef.current) {
-        pendingSaveRef.current = false;
-
-        setTimeout(() => {
-          runSave();
-        }, 750);
-      }
-    }
-  };
+  // ======================================================
+  // Load Related Systems
+  // ======================================================
 
   useEffect(() => {
     if (!visitId) {
       return;
     }
 
-    /*
-     * Don't save immediately after loading
-     * the visit.
-     */
-    if (skipNextSave.current) {
-      skipNextSave.current = false;
+    if (loadedVisitId.current === visitId) {
       return;
     }
 
-    /*
-     * Debounce:
-     * wait 750ms after the last change.
+    let cancelled = false;
+
+    const loadRelatedSystems =
+      async () => {
+        try {
+          isHydrating.current = true;
+
+          const data =
+            await getRelatedSystems(
+              visitId,
+            );
+
+          if (cancelled) {
+            return;
+          }
+
+          const normalizedSystems =
+            Array.isArray(data)
+              ? data
+              : [];
+
+          /**
+           * Replace the complete related-systems
+           * state instead of adding individual items.
+           *
+           * This makes hydration idempotent and prevents
+           * duplicate systems/symptoms when the section
+           * is opened more than once.
+           */
+          setRelatedSystems(
+            normalizedSystems,
+          );
+
+          latestSystemsRef.current =
+            normalizedSystems;
+
+          hydratedSignature.current =
+            JSON.stringify(
+              normalizedSystems,
+            );
+
+          loadedVisitId.current =
+            visitId;
+        } catch (error) {
+          console.error(
+            "RELATED SYSTEMS LOAD FAILED:",
+            error,
+          );
+        } finally {
+          if (!cancelled) {
+            isHydrating.current =
+              false;
+          }
+        }
+      };
+
+    loadRelatedSystems();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    visitId,
+    setRelatedSystems,
+  ]);
+
+  // ======================================================
+  // Related Systems Autosave
+  // ======================================================
+
+  useEffect(() => {
+    if (!visitId) {
+      return;
+    }
+
+    const signature =
+      JSON.stringify(
+        systemsData,
+      );
+
+    /**
+     * Don't save the initial Zustand state.
+     */
+    if (isFirstRender.current) {
+      isFirstRender.current =
+        false;
+
+      return;
+    }
+
+    /**
+     * Don't save while backend data is being
+     * written into Zustand.
+     */
+    if (isHydrating.current) {
+      hydratedSignature.current =
+        signature;
+
+      return;
+    }
+
+    /**
+     * If the current state is exactly the same
+     * state that came from backend, there is
+     * nothing to save.
+     */
+    if (
+      hydratedSignature.current ===
+      signature
+    ) {
+      hydratedSignature.current =
+        null;
+
+      return;
+    }
+
+    /**
+     * Same debounce approach used by the
+     * other History autosave implementations.
      */
     const timer = setTimeout(() => {
-      runSave();
-    }, 750);
+      const latestSystems =
+        latestSystemsRef.current;
+
+// console.log(
+//   "RELATED SYSTEMS SAVE PAYLOAD:",
+//   {
+//     visitId,
+//     systems: latestSystems,
+//   },
+// );
+
+      saveRelatedSystems(
+        visitId,
+        {
+          systems:
+            latestSystems,
+        },
+      ).catch((error) => {
+        console.error(
+          "RELATED SYSTEMS AUTOSAVE FAILED:",
+          error?.response?.data ?? error,
+        );
+      });
+    }, 500);
 
     return () => {
       clearTimeout(timer);

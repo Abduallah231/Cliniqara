@@ -53,6 +53,13 @@ type VaccinationHistoryField =
   | "reactionSeverity"
   | "reactionDetails";
 
+type ChiefComplaintDurationUnit =
+  | "HOURS"
+  | "DAYS"
+  | "WEEKS"
+  | "MONTHS"
+  | "YEARS";
+
 interface VisitStore {
   visit: VisitForm;
 
@@ -67,6 +74,15 @@ interface VisitStore {
     fieldLabel: string,
     value: DynamicValue,
     unit?: string
+  ) => void;
+
+  setAnalysisFields: (
+    fields: {
+      fieldId: string;
+      fieldLabel: string;
+      value: DynamicValue;
+      unit?: string;
+    }[]
   ) => void;
 
   updateRelatedSystem: (
@@ -543,6 +559,13 @@ setChiefComplaint: (
   complaintName: string
 ) => void;
 
+hydrateChiefComplaint: (data: {
+  complaintId: string;
+  complaintName: string;
+  durationValue?: number;
+  durationUnit?: ChiefComplaintDurationUnit;
+}) => void;
+
   resetVisit: () => void;
 }
 
@@ -564,57 +587,76 @@ export const useVisitStore =
       })),
 
     setChiefComplaint: (
-      complaintId,
-      complaintName
-    ) =>
-      set((state) => {
-        const currentComplaintId =
-          state.visit.history.chiefComplaint.complaintId;
+  complaintId,
+  complaintName
+) =>
+  set((state) => {
+    const currentComplaintId =
+      state.visit.history.chiefComplaint.complaintId;
 
-        const complaintChanged =
-          currentComplaintId !== complaintId;
+    const complaintChanged =
+      currentComplaintId !== complaintId;
 
-        return {
-          visit: {
-            ...state.visit,
+    return {
+      visit: {
+        ...state.visit,
 
-            history: {
-              ...state.visit.history,
+        history: {
+          ...state.visit.history,
 
-              chiefComplaint: {
-                ...state.visit.history.chiefComplaint,
-                complaintId,
-                complaintName,
+          chiefComplaint: {
+            ...state.visit.history.chiefComplaint,
+            complaintId,
+            complaintName,
 
-                /*
-                * New chief complaint =
-                * completely new analysis context.
-                */
-                ...(complaintChanged && {
-                  durationValue: undefined,
-                  durationUnit: undefined,
-                }),
-              },
+            /*
+             * New chief complaint =
+             * completely new analysis context.
+             */
+            ...(complaintChanged && {
+              durationValue: undefined,
+              durationUnit: undefined,
+            }),
+          },
 
-              hpi: {
-                ...state.visit.history.hpi,
+          hpi: {
+            ...state.visit.history.hpi,
 
-                analysis: {
-                  ...state.visit.history.hpi.analysis,
+            analysis: {
+              ...state.visit.history.hpi.analysis,
 
-                  /*
-                  * NEVER carry analysis fields
-                  * from the previous complaint.
-                  */
-                  ...(complaintChanged && {
-                    fields: [],
-                  }),
-                },
-              },
+              /*
+               * NEVER carry analysis fields
+               * from the previous complaint.
+               */
+              ...(complaintChanged && {
+                fields: [],
+              }),
             },
           },
-        };
-      }),
+        },
+      },
+    };
+  }),
+
+hydrateChiefComplaint: (data) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        chiefComplaint: {
+          ...state.visit.history.chiefComplaint,
+          complaintId: data.complaintId,
+          complaintName: data.complaintName,
+          durationValue:
+            data.durationValue,
+          durationUnit:
+            data.durationUnit,
+        },
+      },
+    },
+  })),
 
     updateAnalysisField: (
       fieldId,
@@ -670,6 +712,23 @@ export const useVisitStore =
           },
         };
       }),
+
+    setAnalysisFields: (fields) =>
+  set((state) => ({
+    visit: {
+      ...state.visit,
+      history: {
+        ...state.visit.history,
+        hpi: {
+          ...state.visit.history.hpi,
+          analysis: {
+            ...state.visit.history.hpi.analysis,
+            fields,
+          },
+        },
+      },
+    },
+  })),
 
     setRelatedSystems: (systems) =>
       set((state) => ({
