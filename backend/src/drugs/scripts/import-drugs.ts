@@ -1,23 +1,39 @@
 import { PrismaClient } from '@prisma/client';
 import { parse } from 'csv-parse/sync';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 const prisma = new PrismaClient();
 
-const CSV_URL =
-  'https://raw.githubusercontent.com/karem505/egyptian-drug-database/main/data/egyptian-drugs.csv';
+const CSV_PATH = resolve(
+  process.cwd(),
+  'src',
+  'data',
+  'egyptian-drugs.csv',
+);
 
-type GitHubDrugRow = {
-  commercial_name_en?: string;
+const EXPECTED_HEADERS = [
+  'commercial_name_en',
+  'commercial_name_ar',
+  'scientific_name',
+  'manufacturer',
+  'drug_class',
+  'route',
+  'price_egp',
+] as const;
+
+type DrugCsvRow = {
+  commercial_name_en: string;
   commercial_name_ar?: string;
   scientific_name?: string;
   manufacturer?: string;
   drug_class?: string;
   route?: string;
-  price_egp?: string;
+  price_egp?: string | number;
 };
 
 function cleanString(
-  value?: string,
+  value: unknown,
 ): string | null {
   if (
     value === undefined ||
@@ -26,12 +42,19 @@ function cleanString(
     return null;
   }
 
-  const cleaned = value.trim();
+  const cleaned = String(value).trim();
+
+  if (!cleaned) {
+    return null;
+  }
+
+  const upper = cleaned.toUpperCase();
 
   if (
-    !cleaned ||
-    cleaned.toUpperCase() === 'N/A' ||
-    cleaned.toUpperCase() === 'NULL'
+    upper === 'N/A' ||
+    upper === 'NULL' ||
+    upper === 'N.A.' ||
+    upper === 'NA'
   ) {
     return null;
   }
@@ -40,70 +63,191 @@ function cleanString(
 }
 
 function parsePrice(
-  value?: string,
+  value: unknown,
 ): number | null {
-  const cleaned =
-    cleanString(value);
+  const cleaned = cleanString(value);
 
   if (!cleaned) {
     return null;
   }
 
-  const normalized =
-    cleaned.replace(
-      /[^0-9.]/g,
-      '',
-    );
+  const normalized = cleaned.replace(
+    /,/g,
+    '',
+  );
 
-  if (!normalized) {
+  const price = Number(normalized);
+
+  if (!Number.isFinite(price)) {
     return null;
   }
 
-  const price =
-    Number(normalized);
+  return price;
+}
 
-  return Number.isFinite(price)
-    ? price
-    : null;
+function validateHeaders(
+  records: Record<string, unknown>[],
+) {
+  if (records.length === 0) {
+    throw new Error(
+      'CSV file is empty.',
+    );
+  }
+
+  const headers = Object.keys(
+    records[0],
+  );
+
+  const missingHeaders =
+    EXPECTED_HEADERS.filter(
+      (header) =>
+        !headers.includes(header),
+    );
+
+  if (missingHeaders.length > 0) {
+    throw new Error(
+      `CSV is missing required headers: ${missingHeaders.join(', ')}`,
+    );
+  }
 }
 
 async function main() {
   console.log(
-    'Downloading drug database from GitHub...',
+    '========================================',
   );
-
-  const response =
-    await fetch(CSV_URL);
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to download CSV: ${response.status} ${response.statusText}`,
-    );
-  }
-
-  const csv =
-    await response.text();
+  console.log(
+    'Cliniqara Drug Database Import',
+  );
+  console.log(
+    '========================================',
+  );
 
   console.log(
-    `Downloaded ${csv.length.toLocaleString()} characters.`,
+    `CSV: ${CSV_PATH}`,
   );
 
-  const rows =
+  // ---------------------------------------------------------
+  // Read CSV
+  // ---------------------------------------------------------
+
+  const csv = await readFile(
+    CSV_PATH,
+    'utf8',
+  );
+
+  const records =
     parse(csv, {
       columns: true,
       skip_empty_lines: true,
       bom: true,
-      relax_column_count: true,
       trim: true,
-    }) as GitHubDrugRow[];
+      relax_column_count: false,
+    }) as Record<
+      string,
+      unknown
+    >[];
+
+  validateHeaders(records);
 
   console.log(
-    `Parsed ${rows.length.toLocaleString()} rows.`,
+    `CSV rows: ${records.length.toLocaleString()}`,
   );
+
+  // ---------------------------------------------------------
+  // Normalize and deduplicate
+  // ---------------------------------------------------------
+
+  const uniqueRows =
+    new Map<
+      string,
+      DrugCsvRow
+    >();
+
+  let skipped = 0;
+  let duplicateRows = 0;
+
+  for (const rawRow of records) {
+    const commercialNameEn =
+      cleanString(
+        rawRow.commercial_name_en,
+      );
+
+    if (!commercialNameEn) {
+      skipped++;
+      continue;
+    }
+
+    if (
+      uniqueRows.has(
+        commercialNameEn,
+      )
+    ) {
+      duplicateRows++;
+      continue;
+    }
+
+    uniqueRows.set(
+      commercialNameEn,
+      {
+        commercial_name_en:
+          commercialNameEn,
+
+        commercial_name_ar:
+          cleanString(
+            rawRow.commercial_name_ar,
+          ) ?? undefined,
+
+        scientific_name:
+          cleanString(
+            rawRow.scientific_name,
+          ) ?? undefined,
+
+        manufacturer:
+          cleanString(
+            rawRow.manufacturer,
+          ) ?? undefined,
+
+        drug_class:
+          cleanString(
+            rawRow.drug_class,
+          ) ?? undefined,
+
+        route:
+          cleanString(
+            rawRow.route,
+          ) ?? undefined,
+
+        price_egp:
+          rawRow.price_egp as
+            | string
+            | number
+            | undefined,
+      },
+    );
+  }
+
+  console.log(
+    `Unique products: ${uniqueRows.size.toLocaleString()}`,
+  );
+
+  console.log(
+    `Duplicate CSV rows: ${duplicateRows.toLocaleString()}`,
+  );
+
+  console.log(
+    `Skipped rows: ${skipped.toLocaleString()}`,
+  );
+
+  // ---------------------------------------------------------
+  // Import
+  // ---------------------------------------------------------
 
   let inserted = 0;
   let updated = 0;
-  let skipped = 0;
+
+  const rows = Array.from(
+    uniqueRows.values(),
+  );
 
   for (
     let index = 0;
@@ -112,19 +256,20 @@ async function main() {
   ) {
     const row = rows[index];
 
-    const commercialNameEn =
-      cleanString(
-        row.commercial_name_en,
-      );
-
-    if (!commercialNameEn) {
-      skipped++;
-
-      continue;
-    }
+    const existing =
+      await prisma.drug.findUnique({
+        where: {
+          commercialNameEn:
+            row.commercial_name_en,
+        },
+        select: {
+          id: true,
+        },
+      });
 
     const data = {
-      commercialNameEn,
+      commercialNameEn:
+        row.commercial_name_en,
 
       commercialNameAr:
         cleanString(
@@ -160,20 +305,10 @@ async function main() {
         'github-egyptian-drug-database',
 
       sourceRowKey:
-        commercialNameEn,
+        row.commercial_name_en,
 
       isActive: true,
     };
-
-    const existing =
-      await prisma.drug.findUnique({
-        where: {
-          commercialNameEn,
-        },
-        select: {
-          id: true,
-        },
-      });
 
     if (existing) {
       await prisma.drug.update({
@@ -193,46 +328,56 @@ async function main() {
     }
 
     if (
-      (index + 1) % 500 === 0
+      (index + 1) % 500 === 0 ||
+      index === rows.length - 1
     ) {
       console.log(
         `Processed ${(
           index + 1
-        ).toLocaleString()} / ${rows.length.toLocaleString()}`,
+        ).toLocaleString()} / ${rows.length.toLocaleString()} | ` +
+          `Inserted: ${inserted.toLocaleString()} | ` +
+          `Updated: ${updated.toLocaleString()}`,
       );
     }
   }
 
   console.log('');
   console.log(
-    '================================',
+    '========================================',
   );
   console.log(
-    'Drug import completed',
+    'Import completed successfully',
   );
   console.log(
-    '================================',
+    '========================================',
   );
   console.log(
-    `Total rows : ${rows.length}`,
+    `CSV rows       : ${records.length.toLocaleString()}`,
   );
   console.log(
-    `Inserted   : ${inserted}`,
+    `Unique products: ${uniqueRows.size.toLocaleString()}`,
   );
   console.log(
-    `Updated    : ${updated}`,
+    `Inserted       : ${inserted.toLocaleString()}`,
   );
   console.log(
-    `Skipped    : ${skipped}`,
+    `Updated        : ${updated.toLocaleString()}`,
+  );
+  console.log(
+    `Duplicates     : ${duplicateRows.toLocaleString()}`,
+  );
+  console.log(
+    `Skipped        : ${skipped.toLocaleString()}`,
   );
 }
 
 main()
   .catch((error) => {
+    console.error('');
     console.error(
       'Drug import failed:',
-      error,
     );
+    console.error(error);
 
     process.exitCode = 1;
   })

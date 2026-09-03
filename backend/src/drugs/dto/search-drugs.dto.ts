@@ -5,7 +5,9 @@ import {
   IsString,
   Max,
   Min,
-} from 'class-validator';
+} from "class-validator";
+
+import { Type } from "class-transformer";
 
 export class SearchDrugsDto {
   @IsString()
@@ -13,11 +15,13 @@ export class SearchDrugsDto {
   q!: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   page?: number = 1;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   @Max(100)

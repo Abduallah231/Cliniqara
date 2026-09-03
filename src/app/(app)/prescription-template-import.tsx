@@ -332,6 +332,8 @@ export default function PrescriptionTemplateImportScreen() {
     const importedMedications =
       selectedTemplate.medications.map(
         (medication) => ({
+          drugId:
+            medication.drugId ?? "",
           medication:
             medication.medication,
           instructions:

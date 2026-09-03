@@ -99,6 +99,7 @@ export type PrescriptionDurationUnit =
   | "YEARS";
 
 export interface PrescriptionMedication {
+  drugId: string;
   medication: string;
   instructions: string;
   durationValue: string;

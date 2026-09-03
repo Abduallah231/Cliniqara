@@ -1,10 +1,3 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
 import AppTextField from "@/components/common/AppTextField";
 import {
   COLORS,
@@ -13,6 +6,18 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+} from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+  searchDrugs,
+  type Drug,
+} from "@/services/drugApi";
 
 export type PrescriptionDurationUnit =
   | "DAYS"
@@ -21,6 +26,7 @@ export type PrescriptionDurationUnit =
   | "YEARS";
 
 export type PrescriptionFormMedication = {
+  drugId: string;
   medication: string;
   instructions: string;
   durationValue: string;
@@ -96,6 +102,131 @@ export default function PrescriptionForm({
   onUpdateNotes,
   onUpdateFollowUp,
 }: PrescriptionFormProps) {
+
+  const [drugSearch, setDrugSearch] = useState<
+    Record<number, string>
+  >({});
+
+  const [drugResults, setDrugResults] = useState<
+    Record<number, Drug[]>
+  >({});
+
+  const [searchingDrug, setSearchingDrug] = useState<
+    Record<number, boolean>
+  >({});
+
+  const [activeDrugSearch, setActiveDrugSearch] =
+    useState<number | null>(null);
+
+  const searchTimers = useRef<
+    Record<number, ReturnType<typeof setTimeout>>
+  >({});
+
+  const handleDrugSearch = (
+    index: number,
+    text: string,
+  ) => {
+    setDrugSearch((current) => ({
+      ...current,
+      [index]: text,
+    }));
+
+    setActiveDrugSearch(index);
+
+    if (
+      searchTimers.current[index]
+    ) {
+      clearTimeout(
+        searchTimers.current[index],
+      );
+    }
+
+    if (text.trim().length < 2) {
+      setDrugResults((current) => ({
+        ...current,
+        [index]: [],
+      }));
+
+      setSearchingDrug((current) => ({
+        ...current,
+        [index]: false,
+      }));
+
+      return;
+    }
+
+    setSearchingDrug((current) => ({
+      ...current,
+      [index]: true,
+    }));
+
+    searchTimers.current[index] =
+      setTimeout(async () => {
+        try {
+          const response =
+            await searchDrugs(
+              text.trim(),
+              1,
+              20,
+            );
+
+          setDrugResults(
+            (current) => ({
+              ...current,
+              [index]:
+                response.data,
+            }),
+          );
+        } catch (error) {
+          console.error(
+            "DRUG SEARCH FAILED:",
+            error,
+          );
+
+          setDrugResults(
+            (current) => ({
+              ...current,
+              [index]: [],
+            }),
+          );
+        } finally {
+          setSearchingDrug(
+            (current) => ({
+              ...current,
+              [index]: false,
+            }),
+          );
+        }
+      }, 350);
+  };
+
+  const handleDrugSelect = (
+    index: number,
+    drug: Drug,
+  ) => {
+    onUpdateMedication(
+      index,
+      {
+        drugId: drug.id,
+        medication:
+          drug.commercialNameEn,
+      },
+    );
+
+    setDrugSearch((current) => ({
+      ...current,
+      [index]:
+        drug.commercialNameEn,
+    }));
+
+    setDrugResults((current) => ({
+      ...current,
+      [index]: [],
+    }));
+
+    setActiveDrugSearch(null);
+  };
+
   return (
     <View style={styles.container}>
       {/* ==================================================
@@ -160,24 +291,146 @@ export default function PrescriptionForm({
 
             {/* Medication */}
 
-            <AppTextField
-              label="Medication"
-              placeholder="Paracetamol 500mg tab"
-              value={
-                medication.medication
-              }
-              onChangeText={(
-                text
-              ) =>
-                onUpdateMedication(
-                  index,
-                  {
-                    medication:
-                      text,
-                  }
-                )
-              }
-            />
+            <View style={styles.drugSearchContainer}>
+              <AppTextField
+                label="Medication"
+                placeholder="Search medication..."
+                value={
+                  drugSearch[index] ??
+                  medication.medication
+                }
+                onChangeText={(text) =>
+                  handleDrugSearch(
+                    index,
+                    text,
+                  )
+                }
+                onFocus={() => {
+                  setActiveDrugSearch(index);
+                }}
+              />
+
+              {activeDrugSearch === index &&
+                (
+                  searchingDrug[index] ||
+                  (drugResults[index]?.length ?? 0) > 0
+                ) && (
+                  <View
+                    style={
+                      styles.searchDropdown
+                    }
+                  >
+                    {searchingDrug[index] ? (
+                      <View
+                        style={
+                          styles.searchState
+                        }
+                      >
+                        <Text
+                          style={
+                            styles.searchStateText
+                          }
+                        >
+                          Searching...
+                        </Text>
+                      </View>
+                    ) : drugResults[index]?.length ? (
+                      drugResults[index].map(
+                        (drug) => (
+                          <Pressable
+                            key={drug.id}
+                            style={
+                              styles.searchResult
+                            }
+                            onPress={() =>
+                              handleDrugSelect(
+                                index,
+                                drug,
+                              )
+                            }
+                          >
+                            <View
+                              style={
+                                styles.resultIcon
+                              }
+                            >
+                              <Ionicons
+                                name="medical-outline"
+                                size={18}
+                                color={
+                                  COLORS.primary
+                                }
+                              />
+                            </View>
+
+                            <View
+                              style={
+                                styles.resultContent
+                              }
+                            >
+                              <Text
+                                style={
+                                  styles.resultName
+                                }
+                              >
+                                {
+                                  drug.commercialNameEn
+                                }
+                              </Text>
+
+                              {drug.scientificName && (
+                                <Text
+                                  style={
+                                    styles.resultSecondary
+                                  }
+                                >
+                                  {
+                                    drug.scientificName
+                                  }
+                                </Text>
+                              )}
+
+                              {drug.manufacturer && (
+                                <Text
+                                  style={
+                                    styles.resultSecondary
+                                  }
+                                >
+                                  {
+                                    drug.manufacturer
+                                  }
+                                </Text>
+                              )}
+                            </View>
+
+                            <Ionicons
+                              name="chevron-forward"
+                              size={18}
+                              color={
+                                COLORS.secondaryText
+                              }
+                            />
+                          </Pressable>
+                        ),
+                      )
+                    ) : (
+                      <View
+                        style={
+                          styles.searchState
+                        }
+                      >
+                        <Text
+                          style={
+                            styles.searchStateText
+                          }
+                        >
+                          No matching drug found.
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+            </View>
 
             {/* Instructions */}
 
@@ -563,5 +816,75 @@ const styles = StyleSheet.create({
   selectedDurationChipText: {
     color:
       COLORS.white,
+  },
+
+  drugSearchContainer: {
+    position: "relative",
+    zIndex: 20,
+  },
+
+  searchDropdown: {
+    marginTop: SPACING.xs,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    backgroundColor: COLORS.background,
+    overflow: "hidden",
+    elevation: 5,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    zIndex: 100,
+  },
+
+  searchResult: {
+    minHeight: 64,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+
+  resultIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.background,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: SPACING.sm,
+  },
+
+  resultContent: {
+    flex: 1,
+  },
+
+  resultName: {
+    fontSize: TYPOGRAPHY.body,
+    fontWeight: "600",
+    color: COLORS.text,
+  },
+
+  resultSecondary: {
+    marginTop: 2,
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.secondaryText,
+  },
+
+  searchState: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+  },
+
+  searchStateText: {
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.secondaryText,
   },
 });

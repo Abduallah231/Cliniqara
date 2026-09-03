@@ -13,6 +13,7 @@ export type PrescriptionTemplateDurationUnit =
 
 export type PrescriptionTemplateMedication = {
   id: string;
+  drugId: string | null;
   medication: string;
   instructions: string;
   durationValue: number | null;
@@ -52,7 +53,7 @@ export type PrescriptionTemplate = {
 };
 
 export type CreatePrescriptionTemplateMedicationInput = {
-  medication: string;
+  drugId: string;
   instructions: string;
   durationValue?: number | null;
   durationUnit?:

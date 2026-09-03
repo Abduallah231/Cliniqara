@@ -23,6 +23,7 @@ type Props = {
   label?: string;
   value?: string;
   onChangeText?: (text: string) => void;
+  onFocus?: () => void;
   placeholder?: string;
   required?: boolean;
   error?: string;
@@ -72,6 +73,7 @@ export default function AppTextField({
   label = "",
   value = "",
   onChangeText = () => {},
+  onFocus,
   placeholder,
 
   showLabel = true,
@@ -139,6 +141,7 @@ export default function AppTextField({
           onChangeText={(text) =>
             onChangeText(convertArabicNumbers(text))
           }
+          onFocus={onFocus}
           placeholder={placeholder}
           placeholderTextColor={COLORS.placeholder}
           editable={!disabled && editable}

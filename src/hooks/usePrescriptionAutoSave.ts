@@ -23,6 +23,7 @@ function mapMedicationFromBackend(
   medication: PrescriptionResponse["medications"][number],
 ): PrescriptionMedication {
   return {
+    drugId: medication.drugId ?? "",
     medication: medication.medication,
     instructions: medication.instructions ?? "",
     durationValue:
@@ -84,7 +85,7 @@ function mapMedicationToBackend(
   index: number,
 ): PrescriptionMedicationInput {
   return {
-    medication: medication.medication,
+    drugId: medication.drugId,
     instructions:
       medication.instructions.trim() || null,
     durationValue: mapDurationValueToBackend(

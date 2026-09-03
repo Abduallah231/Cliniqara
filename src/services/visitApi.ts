@@ -1007,41 +1007,32 @@ export type PrescriptionDurationUnit =
   | "YEARS";
 
 export type PrescriptionMedicationInput = {
-  medication: string;
-
+  drugId: string;
   instructions?: string | null;
-
-  /**
-   * UI uses string.
-   * Backend uses Int?.
-   */
   durationValue?: string | number | null;
-
-  durationUnit?:
-    | PrescriptionDurationUnit
-    | null;
-
+  durationUnit?: PrescriptionDurationUnit | null;
   sortOrder?: number;
 };
 
 export type SavePrescriptionInput = {
   medications: PrescriptionMedicationInput[];
-
   advice?: string | null;
-
   notes?: string | null;
-
   followUp?: string | null;
 };
 
 export type PrescriptionMedicationResponse = {
   id: string;
   prescriptionId: string;
+
+  drugId: string | null;
   medication: string;
+
   instructions: string | null;
   durationValue: number | null;
   durationUnit: string | null;
   sortOrder: number | null;
+
   createdAt?: string;
   updatedAt?: string;
 };
@@ -1049,10 +1040,13 @@ export type PrescriptionMedicationResponse = {
 export type PrescriptionResponse = {
   id: string;
   visitId: string;
+
   advice: string | null;
   notes: string | null;
   followUp: string | null;
+
   medications: PrescriptionMedicationResponse[];
+
   createdAt?: string;
   updatedAt?: string;
 };
@@ -1105,8 +1099,7 @@ function mapPrescriptionToBackend(
     medications:
       dto.medications.map(
         (medication, index) => ({
-          medication:
-            medication.medication,
+          drugId: medication.drugId,
 
           instructions:
             medication.instructions ??

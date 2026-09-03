@@ -18,7 +18,7 @@ import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import AppTopBar from "@/components/common/AppTopBar";
 import SectionHeader from "@/components/common/SectionHeader";
-
+import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import PrescriptionForm, {
   PrescriptionFormMedication,
 } from "@/components/visit/assessment/PrescriptionForm";
@@ -119,6 +119,7 @@ export default function NewTemplateScreen() {
       PrescriptionFormMedication[]
     >([
       {
+        drugId: "",
         medication: "",
         instructions: "",
         durationValue: "",
@@ -257,11 +258,12 @@ export default function NewTemplateScreen() {
           setMedications(
             template.medications.map(
               (item) => ({
+                drugId:
+                  item.drugId ?? "",
                 medication:
                   item.medication,
                 instructions:
-                  item.instructions ??
-                  "",
+                  item.instructions ?? "",
                 durationValue:
                   item.durationValue !==
                   null
@@ -318,6 +320,7 @@ export default function NewTemplateScreen() {
       (current) => [
         ...current,
         {
+          drugId: "",
           medication: "",
           instructions: "",
           durationValue: "",
@@ -386,8 +389,8 @@ export default function NewTemplateScreen() {
       const validMedications =
         medications.filter(
           (item) =>
-            item.medication.trim()
-              .length > 0,
+            item.drugId.trim().length > 0 &&
+            item.medication.trim().length > 0,
         );
 
       if (
@@ -445,8 +448,7 @@ export default function NewTemplateScreen() {
           medications:
             validMedications.map(
               (item, index) => ({
-                medication:
-                  item.medication.trim(),
+                drugId: item.drugId,
 
                 instructions:
                   item.instructions.trim(),
@@ -627,7 +629,7 @@ export default function NewTemplateScreen() {
         }
       />
 
-      <ScrollView
+      <AppKeyboardAwareScrollView
         showsVerticalScrollIndicator={
           false
         }
@@ -761,7 +763,7 @@ export default function NewTemplateScreen() {
             handleSaveTemplate
           }
         />
-      </ScrollView>
+      </AppKeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
@@ -771,6 +773,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor:
       COLORS.background,
+    paddingBottom: SPACING.xl,
   },
 
   content: {
