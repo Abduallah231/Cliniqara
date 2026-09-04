@@ -355,7 +355,7 @@ export default function PatientOverviewScreen() {
                 patient={currentPatient}
               />
             ) : (
-              <VisitsTab />
+              <VisitsTab patientId={patientId} />
             )}
           </View>
         </View>

@@ -79,6 +79,28 @@ export class VisitController {
     );
   }
 
+  @Get("patient/:patientId")
+  async getPatientVisits(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("patientId") patientId: string,
+  ) {
+    return this.visitService.getPatientVisits(
+      patientId,
+      user.id,
+    );
+  }
+
+  @Post("read-only-details")
+  async getReadOnlyVisitDetails(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: GetVisitDto,
+  ) {
+    return this.visitService.getReadOnlyVisitDetails(
+      dto,
+      user.id,
+    );
+  }
+
   @Get("today/count")
   async getTodayVisitCount(
     @CurrentUser() user: AuthenticatedUser,

@@ -758,6 +758,223 @@ export class VisitService {
     return visit;
   }
 
+  async getPatientVisits(
+    patientId: string,
+    currentUserId: string,
+  ) {
+    const clinicId =
+      await this.getActiveClinicId(
+        currentUserId,
+      );
+
+    const patient =
+      await this.prisma.patient.findFirst({
+        where: {
+          id: patientId,
+          clinicId,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    if (!patient) {
+      throw new NotFoundException(
+        'Patient not found.',
+      );
+    }
+
+    return this.prisma.visit.findMany({
+      where: {
+        patientId,
+        clinicId,
+      },
+      select: {
+        id: true,
+        visitCode: true,
+        patientId: true,
+        clinicId: true,
+        doctorId: true,
+        visitStatus: true,
+        createdAt: true,
+        startedAt: true,
+        completedAt: true,
+
+        doctor: {
+          select: {
+            id: true,
+            fullName: true,
+          },
+        },
+
+        chiefComplaint: {
+          select: {
+            chiefComplaint: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+
+        diagnosis: {
+          select: {
+            primaryDiagnosisCode: true,
+            primaryDiagnosisName: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async getReadOnlyVisitDetails(
+    dto: GetVisitDto,
+    currentUserId: string,
+  ) {
+    const visit =
+      await this.prisma.visit.findUnique({
+        where: {
+          id: dto.visitId,
+        },
+
+        select: {
+          id: true,
+          visitCode: true,
+          patientId: true,
+          clinicId: true,
+          createdById: true,
+          doctorId: true,
+          visitStatus: true,
+          visitDate: true,
+          startedAt: true,
+          completedAt: true,
+          cancelledAt: true,
+          cancellationReason: true,
+          notes: true,
+          createdAt: true,
+          updatedAt: true,
+
+          /*
+           * Return only fields that are safe and useful
+           * for the read-only visit page.
+           *
+           * Do NOT return the complete User/Patient/Clinic
+           * records here. In particular, User contains
+           * passwordHash and other account/security fields.
+           */
+          patient: {
+            select: {
+              id: true,
+              patientCode: true,
+              fullName: true,
+              identifierType: true,
+              identifierNumber: true,
+              documentType: true,
+              dateOfBirth: true,
+              estimatedAgeValue: true,
+              estimatedAgeUnit: true,
+              maritalStatus: true,
+              childrenCount: true,
+              governorate: true,
+              city: true,
+              district: true,
+              streetAddress: true,
+              gender: true,
+              phone: true,
+              occupation: true,
+            },
+          },
+
+          doctor: {
+            select: {
+              id: true,
+              userCode: true,
+              fullName: true,
+              accountType: true,
+              doctorLevel: true,
+              specialty: true,
+              professionalTitle: true,
+            },
+          },
+
+          clinic: {
+            select: {
+              id: true,
+              clinicCode: true,
+              name: true,
+              phone: true,
+              email: true,
+              address: true,
+              country: true,
+              city: true,
+            },
+          },
+
+          chiefComplaint: {
+            include: {
+              chiefComplaint: true,
+              analysis: true,
+            },
+          },
+
+          relatedSystems: true,
+          systematicReview: true,
+          menstrualHistory: true,
+          pediatricHistory: true,
+          vitalSigns: true,
+          generalInspection: true,
+          regionalExaminations: true,
+          systemExaminations: true,
+          diagnosis: true,
+          investigations: {
+            include: {
+              images: {
+                orderBy: {
+                  sortOrder: "asc",
+                },
+              },
+            },
+            orderBy: {
+              requestedAt: "asc",
+            },
+          },
+          procedures: true,
+          referrals: true,
+
+          prescription: {
+            include: {
+              medications: {
+                orderBy: {
+                  sortOrder: "asc",
+                },
+                include: {
+                  drug: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+    if (!visit) {
+      throw new NotFoundException(
+        "Visit not found.",
+      );
+    }
+
+    await this.getVisitMembership(
+      currentUserId,
+      visit.clinicId,
+    );
+
+    return visit;
+  }
+
   async getTodayVisitCount(
     clinicId: string,
     currentUserId: string,

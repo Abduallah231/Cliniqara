@@ -4,6 +4,7 @@ import type {
   CompleteVisitInput,
   WaitingVisit,
   Visit,
+  PatientVisitSummary,
 } from "@/types/visit";
 
 import { api } from "./api";
@@ -68,6 +69,18 @@ export async function getOpenPatientVisit(
   return data;
 }
 
+export async function getPatientVisits(
+  patientId: string,
+): Promise<PatientVisitSummary[]> {
+  const { data } = await api.get(
+    `/visits/patient/${patientId}`,
+  );
+
+  return Array.isArray(data)
+    ? (data as PatientVisitSummary[])
+    : [];
+}
+
 export async function getTodayVisitCount(
   clinicId: string,
 ): Promise<number> {
@@ -124,6 +137,45 @@ export async function changeDoctor(
   const { data } = await api.post(
     "/visits/change-doctor",
     dto,
+  );
+
+  return data;
+}
+
+export type ReadOnlyVisitDetails = Visit & {
+  patient?: {
+    id: string;
+    fullName?: string | null;
+    patientCode?: string | null;
+  } | null;
+  doctor?: {
+    id: string;
+    fullName?: string | null;
+  } | null;
+  clinic?: {
+    id: string;
+    name?: string | null;
+  } | null;
+  chiefComplaint?: {
+    chiefComplaint?: {
+      id: string;
+      name?: string | null;
+    } | null;
+  } | null;
+  diagnosis?: {
+    primaryDiagnosisCode?: string | null;
+    primaryDiagnosisName?: string | null;
+  } | null;
+};
+
+export async function getReadOnlyVisitDetails(
+  visitId: string,
+): Promise<ReadOnlyVisitDetails> {
+  const { data } = await api.post(
+    "/visits/read-only-details",
+    {
+      visitId,
+    },
   );
 
   return data;

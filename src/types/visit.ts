@@ -29,6 +29,36 @@ export interface Visit {
   updatedAt: string;
 }
 
+
+export interface PatientVisitSummary {
+  id: string;
+  visitCode: string;
+  patientId: string;
+  clinicId: string;
+  doctorId: string;
+  visitStatus: VisitStatus;
+  createdAt: string;
+  startedAt?: string | null;
+  completedAt?: string | null;
+
+  doctor: {
+    id: string;
+    fullName: string;
+  };
+
+  chiefComplaint: {
+    chiefComplaint: {
+      id: string;
+      name: string;
+    } | null;
+  } | null;
+
+  diagnosis: {
+    primaryDiagnosisCode: string | null;
+    primaryDiagnosisName: string | null;
+  } | null;
+}
+
 export interface CreateWaitingVisitInput {
   patientId: string;
   clinicId: string;
