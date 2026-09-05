@@ -4,35 +4,32 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+
+import { useState } from "react";
+
 import DateTimePicker from "@react-native-community/datetimepicker";
 import type { ComponentProps } from "react";
+
 import { MaterialIcons } from "@expo/vector-icons";
+
 import { useVisitStore } from "@/store/visitStore";
+
 import AppButton from "@/components/common/AppButton";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
+
 import {
   COLORS,
   SPACING,
   TYPOGRAPHY,
 } from "@/theme";
+
 import chronicDiseases from "@/data/chronicDiseases";
-import {
-  getPastHistory,
-  savePastHistory,
-  type SavePastHistoryInput,
-} from "@/services/visitApi";
-import usePastHistoryAutoSave, {
-  mapPastHistoryFromBackend,
-} from "@/hooks/usePastHistoryAutoSave";
+
+import usePastHistoryAutoSave from "@/hooks/usePastHistoryAutoSave";
+
 import type {
   Hospitalization,
   Operation,
@@ -65,31 +62,42 @@ type DatePickerTarget =
    Helpers
 ====================================================== */
 
-const formatDate = (date: Date): string => {
-  const year = date.getFullYear();
+const formatDate = (
+  date: Date,
+): string => {
+  const year =
+    date.getFullYear();
+
   const month = String(
-    date.getMonth() + 1
+    date.getMonth() + 1,
   ).padStart(2, "0");
+
   const day = String(
-    date.getDate()
+    date.getDate(),
   ).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 };
 
 const parseDate = (
-  value: string
+  value: string,
 ): Date => {
   if (!value) {
     return new Date();
   }
 
-  const parts = value.split("-");
+  const parts =
+    value.split("-");
 
   if (parts.length === 3) {
-    const year = Number(parts[0]);
-    const month = Number(parts[1]);
-    const day = Number(parts[2]);
+    const year =
+      Number(parts[0]);
+
+    const month =
+      Number(parts[1]);
+
+    const day =
+      Number(parts[2]);
 
     if (
       !Number.isNaN(year) &&
@@ -99,15 +107,16 @@ const parseDate = (
       return new Date(
         year,
         month - 1,
-        day
+        day,
       );
     }
   }
 
-  const parsed = new Date(value);
+  const parsed =
+    new Date(value);
 
   return Number.isNaN(
-    parsed.getTime()
+    parsed.getTime(),
   )
     ? new Date()
     : parsed;
@@ -129,8 +138,16 @@ function DateField({
   disabled = false,
 }: DateFieldProps) {
   return (
-    <View style={styles.dateFieldContainer}>
-      <Text style={styles.dateLabel}>
+    <View
+      style={
+        styles.dateFieldContainer
+      }
+    >
+      <Text
+        style={
+          styles.dateLabel
+        }
+      >
         Date
       </Text>
 
@@ -152,21 +169,31 @@ function DateField({
 ====================================================== */
 
 export default function PastHistory() {
+  /* ====================================================
+     Store
+  ==================================================== */
+
   const {
     visit,
+
     updatePastHistoryField,
+
     addHospitalization,
     updateHospitalization,
     removeHospitalization,
+
     addOperation,
     updateOperation,
     removeOperation,
+
     addBloodTransfusion,
     updateBloodTransfusion,
     removeBloodTransfusion,
+
     addMajorTrauma,
     updateMajorTrauma,
     removeMajorTrauma,
+
     addICUAdmission,
     updateICUAdmission,
     removeICUAdmission,
@@ -179,115 +206,59 @@ export default function PastHistory() {
     visit.patient?.id;
 
   /* ====================================================
-     Hydration
+     Persistence
+     
+     Hook owns:
+     - Hydration
+     - Chronic autosave
+     - Manual save
+     - Save status
   ==================================================== */
 
-  const [
+  const {
     isHydrating,
-    setIsHydrating,
-  ] = useState(true);
 
-  const loadedPatientId =
-    useRef<string | null>(null);
+    isSaving,
+
+    isAutoSaving,
+
+    autoSavingSection,
+
+    saveError,
+
+    saveNow,
+  } =
+    usePastHistoryAutoSave({
+      patientId,
+    });
 
   /* ====================================================
      Chronic Diseases
   ==================================================== */
 
   const getValue = (
-    fieldId: string
+    fieldId: string,
   ) =>
-    visit.history.pastHistory.fields.find(
+    pastHistory.fields.find(
       (field) =>
-        field.fieldId === fieldId
+        field.fieldId ===
+        fieldId,
     )?.value ?? null;
 
   const selectedDiseases =
     (getValue(
-      "chronicDiseases"
+      "chronicDiseases",
     ) as string[]) ?? [];
-
-  const buildChronicDiseaseItems =
-    useCallback(
-      (
-        diseaseCodes: string[],
-      ): SavePastHistoryInput["chronicDiseases"] => {
-        return diseaseCodes.map(
-          (code) => {
-            const disease =
-              chronicDiseases.find(
-                (item) =>
-                  item.code === code,
-              );
-
-            return {
-              diseaseCode: code,
-              diseaseName:
-                disease?.name ?? code,
-              notes: null,
-            };
-          },
-        );
-      },
-      [],
-    );
-
-  const {
-    isAutoSaving,
-    autoSavingSection,
-    markSectionSaved,
-  } =
-    usePastHistoryAutoSave({
-      patientId,
-      fields:
-        pastHistory.fields,
-      chronicDiseases:
-        buildChronicDiseaseItems(
-          selectedDiseases,
-        ),
-      hospitalizations:
-        pastHistory.hospitalizations,
-      operations:
-        pastHistory.operations,
-      bloodTransfusions:
-        pastHistory.bloodTransfusions,
-      majorTraumas:
-        pastHistory.majorTraumas,
-      icuAdmissions:
-        pastHistory.icuAdmissions,
-      isHydrating,
-    });
-    
-    
-  /*
-   * We explicitly track whether the user changed
-   * Chronic Diseases.
-   *
-   * This prevents the initial hydration from triggering
-   * an unwanted save.
-   */
-
-  const [
-    chronicDiseasesDirty,
-    setChronicDiseasesDirty,
-  ] = useState(false);
-
-  const chronicSaveVersion =
-    useRef(0);
-
-  const chronicSavingRef =
-    useRef(false);
-
-  const [
-    chronicSaving,
-    setChronicSaving,
-  ] = useState(false);
 
   const toggleMultiSelect = (
     fieldId: string,
     fieldLabel: string,
-    value: string
+    value: string,
   ) => {
+    if (isHydrating) {
+      return;
+    }
+
     const current =
       (getValue(fieldId) as string[]) ??
       [];
@@ -296,302 +267,25 @@ export default function PastHistory() {
       current.includes(value)
         ? current.filter(
             (item) =>
-              item !== value
+              item !== value,
           )
         : [
             ...current,
             value,
           ];
 
+    /*
+     * No API call here.
+     *
+     * Hook detects this change and automatically
+     * saves Chronic Diseases after 500ms.
+     */
     updatePastHistoryField(
       fieldId,
       fieldLabel,
-      updated
-    );
-
-    /*
-     * Mark the field as user-modified.
-     *
-     * Auto-save will be triggered by the effect below.
-     */
-
-    chronicSaveVersion.current += 1;
-
-    setChronicDiseasesDirty(
-      true
+      updated,
     );
   };
-
-  const buildChronicDiseases =
-    useCallback(
-      (
-        diseaseCodes: string[]
-      ): SavePastHistoryInput["chronicDiseases"] => {
-        return diseaseCodes.map(
-          (code) => {
-            const disease =
-              chronicDiseases.find(
-                (item) =>
-                  item.code === code
-              );
-
-            return {
-              diseaseCode: code,
-              diseaseName:
-                disease?.name ??
-                code,
-              notes: null,
-            };
-          }
-        );
-      },
-      []
-    );
-
-  /* ====================================================
-     Persistence Helper
-  ==================================================== */
-
-  const saveSnapshot = useCallback(
-    async ({
-      chronicDiseaseCodes,
-      hospitalizations,
-      operations,
-      bloodTransfusions,
-      majorTraumas,
-      icuAdmissions,
-    }: {
-      chronicDiseaseCodes?: string[];
-      hospitalizations?: Hospitalization[];
-      operations?: Operation[];
-      bloodTransfusions?: BloodTransfusion[];
-      majorTraumas?: MajorTrauma[];
-      icuAdmissions?: ICUAdmission[];
-    }) => {
-      if (!patientId) {
-        return false;
-      }
-
-      const payload: SavePastHistoryInput = {
-        chronicDiseases:
-          buildChronicDiseases(
-            chronicDiseaseCodes ??
-              selectedDiseases
-          ),
-
-        hospitalizations:
-          (
-            hospitalizations ??
-            pastHistory.hospitalizations
-          )
-            .map((item) => ({
-              reason:
-                item.reason.trim(),
-              date:
-                item.date.trim() ||
-                null,
-              duration:
-                item.duration.trim() ||
-                null,
-            }))
-            .filter(
-              (item) =>
-                item.reason
-            ),
-
-        operations:
-          (
-            operations ??
-            pastHistory.operations
-          )
-            .map((item) => ({
-              operationName:
-                item.name.trim(),
-              date:
-                item.date.trim() ||
-                null,
-              indication:
-                item.indication.trim() ||
-                null,
-            }))
-            .filter(
-              (item) =>
-                item.operationName
-            ),
-
-        bloodTransfusions:
-          (
-            bloodTransfusions ??
-            pastHistory.bloodTransfusions
-          ).map((item) => ({
-            reason:
-              item.reason.trim() ||
-              null,
-            date:
-              item.date.trim() ||
-              null,
-            reaction:
-              item.reaction.trim() ||
-              null,
-          })),
-
-        majorTraumas:
-          (
-            majorTraumas ??
-            pastHistory.majorTraumas
-          )
-            .map((item) => ({
-              traumaType:
-                item.type.trim(),
-              date:
-                item.date.trim() ||
-                null,
-              complications:
-                item.complications.trim() ||
-                null,
-            }))
-            .filter(
-              (item) =>
-                item.traumaType
-            ),
-
-        icuAdmissions:
-          (
-            icuAdmissions ??
-            pastHistory.icuAdmissions
-          )
-            .map((item) => ({
-              reason:
-                item.reason.trim(),
-              date:
-                item.date.trim() ||
-                null,
-              duration:
-                item.duration.trim() ||
-                null,
-              ventilatorSupport:
-                item.ventilatorSupport ??
-                false,
-            }))
-            .filter(
-              (item) =>
-                item.reason
-            ),
-      };
-
-      try {
-        await savePastHistory(
-          patientId,
-          payload
-        );
-
-        return true;
-      } catch (error: any) {
-        console.error(
-          "PAST HISTORY SAVE FAILED:",
-          error?.response?.data ??
-            error
-        );
-
-        return false;
-      }
-    },
-    [
-      patientId,
-      buildChronicDiseases,
-      selectedDiseases,
-      pastHistory.hospitalizations,
-      pastHistory.operations,
-      pastHistory.bloodTransfusions,
-      pastHistory.majorTraumas,
-      pastHistory.icuAdmissions,
-    ]
-  );
-
-  /* ====================================================
-     Chronic Diseases Auto Save
-  ==================================================== */
-
-  useEffect(() => {
-    if (
-      !patientId ||
-      isHydrating ||
-      !chronicDiseasesDirty
-    ) {
-      return;
-    }
-
-    const version =
-      chronicSaveVersion.current;
-
-    const timer =
-      setTimeout(async () => {
-        /*
-         * Prevent duplicate concurrent requests.
-         */
-
-        if (chronicSavingRef.current) {
-          return;
-        }
-
-        chronicSavingRef.current =
-          true;
-
-        setChronicSaving(true);
-
-        const success =
-          await saveSnapshot({
-            chronicDiseaseCodes:
-              selectedDiseases,
-          });
-
-        chronicSavingRef.current =
-          false;
-
-        setChronicSaving(false);
-
-
-        if (
-          success &&
-          chronicSaveVersion.current ===
-            version
-        ) {
-          markSectionSaved(
-            "chronicDiseases",
-          );
-
-          setChronicDiseasesDirty(
-            false,
-          );
-        }
-
-        /*
-         * Only mark the current change as saved if
-         * the user did not change Chronic Diseases
-         * again while the request was running.
-         */
-
-        if (
-          success &&
-          chronicSaveVersion.current ===
-            version
-        ) {
-          setChronicDiseasesDirty(
-            false
-          );
-        }
-      }, 500);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [
-    patientId,
-    selectedDiseases,
-    chronicDiseasesDirty,
-    isHydrating,
-    saveSnapshot,
-  ]);
 
   /* ====================================================
      General Saving State
@@ -600,11 +294,15 @@ export default function PastHistory() {
   const [
     savingSection,
     setSavingSection,
-  ] = useState<SavingSection>(null);
+  ] =
+    useState<SavingSection>(
+      null,
+    );
 
-  const isSaving =
-    savingSection !== null ||
-    chronicSaving;
+  const isBusy =
+    isHydrating ||
+    isSaving ||
+    savingSection !== null;
 
   /* ====================================================
      Date Picker
@@ -615,8 +313,121 @@ export default function PastHistory() {
     setDatePickerTarget,
   ] =
     useState<DatePickerTarget>(
-      null
+      null,
     );
+
+  const openDatePicker = (
+    target: Exclude<
+      DatePickerTarget,
+      null
+    >,
+  ) => {
+    if (isBusy) {
+      return;
+    }
+
+    setDatePickerTarget(
+      target,
+    );
+  };
+
+  const getPickerValue =
+    (): Date => {
+      switch (
+        datePickerTarget
+      ) {
+        case "hospitalization":
+          return parseDate(
+            hospitalizationDate,
+          );
+
+        case "operation":
+          return parseDate(
+            operationDate,
+          );
+
+        case "transfusion":
+          return parseDate(
+            transfusionDate,
+          );
+
+        case "trauma":
+          return parseDate(
+            traumaDate,
+          );
+
+        case "icu":
+          return parseDate(
+            icuDate,
+          );
+
+        default:
+          return new Date();
+      }
+    };
+
+  const handleDateValueChange: NonNullable<
+    ComponentProps<
+      typeof DateTimePicker
+    >["onValueChange"]
+  > = (
+    _event,
+    selectedDate,
+  ) => {
+    if (!selectedDate) {
+      return;
+    }
+
+    const formattedDate =
+      formatDate(
+        selectedDate,
+      );
+
+    switch (
+      datePickerTarget
+    ) {
+      case "hospitalization":
+        setHospitalizationDate(
+          formattedDate,
+        );
+        break;
+
+      case "operation":
+        setOperationDate(
+          formattedDate,
+        );
+        break;
+
+      case "transfusion":
+        setTransfusionDate(
+          formattedDate,
+        );
+        break;
+
+      case "trauma":
+        setTraumaDate(
+          formattedDate,
+        );
+        break;
+
+      case "icu":
+        setIcuDate(
+          formattedDate,
+        );
+        break;
+    }
+
+    setDatePickerTarget(
+      null,
+    );
+  };
+
+  const handleDateDismiss =
+    () => {
+      setDatePickerTarget(
+        null,
+      );
+    };
 
   /* ====================================================
      Hospitalization Form
@@ -642,20 +453,25 @@ export default function PastHistory() {
     setEditingHospitalizationId,
   ] =
     useState<string | null>(
-      null
+      null,
     );
 
   const clearHospitalizationForm =
     () => {
       setHospitalizationReason(
-        ""
+        "",
       );
-      setHospitalizationDate("");
+
+      setHospitalizationDate(
+        "",
+      );
+
       setHospitalizationDuration(
-        ""
+        "",
       );
+
       setEditingHospitalizationId(
-        null
+        null,
       );
     };
 
@@ -669,113 +485,87 @@ export default function PastHistory() {
       }
 
       setSavingSection(
-        "hospitalization"
+        "hospitalization",
       );
 
       try {
         if (
           editingHospitalizationId
         ) {
-          const updated =
-            pastHistory.hospitalizations.map(
-              (item) =>
-                item.id ===
-                editingHospitalizationId
-                  ? {
-                      ...item,
-                      reason:
-                        hospitalizationReason.trim(),
-                      date:
-                        hospitalizationDate,
-                      duration:
-                        hospitalizationDuration.trim(),
-                    }
-                  : item
-            );
-
           updateHospitalization(
             editingHospitalizationId,
             {
               reason:
                 hospitalizationReason.trim(),
+
               date:
                 hospitalizationDate,
+
               duration:
                 hospitalizationDuration.trim(),
-            }
-          );
-
-          await saveSnapshot({
-            hospitalizations:
-              updated,
-          });
-
-          markSectionSaved(
-            "hospitalizations",
+            },
           );
         } else {
           const newItem: Hospitalization =
             {
               id: `${Date.now()}`,
+
               reason:
                 hospitalizationReason.trim(),
+
               date:
                 hospitalizationDate,
+
               duration:
                 hospitalizationDuration.trim(),
             };
 
           addHospitalization(
-            newItem
-          );
-
-          await saveSnapshot({
-            hospitalizations: [
-              ...pastHistory.hospitalizations,
-              newItem,
-            ],
-          });
-
-          markSectionSaved(
-            "hospitalizations",
+            newItem,
           );
         }
 
-        clearHospitalizationForm();
+        /*
+         * Zustand has already been updated.
+         *
+         * saveNow() reads the NEW state directly
+         * from Zustand.
+         */
+        const success =
+          await saveNow();
+
+        if (success) {
+          clearHospitalizationForm();
+        }
       } finally {
-        setSavingSection(null);
+        setSavingSection(
+          null,
+        );
       }
     };
 
   const handleDeleteHospitalization =
-    async (id: string) => {
+    async (
+      id: string,
+    ) => {
       if (savingSection) {
         return;
       }
 
       setSavingSection(
-        "hospitalization"
+        "hospitalization",
       );
 
       try {
-        const updated =
-          pastHistory.hospitalizations.filter(
-            (item) =>
-              item.id !== id
-          );
-
-        removeHospitalization(id);
-
-        await saveSnapshot({
-          hospitalizations:
-            updated,
-        });
-
-        markSectionSaved(
-          "hospitalizations",
+        removeHospitalization(
+          id,
         );
+
+        await saveNow();
       } finally {
-        setSavingSection(null);
+        setSavingSection(
+          null,
+        );
       }
     };
 
@@ -803,16 +593,19 @@ export default function PastHistory() {
     setEditingOperationId,
   ] =
     useState<string | null>(
-      null
+      null,
     );
 
   const clearOperationForm =
     () => {
       setOperationName("");
+
       setOperationDate("");
+
       setOperationIndication("");
+
       setEditingOperationId(
-        null
+        null,
       );
     };
 
@@ -826,109 +619,81 @@ export default function PastHistory() {
       }
 
       setSavingSection(
-        "operation"
+        "operation",
       );
 
       try {
         if (
           editingOperationId
         ) {
-          const updated =
-            pastHistory.operations.map(
-              (item) =>
-                item.id ===
-                editingOperationId
-                  ? {
-                      ...item,
-                      name:
-                        operationName.trim(),
-                      date:
-                        operationDate,
-                      indication:
-                        operationIndication.trim(),
-                    }
-                  : item
-            );
-
           updateOperation(
             editingOperationId,
             {
               name:
                 operationName.trim(),
+
               date:
                 operationDate,
+
               indication:
                 operationIndication.trim(),
-            }
-          );
-
-          await saveSnapshot({
-            operations: updated,
-          });
-
-          markSectionSaved(
-            "operations",
+            },
           );
         } else {
           const newItem: Operation =
             {
               id: `${Date.now()}`,
+
               name:
                 operationName.trim(),
+
               date:
                 operationDate,
+
               indication:
                 operationIndication.trim(),
             };
 
-          addOperation(newItem);
-
-          await saveSnapshot({
-            operations: [
-              ...pastHistory.operations,
-              newItem,
-            ],
-          });
-
-          markSectionSaved(
-            "operations",
+          addOperation(
+            newItem,
           );
         }
 
-        clearOperationForm();
+        const success =
+          await saveNow();
+
+        if (success) {
+          clearOperationForm();
+        }
       } finally {
-        setSavingSection(null);
+        setSavingSection(
+          null,
+        );
       }
     };
 
   const handleDeleteOperation =
-    async (id: string) => {
+    async (
+      id: string,
+    ) => {
       if (savingSection) {
         return;
       }
 
       setSavingSection(
-        "operation"
+        "operation",
       );
 
       try {
-        const updated =
-          pastHistory.operations.filter(
-            (item) =>
-              item.id !== id
-          );
-
-        removeOperation(id);
-
-        await saveSnapshot({
-          operations: updated,
-        });
-
-        markSectionSaved(
-          "operations",
+        removeOperation(
+          id,
         );
+
+        await saveNow();
       } finally {
-        setSavingSection(null);
+        setSavingSection(
+          null,
+        );
       }
     };
 
@@ -956,16 +721,19 @@ export default function PastHistory() {
     setEditingBloodTransfusionId,
   ] =
     useState<string | null>(
-      null
+      null,
     );
 
   const clearBloodTransfusionForm =
     () => {
       setTransfusionReason("");
+
       setTransfusionDate("");
+
       setTransfusionReaction("");
+
       setEditingBloodTransfusionId(
-        null
+        null,
       );
     };
 
@@ -979,112 +747,81 @@ export default function PastHistory() {
       }
 
       setSavingSection(
-        "transfusion"
+        "transfusion",
       );
 
       try {
         if (
           editingBloodTransfusionId
         ) {
-          const updated =
-            pastHistory.bloodTransfusions.map(
-              (item) =>
-                item.id ===
-                editingBloodTransfusionId
-                  ? {
-                      ...item,
-                      reason:
-                        transfusionReason.trim(),
-                      date:
-                        transfusionDate,
-                      reaction:
-                        transfusionReaction.trim(),
-                    }
-                  : item
-            );
-
           updateBloodTransfusion(
             editingBloodTransfusionId,
             {
               reason:
                 transfusionReason.trim(),
+
               date:
                 transfusionDate,
+
               reaction:
                 transfusionReaction.trim(),
-            }
-          );
-
-          await saveSnapshot({
-            bloodTransfusions:
-              updated,
-          });
-          markSectionSaved(
-            "bloodTransfusions",
+            },
           );
         } else {
           const newItem: BloodTransfusion =
             {
               id: `${Date.now()}`,
+
               reason:
                 transfusionReason.trim(),
+
               date:
                 transfusionDate,
+
               reaction:
                 transfusionReaction.trim(),
             };
 
           addBloodTransfusion(
-            newItem
-          );
-
-          await saveSnapshot({
-            bloodTransfusions: [
-              ...pastHistory.bloodTransfusions,
-              newItem,
-            ],
-          });
-
-          markSectionSaved(
-            "bloodTransfusions",
+            newItem,
           );
         }
 
-        clearBloodTransfusionForm();
+        const success =
+          await saveNow();
+
+        if (success) {
+          clearBloodTransfusionForm();
+        }
       } finally {
-        setSavingSection(null);
+        setSavingSection(
+          null,
+        );
       }
     };
 
   const handleDeleteBloodTransfusion =
-    async (id: string) => {
+    async (
+      id: string,
+    ) => {
       if (savingSection) {
         return;
       }
 
       setSavingSection(
-        "transfusion"
+        "transfusion",
       );
 
       try {
-        const updated =
-          pastHistory.bloodTransfusions.filter(
-            (item) =>
-              item.id !== id
-          );
-
-        removeBloodTransfusion(id);
-
-        await saveSnapshot({
-          bloodTransfusions:
-            updated,
-        });
-
-        markSectionSaved(
-          "bloodTransfusions",
+        removeBloodTransfusion(
+          id,
         );
+
+        await saveNow();
       } finally {
-        setSavingSection(null);
+        setSavingSection(
+          null,
+        );
       }
     };
 
@@ -1112,16 +849,19 @@ export default function PastHistory() {
     setEditingMajorTraumaId,
   ] =
     useState<string | null>(
-      null
+      null,
     );
 
   const clearMajorTraumaForm =
     () => {
       setTraumaType("");
+
       setTraumaDate("");
+
       setTraumaComplications("");
+
       setEditingMajorTraumaId(
-        null
+        null,
       );
     };
 
@@ -1135,111 +875,81 @@ export default function PastHistory() {
       }
 
       setSavingSection(
-        "trauma"
+        "trauma",
       );
 
       try {
         if (
           editingMajorTraumaId
         ) {
-          const updated =
-            pastHistory.majorTraumas.map(
-              (item) =>
-                item.id ===
-                editingMajorTraumaId
-                  ? {
-                      ...item,
-                      type:
-                        traumaType.trim(),
-                      date:
-                        traumaDate,
-                      complications:
-                        traumaComplications.trim(),
-                    }
-                  : item
-            );
-
           updateMajorTrauma(
             editingMajorTraumaId,
             {
               type:
                 traumaType.trim(),
+
               date:
                 traumaDate,
+
               complications:
                 traumaComplications.trim(),
-            }
-          );
-
-          await saveSnapshot({
-            majorTraumas:
-              updated,
-          });
-
-          markSectionSaved(
-            "majorTraumas",
+            },
           );
         } else {
           const newItem: MajorTrauma =
             {
               id: `${Date.now()}`,
+
               type:
                 traumaType.trim(),
+
               date:
                 traumaDate,
+
               complications:
                 traumaComplications.trim(),
             };
 
-          addMajorTrauma(newItem);
-
-          await saveSnapshot({
-            majorTraumas: [
-              ...pastHistory.majorTraumas,
-              newItem,
-            ],
-          });
-
-          markSectionSaved(
-            "majorTraumas",
+          addMajorTrauma(
+            newItem,
           );
         }
 
-        clearMajorTraumaForm();
+        const success =
+          await saveNow();
+
+        if (success) {
+          clearMajorTraumaForm();
+        }
       } finally {
-        setSavingSection(null);
+        setSavingSection(
+          null,
+        );
       }
     };
 
   const handleDeleteMajorTrauma =
-    async (id: string) => {
+    async (
+      id: string,
+    ) => {
       if (savingSection) {
         return;
       }
 
       setSavingSection(
-        "trauma"
+        "trauma",
       );
 
       try {
-        const updated =
-          pastHistory.majorTraumas.filter(
-            (item) =>
-              item.id !== id
-          );
-
-        removeMajorTrauma(id);
-
-        await saveSnapshot({
-          majorTraumas:
-            updated,
-        });
-
-        markSectionSaved(
-          "majorTraumas",
+        removeMajorTrauma(
+          id,
         );
+
+        await saveNow();
       } finally {
-        setSavingSection(null);
+        setSavingSection(
+          null,
+        );
       }
     };
 
@@ -1272,19 +982,23 @@ export default function PastHistory() {
     setEditingICUAdmissionId,
   ] =
     useState<string | null>(
-      null
+      null,
     );
 
   const clearICUForm =
     () => {
       setIcuReason("");
+
       setIcuDate("");
+
       setIcuDuration("");
+
       setIcuVentilatorSupport(
-        false
+        false,
       );
+
       setEditingICUAdmissionId(
-        null
+        null,
       );
     };
 
@@ -1298,490 +1012,137 @@ export default function PastHistory() {
       }
 
       setSavingSection(
-        "icu"
+        "icu",
       );
 
       try {
         if (
           editingICUAdmissionId
         ) {
-          const updated =
-            pastHistory.icuAdmissions.map(
-              (item) =>
-                item.id ===
-                editingICUAdmissionId
-                  ? {
-                      ...item,
-                      reason:
-                        icuReason.trim(),
-                      date:
-                        icuDate,
-                      duration:
-                        icuDuration.trim(),
-                      ventilatorSupport:
-                        icuVentilatorSupport,
-                    }
-                  : item
-            );
-
           updateICUAdmission(
             editingICUAdmissionId,
             {
               reason:
                 icuReason.trim(),
+
               date:
                 icuDate,
+
               duration:
                 icuDuration.trim(),
+
               ventilatorSupport:
                 icuVentilatorSupport,
-            }
-          );
-
-          await saveSnapshot({
-            icuAdmissions:
-              updated,
-          });
-
-          markSectionSaved(
-            "icuAdmissions",
+            },
           );
         } else {
           const newItem: ICUAdmission =
             {
               id: `${Date.now()}`,
+
               reason:
                 icuReason.trim(),
+
               date:
                 icuDate,
+
               duration:
                 icuDuration.trim(),
+
               ventilatorSupport:
                 icuVentilatorSupport,
             };
 
           addICUAdmission(
-            newItem
-          );
-
-          await saveSnapshot({
-            icuAdmissions: [
-              ...pastHistory.icuAdmissions,
-              newItem,
-            ],
-          });
-
-          markSectionSaved(
-            "icuAdmissions",
+            newItem,
           );
         }
 
-        clearICUForm();
+        const success =
+          await saveNow();
+
+        if (success) {
+          clearICUForm();
+        }
       } finally {
-        setSavingSection(null);
+        setSavingSection(
+          null,
+        );
       }
     };
 
   const handleDeleteICUAdmission =
-    async (id: string) => {
+    async (
+      id: string,
+    ) => {
       if (savingSection) {
         return;
       }
 
       setSavingSection(
-        "icu"
+        "icu",
       );
 
       try {
-        const updated =
-          pastHistory.icuAdmissions.filter(
-            (item) =>
-              item.id !== id
-          );
-
-        removeICUAdmission(id);
-
-        await saveSnapshot({
-          icuAdmissions:
-            updated,
-        });
-
-        markSectionSaved(
-          "icuAdmissions",
+        removeICUAdmission(
+          id,
         );
+
+        await saveNow();
       } finally {
-        setSavingSection(null);
+        setSavingSection(
+          null,
+        );
       }
     };
-
-  /* ====================================================
-     Date Picker Handlers
-  ==================================================== */
-
-  const openDatePicker = (
-    target: Exclude<
-      DatePickerTarget,
-      null
-    >
-  ) => {
-    if (
-      isHydrating ||
-      isSaving
-    ) {
-      return;
-    }
-
-    setDatePickerTarget(
-      target
-    );
-  };
-
-  const getPickerValue = (): Date => {
-    switch (
-      datePickerTarget
-    ) {
-      case "hospitalization":
-        return parseDate(
-          hospitalizationDate
-        );
-
-      case "operation":
-        return parseDate(
-          operationDate
-        );
-
-      case "transfusion":
-        return parseDate(
-          transfusionDate
-        );
-
-      case "trauma":
-        return parseDate(
-          traumaDate
-        );
-
-      case "icu":
-        return parseDate(
-          icuDate
-        );
-
-      default:
-        return new Date();
-    }
-  };
-
-  /*
-   * DateTimePicker API:
-   * onChange is deprecated.
-   * Use onValueChange for the selected date
-   * and onDismiss for closing the picker.
-   */
-
-  const handleDateValueChange: NonNullable<
-    ComponentProps<typeof DateTimePicker>["onValueChange"]
-  > = (_event, selectedDate) => {
-    if (!selectedDate) {
-      return;
-    }
-
-    const formattedDate =
-      formatDate(selectedDate);
-
-    switch (datePickerTarget) {
-      case "hospitalization":
-        setHospitalizationDate(formattedDate);
-        break;
-
-      case "operation":
-        setOperationDate(formattedDate);
-        break;
-
-      case "transfusion":
-        setTransfusionDate(formattedDate);
-        break;
-
-      case "trauma":
-        setTraumaDate(formattedDate);
-        break;
-
-      case "icu":
-        setIcuDate(formattedDate);
-        break;
-    }
-
-    setDatePickerTarget(null);
-  };
-
-  const handleDateDismiss = () => {
-    setDatePickerTarget(
-      null
-    );
-  };
-
-  /* ====================================================
-     Load Existing Past History
-  ==================================================== */
-
-  useEffect(() => {
-    if (
-      !patientId ||
-      loadedPatientId.current ===
-        patientId
-    ) {
-      return;
-    }
-
-    const existingHospitalizations =
-      [
-        ...pastHistory.hospitalizations,
-      ];
-
-    const existingOperations =
-      [
-        ...pastHistory.operations,
-      ];
-
-    const existingBloodTransfusions =
-      [
-        ...pastHistory.bloodTransfusions,
-      ];
-
-    const existingMajorTraumas =
-      [
-        ...pastHistory.majorTraumas,
-      ];
-
-    const existingICUAdmissions =
-      [
-        ...pastHistory.icuAdmissions,
-      ];
-
-    const loadPastHistory =
-      async () => {
-        try {
-          setIsHydrating(true);
-
-          /*
-           * Stop Chronic Disease autosave while
-           * Backend data is being loaded.
-           */
-
-          setChronicDiseasesDirty(
-            false
-          );
-
-          const data =
-            await getPastHistory(
-              patientId
-            );
-
-          if (!data) {
-            loadedPatientId.current =
-              patientId;
-            return;
-          }
-
-          const mapped =
-            mapPastHistoryFromBackend(
-              data
-            );
-
-          /* ---------------------------------------------
-             Chronic Diseases
-          --------------------------------------------- */
-
-          updatePastHistoryField(
-            "chronicDiseases",
-            "Chronic Diseases",
-            mapped.chronicDiseases.map(
-              (item: any) =>
-                item.diseaseCode
-            )
-          );
-
-          /* ---------------------------------------------
-             Hospitalizations
-          --------------------------------------------- */
-
-          existingHospitalizations.forEach(
-            (item) =>
-              removeHospitalization(
-                item.id
-              )
-          );
-
-          mapped.hospitalizations.forEach(
-            (item: any) =>
-              addHospitalization({
-                id:
-                  item.id ??
-                  `${Date.now()}-${Math.random()}`,
-                reason:
-                  item.reason ?? "",
-                date:
-                  item.date ?? "",
-                duration:
-                  item.duration ?? "",
-              })
-          );
-
-          /* ---------------------------------------------
-             Operations
-          --------------------------------------------- */
-
-          existingOperations.forEach(
-            (item) =>
-              removeOperation(
-                item.id
-              )
-          );
-
-          mapped.operations.forEach(
-            (item: any) =>
-              addOperation({
-                id:
-                  item.id ??
-                  `${Date.now()}-${Math.random()}`,
-                name:
-                  item.name ?? "",
-                date:
-                  item.date ?? "",
-                indication:
-                  item.indication ?? "",
-              })
-          );
-
-          /* ---------------------------------------------
-             Blood Transfusions
-          --------------------------------------------- */
-
-          existingBloodTransfusions.forEach(
-            (item) =>
-              removeBloodTransfusion(
-                item.id
-              )
-          );
-
-          mapped.bloodTransfusions.forEach(
-            (item: any) =>
-              addBloodTransfusion({
-                id:
-                  item.id ??
-                  `${Date.now()}-${Math.random()}`,
-                reason:
-                  item.reason ?? "",
-                date:
-                  item.date ?? "",
-                reaction:
-                  item.reaction ?? "",
-              })
-          );
-
-          /* ---------------------------------------------
-             Major Trauma
-          --------------------------------------------- */
-
-          existingMajorTraumas.forEach(
-            (item) =>
-              removeMajorTrauma(
-                item.id
-              )
-          );
-
-          mapped.majorTraumas.forEach(
-            (item: any) =>
-              addMajorTrauma({
-                id:
-                  item.id ??
-                  `${Date.now()}-${Math.random()}`,
-                type:
-                  item.type ?? "",
-                date:
-                  item.date ?? "",
-                complications:
-                  item.complications ??
-                  "",
-              })
-          );
-
-          /* ---------------------------------------------
-             ICU Admissions
-          --------------------------------------------- */
-
-          existingICUAdmissions.forEach(
-            (item) =>
-              removeICUAdmission(
-                item.id
-              )
-          );
-
-          mapped.icuAdmissions.forEach(
-            (item: any) =>
-              addICUAdmission({
-                id:
-                  item.id ??
-                  `${Date.now()}-${Math.random()}`,
-                reason:
-                  item.reason ?? "",
-                date:
-                  item.date ?? "",
-                duration:
-                  item.duration ?? "",
-                ventilatorSupport:
-                  item.ventilatorSupport ??
-                  false,
-              })
-          );
-
-          /*
-           * Important:
-           * We explicitly consider the loaded data
-           * already synchronized with the backend.
-           */
-
-          setChronicDiseasesDirty(
-            false
-          );
-
-          loadedPatientId.current =
-            patientId;
-        } catch (error) {
-          console.error(
-            "Failed to load past history:",
-            error
-          );
-        } finally {
-          setIsHydrating(false);
-        }
-      };
-
-    loadPastHistory();
-  }, [
-    patientId,
-    updatePastHistoryField,
-    addHospitalization,
-    removeHospitalization,
-    addOperation,
-    removeOperation,
-    addBloodTransfusion,
-    removeBloodTransfusion,
-    addMajorTrauma,
-    removeMajorTrauma,
-    addICUAdmission,
-    removeICUAdmission,
-  ]);
 
   /* ====================================================
      Render
   ==================================================== */
 
   return (
-    <View style={styles.container}>
+    <View
+      style={
+        styles.container
+      }
+    >
+      {/* ==================================================
+          Status
+      ================================================== */}
+
       {isHydrating && (
-        <Text style={styles.saveStatus}>
+        <Text
+          style={
+            styles.saveStatus
+          }
+        >
           Loading past history...
         </Text>
       )}
+
+      {!isHydrating &&
+        isAutoSaving &&
+        autoSavingSection ===
+          "chronicDiseases" && (
+          <Text
+            style={
+              styles.saveStatus
+            }
+          >
+            Saving chronic diseases...
+          </Text>
+        )}
+
+      {!!saveError && (
+        <Text
+          style={
+            styles.errorStatus
+          }
+        >
+          {saveError}
+        </Text>
+      )}
+
       {/* ==================================================
           Chronic Diseases
       ================================================== */}
@@ -1790,33 +1151,38 @@ export default function PastHistory() {
         title="Chronic Diseases"
       />
 
-      <View style={styles.chipRow}>
+      <View
+        style={
+          styles.chipRow
+        }
+      >
         {chronicDiseases.map(
           (disease) => (
             <AppChip
-              key={disease.code}
-              label={disease.name}
-              selected={selectedDiseases.includes(
+              key={
                 disease.code
+              }
+              label={
+                disease.name
+              }
+              selected={selectedDiseases.includes(
+                disease.code,
               )}
-              disabled={isHydrating}
+              disabled={
+                isHydrating ||
+                savingSection !== null
+              }
               onPress={() =>
                 toggleMultiSelect(
                   "chronicDiseases",
                   "Chronic Diseases",
-                  disease.code
+                  disease.code,
                 )
               }
             />
-          )
+          ),
         )}
       </View>
-
-      {chronicSaving && (
-        <Text style={styles.saveStatus}>
-          Saving chronic diseases...
-        </Text>
-      )}
 
       <Divider />
 
@@ -1828,7 +1194,9 @@ export default function PastHistory() {
         title="Hospitalizations"
       />
 
-      <View style={styles.card}>
+      <View
+        style={styles.card}
+      >
         <AppTextField
           placeholder="Reason"
           value={
@@ -1838,9 +1206,7 @@ export default function PastHistory() {
             setHospitalizationReason
           }
           editable={
-            !isHydrating &&
-            savingSection !==
-            "hospitalization"
+            !isBusy
           }
         />
 
@@ -1853,9 +1219,7 @@ export default function PastHistory() {
             setHospitalizationDuration
           }
           editable={
-            !isHydrating &&
-            savingSection !==
-            "hospitalization"
+            !isBusy
           }
         />
 
@@ -1864,19 +1228,19 @@ export default function PastHistory() {
             hospitalizationDate
           }
           disabled={
-            !isHydrating &&
-            savingSection !==
-            null
+            isBusy
           }
           onPress={() =>
             openDatePicker(
-              "hospitalization"
+              "hospitalization",
             )
           }
         />
-        
+
         <Text
-          style={styles.helperText}
+          style={
+            styles.helperText
+          }
         >
           Select the date, then tap
           the button below to save.
@@ -1893,9 +1257,7 @@ export default function PastHistory() {
             "hospitalization"
           }
           disabled={
-            isHydrating ||
-            savingSection !==
-              null ||
+            isBusy ||
             !hospitalizationReason.trim()
           }
           onPress={
@@ -1951,21 +1313,23 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
-                  isHydrating ||
-                  isSaving
+                  isBusy
                 }
                 onPress={() => {
                   setEditingHospitalizationId(
-                    item.id
+                    item.id,
                   );
+
                   setHospitalizationReason(
-                    item.reason
+                    item.reason,
                   );
+
                   setHospitalizationDate(
-                    item.date
+                    item.date,
                   );
+
                   setHospitalizationDuration(
-                    item.duration
+                    item.duration,
                   );
                 }}
               >
@@ -1973,7 +1337,7 @@ export default function PastHistory() {
                   name="edit"
                   size={22}
                   color={
-                    isSaving
+                    isBusy
                       ? COLORS.secondaryText
                       : "#1976D2"
                   }
@@ -1985,12 +1349,11 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
-                  isHydrating ||
-                  isSaving
+                  isBusy
                 }
                 onPress={() =>
                   handleDeleteHospitalization(
-                    item.id
+                    item.id,
                   )
                 }
               >
@@ -1998,7 +1361,7 @@ export default function PastHistory() {
                   name="delete"
                   size={22}
                   color={
-                    isSaving
+                    isBusy
                       ? COLORS.secondaryText
                       : "#D32F2F"
                   }
@@ -2006,7 +1369,7 @@ export default function PastHistory() {
               </TouchableOpacity>
             </View>
           </View>
-        )
+        ),
       )}
 
       <Divider />
@@ -2019,7 +1382,9 @@ export default function PastHistory() {
         title="Operations"
       />
 
-      <View style={styles.card}>
+      <View
+        style={styles.card}
+      >
         <AppTextField
           placeholder="Operation"
           value={
@@ -2029,9 +1394,7 @@ export default function PastHistory() {
             setOperationName
           }
           editable={
-            !isHydrating &&
-            savingSection !==
-            "operation"
+            !isBusy
           }
         />
 
@@ -2044,9 +1407,7 @@ export default function PastHistory() {
             setOperationIndication
           }
           editable={
-            !isHydrating &&
-            savingSection !==
-            "operation"
+            !isBusy
           }
         />
 
@@ -2055,19 +1416,19 @@ export default function PastHistory() {
             operationDate
           }
           disabled={
-            !isHydrating &&
-            savingSection !==
-            null
+            isBusy
           }
           onPress={() =>
             openDatePicker(
-              "operation"
+              "operation",
             )
           }
         />
 
         <Text
-          style={styles.helperText}
+          style={
+            styles.helperText
+          }
         >
           Select the date, then tap
           the button below to save.
@@ -2084,9 +1445,7 @@ export default function PastHistory() {
             "operation"
           }
           disabled={
-            isHydrating ||
-            savingSection !==
-              null ||
+            isBusy ||
             !operationName.trim()
           }
           onPress={
@@ -2142,21 +1501,23 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
-                  isHydrating ||
-                  isSaving
+                  isBusy
                 }
                 onPress={() => {
                   setEditingOperationId(
-                    item.id
+                    item.id,
                   );
+
                   setOperationName(
-                    item.name
+                    item.name,
                   );
+
                   setOperationDate(
-                    item.date
+                    item.date,
                   );
+
                   setOperationIndication(
-                    item.indication
+                    item.indication,
                   );
                 }}
               >
@@ -2164,7 +1525,7 @@ export default function PastHistory() {
                   name="edit"
                   size={22}
                   color={
-                    isSaving
+                    isBusy
                       ? COLORS.secondaryText
                       : "#1976D2"
                   }
@@ -2176,12 +1537,11 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
-                  isHydrating ||
-                  isSaving
+                  isBusy
                 }
                 onPress={() =>
                   handleDeleteOperation(
-                    item.id
+                    item.id,
                   )
                 }
               >
@@ -2189,7 +1549,7 @@ export default function PastHistory() {
                   name="delete"
                   size={22}
                   color={
-                    isSaving
+                    isBusy
                       ? COLORS.secondaryText
                       : "#D32F2F"
                   }
@@ -2197,7 +1557,7 @@ export default function PastHistory() {
               </TouchableOpacity>
             </View>
           </View>
-        )
+        ),
       )}
 
       <Divider />
@@ -2210,7 +1570,9 @@ export default function PastHistory() {
         title="Blood Transfusions"
       />
 
-      <View style={styles.card}>
+      <View
+        style={styles.card}
+      >
         <AppTextField
           placeholder="Reason"
           value={
@@ -2220,9 +1582,7 @@ export default function PastHistory() {
             setTransfusionReason
           }
           editable={
-            !isHydrating &&
-            savingSection !==
-            "transfusion"
+            !isBusy
           }
         />
 
@@ -2235,9 +1595,7 @@ export default function PastHistory() {
             setTransfusionReaction
           }
           editable={
-            !isHydrating &&
-            savingSection !==
-            "transfusion"
+            !isBusy
           }
         />
 
@@ -2246,19 +1604,19 @@ export default function PastHistory() {
             transfusionDate
           }
           disabled={
-            !isHydrating &&
-            savingSection !==
-            null
+            isBusy
           }
           onPress={() =>
             openDatePicker(
-              "transfusion"
+              "transfusion",
             )
           }
         />
 
         <Text
-          style={styles.helperText}
+          style={
+            styles.helperText
+          }
         >
           Select the date, then tap
           the button below to save.
@@ -2275,9 +1633,7 @@ export default function PastHistory() {
             "transfusion"
           }
           disabled={
-            isHydrating ||
-            savingSection !==
-              null ||
+            isBusy ||
             !transfusionReason.trim()
           }
           onPress={
@@ -2334,21 +1690,23 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
-                  isHydrating ||
-                  isSaving
+                  isBusy
                 }
                 onPress={() => {
                   setEditingBloodTransfusionId(
-                    item.id
+                    item.id,
                   );
+
                   setTransfusionReason(
-                    item.reason
+                    item.reason,
                   );
+
                   setTransfusionDate(
-                    item.date
+                    item.date,
                   );
+
                   setTransfusionReaction(
-                    item.reaction
+                    item.reaction,
                   );
                 }}
               >
@@ -2356,7 +1714,7 @@ export default function PastHistory() {
                   name="edit"
                   size={22}
                   color={
-                    isSaving
+                    isBusy
                       ? COLORS.secondaryText
                       : "#1976D2"
                   }
@@ -2368,12 +1726,11 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
-                  isHydrating ||
-                  isSaving
+                  isBusy
                 }
                 onPress={() =>
                   handleDeleteBloodTransfusion(
-                    item.id
+                    item.id,
                   )
                 }
               >
@@ -2381,7 +1738,7 @@ export default function PastHistory() {
                   name="delete"
                   size={22}
                   color={
-                    isSaving
+                    isBusy
                       ? COLORS.secondaryText
                       : "#D32F2F"
                   }
@@ -2389,7 +1746,7 @@ export default function PastHistory() {
               </TouchableOpacity>
             </View>
           </View>
-        )
+        ),
       )}
 
       <Divider />
@@ -2402,7 +1759,9 @@ export default function PastHistory() {
         title="Major Trauma"
       />
 
-      <View style={styles.card}>
+      <View
+        style={styles.card}
+      >
         <AppTextField
           placeholder="Type"
           value={
@@ -2412,9 +1771,7 @@ export default function PastHistory() {
             setTraumaType
           }
           editable={
-            !isHydrating &&
-            savingSection !==
-            "trauma"
+            !isBusy
           }
         />
 
@@ -2427,9 +1784,7 @@ export default function PastHistory() {
             setTraumaComplications
           }
           editable={
-            !isHydrating &&
-            savingSection !==
-            "trauma"
+            !isBusy
           }
         />
 
@@ -2438,19 +1793,19 @@ export default function PastHistory() {
             traumaDate
           }
           disabled={
-            !isHydrating &&
-            savingSection !==
-            null
+            isBusy
           }
           onPress={() =>
             openDatePicker(
-              "trauma"
+              "trauma",
             )
           }
         />
 
         <Text
-          style={styles.helperText}
+          style={
+            styles.helperText
+          }
         >
           Select the date, then tap
           the button below to save.
@@ -2467,9 +1822,7 @@ export default function PastHistory() {
             "trauma"
           }
           disabled={
-            isHydrating ||
-            savingSection !==
-              null ||
+            isBusy ||
             !traumaType.trim()
           }
           onPress={
@@ -2525,21 +1878,23 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
-                  isHydrating ||
-                  isSaving
+                  isBusy
                 }
                 onPress={() => {
                   setEditingMajorTraumaId(
-                    item.id
+                    item.id,
                   );
+
                   setTraumaType(
-                    item.type
+                    item.type,
                   );
+
                   setTraumaDate(
-                    item.date
+                    item.date,
                   );
+
                   setTraumaComplications(
-                    item.complications
+                    item.complications,
                   );
                 }}
               >
@@ -2547,7 +1902,7 @@ export default function PastHistory() {
                   name="edit"
                   size={22}
                   color={
-                    isSaving
+                    isBusy
                       ? COLORS.secondaryText
                       : "#1976D2"
                   }
@@ -2559,12 +1914,11 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
-                  isHydrating ||
-                  isSaving
+                  isBusy
                 }
                 onPress={() =>
                   handleDeleteMajorTrauma(
-                    item.id
+                    item.id,
                   )
                 }
               >
@@ -2572,7 +1926,7 @@ export default function PastHistory() {
                   name="delete"
                   size={22}
                   color={
-                    isSaving
+                    isBusy
                       ? COLORS.secondaryText
                       : "#D32F2F"
                   }
@@ -2580,7 +1934,7 @@ export default function PastHistory() {
               </TouchableOpacity>
             </View>
           </View>
-        )
+        ),
       )}
 
       <Divider />
@@ -2593,7 +1947,9 @@ export default function PastHistory() {
         title="ICU Admissions"
       />
 
-      <View style={styles.card}>
+      <View
+        style={styles.card}
+      >
         <AppTextField
           placeholder="Reason"
           value={
@@ -2603,9 +1959,7 @@ export default function PastHistory() {
             setIcuReason
           }
           editable={
-            !isHydrating &&
-            savingSection !==
-            "icu"
+            !isBusy
           }
         />
 
@@ -2618,9 +1972,7 @@ export default function PastHistory() {
             setIcuDuration
           }
           editable={
-            !isHydrating &&
-            savingSection !==
-            "icu"
+            !isBusy
           }
         />
 
@@ -2629,59 +1981,45 @@ export default function PastHistory() {
             icuDate
           }
           disabled={
-            !isHydrating &&
-            savingSection !==
-            null
+            isBusy
           }
           onPress={() =>
             openDatePicker(
-              "icu"
+              "icu",
             )
           }
         />
 
-        {/* <View
-          style={
-            styles.chipRow
-          }
-        >
+        {/*
+        <View style={styles.chipRow}>
           <AppChip
             label="Yes"
             selected={
-              icuVentilatorSupport ===
-              true
+              icuVentilatorSupport === true
             }
-            disabled={
-              savingSection !==
-              null
-            }
+            disabled={isBusy}
             onPress={() =>
-              setIcuVentilatorSupport(
-                true
-              )
+              setIcuVentilatorSupport(true)
             }
           />
 
           <AppChip
             label="No"
             selected={
-              icuVentilatorSupport ===
-              false
+              icuVentilatorSupport === false
             }
-            disabled={
-              savingSection !==
-              null
-            }
+            disabled={isBusy}
             onPress={() =>
-              setIcuVentilatorSupport(
-                false
-              )
+              setIcuVentilatorSupport(false)
             }
           />
-        </View> */}
+        </View>
+        */}
 
         <Text
-          style={styles.helperText}
+          style={
+            styles.helperText
+          }
         >
           Select the date, then tap
           the button below to save.
@@ -2698,9 +2036,7 @@ export default function PastHistory() {
             "icu"
           }
           disabled={
-            isHydrating ||
-            savingSection !==
-              null ||
+            isBusy ||
             !icuReason.trim()
           }
           onPress={
@@ -2767,24 +2103,27 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
-                  isHydrating ||
-                  isSaving
+                  isBusy
                 }
                 onPress={() => {
                   setEditingICUAdmissionId(
-                    item.id
+                    item.id,
                   );
+
                   setIcuReason(
-                    item.reason
+                    item.reason,
                   );
+
                   setIcuDate(
-                    item.date
+                    item.date,
                   );
+
                   setIcuDuration(
-                    item.duration
+                    item.duration,
                   );
+
                   setIcuVentilatorSupport(
-                    item.ventilatorSupport
+                    item.ventilatorSupport,
                   );
                 }}
               >
@@ -2792,7 +2131,7 @@ export default function PastHistory() {
                   name="edit"
                   size={22}
                   color={
-                    isSaving
+                    isBusy
                       ? COLORS.secondaryText
                       : "#1976D2"
                   }
@@ -2804,12 +2143,11 @@ export default function PastHistory() {
                   styles.iconButton
                 }
                 disabled={
-                  isHydrating ||
-                  isSaving
+                  isBusy
                 }
                 onPress={() =>
                   handleDeleteICUAdmission(
-                    item.id
+                    item.id,
                   )
                 }
               >
@@ -2817,7 +2155,7 @@ export default function PastHistory() {
                   name="delete"
                   size={22}
                   color={
-                    isSaving
+                    isBusy
                       ? COLORS.secondaryText
                       : "#D32F2F"
                   }
@@ -2825,7 +2163,7 @@ export default function PastHistory() {
               </TouchableOpacity>
             </View>
           </View>
-        )
+        ),
       )}
 
       {/* ==================================================
@@ -2855,90 +2193,122 @@ export default function PastHistory() {
    Styles
 ====================================================== */
 
-const styles = StyleSheet.create({
-  container: {
-    gap: SPACING.md,
-  },
+const styles =
+  StyleSheet.create({
+    container: {
+      gap: SPACING.md,
+    },
 
-  card: {
-    gap: SPACING.sm,
-  },
+    card: {
+      gap: SPACING.sm,
+    },
 
-  chipRow: {
-    flexDirection:
-      "row",
-    flexWrap: "wrap",
-    gap: SPACING.xs,
-  },
+    chipRow: {
+      flexDirection:
+        "row",
+      flexWrap:
+        "wrap",
+      gap: SPACING.xs,
+    },
 
-  helperText: {
-    fontSize:
-      TYPOGRAPHY.small,
-    color:
-      COLORS.secondaryText,
-  },
+    helperText: {
+      fontSize:
+        TYPOGRAPHY.small,
 
-  saveStatus: {
-    fontSize:
-      TYPOGRAPHY.small,
-    color:
-      COLORS.secondaryText,
-    marginTop:
-      -SPACING.xs,
-  },
+      color:
+        COLORS.secondaryText,
+    },
 
-  dateFieldContainer: {
-    gap: SPACING.xs,
-  },
+    saveStatus: {
+      fontSize:
+        TYPOGRAPHY.small,
 
-  dateLabel: {
-    fontSize:
-      TYPOGRAPHY.small,
-    color:
-      COLORS.secondaryText,
-    fontWeight: "600",
-  },
+      color:
+        COLORS.secondaryText,
 
-  recordCard: {
-    borderWidth: 1,
-    borderColor:
-      COLORS.border,
-    borderRadius: 12,
-    padding:
-      SPACING.md,
-    gap: SPACING.xs,
-    backgroundColor:
-      COLORS.white,
-  },
+      marginTop:
+        -SPACING.xs,
+    },
 
-  recordTitle: {
-    fontSize:
-      TYPOGRAPHY.body,
-    fontWeight: "700",
-    color:
-      COLORS.text,
-  },
+    errorStatus: {
+      fontSize:
+        TYPOGRAPHY.small,
 
-  recordText: {
-    fontSize:
-      TYPOGRAPHY.small,
-    color:
-      COLORS.secondaryText,
-  },
+      color:
+        "#D32F2F",
 
-  actionRow: {
-    flexDirection:
-      "row",
-    justifyContent:
-      "flex-end",
-    alignItems:
-      "center",
-    gap: SPACING.md,
-    marginTop:
-      SPACING.sm,
-  },
+      marginTop:
+        -SPACING.xs,
+    },
 
-  iconButton: {
-    padding: 6,
-  },
-});
+    dateFieldContainer: {
+      gap: SPACING.xs,
+    },
+
+    dateLabel: {
+      fontSize:
+        TYPOGRAPHY.small,
+
+      color:
+        COLORS.secondaryText,
+
+      fontWeight:
+        "600",
+    },
+
+    recordCard: {
+      borderWidth: 1,
+
+      borderColor:
+        COLORS.border,
+
+      borderRadius: 12,
+
+      padding:
+        SPACING.md,
+
+      gap: SPACING.xs,
+
+      backgroundColor:
+        COLORS.white,
+    },
+
+    recordTitle: {
+      fontSize:
+        TYPOGRAPHY.body,
+
+      fontWeight:
+        "700",
+
+      color:
+        COLORS.text,
+    },
+
+    recordText: {
+      fontSize:
+        TYPOGRAPHY.small,
+
+      color:
+        COLORS.secondaryText,
+    },
+
+    actionRow: {
+      flexDirection:
+        "row",
+
+      justifyContent:
+        "flex-end",
+
+      alignItems:
+        "center",
+
+      gap: SPACING.md,
+
+      marginTop:
+        SPACING.sm,
+    },
+
+    iconButton: {
+      padding: 6,
+    },
+  });

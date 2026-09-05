@@ -909,9 +909,10 @@ export class VisitService {
               name: true,
               phone: true,
               email: true,
-              address: true,
-              country: true,
+              governorate: true,
               city: true,
+              district: true,
+              streetAddress: true,
             },
           },
 

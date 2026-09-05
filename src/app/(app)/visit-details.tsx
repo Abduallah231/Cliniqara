@@ -561,17 +561,19 @@ function SubsectionHeader({
 }) {
   return (
     <View style={styles.subsectionHeader}>
-      <View style={styles.subsectionIcon}>
-        <Ionicons
-          name={icon}
-          size={17}
-          color={COLORS.primary}
-        />
-      </View>
+      <View style={styles.subsectionHeaderLeft}>
+        <View style={styles.subsectionIcon}>
+          <Ionicons
+            name={icon}
+            size={17}
+            color={COLORS.primary}
+          />
+        </View>
 
-      <Text style={styles.subsectionTitle}>
-        {title}
-      </Text>
+        <Text style={styles.subsectionTitle}>
+          {title}
+        </Text>
+      </View>
 
       {count !== undefined ? (
         <View style={styles.countBadge}>
@@ -1320,52 +1322,86 @@ export default function VisitDetailsScreen() {
     // ======================================================
 
     function AnalysisAnswerChips({
-    value,
+      value,
+      fieldLabel,
     }: {
-    value: unknown;
+      value: unknown;
+      fieldLabel: string;
     }) {
-    if (isEmptyValue(value)) {
+      if (isEmptyValue(value)) {
         return null;
-    }
+      }
 
-    const values = Array.isArray(value)
+      const rawValues = Array.isArray(value)
         ? value
-            .map((item) =>
-            formatSimpleValue(item),
-            )
-            .filter(
+            .map((item) => formatSimpleValue(item))
+            .filter((item) => item !== "—")
+        : [formatSimpleValue(value)].filter(
             (item) => item !== "—",
-            )
-        : [
-            formatSimpleValue(value),
-        ].filter(
-            (item) => item !== "—",
-        );
+          );
 
-    if (values.length === 0) {
+      if (rawValues.length === 0) {
         return null;
-    }
+      }
 
-    return (
+      const cleanAnswer = (answer: string) => {
+        const fieldPrefix = fieldLabel
+          .trim()
+          .replace(/\s+/g, "_")
+          .toUpperCase();
+
+        const normalizedAnswer = answer
+          .trim()
+          .replace(/\s+/g, "_");
+
+        if (
+          normalizedAnswer
+            .toUpperCase()
+            .startsWith(`${fieldPrefix}_`)
+        ) {
+          return normalizedAnswer
+            .slice(fieldPrefix.length + 1)
+            .replace(/[_-]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .replace(
+              /\b\w/g,
+              (char) => char.toUpperCase(),
+            );
+        }
+
+        return answer
+          .replace(/[_-]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+          .replace(
+            /\b\w/g,
+            (char) => char.toUpperCase(),
+          );
+      };
+
+      const values = rawValues
+        .map(cleanAnswer)
+        .filter(Boolean);
+
+      if (values.length === 0) {
+        return null;
+      }
+
+      return (
         <View style={styles.analysisChipList}>
-        {values.map(
-            (answer, index) => (
+          {values.map((answer, index) => (
             <View
-                key={`${answer}-${index}`}
-                style={styles.analysisChip}
+              key={`${answer}-${index}`}
+              style={styles.analysisChip}
             >
-                <Text
-                style={
-                    styles.analysisChipText
-                }
-                >
+              <Text style={styles.analysisChipText}>
                 {answer}
-                </Text>
+              </Text>
             </View>
-            ),
-        )}
+          ))}
         </View>
-    );
+      );
     }
 
   // ======================================================
@@ -1888,9 +1924,8 @@ export default function VisitDetailsScreen() {
                         </Text>
 
                         <AnalysisAnswerChips
-                            value={
-                            field.value
-                            }
+                          value={field.value}
+                          fieldLabel={field.fieldLabel}
                         />
                         </View>
                     ),
@@ -3078,72 +3113,81 @@ const styles =
     // ====================================================
 
     subsection: {
-      marginBottom:
-        27,
+      marginBottom: 30,
     },
 
     subsectionHeader: {
-      flexDirection:
-        "row",
-      alignItems:
-        "center",
-      minHeight: 34,
-      paddingBottom:
-        9,
-      borderBottomWidth:
-        1,
-      borderBottomColor:
-        "#E7EDF4",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+
+      minHeight: 38,
+
+      paddingBottom: 10,
+
+      marginBottom: 15,
+
+      borderBottomWidth: 1,
+      borderBottomColor: "#E3EAF2",
+    },
+
+    subsectionHeaderLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+      flex: 1,
     },
 
     subsectionIcon: {
-      width: 30,
-      height: 30,
-      borderRadius: 9,
-      backgroundColor:
-        "#F1F6FC",
-      alignItems:
-        "center",
-      justifyContent:
-        "center",
-      marginRight:
-        9,
+      width: 32,
+      height: 32,
+
+      borderRadius: 10,
+
+      backgroundColor: "#EAF3FF",
+
+      alignItems: "center",
+      justifyContent: "center",
+
+      marginRight: 10,
     },
 
     subsectionTitle: {
-      flex: 1,
-      fontSize: 15,
-      fontWeight:
-        "800",
-      color:
-        COLORS.text,
+      fontSize: 16,
+      lineHeight: 21,
+
+      fontWeight: "800",
+
+      color: COLORS.text,
+
+      letterSpacing: -0.1,
     },
 
     countBadge: {
-      minWidth: 24,
-      height: 24,
-      paddingHorizontal:
-        7,
-      borderRadius: 12,
-      backgroundColor:
-        "#EAF3FF",
-      alignItems:
-        "center",
-      justifyContent:
-        "center",
+      minWidth: 25,
+      height: 25,
+
+      paddingHorizontal: 7,
+
+      borderRadius: 13,
+
+      backgroundColor: "#EAF3FF",
+
+      alignItems: "center",
+      justifyContent: "center",
+
+      marginLeft: 10,
     },
 
     countText: {
       fontSize: 11,
-      fontWeight:
-        "800",
-      color:
-        COLORS.primary,
+
+      fontWeight: "800",
+
+      color: COLORS.primary,
     },
 
     subsectionBody: {
-      paddingTop:
-        15,
+      paddingTop: 0,
     },
 
     // ====================================================
@@ -3176,32 +3220,37 @@ const styles =
     },
 
     fieldLabel: {
-      fontSize: 11,
-      lineHeight: 15,
-      fontWeight:
-        "600",
-      color:
-        COLORS.secondaryText,
-      marginBottom:
-        4,
+      fontSize: 10,
+      lineHeight: 14,
+
+      fontWeight: "600",
+
+      color: "#7A8797",
+
+      marginBottom: 5,
+
+      letterSpacing: 0.15,
     },
 
     fieldValue: {
-      fontSize: 14,
-      lineHeight: 20,
-      fontWeight:
-        "600",
-      color:
-        COLORS.text,
+      fontSize: 15,
+      lineHeight: 21,
+
+      fontWeight: "700",
+
+      color: COLORS.text,
     },
 
     fieldValueEmphasized: {
-      fontSize: 15,
-      fontWeight:
-        "700",
+      fontSize: 16,
+      lineHeight: 22,
+
+      fontWeight: "800",
+
+      color: COLORS.text,
     },
 
-    complexField: {
+complexField: {
       width: "100%",
       paddingHorizontal:
         6,

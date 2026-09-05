@@ -329,7 +329,9 @@ export default function OverviewTab({
         patient={patient}
       />
 
-      <LatestVisitCard />
+      <LatestVisitCard
+        patientId={patient.id}
+      />
     </ScrollView>
   );
 }
