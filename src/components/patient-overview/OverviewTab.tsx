@@ -3,6 +3,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
@@ -13,6 +14,7 @@ import ClinicalSnapshot from "./ClinicalSnapshot";
 import LatestVisitCard from "./LatestVisitCard";
 
 import type { Patient } from "@/types/patient";
+import { useState } from "react";
 
 import {
   COLORS,
@@ -186,6 +188,9 @@ function InfoItem({
 export default function OverviewTab({
   patient,
 }: Props) {
+  const [showAllPatientInfo, setShowAllPatientInfo] =
+    useState(false);
+
   const { width: screenWidth } =
     useWindowDimensions();
 
@@ -252,25 +257,8 @@ export default function OverviewTab({
           </View>
         </View>
 
+        {/* Basic Information */}
         <View style={styles.grid}>
-          <InfoItem
-            label="Patient Code"
-            value={
-              patient.patientCode
-            }
-            icon="card-outline"
-            width={itemWidth}
-          />
-
-          <InfoItem
-            label="Date of Birth"
-            value={formatDate(
-              patient.dateOfBirth,
-            )}
-            icon="calendar-outline"
-            width={itemWidth}
-          />
-
           <InfoItem
             label="Age"
             value={formatAge(patient)}
@@ -280,49 +268,92 @@ export default function OverviewTab({
 
           <InfoItem
             label="Gender"
-            value={formatGender(
-              patient.gender,
-            )}
+            value={formatGender(patient.gender)}
             icon="male-female-outline"
             width={itemWidth}
           />
 
           <InfoItem
-            label="Marital Status"
-            value={formatMaritalStatus(
-              patient.maritalStatus,
-            )}
-            icon="heart-outline"
-            width={itemWidth}
-          />
-
-          <InfoItem
             label="Phone"
-            value={
-              patient.phone ??
-              "Not available"
-            }
+            value={patient.phone ?? "Not available"}
             icon="call-outline"
             width={itemWidth}
           />
-
-          <InfoItem
-            label="Occupation"
-            value={
-              patient.occupation ??
-              "Not available"
-            }
-            icon="briefcase-outline"
-            width={itemWidth}
-          />
-
-          <InfoItem
-            label="Address"
-            value={formatAddress(patient)}
-            icon="location-outline"
-            width={itemWidth}
-          />
         </View>
+
+        {/* View All */}
+        <TouchableOpacity
+          style={styles.viewAllButton}
+          onPress={() =>
+            setShowAllPatientInfo(
+              (previous) => !previous,
+            )
+          }
+          activeOpacity={0.7}
+        >
+          <Text style={styles.viewAllText}>
+            {showAllPatientInfo
+              ? "View Less"
+              : "View All"}
+          </Text>
+
+          <Ionicons
+            name={
+              showAllPatientInfo
+                ? "chevron-up"
+                : "chevron-down"
+            }
+            size={18}
+            color={COLORS.primary}
+          />
+        </TouchableOpacity>
+
+        {/* Additional Information */}
+        {showAllPatientInfo && (
+          <View style={styles.additionalInfo}>
+            <View style={styles.grid}>
+              <InfoItem
+                label="Patient Code"
+                value={patient.patientCode}
+                icon="card-outline"
+                width={itemWidth}
+              />
+
+              <InfoItem
+                label="Date of Birth"
+                value={formatDate(patient.dateOfBirth)}
+                icon="calendar-outline"
+                width={itemWidth}
+              />
+
+              <InfoItem
+                label="Marital Status"
+                value={formatMaritalStatus(
+                  patient.maritalStatus,
+                )}
+                icon="heart-outline"
+                width={itemWidth}
+              />
+
+              <InfoItem
+                label="Occupation"
+                value={
+                  patient.occupation ??
+                  "Not available"
+                }
+                icon="briefcase-outline"
+                width={itemWidth}
+              />
+
+              <InfoItem
+                label="Address"
+                value={formatAddress(patient)}
+                icon="location-outline"
+                width={itemWidth}
+              />
+            </View>
+          </View>
+        )}
       </AppCard>
 
       <ClinicalSnapshot
@@ -422,5 +453,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: COLORS.text,
+  },
+
+  viewAllButton: {
+    marginTop: SPACING.md,
+    minHeight: 42,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+
+  viewAllText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: COLORS.primary,
+  },
+
+  additionalInfo: {
+    marginTop: SPACING.md,
   },
 });

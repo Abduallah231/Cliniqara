@@ -12,29 +12,13 @@ import {
 import {
   StyleSheet,
   Text,
-  View
+  View,
 } from "react-native";
 
-export type WeekDay =
-  | "SATURDAY"
-  | "SUNDAY"
-  | "MONDAY"
-  | "TUESDAY"
-  | "WEDNESDAY"
-  | "THURSDAY"
-  | "FRIDAY";
-
-export type ClinicShift = {
-  startTime: string;
-  endTime: string;
-};
-
-export type WorkingDay = {
-  day: WeekDay;
-  isClosed: boolean;
-  is24Hours: boolean;
-  shifts: ClinicShift[];
-};
+import type {
+  WeekDay,
+  WorkingDay,
+} from "@/types/clinic";
 
 export const DAYS: WeekDay[] = [
   "SATURDAY",

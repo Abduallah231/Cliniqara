@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
@@ -5,7 +6,6 @@ import {
   StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
 
 import AppButton from "@/components/common/AppButton";
 import AppTopBar from "@/components/common/AppTopBar";
@@ -17,15 +17,21 @@ import ClinicInformationForm, {
 
 import ClinicWorkingDays, {
   DAYS,
-  type WorkingDay,
 } from "@/components/clinic/ClinicWorkingDays";
+
+import type {
+  CreateClinicDto,
+  WorkingDay,
+} from "@/types/clinic";
 
 import {
   validateWorkingDays,
 } from "@/components/clinic/ClinicWorkingDaysValidation";
+
 import {
   getApiError,
 } from "@/utils/apiError";
+
 import {
   createClinic,
   loadClinics,
@@ -36,17 +42,33 @@ import {
   SPACING,
 } from "@/theme";
 
+// ======================================================
+// Screen
+// ======================================================
+
 export default function CreateClinicScreen() {
-  const [clinicInformation, setClinicInformation] =
-    useState<ClinicInformation>({
-      name: "",
-      phone: "",
-      email: "",
-      governorate: "",
-      city: "",
-      district: "",
-      streetAddress: "",
-    });
+  // ====================================================
+  // Clinic Information
+  // ====================================================
+
+  const [
+    clinicInformation,
+    setClinicInformation,
+  ] = useState<ClinicInformation>({
+    name: "",
+    phone: "",
+    email: "",
+    governorate: "",
+    city: "",
+    district: "",
+    streetAddress: "",
+    otherGovernorate: "",
+    otherCity: "",
+  });
+
+  // ====================================================
+  // Working Days
+  // ====================================================
 
   const [workingDays, setWorkingDays] =
     useState<WorkingDay[]>(
@@ -58,15 +80,21 @@ export default function CreateClinicScreen() {
       })),
     );
 
+  // ====================================================
+  // Loading
+  // ====================================================
+
   const [loading, setLoading] =
     useState(false);
 
+  // ====================================================
+  // Create Clinic
+  // ====================================================
+
   const handleCreate = async () => {
-    /*
-     * =========================
-     * Clinic Information
-     * =========================
-     */
+    // ==================================================
+    // Clinic Information Validation
+    // ==================================================
 
     if (!clinicInformation.name.trim()) {
       Alert.alert(
@@ -84,7 +112,9 @@ export default function CreateClinicScreen() {
       return;
     }
 
-    if (!clinicInformation.governorate.trim()) {
+    if (
+      !clinicInformation.governorate.trim()
+    ) {
       Alert.alert(
         "Required",
         "Select the governorate.",
@@ -100,7 +130,9 @@ export default function CreateClinicScreen() {
       return;
     }
 
-    if (!clinicInformation.district.trim()) {
+    if (
+      !clinicInformation.district.trim()
+    ) {
       Alert.alert(
         "Required",
         "Enter the district.",
@@ -108,7 +140,9 @@ export default function CreateClinicScreen() {
       return;
     }
 
-    if (!clinicInformation.streetAddress.trim()) {
+    if (
+      !clinicInformation.streetAddress.trim()
+    ) {
       Alert.alert(
         "Required",
         "Enter the street address.",
@@ -116,11 +150,9 @@ export default function CreateClinicScreen() {
       return;
     }
 
-    /*
-     * =========================
-     * Working Days Validation
-     * =========================
-     */
+    // ==================================================
+    // Working Days Validation
+    // ==================================================
 
     const workingDaysValidation =
       validateWorkingDays(
@@ -187,48 +219,83 @@ export default function CreateClinicScreen() {
       }
     }
 
-    /*
-     * =========================
-     * Create Clinic
-     * =========================
-     */
+    // ==================================================
+    // Create Clinic
+    // ==================================================
 
     try {
       setLoading(true);
 
-      const clinicWorkingDays =
+      // ------------------------------------------------
+      // Normalize Working Days
+      // ------------------------------------------------
+
+      const clinicWorkingDays: CreateClinicDto["workingDays"] =
         workingDays.map((day) => ({
           day: day.day,
           isClosed: day.isClosed,
           is24Hours: day.is24Hours,
+
           shifts:
             day.isClosed ||
             day.is24Hours
               ? []
-              : day.shifts,
+              : day.shifts.map(
+                  (shift) => ({
+                    startTime:
+                      shift.startTime,
+                    endTime:
+                      shift.endTime,
+                  }),
+                ),
         }));
 
-      await createClinic({
+      // ------------------------------------------------
+      // Create Payload
+      // ------------------------------------------------
+
+      const payload: CreateClinicDto = {
         name:
           clinicInformation.name.trim(),
+
         phone:
           clinicInformation.phone.trim(),
+
         email:
           clinicInformation.email.trim() ||
           undefined,
+
         governorate:
           clinicInformation.governorate.trim(),
+
         city:
           clinicInformation.city.trim(),
+
         district:
           clinicInformation.district.trim(),
+
         streetAddress:
           clinicInformation.streetAddress.trim(),
+
         workingDays:
           clinicWorkingDays,
-      });
+      };
+
+      // ------------------------------------------------
+      // API
+      // ------------------------------------------------
+
+      await createClinic(payload);
+
+      // ------------------------------------------------
+      // Refresh Clinics Store
+      // ------------------------------------------------
 
       await loadClinics();
+
+      // ------------------------------------------------
+      // Success
+      // ------------------------------------------------
 
       Alert.alert(
         "Clinic Created",
@@ -248,14 +315,14 @@ export default function CreateClinicScreen() {
         error?.response?.data,
       );
 
-      const apiError = getApiError(
-        error,
-        {
-          title: "Unable to Create Clinic",
+      const apiError =
+        getApiError(error, {
+          title:
+            "Unable to Create Clinic",
+
           message:
             "We couldn't create the clinic. Please check the entered information and try again.",
-        },
-      );
+        });
 
       Alert.alert(
         apiError.title,
@@ -266,14 +333,24 @@ export default function CreateClinicScreen() {
     }
   };
 
+  // ====================================================
+  // Render
+  // ====================================================
+
   return (
     <SafeAreaView
       style={styles.container}
       edges={["top", "bottom"]}
     >
+      {/* ==============================================
+          Top Bar
+      ============================================== */}
+
       <AppTopBar
         title="Create Clinic"
-        onBack={() => router.back()}
+        onBack={() =>
+          router.back()
+        }
       />
 
       <ScrollView
@@ -284,6 +361,10 @@ export default function CreateClinicScreen() {
           false
         }
       >
+        {/* ============================================
+            Clinic Information
+        ============================================ */}
+
         <SectionHeader
           title="Clinic Information"
         />
@@ -295,6 +376,10 @@ export default function CreateClinicScreen() {
           }
         />
 
+        {/* ============================================
+            Working Days
+        ============================================ */}
+
         <SectionHeader
           title="Working Days"
         />
@@ -303,6 +388,10 @@ export default function CreateClinicScreen() {
           value={workingDays}
           onChange={setWorkingDays}
         />
+
+        {/* ============================================
+            Create Button
+        ============================================ */}
 
         <AppButton
           title="Create Clinic"
@@ -313,6 +402,10 @@ export default function CreateClinicScreen() {
     </SafeAreaView>
   );
 }
+
+// ======================================================
+// Styles
+// ======================================================
 
 const styles =
   StyleSheet.create({
