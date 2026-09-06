@@ -987,6 +987,8 @@ model VisitComplaintAnalysis {
   templateVersion Int
 
   values Json
+  associatedSymptoms Json @default("{}")
+  redFlags Json @default("{}")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -40,6 +40,73 @@ export class VisitService {
     private readonly prisma: PrismaService,
   ) {}
 
+  private splitComplaintAnalysisAnswers(
+    answers: Record<string, any>,
+    template: Prisma.JsonValue,
+  ) {
+    const sections =
+      typeof template === 'object' &&
+      template !== null &&
+      !Array.isArray(template) &&
+      Array.isArray((template as any).sections)
+        ? (template as any).sections
+        : [];
+
+    const getFieldCodes = (
+      sectionCode: string,
+      sectionTitle: string,
+    ) =>
+      new Set<string>(
+        sections
+          .filter(
+            (section: any) =>
+              section?.code === sectionCode ||
+              section?.title === sectionTitle,
+          )
+          .flatMap(
+            (section: any) =>
+              Array.isArray(section?.fields)
+                ? section.fields
+                : [],
+          )
+          .map((field: any) => field?.code)
+          .filter(
+            (code: unknown): code is string =>
+              typeof code === 'string',
+          ),
+      );
+
+    const associatedFields = getFieldCodes(
+      'ASSOCIATED_SYMPTOMS',
+      'Associated Symptoms',
+    );
+
+    const redFlagFields = getFieldCodes(
+      'RED_FLAGS',
+      'Red Flags',
+    );
+
+    const values: Record<string, any> = {};
+    const associatedSymptoms: Record<string, any> = {};
+    const redFlags: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(answers)) {
+      if (associatedFields.has(key)) {
+        associatedSymptoms[key] = value;
+      } else if (redFlagFields.has(key)) {
+        redFlags[key] = value;
+      } else {
+        values[key] = value;
+      }
+    }
+
+    return {
+      values,
+      associatedSymptoms,
+      redFlags,
+    };
+  }
+
   private async getActiveClinicId(
     currentUserId: string,
   ): Promise<string> {
@@ -1410,6 +1477,12 @@ export class VisitService {
             undefined &&
           complaint.template
         ) {
+          const analysisValues =
+            this.splitComplaintAnalysisAnswers(
+              dto.answers,
+              complaint.template.template,
+            );
+
           await tx.visitComplaintAnalysis.upsert(
             {
               where: {
@@ -1428,7 +1501,13 @@ export class VisitService {
                   complaint.template.version,
 
                 values:
-                  dto.answers,
+                  analysisValues.values,
+
+                associatedSymptoms:
+                  analysisValues.associatedSymptoms,
+
+                redFlags:
+                  analysisValues.redFlags,
               },
 
               update: {
@@ -1439,7 +1518,13 @@ export class VisitService {
                   complaint.template.version,
 
                 values:
-                  dto.answers,
+                  analysisValues.values,
+
+                associatedSymptoms:
+                  analysisValues.associatedSymptoms,
+
+                redFlags:
+                  analysisValues.redFlags,
               },
             },
           );

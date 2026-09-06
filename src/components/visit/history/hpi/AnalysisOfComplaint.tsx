@@ -175,8 +175,11 @@ export default function AnalysisOfComplaint() {
           return;
         }
 
-        const backendValues =
-          data?.analysis?.values;
+        const backendValues = {
+          ...(data?.analysis?.values ?? {}),
+          ...(data?.analysis?.associatedSymptoms ?? {}),
+          ...(data?.analysis?.redFlags ?? {}),
+        };
 
         if (
           !backendValues ||
