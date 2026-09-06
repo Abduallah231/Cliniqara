@@ -6,12 +6,12 @@ import SectionHeader from "@/components/common/SectionHeader";
 
 import { useEffect, useRef, useState } from "react";
 
-import { getChiefComplaints } from "@/services/chiefComplaintApi";
+import { getClinicChiefComplaints } from "@/services/chiefComplaintApi";
 import {
   getChiefComplaint,
   saveChiefComplaint,
 } from "@/services/visitApi";
-
+import { useClinicStore } from "@/store/clinicStore";
 import { useVisitStore } from "@/store/visitStore";
 
 import {
@@ -33,6 +33,11 @@ export default function ChiefComplaint() {
     hydrateChiefComplaint,
     updateVisit,
   } = useVisitStore();
+
+  const currentClinicId =
+    useClinicStore(
+      (state) => state.currentClinicId,
+    );
 
   const chiefComplaint =
     visit.history.chiefComplaint;
@@ -62,25 +67,32 @@ export default function ChiefComplaint() {
     let cancelled = false;
 
     async function loadComplaints() {
+      if (!currentClinicId) {
+        setComplaints([]);
+        return;
+      }
+
       try {
         const data =
-          await getChiefComplaints();
+          await getClinicChiefComplaints(
+            currentClinicId,
+          );
 
         if (cancelled) {
           return;
         }
 
         setComplaints(
-          data.map((item: any) => ({
+          data.map((item) => ({
             id: item.id,
             label: item.name,
-          }))
+          })),
         );
       } catch (error) {
         if (!cancelled) {
           console.error(
-            "Failed to load chief complaints:",
-            error
+            "Failed to load clinic chief complaints:",
+            error,
           );
         }
       }
@@ -91,7 +103,7 @@ export default function ChiefComplaint() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [currentClinicId]);
 
   /*
    * ======================================================
@@ -312,16 +324,10 @@ export default function ChiefComplaint() {
       : undefined;
 
   const quickComplaints =
-    complaints.slice(0, 8);
+    complaints.slice(0, 5);
 
   const dropdownComplaints =
-    complaints.filter(
-      (item) =>
-        !quickComplaints.some(
-          (quick) =>
-            quick.id === item.id
-        )
-    );
+    complaints;
 
   /*
    * ======================================================
