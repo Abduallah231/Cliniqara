@@ -12,7 +12,7 @@ import { UploadModule } from "./upload/upload.module";
 import { VisitModule } from "./visit/visit.module";
 import { PrescriptionTemplateModule } from './prescription-template/prescription-template.module';
 import { DrugsModule } from './drugs/drugs.module';
-
+import { StatisticsModule } from "./statistics/statistics.module";
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,6 +29,7 @@ import { DrugsModule } from './drugs/drugs.module';
     DoctorModule,
     PrescriptionTemplateModule,
     DrugsModule,
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -525,11 +525,7 @@ export default function VisitScreen() {
       style={styles.floatingBackButton}
     >
       <Ionicons
-        name={
-          activeSection === "assessment"
-            ? "medkit-outline"
-            : "document-text-outline"
-        }
+        name="arrow-back"
         size={25}
         color={COLORS.primary}
       />
@@ -554,11 +550,7 @@ export default function VisitScreen() {
       ]}
     >
       <Ionicons
-        name={
-          activeSection === "history"
-            ? "medkit-outline"
-            : "clipboard-outline"
-        }
+        name="arrow-forward"
         size={25}
         color={COLORS.white}
       />

@@ -1,426 +1,482 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import AppCard from "@/components/common/AppCard";
-import AppTopBar from "@/components/common/AppTopBar";
-import SectionHeader from "@/components/common/SectionHeader";
-import Divider from "@/components/common/Divider";
-import {
-  COLORS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY
-} from "@/theme";
+import StatisticsAgeDistribution from "@/components/statistics/StatisticsAgeDistribution";
+import StatisticsAverageTimes from "@/components/statistics/StatisticsAverageTimes";
+import StatisticsDoctorPerformance from "@/components/statistics/StatisticsDoctorPerformance";
+import StatisticsGenderDistribution from "@/components/statistics/StatisticsGenderDistribution";
+import StatisticsPerformance from "@/components/statistics/StatisticsPerformance";
+import StatisticsRankingList from "@/components/statistics/StatisticsRankingList";
+import StatisticsVisitsOverview from "@/components/statistics/StatisticsVisitsOverview";
+import { useClinicStatistics } from "@/hooks/useClinicStatistics";
+import { COLORS } from "@/theme/colors";
+import { TYPOGRAPHY } from "@/theme/typography";
 
 export default function StatisticsScreen() {
+  const {
+    statistics,
+    loading,
+    refreshing,
+    error,
+    isForbidden,
+    refresh,
+  } = useClinicStatistics();
+
+  const [showAllComplaints, setShowAllComplaints] =
+    useState(false);
+
+  const [showAllDiagnoses, setShowAllDiagnoses] =
+    useState(false);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Header />
+
+        <View style={styles.center}>
+          <ActivityIndicator
+            size="large"
+            color={COLORS.primary}
+          />
+
+          <Text style={styles.loadingText}>
+            Loading statistics...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isForbidden) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Header />
+
+        <View style={styles.center}>
+          <View style={styles.accessIcon}>
+            <Ionicons
+              name="lock-closed-outline"
+              size={30}
+              color={COLORS.danger}
+            />
+          </View>
+
+          <Text style={styles.accessTitle}>
+            Access Denied
+          </Text>
+
+          <Text style={styles.accessText}>
+            Statistics are available only to the
+            clinic owner.
+          </Text>
+
+          <Pressable
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <Text style={styles.backButtonText}>
+              Go Back
+            </Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error || !statistics) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Header />
+
+        <View style={styles.center}>
+          <Ionicons
+            name="alert-circle-outline"
+            size={42}
+            color={COLORS.danger}
+          />
+
+          <Text style={styles.errorTitle}>
+            Unable to Load Statistics
+          </Text>
+
+          <Text style={styles.errorText}>
+            {error ??
+              "Something went wrong. Please try again."}
+          </Text>
+
+          <Pressable
+            onPress={() => void refresh()}
+            style={styles.backButton}
+          >
+            <Text style={styles.backButtonText}>
+              Try Again
+            </Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView
-      style={styles.container}
-      edges={["top", "bottom"]}
-    >
-      <AppTopBar
-        title="Statistics"
-        onBack={() => router.back()}
-      />
+    <SafeAreaView style={styles.safeArea}>
+      <Header />
 
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void refresh()}
+            tintColor={COLORS.primary}
+          />
+        }
       >
+        <Text style={styles.pageTitle}>
+          Clinic Statistics
+        </Text>
 
-        <SectionHeader title="Clinic Snapshot" />
+        <Text style={styles.pageSubtitle}>
+          Overview of visits and clinic performance
+        </Text>
 
-        <View style={styles.snapshotGrid}>
+        {/* ================================================= */}
+        {/* Clinic Performance */}
+        {/* ================================================= */}
 
-          <AppCard style={styles.metricCard}>
-            <Ionicons
-              name="people-outline"
-              size={26}
-              color={COLORS.primary}
-            />
-            <Text style={styles.metricValue}>
-              1,254
-            </Text>
-            <Text style={styles.metricLabel}>
-              Total Patients
-            </Text>
-          </AppCard>
+        <SectionTitle title="Clinic Performance" />
 
-          <AppCard style={styles.metricCard}>
-            <Ionicons
-              name="medkit-outline"
-              size={26}
-              color={COLORS.primary}
-            />
-            <Text style={styles.metricValue}>
-              3,846
-            </Text>
-            <Text style={styles.metricLabel}>
-              Total Visits
-            </Text>
-          </AppCard>
+        <StatisticsPerformance
+          averageVisitsPerDay={
+            statistics.performance
+              .averageVisitsPerDay
+          }
+          visitsThisWeek={
+            statistics.performance.visitsThisWeek
+          }
+          visitsThisMonth={
+            statistics.performance.visitsThisMonth
+          }
+        />
 
-          <AppCard style={styles.metricCard}>
-            <Ionicons
-              name="person-add-outline"
-              size={26}
-              color={COLORS.primary}
-            />
-            <Text style={styles.metricValue}>
-              42
-            </Text>
-            <Text style={styles.metricLabel}>
-              New Patients
-            </Text>
-          </AppCard>
+        {/* ================================================= */}
+        {/* Average Waiting & Consultation */}
+        {/* ================================================= */}
 
-          <AppCard style={styles.metricCard}>
-            <Ionicons
-              name="repeat-outline"
-              size={26}
-              color={COLORS.primary}
-            />
-            <Text style={styles.metricValue}>
-              118
-            </Text>
-            <Text style={styles.metricLabel}>
-              Follow-up Visits
-            </Text>
-          </AppCard>
+        <SectionTitle title="Average Waiting & Consultation Time" />
 
-          <AppCard style={styles.metricWideCard}>
-            <Ionicons
-              name="calendar-outline"
-              size={26}
-              color={COLORS.primary}
-            />
-            <Text style={styles.metricValue}>
-              27
-            </Text>
-            <Text style={styles.metricLabel}>
-              Average Visits / Day
-            </Text>
-          </AppCard>
+        <StatisticsAverageTimes
+          waitingMinutes={
+            statistics.averageTimes
+              .waitingMinutes
+          }
+          consultationMinutes={
+            statistics.averageTimes
+              .consultationMinutes
+          }
+        />
 
-        </View>
+        {/* ================================================= */}
+        {/* Chief Complaints */}
+        {/* ================================================= */}
 
-        <SectionHeader title="Top Diagnoses" />
+        <SectionTitle title="Top Chief Complaints" />
 
-        <AppCard>
-          <Text>HTN</Text>
-        </AppCard>
+        <Card>
+          <StatisticsRankingList
+            items={
+              statistics.topChiefComplaints
+            }
+            showAll={showAllComplaints}
+            onToggleShowAll={() =>
+              setShowAllComplaints(
+                (value) => !value,
+              )
+            }
+          />
+        </Card>
 
-        <SectionHeader title="Chief Complaints" />
+        {/* ================================================= */}
+        {/* Diagnoses */}
+        {/* ================================================= */}
 
-        <AppCard>
-          <Text>Fever</Text>
-        </AppCard>
-                <SectionHeader title="Patient Demographics" />
+        <SectionTitle title="Top Diagnoses" />
 
-        <AppCard style={styles.demographicsCard}>
+        <Card>
+          <StatisticsRankingList
+            items={statistics.topDiagnoses}
+            showAll={showAllDiagnoses}
+            onToggleShowAll={() =>
+              setShowAllDiagnoses(
+                (value) => !value,
+              )
+            }
+          />
+        </Card>
 
-          <View style={styles.demographicItem}>
-            <Ionicons
-              name="male-outline"
-              size={28}
-              color={COLORS.primary}
-            />
-            <Text style={styles.metricValue}>
-              58%
-            </Text>
-            <Text style={styles.metricLabel}>
-              Male
-            </Text>
-          </View>
+        {/* ================================================= */}
+        {/* Age */}
+        {/* ================================================= */}
 
-          <Divider />
+        <SectionTitle title="Age Distribution" />
 
-          <View style={styles.demographicItem}>
-            <Ionicons
-              name="female-outline"
-              size={28}
-              color={COLORS.primary}
-            />
-            <Text style={styles.metricValue}>
-              42%
-            </Text>
-            <Text style={styles.metricLabel}>
-              Female
-            </Text>
-          </View>
+        <Card>
+          <StatisticsAgeDistribution
+            items={
+              statistics.ageDistribution
+            }
+          />
+        </Card>
 
-        </AppCard>
+        {/* ================================================= */}
+        {/* Gender */}
+        {/* ================================================= */}
 
-        <AppCard style={styles.ageCard}>
+        <SectionTitle title="Gender Distribution" />
 
-          <Text style={styles.cardTitle}>
-            Age Distribution
-          </Text>
+        <Card>
+          <StatisticsGenderDistribution
+            male={
+              statistics.genderDistribution
+                .male
+            }
+            female={
+              statistics.genderDistribution
+                .female
+            }
+            malePercentage={
+              statistics.genderDistribution
+                .malePercentage
+            }
+            femalePercentage={
+              statistics.genderDistribution
+                .femalePercentage
+            }
+          />
+        </Card>
 
-        </AppCard>
+        {/* ================================================= */}
+        {/* Doctor Performance */}
+        {/* ================================================= */}
 
-        <SectionHeader title="Average Waiting Time" />
+        <SectionTitle title="Doctor Performance" />
 
-        <AppCard>
+        <Card>
+          <StatisticsDoctorPerformance
+            doctors={
+              statistics.doctorPerformance
+            }
+          />
+        </Card>
 
-          <View style={styles.twoColumn}>
+        {/* ================================================= */}
+        {/* Visits Overview */}
+        {/* ================================================= */}
 
-            <View style={styles.metricBox}>
-              <Ionicons
-                name="time-outline"
-                size={24}
-                color={COLORS.primary}
-              />
+        <SectionTitle title="Visits Overview" />
 
-              <Text style={styles.metricValue}>
-                18 min
-              </Text>
+        <Card>
+          <StatisticsVisitsOverview
+            data={
+              statistics.visitsOverview
+            }
+          />
+        </Card>
 
-              <Text style={styles.metricLabel}>
-                Waiting Time
-              </Text>
-            </View>
-
-            <View style={styles.metricBox}>
-              <Ionicons
-                name="medkit-outline"
-                size={24}
-                color={COLORS.primary}
-              />
-
-              <Text style={styles.metricValue}>
-                12 min
-              </Text>
-
-              <Text style={styles.metricLabel}>
-                Consultation
-              </Text>
-            </View>
-
-          </View>
-
-        </AppCard>
-
-        <SectionHeader title="Follow-up Rate" />
-
-        <AppCard>
-
-          <View style={styles.twoColumn}>
-
-            <View style={styles.metricBox}>
-              <Ionicons
-                name="repeat-outline"
-                size={24}
-                color={COLORS.primary}
-              />
-
-              <Text style={styles.metricValue}>
-                64%
-              </Text>
-
-              <Text style={styles.metricLabel}>
-                Follow-up Rate
-              </Text>
-            </View>
-
-            <View style={styles.metricBox}>
-              <Ionicons
-                name="people-outline"
-                size={24}
-                color={COLORS.primary}
-              />
-
-              <Text style={styles.metricValue}>
-                35 / 65
-              </Text>
-
-              <Text style={styles.metricLabel}>
-                New / Follow-up
-              </Text>
-            </View>
-
-          </View>
-
-        </AppCard>
-                <SectionHeader title="Clinical Performance" />
-
-        <AppCard>
-
-          <View style={styles.twoColumn}>
-
-            <View style={styles.metricBox}>
-              <Ionicons
-                name="calendar-outline"
-                size={24}
-                color={COLORS.primary}
-              />
-
-              <Text style={styles.metricValue}>
-                27
-              </Text>
-
-              <Text style={styles.metricLabel}>
-                Avg Patients / Day
-              </Text>
-            </View>
-
-            <View style={styles.metricBox}>
-              <Ionicons
-                name="today-outline"
-                size={24}
-                color={COLORS.primary}
-              />
-
-              <Text style={styles.metricValue}>
-                134
-              </Text>
-
-              <Text style={styles.metricLabel}>
-                This Week
-              </Text>
-            </View>
-
-          </View>
-
-          <View style={styles.spacer} />
-
-          <View style={styles.twoColumn}>
-
-            <View style={styles.metricBox}>
-              <Ionicons
-                name="calendar-clear-outline"
-                size={24}
-                color={COLORS.primary}
-              />
-
-              <Text style={styles.metricValue}>
-                542
-              </Text>
-
-              <Text style={styles.metricLabel}>
-                This Month
-              </Text>
-            </View>
-
-            <View style={styles.metricBox}>
-              <Ionicons
-                name="checkmark-done-outline"
-                size={24}
-                color={COLORS.primary}
-              />
-
-              <Text style={styles.metricValue}>
-                81%
-              </Text>
-
-              <Text style={styles.metricLabel}>
-                Follow-up Compliance
-              </Text>
-            </View>
-
-          </View>
-
-        </AppCard>
-
+        <View style={styles.bottomSpace} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+function Header() {
+  return (
+    <View style={styles.header}>
+      <Pressable
+        onPress={() => router.back()}
+        hitSlop={10}
+        style={styles.headerButton}
+      >
+        <Ionicons
+          name="arrow-back"
+          size={24}
+          color={COLORS.primary}
+        />
+      </Pressable>
+
+      <Text style={styles.headerTitle}>
+        Statistics
+      </Text>
+
+      <View style={styles.headerButton} />
+    </View>
+  );
+}
+
+function SectionTitle({
+  title,
+}: {
+  title: string;
+}) {
+  return (
+    <Text style={styles.sectionTitle}>
+      {title}
+    </Text>
+  );
+}
+
+function Card({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={styles.card}>
+      {children}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: COLORS.background,
   },
 
+  header: {
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.card,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+
+  headerButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  headerTitle: {
+    fontSize: TYPOGRAPHY.subHeading,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
   content: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.xxl,
-    gap: SPACING.lg,
+    padding: 16,
   },
 
-  snapshotGrid: {
-    gap: SPACING.sm,
-  },
-
-  metricCard: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 120,
-    gap: SPACING.sm,
-    ...SHADOW,
-  },
-
-  metricWideCard: {
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 120,
-    gap: SPACING.sm,
-    ...SHADOW,
-  },
-
-  metricValue: {
+  pageTitle: {
     fontSize: TYPOGRAPHY.title,
     fontWeight: "700",
     color: COLORS.text,
   },
 
-  metricLabel: {
+  pageSubtitle: {
+    marginTop: 4,
     fontSize: TYPOGRAPHY.small,
     color: COLORS.secondaryText,
-    textAlign: "center",
   },
 
-  demographicsCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    ...SHADOW,
-  },
-
-  demographicItem: {
-    flex: 1,
-    alignItems: "center",
-    gap: SPACING.sm,
-  },
-
-  ageCard: {
-    marginTop: SPACING.sm,
-    ...SHADOW,
-  },
-
-  cardTitle: {
-    fontSize: TYPOGRAPHY.body,
+  sectionTitle: {
+    marginTop: 24,
+    marginBottom: 10,
+    fontSize: TYPOGRAPHY.subHeading,
     fontWeight: "700",
     color: COLORS.text,
   },
 
-  cardValue: {
-    marginTop: SPACING.sm,
-    fontSize: TYPOGRAPHY.subHeading,
-    fontWeight: "700",
-    color: COLORS.primary,
+  card: {
+    backgroundColor: COLORS.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
   },
 
-  spacer: {
-    height: SPACING.lg,
-  },
-
-  twoColumn: {
-    flexDirection: "row",
-    gap: SPACING.sm,
-  },
-
-  metricBox: {
+  center: {
     flex: 1,
     alignItems: "center",
-    gap: SPACING.sm,
+    justifyContent: "center",
+    paddingHorizontal: 30,
+  },
+
+  loadingText: {
+    marginTop: 12,
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.secondaryText,
+  },
+
+  accessIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#FEE2E2",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  accessTitle: {
+    marginTop: 16,
+    fontSize: TYPOGRAPHY.heading,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
+  accessText: {
+    marginTop: 8,
+    fontSize: TYPOGRAPHY.body,
+    lineHeight: 23,
+    color: COLORS.secondaryText,
+    textAlign: "center",
+  },
+
+  backButton: {
+    marginTop: 20,
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingVertical: 11,
+    paddingHorizontal: 22,
+  },
+
+  backButtonText: {
+    fontSize: TYPOGRAPHY.small,
+    fontWeight: "700",
+    color: COLORS.white,
+  },
+
+  errorTitle: {
+    marginTop: 12,
+    fontSize: TYPOGRAPHY.heading,
+    fontWeight: "700",
+    color: COLORS.text,
+    textAlign: "center",
+  },
+
+  errorText: {
+    marginTop: 8,
+    fontSize: TYPOGRAPHY.small,
+    lineHeight: 21,
+    color: COLORS.secondaryText,
+    textAlign: "center",
+  },
+
+  bottomSpace: {
+    height: 20,
   },
 });
