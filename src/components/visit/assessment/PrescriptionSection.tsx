@@ -152,6 +152,7 @@ export default function PrescriptionSection() {
   // ======================================================
   const addMedication = () => {
     addPrescriptionMedication({
+      drugId: "",
       medication: "",
       instructions: "",
       durationValue: "",

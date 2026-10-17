@@ -9,6 +9,7 @@ import {
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
 import {
+  Alert,
   Pressable,
   StyleSheet,
   Text,
@@ -37,15 +38,19 @@ export default function AssessmentTab({
     <View style={styles.container}>
       <Pressable
         style={styles.aiButton}
+        onPress={() => {
+          Alert.alert(
+            "Coming Soon",
+            "AI Suggestions will be available in a future update.",
+          );
+        }}
       >
         <Ionicons
           name="sparkles-outline"
           size={20}
           color={COLORS.white}
         />
-        <Text
-          style={styles.aiButtonText}
-        >
+        <Text style={styles.aiButtonText}>
           Generate AI Suggestions
         </Text>
       </Pressable>
