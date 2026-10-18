@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-    StyleSheet,
-    Text,
-    View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 
 import AppCard from "@/components/common/AppCard";
 
@@ -23,7 +21,7 @@ export default function WaitingSummary({
   withDoctor,
 }: Props) {
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <AppCard style={styles.card}>
         <Ionicons
           name="time-outline"
@@ -31,13 +29,13 @@ export default function WaitingSummary({
           color={COLORS.primary}
         />
 
-        <Text style={styles.count}>
+        <AppText style={styles.count}>
           {waiting}
-        </Text>
+        </AppText>
 
-        <Text style={styles.label}>
+        <AppText style={styles.label}>
           Waiting
-        </Text>
+        </AppText>
       </AppCard>
 
       <AppCard style={styles.card}>
@@ -47,15 +45,15 @@ export default function WaitingSummary({
           color={COLORS.primary}
         />
 
-        <Text style={styles.count}>
+        <AppText style={styles.count}>
           {withDoctor}
-        </Text>
+        </AppText>
 
-        <Text style={styles.label}>
+        <AppText style={styles.label}>
           With Doctor
-        </Text>
+        </AppText>
       </AppCard>
-    </View>
+    </AppView>
   );
 }
 

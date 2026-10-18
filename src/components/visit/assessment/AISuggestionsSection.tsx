@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
 import {
@@ -11,18 +13,18 @@ import {
 
 export default function AISuggestionsSection() {
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <Ionicons
         name="sparkles-outline"
         size={40}
         color={COLORS.primary}
       />
 
-      <Text style={styles.title}>
+      <AppText style={styles.title}>
         No AI Suggestions Yet
-      </Text>
+      </AppText>
 
-      <Text style={styles.description}>
+      <AppText style={styles.description}>
         Press "Generate AI Suggestions"
         to receive AI-assisted clinical
         recommendations including
@@ -30,8 +32,8 @@ export default function AISuggestionsSection() {
         suggested investigations,
         procedures, and treatment
         options.
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 

@@ -1,8 +1,6 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -43,11 +41,11 @@ export default function CVSSystem() {
     items: string[];
   }) => (
     <>
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         {title}
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {items.map((item) => (
           <AppChip
             key={item}
@@ -60,15 +58,15 @@ export default function CVSSystem() {
             }
           />
         ))}
-      </View>
+      </AppView>
     </>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <AppView style={styles.container}>
+      <AppText style={styles.title}>
         CVS
-      </Text>
+      </AppText>
 
             <Section
         title="Cardiac Symptoms"
@@ -120,7 +118,7 @@ export default function CVSSystem() {
         }
         multiline
       />
-    </View>
+    </AppView>
   );}
 
   const styles = StyleSheet.create({

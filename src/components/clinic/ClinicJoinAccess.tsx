@@ -1,7 +1,6 @@
-import {
-  Text,
-} from "react-native";
 
+
+import AppText from "@/components/common/AppText";
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 import JoinCodeCard from "@/components/clinic/JoinCodeCard";
@@ -27,7 +26,7 @@ export default function ClinicJoinAccess({
 }: Props) {
   return (
     <AppCard>
-      <Text
+      <AppText
         style={{
           color: COLORS.secondaryText,
           fontSize: TYPOGRAPHY.body,
@@ -38,7 +37,7 @@ export default function ClinicJoinAccess({
         Generate a temporary code that doctors or
         reception staff can use to request access to
         this clinic.
-      </Text>
+      </AppText>
 
       <AppButton
         title={

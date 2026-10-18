@@ -1,12 +1,9 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Modal, StyleSheet } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
 
@@ -47,7 +44,7 @@ function IncludedItem({
   included: boolean;
 }) {
   return (
-    <View style={styles.includedItem}>
+    <AppView style={styles.includedItem}>
       <Ionicons
         name={icon}
         size={18}
@@ -58,9 +55,9 @@ function IncludedItem({
         }
       />
 
-      <Text style={styles.includedLabel}>
+      <AppText style={styles.includedLabel}>
         {label}
-      </Text>
+      </AppText>
 
       <Ionicons
         name={
@@ -75,7 +72,7 @@ function IncludedItem({
             : COLORS.text
         }
       />
-    </View>
+    </AppView>
   );
 }
 
@@ -91,7 +88,7 @@ function ModeOption({
   onPress: () => void;
 }) {
   return (
-    <Pressable
+    <AppPressable
       onPress={onPress}
       style={[
         styles.modeOption,
@@ -99,7 +96,7 @@ function ModeOption({
           styles.modeOptionSelected,
       ]}
     >
-      <View
+      <AppView
         style={[
           styles.radioOuter,
           selected &&
@@ -107,20 +104,20 @@ function ModeOption({
         ]}
       >
         {selected && (
-          <View style={styles.radioInner} />
+          <AppView style={styles.radioInner} />
         )}
-      </View>
+      </AppView>
 
-      <View style={styles.modeTextContainer}>
-        <Text style={styles.modeTitle}>
+      <AppView style={styles.modeTextContainer}>
+        <AppText style={styles.modeTitle}>
           {title}
-        </Text>
+        </AppText>
 
-        <Text style={styles.modeDescription}>
+        <AppText style={styles.modeDescription}>
           {description}
-        </Text>
-      </View>
-    </Pressable>
+        </AppText>
+      </AppView>
+    </AppPressable>
   );
 }
 
@@ -159,31 +156,31 @@ export default function ImportTemplateDialog({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <Pressable
+      <AppView style={styles.overlay}>
+        <AppPressable
           style={StyleSheet.absoluteFill}
           onPress={onClose}
         />
 
-        <View style={styles.dialog}>
-          <View style={styles.header}>
-            <View style={styles.headerText}>
-              <Text
+        <AppView style={styles.dialog}>
+          <AppView style={styles.header}>
+            <AppView style={styles.headerText}>
+              <AppText
                 style={styles.title}
                 numberOfLines={2}
               >
                 Import Template
-              </Text>
+              </AppText>
 
-              <Text
+              <AppText
                 style={styles.templateTitle}
                 numberOfLines={2}
               >
                 {template.title}
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
 
-            <Pressable
+            <AppPressable
               onPress={onClose}
               hitSlop={10}
               style={styles.closeButton}
@@ -193,32 +190,32 @@ export default function ImportTemplateDialog({
                 size={24}
                 color={COLORS.text}
               />
-            </Pressable>
-          </View>
+            </AppPressable>
+          </AppView>
 
-          <ScrollView
+          <AppScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={
               styles.scrollContent
             }
           >
-            <View style={styles.summaryCard}>
-              <View style={styles.summaryRow}>
+            <AppView style={styles.summaryCard}>
+              <AppView style={styles.summaryRow}>
                 <Ionicons
                   name="medkit-outline"
                   size={20}
                   color={COLORS.primary}
                 />
 
-                <Text style={styles.summaryText}>
+                <AppText style={styles.summaryText}>
                   {template.medications.length}{" "}
                   medication
                   {template.medications.length ===
                   1
                     ? ""
                     : "s"}
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
 
               <IncludedItem
                 icon="chatbox-ellipses-outline"
@@ -237,11 +234,11 @@ export default function ImportTemplateDialog({
                 label="Follow-up"
                 included={hasFollowUp}
               />
-            </View>
+            </AppView>
 
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
               How do you want to import it?
-            </Text>
+            </AppText>
 
             <ModeOption
               selected={mode === "ADD"}
@@ -262,40 +259,40 @@ export default function ImportTemplateDialog({
             />
 
             {mode === "REPLACE" && (
-              <View style={styles.warning}>
+              <AppView style={styles.warning}>
                 <Ionicons
                   name="warning-outline"
                   size={19}
                   color={COLORS.text}
                 />
 
-                <Text style={styles.warningText}>
+                <AppText style={styles.warningText}>
                   Your current medications,
                   advice, notes and follow-up
                   will be replaced.
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
             )}
 
             {mode === "ADD" && (
-              <View style={styles.info}>
+              <AppView style={styles.info}>
                 <Ionicons
                   name="information-circle-outline"
                   size={19}
                   color={COLORS.text}
                 />
 
-                <Text style={styles.infoText}>
+                <AppText style={styles.infoText}>
                   Medications, advice and notes
                   will be appended. Follow-up
                   will always be replaced by the
                   template follow-up.
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
             )}
-          </ScrollView>
+          </AppScrollView>
 
-          <View style={styles.actions}>
+          <AppView style={styles.actions}>
             <AppButton
               title="Cancel"
               variant="secondary"
@@ -311,9 +308,9 @@ export default function ImportTemplateDialog({
                 onConfirm(mode)
               }
             />
-          </View>
-        </View>
-      </View>
+          </AppView>
+        </AppView>
+      </AppView>
     </Modal>
   );
 }

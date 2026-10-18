@@ -1,6 +1,7 @@
+import AppView from "@/components/common/AppView";
 import AppChip from "@/components/common/AppChip";
 
-import { View } from "react-native";
+
 
 import { ComplaintField } from "../../models/ComplaintField";
 
@@ -19,7 +20,7 @@ export default function SingleSelectField({
     <>
  
 
-      <View
+      <AppView
         style={{
           flexDirection: "row",
           flexWrap: "wrap",
@@ -34,7 +35,7 @@ export default function SingleSelectField({
             onPress={() => onChange(option.code)}
           />
         ))}
-      </View>
+      </AppView>
     </>
   );
 }

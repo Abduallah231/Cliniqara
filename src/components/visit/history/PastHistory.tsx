@@ -1,9 +1,6 @@
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet, TouchableOpacity } from "react-native";
 
 import { useState } from "react";
 
@@ -138,18 +135,18 @@ function DateField({
   disabled = false,
 }: DateFieldProps) {
   return (
-    <View
+    <AppView
       style={
         styles.dateFieldContainer
       }
     >
-      <Text
+      <AppText
         style={
           styles.dateLabel
         }
       >
         Date
-      </Text>
+      </AppText>
 
       <AppButton
         title={
@@ -160,7 +157,7 @@ function DateField({
         icon="calendar-outline"
         onPress={onPress}
       />
-    </View>
+    </AppView>
   );
 }
 
@@ -1101,7 +1098,7 @@ export default function PastHistory() {
   ==================================================== */
 
   return (
-    <View
+    <AppView
       style={
         styles.container
       }
@@ -1111,36 +1108,36 @@ export default function PastHistory() {
       ================================================== */}
 
       {isHydrating && (
-        <Text
+        <AppText
           style={
             styles.saveStatus
           }
         >
           Loading past history...
-        </Text>
+        </AppText>
       )}
 
       {!isHydrating &&
         isAutoSaving &&
         autoSavingSection ===
           "chronicDiseases" && (
-          <Text
+          <AppText
             style={
               styles.saveStatus
             }
           >
             Saving chronic diseases...
-          </Text>
+          </AppText>
         )}
 
       {!!saveError && (
-        <Text
+        <AppText
           style={
             styles.errorStatus
           }
         >
           {saveError}
-        </Text>
+        </AppText>
       )}
 
       {/* ==================================================
@@ -1151,7 +1148,7 @@ export default function PastHistory() {
         title="Chronic Diseases"
       />
 
-      <View
+      <AppView
         style={
           styles.chipRow
         }
@@ -1182,7 +1179,7 @@ export default function PastHistory() {
             />
           ),
         )}
-      </View>
+      </AppView>
 
       <Divider />
 
@@ -1194,7 +1191,7 @@ export default function PastHistory() {
         title="Hospitalizations"
       />
 
-      <View
+      <AppView
         style={styles.card}
       >
         <AppTextField
@@ -1237,14 +1234,14 @@ export default function PastHistory() {
           }
         />
 
-        <Text
+        <AppText
           style={
             styles.helperText
           }
         >
           Select the date, then tap
           the button below to save.
-        </Text>
+        </AppText>
 
         <AppButton
           title={
@@ -1264,46 +1261,46 @@ export default function PastHistory() {
             handleAddHospitalization
           }
         />
-      </View>
+      </AppView>
 
       {pastHistory.hospitalizations.map(
         (item) => (
-          <View
+          <AppView
             key={item.id}
             style={
               styles.recordCard
             }
           >
-            <Text
+            <AppText
               style={
                 styles.recordTitle
               }
             >
               {item.reason}
-            </Text>
+            </AppText>
 
             {!!item.date && (
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Date: {item.date}
-              </Text>
+              </AppText>
             )}
 
             {!!item.duration && (
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Duration:{" "}
                 {item.duration}
-              </Text>
+              </AppText>
             )}
 
-            <View
+            <AppView
               style={
                 styles.actionRow
               }
@@ -1367,8 +1364,8 @@ export default function PastHistory() {
                   }
                 />
               </TouchableOpacity>
-            </View>
-          </View>
+            </AppView>
+          </AppView>
         ),
       )}
 
@@ -1382,7 +1379,7 @@ export default function PastHistory() {
         title="Operations"
       />
 
-      <View
+      <AppView
         style={styles.card}
       >
         <AppTextField
@@ -1425,14 +1422,14 @@ export default function PastHistory() {
           }
         />
 
-        <Text
+        <AppText
           style={
             styles.helperText
           }
         >
           Select the date, then tap
           the button below to save.
-        </Text>
+        </AppText>
 
         <AppButton
           title={
@@ -1452,46 +1449,46 @@ export default function PastHistory() {
             handleAddOperation
           }
         />
-      </View>
+      </AppView>
 
       {pastHistory.operations.map(
         (item) => (
-          <View
+          <AppView
             key={item.id}
             style={
               styles.recordCard
             }
           >
-            <Text
+            <AppText
               style={
                 styles.recordTitle
               }
             >
               {item.name}
-            </Text>
+            </AppText>
 
             {!!item.date && (
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Date: {item.date}
-              </Text>
+              </AppText>
             )}
 
             {!!item.indication && (
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Indication:{" "}
                 {item.indication}
-              </Text>
+              </AppText>
             )}
 
-            <View
+            <AppView
               style={
                 styles.actionRow
               }
@@ -1555,8 +1552,8 @@ export default function PastHistory() {
                   }
                 />
               </TouchableOpacity>
-            </View>
-          </View>
+            </AppView>
+          </AppView>
         ),
       )}
 
@@ -1570,7 +1567,7 @@ export default function PastHistory() {
         title="Blood Transfusions"
       />
 
-      <View
+      <AppView
         style={styles.card}
       >
         <AppTextField
@@ -1613,14 +1610,14 @@ export default function PastHistory() {
           }
         />
 
-        <Text
+        <AppText
           style={
             styles.helperText
           }
         >
           Select the date, then tap
           the button below to save.
-        </Text>
+        </AppText>
 
         <AppButton
           title={
@@ -1640,47 +1637,47 @@ export default function PastHistory() {
             handleAddBloodTransfusion
           }
         />
-      </View>
+      </AppView>
 
       {pastHistory.bloodTransfusions.map(
         (item) => (
-          <View
+          <AppView
             key={item.id}
             style={
               styles.recordCard
             }
           >
-            <Text
+            <AppText
               style={
                 styles.recordTitle
               }
             >
               {item.reason ||
                 "Blood Transfusion"}
-            </Text>
+            </AppText>
 
             {!!item.date && (
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Date: {item.date}
-              </Text>
+              </AppText>
             )}
 
             {!!item.reaction && (
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Reaction:{" "}
                 {item.reaction}
-              </Text>
+              </AppText>
             )}
 
-            <View
+            <AppView
               style={
                 styles.actionRow
               }
@@ -1744,8 +1741,8 @@ export default function PastHistory() {
                   }
                 />
               </TouchableOpacity>
-            </View>
-          </View>
+            </AppView>
+          </AppView>
         ),
       )}
 
@@ -1759,7 +1756,7 @@ export default function PastHistory() {
         title="Major Trauma"
       />
 
-      <View
+      <AppView
         style={styles.card}
       >
         <AppTextField
@@ -1802,14 +1799,14 @@ export default function PastHistory() {
           }
         />
 
-        <Text
+        <AppText
           style={
             styles.helperText
           }
         >
           Select the date, then tap
           the button below to save.
-        </Text>
+        </AppText>
 
         <AppButton
           title={
@@ -1829,46 +1826,46 @@ export default function PastHistory() {
             handleAddMajorTrauma
           }
         />
-      </View>
+      </AppView>
 
       {pastHistory.majorTraumas.map(
         (item) => (
-          <View
+          <AppView
             key={item.id}
             style={
               styles.recordCard
             }
           >
-            <Text
+            <AppText
               style={
                 styles.recordTitle
               }
             >
               {item.type}
-            </Text>
+            </AppText>
 
             {!!item.date && (
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Date: {item.date}
-              </Text>
+              </AppText>
             )}
 
             {!!item.complications && (
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Complications:{" "}
                 {item.complications}
-              </Text>
+              </AppText>
             )}
 
-            <View
+            <AppView
               style={
                 styles.actionRow
               }
@@ -1932,8 +1929,8 @@ export default function PastHistory() {
                   }
                 />
               </TouchableOpacity>
-            </View>
-          </View>
+            </AppView>
+          </AppView>
         ),
       )}
 
@@ -1947,7 +1944,7 @@ export default function PastHistory() {
         title="ICU Admissions"
       />
 
-      <View
+      <AppView
         style={styles.card}
       >
         <AppTextField
@@ -1991,7 +1988,7 @@ export default function PastHistory() {
         />
 
         {/*
-        <View style={styles.chipRow}>
+        <AppView style={styles.chipRow}>
           <AppChip
             label="Yes"
             selected={
@@ -2013,17 +2010,17 @@ export default function PastHistory() {
               setIcuVentilatorSupport(false)
             }
           />
-        </View>
+        </AppView>
         */}
 
-        <Text
+        <AppText
           style={
             styles.helperText
           }
         >
           Select the date, then tap
           the button below to save.
-        </Text>
+        </AppText>
 
         <AppButton
           title={
@@ -2043,46 +2040,46 @@ export default function PastHistory() {
             handleAddICUAdmission
           }
         />
-      </View>
+      </AppView>
 
       {pastHistory.icuAdmissions.map(
         (item) => (
-          <View
+          <AppView
             key={item.id}
             style={
               styles.recordCard
             }
           >
-            <Text
+            <AppText
               style={
                 styles.recordTitle
               }
             >
               {item.reason}
-            </Text>
+            </AppText>
 
             {!!item.date && (
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Date: {item.date}
-              </Text>
+              </AppText>
             )}
 
             {!!item.duration && (
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Duration:{" "}
                 {item.duration}
-              </Text>
+              </AppText>
             )}
 
-            <Text
+            <AppText
               style={
                 styles.recordText
               }
@@ -2091,9 +2088,9 @@ export default function PastHistory() {
               {item.ventilatorSupport
                 ? "Yes"
                 : "No"}
-            </Text>
+            </AppText>
 
-            <View
+            <AppView
               style={
                 styles.actionRow
               }
@@ -2161,8 +2158,8 @@ export default function PastHistory() {
                   }
                 />
               </TouchableOpacity>
-            </View>
-          </View>
+            </AppView>
+          </AppView>
         ),
       )}
 
@@ -2185,7 +2182,7 @@ export default function PastHistory() {
           }
         />
       )}
-    </View>
+    </AppView>
   );
 }
 

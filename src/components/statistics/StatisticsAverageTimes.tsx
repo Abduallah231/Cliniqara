@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import { COLORS } from "@/theme/colors";
 import { TYPOGRAPHY } from "@/theme/typography";
@@ -13,7 +15,7 @@ export default function StatisticsAverageTimes({
   consultationMinutes,
 }: Props) {
   return (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       <TimeCard
         title="Waiting Time"
         value={waitingMinutes}
@@ -23,7 +25,7 @@ export default function StatisticsAverageTimes({
         title="Consultation Time"
         value={consultationMinutes}
       />
-    </View>
+    </AppView>
   );
 }
 
@@ -35,13 +37,13 @@ function TimeCard({
   value: number;
 }) {
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>{title}</Text>
+    <AppView style={styles.card}>
+      <AppText style={styles.title}>{title}</AppText>
 
-      <Text style={styles.value}>
+      <AppText style={styles.value}>
         {formatMinutes(value)}
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 

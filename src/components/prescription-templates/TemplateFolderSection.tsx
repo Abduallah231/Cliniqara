@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 
 import SectionHeader from "@/components/common/SectionHeader";
 
@@ -38,15 +36,15 @@ export default function TemplateFolderSection({
   }
 
   return (
-    <View
+    <AppView
       style={styles.container}
     >
-      <View style={styles.header}>
+      <AppView style={styles.header}>
         <SectionHeader
           title={folder.name}
         />
 
-        <View
+        <AppView
           style={styles.count}
         >
           <Ionicons
@@ -57,17 +55,17 @@ export default function TemplateFolderSection({
             }
           />
 
-          <Text
+          <AppText
             style={
               styles.countText
             }
           >
             {templates.length}
-          </Text>
-        </View>
-      </View>
+          </AppText>
+        </AppView>
+      </AppView>
 
-      <View style={styles.list}>
+      <AppView style={styles.list}>
         {templates.map(
           (template) => (
             <TemplateCard
@@ -81,8 +79,8 @@ export default function TemplateFolderSection({
             />
           ),
         )}
-      </View>
-    </View>
+      </AppView>
+    </AppView>
   );
 }
 

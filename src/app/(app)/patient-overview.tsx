@@ -1,29 +1,18 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppView from "@/components/common/AppView";
+import { getErrorMessage, } from "@/services/errorHandler";
 import {
-  getErrorMessage,
-} from "@/services/errorHandler";
-import {
-  createWaitingVisit,
-  getOpenPatientVisit,
-  startVisit,
-} from "@/services/visitApi";
+  createWaitingVisit, getOpenPatientVisit, startVisit, } from "@/services/visitApi";
 import type { Visit } from "@/types/visit";
 import {
-  useCallback,
-  useState,
-} from "react";
+  useCallback, useState, } from "react";
 import { useDoctorStore } from "@/store/doctorStore";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 
-import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  Alert,
-  BackHandler,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+
+import { Alert, BackHandler, RefreshControl, StyleSheet } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
 import AppTopBar from "@/components/common/AppTopBar";
@@ -317,7 +306,7 @@ export default function PatientOverviewScreen() {
   };
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
       edges={["top", "bottom"]}
     >
@@ -331,7 +320,7 @@ export default function PatientOverviewScreen() {
         }
       />
 
-      <ScrollView
+      <AppScrollView
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -339,7 +328,7 @@ export default function PatientOverviewScreen() {
           />
         }
       >
-        <View style={styles.content}>
+        <AppView style={styles.content}>
           <PatientOverviewHeader
             patient={currentPatient}
           />
@@ -349,7 +338,7 @@ export default function PatientOverviewScreen() {
             onChange={setActiveTab}
           />
 
-          <View style={styles.body}>
+          <AppView style={styles.body}>
             {activeTab === "overview" ? (
               <OverviewTab
                 patient={currentPatient}
@@ -357,11 +346,11 @@ export default function PatientOverviewScreen() {
             ) : (
               <VisitsTab patientId={patientId} />
             )}
-          </View>
-        </View>
-      </ScrollView>
+          </AppView>
+        </AppView>
+      </AppScrollView>
 
-      <View style={styles.navigationBar}>
+      <AppView style={styles.navigationBar}>
         <AppButton
           title="Back"
           variant="secondary"
@@ -408,9 +397,9 @@ export default function PatientOverviewScreen() {
           ]}
           onPress={handleVisitAction}
         />
-      </View>
+      </AppView>
       
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

@@ -1,8 +1,6 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -27,17 +25,17 @@ export default function PatientContactInformation({
 }: Props) {
   return (
     <>
-      <View style={styles.sectionHeader}>
+      <AppView style={styles.sectionHeader}>
         <Ionicons
           name="call-outline"
           size={20}
           color={COLORS.primary}
         />
 
-        <Text style={styles.sectionTitle}>
+        <AppText style={styles.sectionTitle}>
           Contact Information
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
       <AppCard style={styles.card}>
         <SectionHeader title="Phone Number" />

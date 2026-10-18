@@ -1,5 +1,6 @@
+import AppView from "@/components/common/AppView";
 import AppChip from "@/components/common/AppChip";
-import { View } from "react-native";
+
 
 type Props = {
   value?: number;
@@ -11,7 +12,7 @@ export default function SeverityField({
   onChange,
 }: Props) {
   return (
-    <View
+    <AppView
       style={{
         flexDirection: "row",
         flexWrap: "wrap",
@@ -26,6 +27,6 @@ export default function SeverityField({
           onPress={() => onChange(i)}
         />
       ))}
-    </View>
+    </AppView>
   );
 }

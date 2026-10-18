@@ -1,5 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
@@ -166,7 +168,7 @@ export default function MenstrualHistory() {
   };
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       {/* =========================
           Menarche
       ========================= */}
@@ -194,11 +196,11 @@ export default function MenstrualHistory() {
 
           <SectionHeader title="Menstrual Cycle" />
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Cycle Regularity
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Regular",
               "Irregular",
@@ -229,7 +231,7 @@ export default function MenstrualHistory() {
                 }}
               />
             ))}
-          </View>
+          </AppView>
 
           {(getValue(
             "cycleRegularity"
@@ -263,11 +265,11 @@ export default function MenstrualHistory() {
 
           <SectionHeader title="Duration & Flow" />
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Duration of Bleeding
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "<3 Days",
               "3-7 Days",
@@ -290,15 +292,15 @@ export default function MenstrualHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           <Divider />
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Menstrual Flow
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Scanty",
               "Normal",
@@ -322,7 +324,7 @@ export default function MenstrualHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           <Divider />
 
@@ -332,7 +334,7 @@ export default function MenstrualHistory() {
 
           <SectionHeader title="Dysmenorrhea" />
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "No",
               "Mild",
@@ -370,7 +372,7 @@ export default function MenstrualHistory() {
                 }}
               />
             ))}
-          </View>
+          </AppView>
 
           {getValue(
             "dysmenorrhea"
@@ -381,12 +383,12 @@ export default function MenstrualHistory() {
             getValue(
               "dysmenorrhea"
             ) !== "" && (
-              <View style={styles.box}>
-                <Text style={styles.label}>
+              <AppView style={styles.box}>
+                <AppText style={styles.label}>
                   Pain Starts
-                </Text>
+                </AppText>
 
-                <View style={styles.row}>
+                <AppView style={styles.row}>
                   {[
                     "Before Menses",
                     "First Day",
@@ -409,15 +411,15 @@ export default function MenstrualHistory() {
                       }
                     />
                   ))}
-                </View>
+                </AppView>
 
                 <Divider />
 
-                <Text style={styles.label}>
+                <AppText style={styles.label}>
                   Pain Relieved By
-                </Text>
+                </AppText>
 
-                <View style={styles.row}>
+                <AppView style={styles.row}>
                   {[
                     "NSAIDs",
                     "Rest",
@@ -444,8 +446,8 @@ export default function MenstrualHistory() {
                       }
                     />
                   ))}
-                </View>
-              </View>
+                </AppView>
+              </AppView>
             )}
 
           <Divider />
@@ -456,7 +458,7 @@ export default function MenstrualHistory() {
 
 <SectionHeader title="Associated Symptoms" />
 
-<View style={styles.row}>
+<AppView style={styles.row}>
   {[
     "Nausea",
     "Vomiting",
@@ -482,7 +484,7 @@ export default function MenstrualHistory() {
       }
     />
   ))}
-</View>
+</AppView>
 
 <Divider />
 
@@ -492,11 +494,11 @@ export default function MenstrualHistory() {
 
 <SectionHeader title="Abnormal Bleeding" />
 
-<Text style={styles.label}>
+<AppText style={styles.label}>
   Intermenstrual Bleeding
-</Text>
+</AppText>
 
-<View style={styles.row}>
+<AppView style={styles.row}>
   {["No", "Yes"].map((item) => (
     <AppChip
       key={item}
@@ -515,15 +517,15 @@ export default function MenstrualHistory() {
       }
     />
   ))}
-</View>
+</AppView>
 
 <Divider />
 
-<Text style={styles.label}>
+<AppText style={styles.label}>
   Postcoital Bleeding
-</Text>
+</AppText>
 
-<View style={styles.row}>
+<AppView style={styles.row}>
   {["No", "Yes"].map((item) => (
     <AppChip
       key={item}
@@ -542,7 +544,7 @@ export default function MenstrualHistory() {
       }
     />
   ))}
-</View>
+</AppView>
 
 <Divider />
 
@@ -552,7 +554,7 @@ export default function MenstrualHistory() {
 
 <SectionHeader title="Premenstrual Symptoms" />
 
-<View style={styles.row}>
+<AppView style={styles.row}>
   {[
     "Breast Tenderness",
     "Mood Changes",
@@ -580,7 +582,7 @@ export default function MenstrualHistory() {
       }
     />
   ))}
-</View>
+</AppView>
 
 <Divider />
 
@@ -604,7 +606,7 @@ export default function MenstrualHistory() {
   }
   placeholder="DD/MM/YYYY"
 />
-</View>
+</AppView>
 );
 }
 

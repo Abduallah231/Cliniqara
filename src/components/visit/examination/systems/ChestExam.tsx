@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -137,7 +135,7 @@ export default function ChestExam() {
     fieldLabel: string;
     normal?: string;
   }) => (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       {items.map((item) => (
         <AppChip
           key={item}
@@ -158,7 +156,7 @@ export default function ChestExam() {
           }
         />
       ))}
-    </View>
+    </AppView>
   );
 
   const Title = ({
@@ -166,13 +164,13 @@ export default function ChestExam() {
   }: {
     children: string;
   }) => (
-    <Text style={styles.sectionTitle}>
+    <AppText style={styles.sectionTitle}>
       {children}
-    </Text>
+    </AppText>
   );
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <Title>Neck</Title>
 
       <ChipGroup
@@ -224,12 +222,12 @@ export default function ChestExam() {
       ).includes(
         "Reduced Expansion"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Expansion Side
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Right",
               "Left",
@@ -252,8 +250,8 @@ export default function ChestExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
       <Title>Percussion</Title>
@@ -273,12 +271,12 @@ export default function ChestExam() {
           "percussionFindings"
         ) as string[]) ?? []
       ).includes("Dull") && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Dullness Location
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Right Upper",
               "Right Middle",
@@ -304,8 +302,8 @@ export default function ChestExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
       <Title>Auscultation</Title>
@@ -330,12 +328,12 @@ export default function ChestExam() {
       ).includes(
         "Reduced Air Entry"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Side
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Right",
               "Left",
@@ -358,8 +356,8 @@ export default function ChestExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
       {(
@@ -369,12 +367,12 @@ export default function ChestExam() {
       ).includes(
         "Crackles"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Crackles Type
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Fine",
               "Coarse",
@@ -396,13 +394,13 @@ export default function ChestExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Location
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Right Upper",
               "Right Middle",
@@ -428,8 +426,8 @@ export default function ChestExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
       {(
@@ -437,12 +435,12 @@ export default function ChestExam() {
           "auscultationFindings"
         ) as string[]) ?? []
       ).includes("Wheeze") && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Wheeze Type
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Inspiratory",
               "Expiratory",
@@ -465,13 +463,13 @@ export default function ChestExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Distribution
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Right",
               "Left",
@@ -494,8 +492,8 @@ export default function ChestExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
             {(
@@ -505,12 +503,12 @@ export default function ChestExam() {
       ).includes(
         "Bronchial Breathing"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Location
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Right Upper",
               "Right Middle",
@@ -536,8 +534,8 @@ export default function ChestExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
       <AppTextField
@@ -556,7 +554,7 @@ export default function ChestExam() {
         }
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

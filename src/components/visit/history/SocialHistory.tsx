@@ -1,5 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import {
   useEffect,
   useRef,
@@ -183,20 +185,20 @@ export default function SocialHistory() {
       : "";
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
 
       {/* =========================
           HYDRATION
       ========================= */}
 
       {isHydrating && (
-        <Text
+        <AppText
           style={
             styles.statusText
           }
         >
           Loading social history...
-        </Text>
+        </AppText>
       )}
 
       {/* =========================
@@ -205,7 +207,7 @@ export default function SocialHistory() {
 
       <SectionHeader title="Smoking" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Never",
           "Current",
@@ -255,12 +257,12 @@ export default function SocialHistory() {
             }}
           />
         ))}
-      </View>
+      </AppView>
 
       {["Current", "Former"].includes(
         getValue("smoking") as string,
       ) && (
-        <View style={styles.box}>
+        <AppView style={styles.box}>
 
           <AppTextField
             placeholder="Cigarettes Per Day"
@@ -298,21 +300,21 @@ export default function SocialHistory() {
             }
           />
 
-          <View
+          <AppView
             style={
               styles.readOnlySection
             }
           >
-            <Text style={styles.label}>
+            <AppText style={styles.label}>
               Smoking Index
-            </Text>
+            </AppText>
 
-            <View
+            <AppView
               style={
                 styles.readOnlyBox
               }
             >
-              <Text
+              <AppText
                 style={
                   styles.readOnlyText
                 }
@@ -320,9 +322,9 @@ export default function SocialHistory() {
                 {packYears
                   ? `${packYears} Pack-years`
                   : "—"}
-              </Text>
-            </View>
-          </View>
+              </AppText>
+            </AppView>
+          </AppView>
 
           {getValue("smoking") ===
             "Former" && (
@@ -344,13 +346,13 @@ export default function SocialHistory() {
               }
             />
           )}
-        </View>
+        </AppView>
       )}
 
       {isSectionAutoSaving("smoking") && (
-        <Text style={styles.savingText}>
+        <AppText style={styles.savingText}>
           Saving changes...
-        </Text>
+        </AppText>
       )}
 
       <Divider />
@@ -361,7 +363,7 @@ export default function SocialHistory() {
 
       <SectionHeader title="Alcohol" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "No",
           "Current",
@@ -405,18 +407,18 @@ export default function SocialHistory() {
             }}
           />
         ))}
-      </View>
+      </AppView>
 
       {["Current", "Former"].includes(
         getValue("alcohol") as string,
       ) && (
-        <View style={styles.box}>
+        <AppView style={styles.box}>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             How Often
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Occasional",
               "Weekly",
@@ -441,7 +443,7 @@ export default function SocialHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           {getValue("alcohol") ===
             "Former" && (
@@ -463,13 +465,13 @@ export default function SocialHistory() {
               }
             />
           )}
-        </View>
+        </AppView>
       )}
 
       {isSectionAutoSaving("alcohol") && (
-        <Text style={styles.savingText}>
+        <AppText style={styles.savingText}>
           Saving changes...
-        </Text>
+        </AppText>
       )}
 
       <Divider />
@@ -480,7 +482,7 @@ export default function SocialHistory() {
 
       <SectionHeader title="Living Conditions" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Lives Alone",
           "Lives With Family",
@@ -506,7 +508,7 @@ export default function SocialHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {getValue("livingCondition") ===
         "Other" && (
@@ -531,9 +533,9 @@ export default function SocialHistory() {
       {isSectionAutoSaving(
         "livingCondition"
       ) && (
-        <Text style={styles.savingText}>
+        <AppText style={styles.savingText}>
           Saving changes...
-        </Text>
+        </AppText>
       )}
 
       <Divider />
@@ -544,7 +546,7 @@ export default function SocialHistory() {
 
       <SectionHeader title="Substance Use" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "None",
           "Cannabis",
@@ -603,7 +605,7 @@ export default function SocialHistory() {
             }}
           />
         ))}
-      </View>
+      </AppView>
 
       {(
         (getValue(
@@ -631,9 +633,9 @@ export default function SocialHistory() {
       {isSectionAutoSaving(
         "substanceUse"
       ) && (
-        <Text style={styles.savingText}>
+        <AppText style={styles.savingText}>
           Saving changes...
-        </Text>
+        </AppText>
       )}
 
       <Divider />
@@ -644,7 +646,7 @@ export default function SocialHistory() {
 
       <SectionHeader title="Physical Activity" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Sedentary",
           "Light",
@@ -669,7 +671,7 @@ export default function SocialHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <AppTextField
         placeholder="Exercise details..."
@@ -691,9 +693,9 @@ export default function SocialHistory() {
       {isSectionAutoSaving(
         "physicalActivity"
       ) && (
-        <Text style={styles.savingText}>
+        <AppText style={styles.savingText}>
           Saving changes...
-        </Text>
+        </AppText>
       )}
 
       <Divider />
@@ -704,7 +706,7 @@ export default function SocialHistory() {
 
       <SectionHeader title="Sleep" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "<5 h",
           "5-7 h",
@@ -729,7 +731,7 @@ export default function SocialHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <AppTextField
         placeholder="Sleep quality..."
@@ -749,9 +751,9 @@ export default function SocialHistory() {
       />
 
       {isSectionAutoSaving("sleep") && (
-        <Text style={styles.savingText}>
+        <AppText style={styles.savingText}>
           Saving changes...
-        </Text>
+        </AppText>
       )}
 
       <Divider />
@@ -762,7 +764,7 @@ export default function SocialHistory() {
 
       <SectionHeader title="Social Support" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Good",
           "Limited",
@@ -787,7 +789,7 @@ export default function SocialHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <AppTextField
         placeholder="Support notes..."
@@ -809,9 +811,9 @@ export default function SocialHistory() {
       {isSectionAutoSaving(
         "socialSupport"
       ) && (
-        <Text style={styles.savingText}>
+        <AppText style={styles.savingText}>
           Saving changes...
-        </Text>
+        </AppText>
       )}
 
       <Divider />
@@ -822,7 +824,7 @@ export default function SocialHistory() {
 
       <SectionHeader title="Sexual History (Optional)" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Not Discussed",
           "Sexually Active",
@@ -846,7 +848,7 @@ export default function SocialHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <AppTextField
         placeholder="Optional notes..."
@@ -868,13 +870,13 @@ export default function SocialHistory() {
       {isSectionAutoSaving(
         "sexualHistory"
       ) && (
-        <Text style={styles.savingText}>
+        <AppText style={styles.savingText}>
           Saving changes...
-        </Text>
+        </AppText>
       )}
 
       
-    </View>
+    </AppView>
   );
 }
 

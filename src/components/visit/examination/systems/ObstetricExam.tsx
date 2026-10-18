@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -109,7 +107,7 @@ export default function ObstetricExam() {
     fieldLabel: string;
     normal?: string;
   }) => (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       {items.map((item) => (
         <AppChip
           key={item}
@@ -130,14 +128,14 @@ export default function ObstetricExam() {
           }
         />
       ))}
-    </View>
+    </AppView>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
+    <AppView style={styles.container}>
+      <AppText style={styles.sectionTitle}>
         General
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -150,9 +148,9 @@ export default function ObstetricExam() {
         fieldLabel="General Findings"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Hypertensive Signs
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -166,9 +164,9 @@ export default function ObstetricExam() {
         normal="Absent"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Abdominal Examination
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -215,11 +213,11 @@ export default function ObstetricExam() {
         placeholder="Corresponds to GA..."
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Liquor
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Normal",
           "Polyhydramnios",
@@ -242,13 +240,13 @@ export default function ObstetricExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
         Fetal Lie
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Longitudinal",
           "Transverse",
@@ -269,13 +267,13 @@ export default function ObstetricExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Presentation
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Cephalic",
           "Breech",
@@ -298,7 +296,7 @@ export default function ObstetricExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <AppTextField
         label="Position"
@@ -317,11 +315,11 @@ export default function ObstetricExam() {
         placeholder="LOA, ROA..."
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Engagement
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Free",
           "5/5",
@@ -348,7 +346,7 @@ export default function ObstetricExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <AppTextField
         label="Fetal Heart Rate"
@@ -367,11 +365,11 @@ export default function ObstetricExam() {
         placeholder="bpm"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Fetal Movements
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Normal",
           "Reduced",
@@ -394,13 +392,13 @@ export default function ObstetricExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Multiple Pregnancy
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Singleton",
           "Twin",
@@ -423,13 +421,13 @@ export default function ObstetricExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Uterine Activity
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "None",
           "Irregular",
@@ -452,11 +450,11 @@ export default function ObstetricExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
         Red Flags
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -489,7 +487,7 @@ export default function ObstetricExam() {
         placeholder="Add other findings..."
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

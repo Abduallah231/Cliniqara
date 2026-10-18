@@ -1,9 +1,7 @@
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 import { useMemo, useState } from "react";
 
 import { COLORS } from "@/theme/colors";
@@ -62,24 +60,24 @@ export default function StatisticsVisitsOverview({
   );
 
   return (
-    <View>
-      <View style={styles.totalContainer}>
-        <Text style={styles.totalLabel}>
+    <AppView>
+      <AppView style={styles.totalContainer}>
+        <AppText style={styles.totalLabel}>
           Total Clinic Visits
-        </Text>
+        </AppText>
 
-        <Text style={styles.totalValue}>
+        <AppText style={styles.totalValue}>
           {data.total}
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
       {years.length > 0 ? (
         <>
-          <Text style={styles.subTitle}>
+          <AppText style={styles.subTitle}>
             Visits by Year
-          </Text>
+          </AppText>
 
-          <View style={styles.yearList}>
+          <AppView style={styles.yearList}>
             {years.map((year) => {
               const item = data.yearly.find(
                 (entry) => entry.year === year,
@@ -89,7 +87,7 @@ export default function StatisticsVisitsOverview({
                 year === currentYear;
 
               return (
-                <Pressable
+                <AppPressable
                   key={year}
                   onPress={() =>
                     setSelectedYear(year)
@@ -100,7 +98,7 @@ export default function StatisticsVisitsOverview({
                       styles.yearChipSelected,
                   ]}
                 >
-                  <Text
+                  <AppText
                     style={[
                       styles.yearText,
                       selected &&
@@ -108,9 +106,9 @@ export default function StatisticsVisitsOverview({
                     ]}
                   >
                     {year}
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={[
                       styles.yearCount,
                       selected &&
@@ -118,19 +116,19 @@ export default function StatisticsVisitsOverview({
                     ]}
                   >
                     {item?.count ?? 0}
-                  </Text>
-                </Pressable>
+                  </AppText>
+                </AppPressable>
               );
             })}
-          </View>
+          </AppView>
         </>
       ) : null}
 
       {currentYear !== null ? (
         <>
-          <Text style={styles.subTitle}>
+          <AppText style={styles.subTitle}>
             Monthly Visits — {currentYear}
-          </Text>
+          </AppText>
 
           {monthly.length ? (
             monthly.map((item) => {
@@ -145,22 +143,22 @@ export default function StatisticsVisitsOverview({
                     );
 
               return (
-                <View
+                <AppView
                   key={`${item.year}-${item.month}`}
                   style={styles.monthRow}
                 >
-                  <View style={styles.monthLabel}>
-                    <Text style={styles.monthName}>
+                  <AppView style={styles.monthLabel}>
+                    <AppText style={styles.monthName}>
                       {MONTHS[item.month - 1]}
-                    </Text>
+                    </AppText>
 
-                    <Text style={styles.average}>
+                    <AppText style={styles.average}>
                       {item.averagePerDay.toFixed(1)}/day
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
 
-                  <View style={styles.barTrack}>
-                    <View
+                  <AppView style={styles.barTrack}>
+                    <AppView
                       style={[
                         styles.bar,
                         {
@@ -168,22 +166,22 @@ export default function StatisticsVisitsOverview({
                         },
                       ]}
                     />
-                  </View>
+                  </AppView>
 
-                  <Text style={styles.monthCount}>
+                  <AppText style={styles.monthCount}>
                     {item.count}
-                  </Text>
-                </View>
+                  </AppText>
+                </AppView>
               );
             })
           ) : (
-            <Text style={styles.emptyText}>
+            <AppText style={styles.emptyText}>
               No visits recorded for this year.
-            </Text>
+            </AppText>
           )}
         </>
       ) : null}
-    </View>
+    </AppView>
   );
 }
 

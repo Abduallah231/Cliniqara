@@ -1,10 +1,6 @@
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -32,8 +28,8 @@ export default function PatientInfoRow({
   style,
 }: Props) {
   return (
-    <View style={[styles.container, style]}>
-      <View style={styles.left}>
+    <AppView style={[styles.container, style]}>
+      <AppView style={styles.left}>
         {icon && (
           <Ionicons
             name={icon}
@@ -43,21 +39,21 @@ export default function PatientInfoRow({
           />
         )}
 
-        <Text
+        <AppText
           numberOfLines={1}
           style={styles.label}
         >
           {label}
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
-      <Text
+      <AppText
         numberOfLines={1}
         style={styles.value}
       >
         {value}
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 

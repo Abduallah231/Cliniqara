@@ -1,19 +1,19 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import {
-  BackHandler,
-  FlatList,
-  StyleSheet,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { BackHandler, FlatList, StyleSheet } from "react-native";
+
 
 import AppEmptyState from "@/components/common/AppEmptyState";
+import AppChip from "@/components/common/AppChip";
 import AppSearchBar from "@/components/common/AppSearchBar";
 import AppTopBar from "@/components/common/AppTopBar";
 import PatientCard from "@/components/patients/PatientCard";
 
 import { getPatients } from "@/services/patientApi";
+import type { Patient } from "@/types/patient";
 import { usePatientStore } from "@/store/patientStore";
 
 import {
@@ -21,8 +21,23 @@ import {
   SPACING
 } from "@/theme";
 
+type PatientSort = "created" | "name" | "age";
+
+function patientAgeInYears(patient: Patient): number | null {
+  if (typeof patient.estimatedAgeValue === "number") {
+    if (patient.estimatedAgeUnit === "DAYS") return patient.estimatedAgeValue / 365.25;
+    if (patient.estimatedAgeUnit === "MONTHS") return patient.estimatedAgeValue / 12;
+    if (patient.estimatedAgeUnit === "YEARS") return patient.estimatedAgeValue;
+  }
+  if (!patient.dateOfBirth) return null;
+  const birthDate = new Date(patient.dateOfBirth);
+  if (!Number.isFinite(birthDate.getTime()) || birthDate > new Date()) return null;
+  return (Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+}
+
 export default function ExistingPatientScreen() {
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<PatientSort>("created");
 
   const {
     patients,
@@ -93,11 +108,8 @@ export default function ExistingPatientScreen() {
 
     const query = search.trim().toLowerCase();
 
-    if (!query) {
-      return uniquePatients;
-    }
-
-    return uniquePatients.filter((patient) =>
+    const matchesSearch = uniquePatients.filter((patient) =>
+      !query || (
       patient.fullName
         .toLowerCase()
         .includes(query) ||
@@ -106,12 +118,27 @@ export default function ExistingPatientScreen() {
         .includes(query) ||
       (patient.phone ?? "")
         .toLowerCase()
-        .includes(query),
+        .includes(query)
+      ),
     );
-  }, [patients, search]);
+
+    return [...matchesSearch].sort((a, b) => {
+      if (sortBy === "name") return a.fullName.localeCompare(b.fullName);
+      if (sortBy === "age") {
+        const ageA = patientAgeInYears(a);
+        const ageB = patientAgeInYears(b);
+        if (ageA === null) return ageB === null ? a.fullName.localeCompare(b.fullName) : 1;
+        if (ageB === null) return -1;
+        return ageA - ageB;
+      }
+      const createdA = new Date(a.createdAt).getTime();
+      const createdB = new Date(b.createdAt).getTime();
+      return (Number.isFinite(createdB) ? createdB : 0) - (Number.isFinite(createdA) ? createdA : 0);
+    });
+  }, [patients, search, sortBy]);
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
     >
       <AppTopBar
@@ -124,14 +151,23 @@ export default function ExistingPatientScreen() {
         }
       />
 
-      <View style={styles.content}>
-        <View style={styles.search}>
+      <AppView style={styles.content}>
+        <AppView style={styles.search}>
           <AppSearchBar
             value={search}
             onChangeText={setSearch}
             placeholder="Search by name, ID or phone..."
           />
-        </View>
+        </AppView>
+
+        <AppView style={styles.sortSection}>
+          <AppText style={styles.sortTitle}>Sort by</AppText>
+          <AppView style={styles.sortOptions}>
+            <AppChip label="Newest" selected={sortBy === "created"} onPress={() => setSortBy("created")} />
+            <AppChip label="Name A–Z" selected={sortBy === "name"} onPress={() => setSortBy("name")} />
+            <AppChip label="Youngest" selected={sortBy === "age"} onPress={() => setSortBy("age")} />
+          </AppView>
+        </AppView>
 
         <FlatList
           data={filteredPatients}
@@ -161,20 +197,7 @@ export default function ExistingPatientScreen() {
                 id: item.id,
                 fullName: item.fullName,
                 age:
-                  item.estimatedAgeValue ??
-                  (item.dateOfBirth
-                    ? Math.floor(
-                        (Date.now() -
-                          new Date(
-                            item.dateOfBirth,
-                          ).getTime()) /
-                          (365.25 *
-                            24 *
-                            60 *
-                            60 *
-                            1000),
-                      )
-                    : 0),
+                  Math.floor(patientAgeInYears(item) ?? 0),
                 gender:
                   item.gender === "MALE"
                     ? "Male"
@@ -218,8 +241,8 @@ export default function ExistingPatientScreen() {
             />
           )}
         />
-      </View>
-    </SafeAreaView>
+      </AppView>
+    </AppSafeAreaView>
   );
 }
 
@@ -244,5 +267,22 @@ const styles = StyleSheet.create({
   search: {
     marginBottom:
       SPACING.lg,
+  },
+
+  sortSection: {
+    gap: SPACING.sm,
+    marginBottom: SPACING.lg,
+  },
+
+  sortTitle: {
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  sortOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: SPACING.xs,
   },
 });

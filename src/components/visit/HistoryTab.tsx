@@ -1,5 +1,6 @@
+import AppView from "@/components/common/AppView";
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 
@@ -39,7 +40,7 @@ export default function HistoryTab() {
     );
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <CollapsibleSection
         title="Chief Complaint"
         icon={
@@ -168,8 +169,8 @@ export default function HistoryTab() {
       >
         <FamilyHistory />
       </CollapsibleSection>
-      <View style={{ height: 50 }} />
-    </View>
+      <AppView style={{ height: 50 }} />
+    </AppView>
   );
 }
 

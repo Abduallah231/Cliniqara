@@ -1,6 +1,7 @@
+import AppView from "@/components/common/AppView";
 import AppChip from "@/components/common/AppChip";
 
-import { View } from "react-native";
+
 
 import { ComplaintField } from "../../models/ComplaintField";
 
@@ -26,7 +27,7 @@ export default function MultiSelectField({
   return (
     <>
 
-      <View
+      <AppView
         style={{
           flexDirection: "row",
           flexWrap: "wrap",
@@ -41,7 +42,7 @@ export default function MultiSelectField({
             onPress={() => toggle(option.code)}
           />
         ))}
-      </View>
+      </AppView>
     </>
   );
 }

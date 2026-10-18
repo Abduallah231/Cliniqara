@@ -1,10 +1,6 @@
-import {
-    StyleProp,
-    StyleSheet,
-    Text,
-    View,
-    ViewStyle,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -32,7 +28,7 @@ export default function AppEmptyState({
   style,
 }: Props) {
   return (
-    <View
+    <AppView
       style={[
         styles.container,
         style,
@@ -44,16 +40,16 @@ export default function AppEmptyState({
         color={COLORS.primary}
       />
 
-      <Text style={styles.title}>
+      <AppText style={styles.title}>
         {title}
-      </Text>
+      </AppText>
 
       {subtitle ? (
-        <Text style={styles.subtitle}>
+        <AppText style={styles.subtitle}>
           {subtitle}
-        </Text>
+        </AppText>
       ) : null}
-    </View>
+    </AppView>
   );
 }
 

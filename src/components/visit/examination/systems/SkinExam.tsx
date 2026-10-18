@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -133,7 +131,7 @@ export default function SkinExam() {
     fieldLabel: string;
     normal?: string;
   }) => (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       {items.map((item) => (
         <AppChip
           key={item}
@@ -154,14 +152,14 @@ export default function SkinExam() {
           }
         />
       ))}
-    </View>
+    </AppView>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
+    <AppView style={styles.container}>
+      <AppText style={styles.sectionTitle}>
         Skin Lesions
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -184,12 +182,12 @@ export default function SkinExam() {
           "lesionFindings"
         ) as string[]) ?? ["Normal"]
       ).includes("Normal") && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Site
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Face",
               "Scalp",
@@ -218,7 +216,7 @@ export default function SkinExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           <AppTextField
             label="Number"
@@ -318,11 +316,11 @@ export default function SkinExam() {
             }
           />
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Symptoms
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Itching",
               "Pain",
@@ -346,13 +344,13 @@ export default function SkinExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Distribution
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -368,11 +366,11 @@ export default function SkinExam() {
         normal="Localized"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Secondary Changes
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Scale",
           "Crust",
@@ -397,11 +395,11 @@ export default function SkinExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Color Changes
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -416,9 +414,9 @@ export default function SkinExam() {
         fieldLabel="Color Changes"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Nails
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -432,9 +430,9 @@ export default function SkinExam() {
         fieldLabel="Nail Findings"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Hair
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -447,11 +445,11 @@ export default function SkinExam() {
         fieldLabel="Hair Findings"
       />
 
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
         Blanching
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {["Yes", "No"].map((item) => (
           <AppChip
             key={item}
@@ -468,13 +466,13 @@ export default function SkinExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Tenderness
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {["Present", "Absent"].map((item) => (
           <AppChip
             key={item}
@@ -491,13 +489,13 @@ export default function SkinExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Mucosal Involvement
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {["Yes", "No"].map((item) => (
           <AppChip
             key={item}
@@ -516,11 +514,11 @@ export default function SkinExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Red Flags
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -552,7 +550,7 @@ export default function SkinExam() {
         placeholder="Add other findings..."
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

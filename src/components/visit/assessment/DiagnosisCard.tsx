@@ -1,17 +1,9 @@
-import {
-  COLORS,
-  RADIUS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { COLORS, RADIUS, SHADOW, SPACING, TYPOGRAPHY, } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 
 type Props = {
   title: string;
@@ -27,29 +19,29 @@ export default function DiagnosisCard({
   onRemove,
 }: Props) {
   return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
+    <AppView style={styles.card}>
+      <AppView style={styles.cardHeader}>
         
 
-        <View style={styles.content}>
-          <Text style={styles.cardTitle}>
+        <AppView style={styles.content}>
+          <AppText style={styles.cardTitle}>
             {title}
-          </Text>
+          </AppText>
 
-          <Text style={styles.cardText}>
+          <AppText style={styles.cardText}>
             {diagnosis}
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
-        <Pressable onPress={onRemove}>
+        <AppPressable onPress={onRemove}>
           <Ionicons
             name="close-circle"
             size={22}
             color={COLORS.danger}
           />
-        </Pressable>
-      </View>
-    </View>
+        </AppPressable>
+      </AppView>
+    </AppView>
   );
 }
 

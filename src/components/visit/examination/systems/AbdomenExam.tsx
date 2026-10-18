@@ -1,5 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -128,16 +130,16 @@ export default function AbdomenExam() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text
+    <AppView style={styles.container}>
+      <AppText
         style={
           styles.sectionTitle
         }
       >
         Inspection
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "NAD",
           "Distension",
@@ -165,7 +167,7 @@ export default function AbdomenExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {(
         (getValue(
@@ -175,19 +177,19 @@ export default function AbdomenExam() {
       ).includes(
         "Distension"
       ) && (
-        <View
+        <AppView
           style={styles.group}
         >
-          <Text
+          <AppText
             style={
               styles.label
             }
           >
             Distension
             Severity
-          </Text>
+          </AppText>
 
-          <View
+          <AppView
             style={styles.row}
           >
             {[
@@ -219,8 +221,8 @@ export default function AbdomenExam() {
                 />
               )
             )}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
       {(
@@ -231,18 +233,18 @@ export default function AbdomenExam() {
       ).includes(
         "Hernia"
       ) && (
-        <View
+        <AppView
           style={styles.group}
         >
-          <Text
+          <AppText
             style={
               styles.label
             }
           >
             Hernia Type
-          </Text>
+          </AppText>
 
-          <View
+          <AppView
             style={styles.row}
           >
             {[
@@ -278,19 +280,19 @@ export default function AbdomenExam() {
                 />
               )
             )}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text
+      <AppText
         style={
           styles.sectionTitle
         }
       >
         Palpation
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Soft and Lax",
           "Tenderness",
@@ -319,19 +321,19 @@ export default function AbdomenExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
             {((
         getValue("palpationFindings")
       ) as string[])?.includes(
         "Tenderness"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Site
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "RUQ",
               "LUQ",
@@ -359,13 +361,13 @@ export default function AbdomenExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Severity
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Mild",
               "Moderate",
@@ -388,8 +390,8 @@ export default function AbdomenExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
       {((
@@ -397,12 +399,12 @@ export default function AbdomenExam() {
       ) as string[])?.includes(
         "Mass"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Mass Site
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "RUQ",
               "LUQ",
@@ -429,13 +431,13 @@ export default function AbdomenExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Mobility
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Mobile",
               "Fixed",
@@ -457,13 +459,13 @@ export default function AbdomenExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Liver Span
-      </Text>
+      </AppText>
 
       <AppTextField
         value={
@@ -482,11 +484,11 @@ export default function AbdomenExam() {
         placeholder="cm"
       />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Spleen
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Not Palpable",
           "Grade I",
@@ -511,13 +513,13 @@ export default function AbdomenExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Percussion
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "NAD",
           "Tympanic",
@@ -543,13 +545,13 @@ export default function AbdomenExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
         Auscultation
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "NAD",
           "Normal Bowel Sounds",
@@ -575,7 +577,7 @@ export default function AbdomenExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {((
         getValue(
@@ -584,12 +586,12 @@ export default function AbdomenExam() {
       ) as string[])?.includes(
         "Bruit"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Bruit Site
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Aorta",
               "Renal",
@@ -614,15 +616,15 @@ export default function AbdomenExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Special Signs
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "No Special Signs",
           "Murphy's Sign",
@@ -652,7 +654,7 @@ export default function AbdomenExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <AppTextField
         placeholder="Add other findings..."
@@ -670,7 +672,7 @@ export default function AbdomenExam() {
         }
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

@@ -1,26 +1,20 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import AppTextField from "@/components/common/AppTextField";
 import { register } from "@/services/authApi";
 import {
-  COLORS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+  COLORS, SHADOW, SPACING, TYPOGRAPHY, } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Alert, StyleSheet } from "react-native";
+
 import {
   uploadNationalIdImage,
   uploadMedicalLicenseImage,
@@ -325,37 +319,37 @@ export default function CreateAccountScreen() {
 };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <AppSafeAreaView style={styles.container}>
       <AppKeyboardAwareScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <View style={styles.logo}>
+        <AppView style={styles.header}>
+          <AppView style={styles.logo}>
             <Ionicons
               name="person-add"
               size={42}
               color={COLORS.primary}
             />
-          </View>
+          </AppView>
 
-          <Text style={styles.title}>
+          <AppText style={styles.title}>
             Create Account
-          </Text>
+          </AppText>
 
-          <Text style={styles.subtitle}>
+          <AppText style={styles.subtitle}>
             Join Cliniqara
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
-        <View style={styles.progressContainer}>
+        <AppView style={styles.progressContainer}>
           {[1,2,3,4,5].map((item,index)=>(
-            <View
+            <AppView
               key={item}
               style={styles.progressWrapper}
             >
-              <View
+              <AppView
                 style={[
                   styles.progressDot,
                   item <= step && styles.progressDotActive,
@@ -363,7 +357,7 @@ export default function CreateAccountScreen() {
               />
 
               {index < 4 && (
-                <View
+                <AppView
                   style={[
                     styles.progressLine,
                     item < step &&
@@ -371,21 +365,21 @@ export default function CreateAccountScreen() {
                   ]}
                 />
               )}
-            </View>
+            </AppView>
           ))}
-        </View>
+        </AppView>
 
-<Text style={styles.progressText}>
+<AppText style={styles.progressText}>
   Step {step} of 5
-</Text>
+</AppText>
 
         <AppCard style={styles.card}>
-          <View style={styles.form}>
+          <AppView style={styles.form}>
             {step === 1 && (
             <>
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
             Account Information
-            </Text>
+            </AppText>
 
             <AppTextField
             label="Full Name"
@@ -461,9 +455,9 @@ export default function CreateAccountScreen() {
             )}
             {step === 2 && (
             <>
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
             Identity Verification
-            </Text>
+            </AppText>
 
             <AppTextField
             label="National ID Number"
@@ -474,29 +468,29 @@ export default function CreateAccountScreen() {
             keyboardType="number-pad"
             />
 
-            <Pressable
+            <AppPressable
               style={styles.uploadCard}
               onPress={() => pickImage(setIdFrontName)}
             >
-            <View>
-            <Text style={styles.uploadTitle}>
+            <AppView>
+            <AppText style={styles.uploadTitle}>
             National ID
-            </Text>
+            </AppText>
 
-            <Text style={styles.uploadSubtitle}>
+            <AppText style={styles.uploadSubtitle}>
             {idFrontName || "Choose Image"}
-            </Text>
-            </View>
+            </AppText>
+            </AppView>
 
             <Ionicons
             name="image-outline"
             size={28}
             color={COLORS.primary}
             />
-            </Pressable>
+            </AppPressable>
 
             
-            <View style={styles.buttonRow}>
+            <AppView style={styles.buttonRow}>
 
             <AppButton
             title="Back"
@@ -514,18 +508,18 @@ export default function CreateAccountScreen() {
             }}
             />
 
-            </View>
+            </AppView>
             </>
             )}
             {step === 3 && (
             <>
-              <Text style={styles.sectionTitle}>
+              <AppText style={styles.sectionTitle}>
                 Register As
-              </Text>
+              </AppText>
 
-              <View style={styles.roleContainer}>
+              <AppView style={styles.roleContainer}>
 
-                <Pressable
+                <AppPressable
                   style={[
                     styles.roleCard,
                     role === "DOCTOR" &&
@@ -545,15 +539,15 @@ export default function CreateAccountScreen() {
                     }
                   />
 
-                  <View style={styles.roleContent}>
-                    <Text style={styles.roleTitle}>
+                  <AppView style={styles.roleContent}>
+                    <AppText style={styles.roleTitle}>
                       Doctor
-                    </Text>
+                    </AppText>
 
-                    <Text style={styles.roleSubtitle}>
+                    <AppText style={styles.roleSubtitle}>
                       Clinical Access
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
 
                   {role === "DOCTOR" && (
                     <Ionicons
@@ -562,9 +556,9 @@ export default function CreateAccountScreen() {
                       color={COLORS.primary}
                     />
                   )}
-                </Pressable>
+                </AppPressable>
 
-                <Pressable
+                <AppPressable
                   style={[
                     styles.roleCard,
                     role === "RECEPTION" &&
@@ -585,15 +579,15 @@ export default function CreateAccountScreen() {
                     }
                   />
 
-                  <View style={styles.roleContent}>
-                    <Text style={styles.roleTitle}>
+                  <AppView style={styles.roleContent}>
+                    <AppText style={styles.roleTitle}>
                       Clinic Assistant
-                    </Text>
+                    </AppText>
 
-                    <Text style={styles.roleSubtitle}>
+                    <AppText style={styles.roleSubtitle}>
                       Assist Doctors & Manage Patients
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
 
                   {role ===
                     "RECEPTION" && (
@@ -603,10 +597,10 @@ export default function CreateAccountScreen() {
                       color={COLORS.primary}
                     />
                   )}
-                </Pressable>
-              </View>
+                </AppPressable>
+              </AppView>
 
-              <View style={styles.buttonRow}>
+              <AppView style={styles.buttonRow}>
                 <AppButton
                   title="Back"
                   style={styles.flexButton}
@@ -624,15 +618,15 @@ export default function CreateAccountScreen() {
                       : setStep(5)
                   }
                 />
-              </View>
+              </AppView>
             </>
           )}
 
           {step === 4 && (
             <>
-              <Text style={styles.sectionTitle}>
+              <AppText style={styles.sectionTitle}>
                 Professional Information
-              </Text>
+              </AppText>
 
               {doctorLevel === "DOCTOR" && (
                 <>
@@ -644,28 +638,28 @@ export default function CreateAccountScreen() {
                     onChangeText={setLicenseNumber}
                   />
 
-                  <Pressable
+                  <AppPressable
                     style={styles.uploadCard}
                     onPress={() =>
                       pickImage(setMedicalLicenseImage)
                     }
                   >
-                    <View>
-                      <Text style={styles.uploadTitle}>
+                    <AppView>
+                      <AppText style={styles.uploadTitle}>
                         Medical License Image
-                      </Text>
+                      </AppText>
 
-                      <Text style={styles.uploadSubtitle}>
+                      <AppText style={styles.uploadSubtitle}>
                         {medicalLicenseImage || "Upload Medical License"}
-                      </Text>
-                    </View>
+                      </AppText>
+                    </AppView>
 
                     <Ionicons
                       name="image-outline"
                       size={28}
                       color={COLORS.primary}
                     />
-                  </Pressable>
+                  </AppPressable>
 
                   <AppDropdown
                     label="Specialty"
@@ -683,7 +677,7 @@ export default function CreateAccountScreen() {
                 </>
               )}
 
-              <View style={styles.buttonRow}>
+              <AppView style={styles.buttonRow}>
                 <AppButton
                   title="Back"
                   style={styles.flexButton}
@@ -701,101 +695,101 @@ export default function CreateAccountScreen() {
                     }
                   }}
                 />
-              </View>
+              </AppView>
             </>
           )}
 
           {step === 5 && (
             <>
-              <View style={styles.summaryCard}>
+              <AppView style={styles.summaryCard}>
                 <Ionicons
                   name="shield-checkmark"
                   size={42}
                   color={COLORS.primary}
                 />
 
-                <Text style={styles.summaryTitle}>
+                <AppText style={styles.summaryTitle}>
                   Review & Create Account
-                </Text>
+                </AppText>
 
-                <Text style={styles.summarySubtitle}>
+                <AppText style={styles.summarySubtitle}>
                   Please review your information before creating your account.
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
 
               <AppCard style={styles.reviewCard}>
 
-                <View style={styles.reviewRow}>
-                  <Text style={styles.reviewLabel}>Full Name</Text>
-                  <Text style={styles.reviewValue}>{fullName.trim()}</Text>
-                </View>
+                <AppView style={styles.reviewRow}>
+                  <AppText style={styles.reviewLabel}>Full Name</AppText>
+                  <AppText style={styles.reviewValue}>{fullName.trim()}</AppText>
+                </AppView>
 
-                <View style={styles.reviewRow}>
-                  <Text style={styles.reviewLabel}>Email</Text>
-                  <Text style={styles.reviewValue}>{email.trim()}</Text>
-                </View>
+                <AppView style={styles.reviewRow}>
+                  <AppText style={styles.reviewLabel}>Email</AppText>
+                  <AppText style={styles.reviewValue}>{email.trim()}</AppText>
+                </AppView>
 
-                <View style={styles.reviewRow}>
-                  <Text style={styles.reviewLabel}>Phone</Text>
-                  <Text style={styles.reviewValue}>{phone.trim()}</Text>
-                </View>
+                <AppView style={styles.reviewRow}>
+                  <AppText style={styles.reviewLabel}>Phone</AppText>
+                  <AppText style={styles.reviewValue}>{phone.trim()}</AppText>
+                </AppView>
 
-                <View style={styles.reviewRow}>
-                  <Text style={styles.reviewLabel}>National ID</Text>
-                  <Text style={styles.reviewValue}>
+                <AppView style={styles.reviewRow}>
+                  <AppText style={styles.reviewLabel}>National ID</AppText>
+                  <AppText style={styles.reviewValue}>
                     {nationalId
                       ? `********${nationalId.slice(-4)}`
                       : "-"}
-                  </Text>
-                </View>
+                  </AppText>
+                </AppView>
 
-                <View style={styles.reviewRow}>
-                  <Text style={styles.reviewLabel}>Account Type</Text>
-                  <Text style={styles.reviewValue}>
+                <AppView style={styles.reviewRow}>
+                  <AppText style={styles.reviewLabel}>Account Type</AppText>
+                  <AppText style={styles.reviewValue}>
                     {role === "DOCTOR"
                       ? "Doctor"
                       : "Clinic Assistant"}
-                  </Text>
-                </View>
+                  </AppText>
+                </AppView>
 
                 {role === "DOCTOR" && (
                   <>
-                    <View style={styles.reviewRow}>
-                      <Text style={styles.reviewLabel}>Medical License</Text>
-                      <Text style={styles.reviewValue}>
+                    <AppView style={styles.reviewRow}>
+                      <AppText style={styles.reviewLabel}>Medical License</AppText>
+                      <AppText style={styles.reviewValue}>
                         {medicalLicenseImage ? "Uploaded" : "Not Uploaded"}
-                      </Text>
-                    </View>
+                      </AppText>
+                    </AppView>
                   </>
                 )}
 
-                <View style={styles.reviewRow}>
-                  <Text style={styles.reviewLabel}>
+                <AppView style={styles.reviewRow}>
+                  <AppText style={styles.reviewLabel}>
                     Specialty
-                  </Text>
+                  </AppText>
 
-                  <Text style={styles.reviewValue}>
+                  <AppText style={styles.reviewValue}>
                     {doctorLevel === "DOCTOR"
                       ? selectedSpecialty?.label
                       : "-"}
-                  </Text>
-                </View>
+                  </AppText>
+                </AppView>
 
-                <View style={styles.reviewRow}>
-                  <Text style={styles.reviewLabel}>
+                <AppView style={styles.reviewRow}>
+                  <AppText style={styles.reviewLabel}>
                     Professional Title
-                  </Text>
+                  </AppText>
 
-                  <Text style={styles.reviewValue}>
+                  <AppText style={styles.reviewValue}>
                     {doctorLevel === "DOCTOR"
                       ? selectedTitle?.label
                       : "-"}
-                  </Text>
-                </View>
+                  </AppText>
+                </AppView>
 
               </AppCard>
 
-              <View style={styles.buttonRow}>
+              <AppView style={styles.buttonRow}>
                 <AppButton
                   title="Back"
                   style={styles.flexButton}
@@ -812,34 +806,34 @@ export default function CreateAccountScreen() {
                   onPress={handleRegister}
                   loading={loading}
                 />
-              </View>
+              </AppView>
 
-              <View style={styles.footer}>
-                <Text
+              <AppView style={styles.footer}>
+                <AppText
                   style={styles.footerText}
                 >
                   Already have an account?
-                </Text>
+                </AppText>
 
-                <Pressable
+                <AppPressable
                   onPress={() =>
                     router.back()
                   }
                 >
-                  <Text
+                  <AppText
                     style={styles.loginText}
                   >
                     Sign In
-                  </Text>
-                </Pressable>
-              </View>
+                  </AppText>
+                </AppPressable>
+              </AppView>
             </>
           )}
 
-          </View>
+          </AppView>
         </AppCard>
       </AppKeyboardAwareScrollView>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 const styles = StyleSheet.create({

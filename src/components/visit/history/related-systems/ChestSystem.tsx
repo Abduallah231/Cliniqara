@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -50,11 +48,11 @@ export default function ChestSystem() {
     items: string[];
   }) => (
     <>
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         {title}
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {items.map((item) => (
           <AppChip
             key={item}
@@ -63,15 +61,15 @@ export default function ChestSystem() {
             onPress={() => toggle(item)}
           />
         ))}
-      </View>
+      </AppView>
     </>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <AppView style={styles.container}>
+      <AppText style={styles.title}>
         Chest
-      </Text>
+      </AppText>
 
       <Section
         title="Core"
@@ -118,7 +116,7 @@ export default function ChestSystem() {
         onChangeText={updateOtherFinding}
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

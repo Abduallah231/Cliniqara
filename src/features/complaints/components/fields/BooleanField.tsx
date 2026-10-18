@@ -1,5 +1,6 @@
+import AppView from "@/components/common/AppView";
 import AppChip from "@/components/common/AppChip";
-import { View } from "react-native";
+
 import { ComplaintField } from "../../models/ComplaintField";
 
 type Props = {
@@ -13,7 +14,7 @@ export default function BooleanField({
   onChange,
 }: Props) {
   return (
-    <View
+    <AppView
       style={{
         flexDirection: "row",
         flexWrap: "wrap",
@@ -33,6 +34,6 @@ export default function BooleanField({
         onPress={() => onChange(false)}
         style={{ flex: 0 }}
       />
-    </View>
+    </AppView>
   );
 }

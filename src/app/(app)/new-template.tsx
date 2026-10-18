@@ -1,16 +1,10 @@
-import {
-  router,
-  useLocalSearchParams,
-} from "expo-router";
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { router, useLocalSearchParams, } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, ScrollView, StyleSheet } from "react-native";
+
 
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
@@ -519,7 +513,7 @@ export default function NewTemplateScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView
+      <AppSafeAreaView
         style={styles.container}
         edges={[
           "top",
@@ -537,7 +531,7 @@ export default function NewTemplateScreen() {
           }
         />
 
-        <View
+        <AppView
           style={styles.center}
         >
           <ActivityIndicator
@@ -547,15 +541,15 @@ export default function NewTemplateScreen() {
             }
           />
 
-          <Text
+          <AppText
             style={
               styles.loadingText
             }
           >
             Loading...
-          </Text>
-        </View>
-      </SafeAreaView>
+          </AppText>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
@@ -568,7 +562,7 @@ export default function NewTemplateScreen() {
     "GLOBAL"
   ) {
     return (
-      <SafeAreaView
+      <AppSafeAreaView
         style={styles.container}
         edges={[
           "top",
@@ -582,17 +576,17 @@ export default function NewTemplateScreen() {
           }
         />
 
-        <View
+        <AppView
           style={styles.center}
         >
-          <Text
+          <AppText
             style={
               styles.errorTitle
             }
           >
             Global templates are
             read-only.
-          </Text>
+          </AppText>
 
           <AppButton
             title="Back"
@@ -601,8 +595,8 @@ export default function NewTemplateScreen() {
               router.back()
             }
           />
-        </View>
-      </SafeAreaView>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
@@ -611,7 +605,7 @@ export default function NewTemplateScreen() {
   // ======================================================
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
       edges={[
         "top",
@@ -657,13 +651,13 @@ export default function NewTemplateScreen() {
             }
           />
 
-          <Text
+          <AppText
             style={styles.label}
           >
             Folder
-          </Text>
+          </AppText>
 
-          <View
+          <AppView
             style={styles.row}
           >
             <AppChip
@@ -693,7 +687,7 @@ export default function NewTemplateScreen() {
                 />
               ),
             )}
-          </View>
+          </AppView>
         </AppCard>
 
         {/* ==================================================
@@ -734,11 +728,11 @@ export default function NewTemplateScreen() {
         ================================================== */}
 
         {!!error && (
-          <Text
+          <AppText
             style={styles.errorText}
           >
             {error}
-          </Text>
+          </AppText>
         )}
 
         {/* ==================================================
@@ -764,7 +758,7 @@ export default function NewTemplateScreen() {
           }
         />
       </AppKeyboardAwareScrollView>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

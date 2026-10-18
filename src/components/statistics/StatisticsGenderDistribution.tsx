@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import { COLORS } from "@/theme/colors";
 import { TYPOGRAPHY } from "@/theme/typography";
@@ -17,9 +19,9 @@ export default function StatisticsGenderDistribution({
   femalePercentage,
 }: Props) {
   return (
-    <View>
-      <View style={styles.totalBar}>
-        <View
+    <AppView>
+      <AppView style={styles.totalBar}>
+        <AppView
           style={[
             styles.maleBar,
             {
@@ -28,7 +30,7 @@ export default function StatisticsGenderDistribution({
           ]}
         />
 
-        <View
+        <AppView
           style={[
             styles.femaleBar,
             {
@@ -36,9 +38,9 @@ export default function StatisticsGenderDistribution({
             },
           ]}
         />
-      </View>
+      </AppView>
 
-      <View style={styles.legend}>
+      <AppView style={styles.legend}>
         <Gender
           label="Male"
           count={male}
@@ -50,8 +52,8 @@ export default function StatisticsGenderDistribution({
           count={female}
           percentage={femalePercentage}
         />
-      </View>
-    </View>
+      </AppView>
+    </AppView>
   );
 }
 
@@ -65,17 +67,17 @@ function Gender({
   percentage: number;
 }) {
   return (
-    <View style={styles.gender}>
-      <Text style={styles.label}>{label}</Text>
+    <AppView style={styles.gender}>
+      <AppText style={styles.label}>{label}</AppText>
 
-      <Text style={styles.value}>
+      <AppText style={styles.value}>
         {percentage.toFixed(1)}%
-      </Text>
+      </AppText>
 
-      <Text style={styles.count}>
+      <AppText style={styles.count}>
         {count} visits
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 

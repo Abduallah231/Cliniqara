@@ -1,12 +1,11 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useState } from "react";
 import { router } from "expo-router";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 
 import AppButton from "@/components/common/AppButton";
@@ -14,11 +13,7 @@ import AppCard from "@/components/common/AppCard";
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import AppTextField from "@/components/common/AppTextField";
 import {
-  COLORS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+  COLORS, SHADOW, SPACING, TYPOGRAPHY, } from "@/theme";
 import { Alert } from "react-native";
 import { login } from "@/services/authApi";
 import { getErrorMessage } from "@/services/errorHandler";
@@ -76,41 +71,41 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <AppSafeAreaView style={styles.container}>
       <AppKeyboardAwareScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.logoSection}>
-          <View style={styles.logoCircle}>
+        <AppView style={styles.logoSection}>
+          <AppView style={styles.logoCircle}>
             <Ionicons
               name="medical"
               size={42}
               color={COLORS.primary}
             />
-          </View>
+          </AppView>
 
-          <Text style={styles.appName}>
+          <AppText style={styles.appName}>
             Cliniqara
-          </Text>
+          </AppText>
 
-          <Text style={styles.appSubtitle}>
+          <AppText style={styles.appSubtitle}>
             Smart Clinical Workflow
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
         <AppCard style={styles.card}>
-          <Text style={styles.title}>
+          <AppText style={styles.title}>
             Welcome Back
-          </Text>
+          </AppText>
 
-          <Text style={styles.subtitle}>
+          <AppText style={styles.subtitle}>
             Sign in to continue
-          </Text>
+          </AppText>
 
-          <View style={styles.form}>
+          <AppView style={styles.form}>
             <AppTextField
               label="Email"
               placeholder="Enter your email"
@@ -119,7 +114,7 @@ export default function LoginScreen() {
               keyboardType="email-address"
             />
 
-            <View>
+            <AppView>
               <AppTextField
                 label="Password"
                 placeholder="Enter password"
@@ -128,7 +123,7 @@ export default function LoginScreen() {
                 secureTextEntry={!showPassword}
               />
 
-              <Pressable
+              <AppPressable
                 style={styles.eyeButton}
                 onPress={() =>
                   setShowPassword(
@@ -147,11 +142,11 @@ export default function LoginScreen() {
                     COLORS.secondaryText
                   }
                 />
-              </Pressable>
-            </View>
+              </AppPressable>
+            </AppView>
 
-            <View style={styles.optionsRow}>
-              <Pressable
+            <AppView style={styles.optionsRow}>
+              <AppPressable
                 style={styles.rememberContainer}
                 onPress={() =>
                   setRememberMe(
@@ -169,29 +164,29 @@ export default function LoginScreen() {
                   color={COLORS.primary}
                 />
 
-                <Text
+                <AppText
                   style={
                     styles.rememberText
                   }
                 >
                   Remember Me
-                </Text>
-              </Pressable>
+                </AppText>
+              </AppPressable>
 
-              <Pressable
+              <AppPressable
                 onPress={() =>
                   router.push("/(auth)/forgot-password")
                 }
               >
-                <Text
+                <AppText
                   style={
                     styles.forgotText
                   }
                 >
                   Forgot Password?
-                </Text>
-              </Pressable>
-            </View>
+                </AppText>
+              </AppPressable>
+            </AppView>
 
             <AppButton
               title="Sign In"
@@ -199,32 +194,32 @@ export default function LoginScreen() {
               loading={loading}
             />
 
-          </View>
+          </AppView>
         </AppCard>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
+        <AppView style={styles.footer}>
+          <AppText style={styles.footerText}>
             Don't have an account?
-          </Text>
+          </AppText>
 
-          <Pressable
+          <AppPressable
             onPress={() =>
               router.push("/(auth)/create-account")
             }
           >
-            <Text
+            <AppText
               style={styles.createText}
             >
               Create Account
-            </Text>
-          </Pressable>
+            </AppText>
+          </AppPressable>
 
-          <Text style={styles.version}>
+          <AppText style={styles.version}>
             Version 1.0.0
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
       </AppKeyboardAwareScrollView>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

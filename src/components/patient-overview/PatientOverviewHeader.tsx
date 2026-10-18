@@ -1,5 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { router } from "expo-router";
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
@@ -76,19 +78,19 @@ export default function PatientOverviewHeader({
 
   return (
     <AppCard>
-      <View style={styles.header}>
-        <View style={styles.info}>
-          <View style={styles.nameRow}>
-            <Text style={styles.name}>
+      <AppView style={styles.header}>
+        <AppView style={styles.info}>
+          <AppView style={styles.nameRow}>
+            <AppText style={styles.name}>
               {patient.fullName}
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
 
-          <Text style={styles.subtitle}>
+          <AppText style={styles.subtitle}>
             {age} • {gender}
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             <Ionicons
               name="card-outline"
               size={16}
@@ -97,13 +99,13 @@ export default function PatientOverviewHeader({
               }
             />
 
-            <Text style={styles.infoText}>
+            <AppText style={styles.infoText}>
               Patient ID:{" "}
               {patient.patientCode}
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             <Ionicons
               name="call-outline"
               size={16}
@@ -112,15 +114,15 @@ export default function PatientOverviewHeader({
               }
             />
 
-            <Text style={styles.infoText}>
+            <AppText style={styles.infoText}>
               {patient.phone ??
                 "No phone number"}
-            </Text>
-          </View>
-        </View>
-      </View>
+            </AppText>
+          </AppView>
+        </AppView>
+      </AppView>
 
-      <View style={styles.actions}>
+      <AppView style={styles.actions}>
         <AppButton
           title="Edit"
           icon="create-outline"
@@ -135,7 +137,7 @@ export default function PatientOverviewHeader({
             })
           }
         />
-      </View>
+      </AppView>
     </AppCard>
   );
 }

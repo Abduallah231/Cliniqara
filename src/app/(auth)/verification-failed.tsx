@@ -1,6 +1,9 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { router } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 
 import AppButton from "@/components/common/AppButton";
@@ -16,44 +19,44 @@ import {
 
 export default function VerificationFailedScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <AppSafeAreaView style={styles.container}>
       <AppKeyboardAwareScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <View style={styles.logo}>
+        <AppView style={styles.header}>
+          <AppView style={styles.logo}>
             <Ionicons
               name="close-circle"
               size={46}
               color={COLORS.danger}
             />
-          </View>
+          </AppView>
 
-          <Text style={styles.title}>
+          <AppText style={styles.title}>
             Verification Failed
-          </Text>
+          </AppText>
 
-          <Text style={styles.subtitle}>
+          <AppText style={styles.subtitle}>
             Your verification request was rejected.
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
         <AppCard style={styles.card}>
-          <View style={styles.form}>
-            <Text style={styles.sectionTitle}>
+          <AppView style={styles.form}>
+            <AppText style={styles.sectionTitle}>
               Reason
-            </Text>
+            </AppText>
 
-            <View style={styles.reasonCard}>
-              <Text style={styles.reasonText}>
+            <AppView style={styles.reasonCard}>
+              <AppText style={styles.reasonText}>
                 Your medical license image was unclear.
                 Please upload a clear image and submit
                 your verification again.
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
 
             <AppButton
               title="Edit & Resubmit"
@@ -69,10 +72,10 @@ export default function VerificationFailedScreen() {
                 router.replace("/(auth)/login")
               }
             />
-          </View>
+          </AppView>
         </AppCard>
       </AppKeyboardAwareScrollView>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

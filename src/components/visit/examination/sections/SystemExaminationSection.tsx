@@ -1,7 +1,5 @@
-import {
-  StyleSheet,
-  View,
-} from "react-native";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 import { useVisitStore } from "@/store/visitStore";
@@ -172,7 +170,7 @@ export default function SystemExaminationSection() {
       : null;
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <CollapsibleSection
         title="System Examination"
         icon={
@@ -184,7 +182,7 @@ export default function SystemExaminationSection() {
         }
         defaultExpanded={false}
       >
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           {SYSTEMS.map((system) => (
             <AppChip
               key={system.id}
@@ -200,9 +198,9 @@ export default function SystemExaminationSection() {
               }
             />
           ))}
-        </View>
+        </AppView>
 
-        <View
+        <AppView
           style={{
             height: SPACING.md,
           }}
@@ -210,7 +208,7 @@ export default function SystemExaminationSection() {
 
         {SelectedSystem && <SelectedSystem />}
       </CollapsibleSection>
-    </View>
+    </AppView>
   );
 }
 

@@ -1,19 +1,14 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import AppChip from "@/components/common/AppChip";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
 import { useVisitStore } from "@/store/visitStore";
 import {
-  COLORS,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+  COLORS, SPACING, TYPOGRAPHY, } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import {
   useEffect,
   useRef,
@@ -120,7 +115,7 @@ export default function GeneralInspectionSection() {
   ]);
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <CollapsibleSection
         title="General Inspection"
         icon={
@@ -134,7 +129,7 @@ export default function GeneralInspectionSection() {
       >
         <SectionHeader title="Consciousness" />
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           <AppChip
             label="Conscious"
             selected={
@@ -190,13 +185,13 @@ export default function GeneralInspectionSection() {
               })
             }
           />
-        </View>
+        </AppView>
 
         <Divider />
 
         <SectionHeader title="Appearance" />
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           <AppChip
             label="Normal"
             selected={
@@ -251,13 +246,13 @@ export default function GeneralInspectionSection() {
               })
             }
           />
-        </View>
+        </AppView>
 
         <Divider />
 
                 <SectionHeader title="Hydration" />
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           <AppChip
             label="Normal"
             selected={
@@ -310,13 +305,13 @@ export default function GeneralInspectionSection() {
               })
             }
           />
-        </View>
+        </AppView>
 
         <Divider />
 
         <SectionHeader title="Body Build" />
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           <AppChip
             label="Average"
             selected={
@@ -369,13 +364,13 @@ export default function GeneralInspectionSection() {
               })
             }
           />
-        </View>
+        </AppView>
 
         <Divider />
 
         <SectionHeader title="Nourishment" />
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           <AppChip
             label="Well Nourished"
             selected={
@@ -403,13 +398,13 @@ export default function GeneralInspectionSection() {
               })
             }
           />
-        </View>
+        </AppView>
 
         <Divider />
 
         <SectionHeader title="Findings" />
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           {[
             "Pallor",
             "Jaundice",
@@ -431,19 +426,19 @@ export default function GeneralInspectionSection() {
               }
             />
           ))}
-        </View>
+        </AppView>
 
         {generalInspection.findings.includes(
           "Edema"
         ) && (
-          <View style={styles.box}>
-            <Text
+          <AppView style={styles.box}>
+            <AppText
               style={styles.sectionTitle}
             >
               Edema Location
-            </Text>
+            </AppText>
 
-            <View style={styles.row}>
+            <AppView style={styles.row}>
               {[
                 "Periorbital",
                 "Upper Limb",
@@ -464,11 +459,11 @@ export default function GeneralInspectionSection() {
                   }
                 />
               ))}
-            </View>
-          </View>
+            </AppView>
+          </AppView>
         )}
       </CollapsibleSection>
-    </View>
+    </AppView>
   );
 }
 const styles = StyleSheet.create({

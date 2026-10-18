@@ -1,14 +1,11 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useCallback, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, Alert, StyleSheet } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 import ClinicQrScanner from "@/components/clinic/ClinicQrScanner";
 import AppButton from "@/components/common/AppButton";
@@ -123,37 +120,37 @@ export default function JoinClinicScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <AppSafeAreaView style={styles.container}>
       <AppKeyboardAwareScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <View style={styles.logo}>
+        <AppView style={styles.header}>
+          <AppView style={styles.logo}>
             <Ionicons
               name="business"
               size={42}
               color={COLORS.primary}
             />
-          </View>
+          </AppView>
 
-          <Text style={styles.title}>
+          <AppText style={styles.title}>
             Join Clinic
-          </Text>
+          </AppText>
 
-          <Text style={styles.subtitle}>
+          <AppText style={styles.subtitle}>
             Enter the temporary join code provided
             by your clinic administrator.
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
         <AppCard style={styles.card}>
-          <View style={styles.form}>
-            <Text style={styles.sectionTitle}>
+          <AppView style={styles.form}>
+            <AppText style={styles.sectionTitle}>
               Clinic Join Code
-            </Text>
+            </AppText>
 
             <AppTextField
               label="Join Code"
@@ -168,9 +165,9 @@ export default function JoinClinicScreen() {
             />
 
             {error ? (
-              <Text style={styles.error}>
+              <AppText style={styles.error}>
                 {error}
-              </Text>
+              </AppText>
             ) : null}
 
             <AppButton
@@ -179,7 +176,7 @@ export default function JoinClinicScreen() {
               onPress={handleJoinRequest}
             />
 
-            <Pressable
+            <AppPressable
               style={styles.scanButton}
               onPress={() => {
                 setError("");
@@ -193,10 +190,10 @@ export default function JoinClinicScreen() {
                 color={COLORS.primary}
               />
 
-              <Text style={styles.scanButtonText}>
+              <AppText style={styles.scanButtonText}>
                 Scan QR Code
-              </Text>
-            </Pressable>
+              </AppText>
+            </AppPressable>
 
             {showScanner && (
               <ClinicQrScanner
@@ -235,7 +232,7 @@ export default function JoinClinicScreen() {
               />
             )}
 
-            <Pressable
+            <AppPressable
               style={styles.continueButton}
               onPress={() => router.replace("/")}
             >
@@ -245,80 +242,80 @@ export default function JoinClinicScreen() {
                 color={COLORS.primary}
               />
 
-              <Text style={styles.continueText}>
+              <AppText style={styles.continueText}>
                 Continue to App
-              </Text>
-            </Pressable>
-          </View>
+              </AppText>
+            </AppPressable>
+          </AppView>
         </AppCard>
 
         {pendingRequests.length > 0 && (
-          <View style={styles.pendingSection}>
-            <Text style={styles.pendingSectionTitle}>
+          <AppView style={styles.pendingSection}>
+            <AppText style={styles.pendingSectionTitle}>
               Pending Requests
-            </Text>
+            </AppText>
 
             {pendingRequests.map((request) => (
               <AppCard
                 key={request.id}
                 style={styles.pendingCard}
               >
-                <View style={styles.pendingRow}>
-                  <View style={styles.pendingIcon}>
+                <AppView style={styles.pendingRow}>
+                  <AppView style={styles.pendingIcon}>
                     <Ionicons
                       name="business-outline"
                       size={24}
                       color={COLORS.primary}
                     />
-                  </View>
+                  </AppView>
 
-                  <View style={styles.pendingInfo}>
-                    <Text style={styles.clinicName}>
+                  <AppView style={styles.pendingInfo}>
+                    <AppText style={styles.clinicName}>
                       {request.clinic.name}
-                    </Text>
+                    </AppText>
 
-                    <Text style={styles.clinicLocation}>
+                    <AppText style={styles.clinicLocation}>
                       {request.clinic.city}
-                    </Text>
+                    </AppText>
 
-                    <Text style={styles.pendingStatus}>
+                    <AppText style={styles.pendingStatus}>
                       Pending approval
-                    </Text>
-                  </View>
-                </View>
+                    </AppText>
+                  </AppView>
+                </AppView>
               </AppCard>
             ))}
-          </View>
+          </AppView>
         )}
 
         <AppCard style={styles.infoCard}>
-          <View style={styles.infoRow}>
+          <AppView style={styles.infoRow}>
             <Ionicons
               name="information-circle"
               size={26}
               color={COLORS.primary}
             />
 
-            <View style={styles.infoContent}>
-              <Text style={styles.infoTitle}>
+            <AppView style={styles.infoContent}>
+              <AppText style={styles.infoTitle}>
                 What happens next?
-              </Text>
+              </AppText>
 
-              <Text style={styles.infoText}>
+              <AppText style={styles.infoText}>
                 Your request will be sent to the
                 clinic administrator for approval.
-              </Text>
+              </AppText>
 
-              <Text style={styles.infoText}>
+              <AppText style={styles.infoText}>
                 You cannot access clinic records
                 until your request is approved.
-              </Text>
-            </View>
-          </View>
+              </AppText>
+            </AppView>
+          </AppView>
         </AppCard>
 
         {AUTH_ENABLED && (
-          <Pressable
+          <AppPressable
             style={styles.signOutButton}
             onPress={handleSignOut}
           >
@@ -328,14 +325,14 @@ export default function JoinClinicScreen() {
               color={COLORS.danger}
             />
 
-            <Text style={styles.signOutText}>
+            <AppText style={styles.signOutText}>
               Sign Out
-            </Text>
-          </Pressable>
+            </AppText>
+          </AppPressable>
         )}
       </AppKeyboardAwareScrollView>
 
-      <Pressable
+      <AppPressable
         style={styles.refreshButton}
         onPress={handleRefresh}
         disabled={refreshing}
@@ -353,9 +350,9 @@ export default function JoinClinicScreen() {
             color="#FFFFFF"
           />
         )}
-      </Pressable>
+      </AppPressable>
 
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

@@ -1,10 +1,8 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 
 import AppDropdown from "@/components/common/AppDropdown";
 import investigations from "@/data/investigations";
@@ -65,10 +63,10 @@ export default function InvestigationSection({
     }));
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <AppView style={styles.container}>
+      <AppText style={styles.title}>
         Search Investigation
-      </Text>
+      </AppText>
 
       <AppDropdown
         placeholder="Search investigation..."
@@ -82,36 +80,36 @@ export default function InvestigationSection({
         }
       />
 
-      <Text style={styles.title}>
+      <AppText style={styles.title}>
         Requested Investigations
-      </Text>
+      </AppText>
 
       {investigationsState.requestedInvestigations.map(
         (item) => (
-          <View
+          <AppView
             key={item.id ?? item.name}
             style={styles.card}
           >
-            <View style={styles.cardHeader}>
+            <AppView style={styles.cardHeader}>
               <Ionicons
                 name="flask-outline"
                 size={20}
                 color={COLORS.primary}
               />
 
-              <View style={{ flex: 1 }}>
-                <Text style={styles.cardTitle}>
+              <AppView style={{ flex: 1 }}>
+                <AppText style={styles.cardTitle}>
                   {item.name}
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={styles.cardSubtitle}
                 >
                   {item.status}
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
 
-              <Pressable
+              <AppPressable
                 onPress={() =>
                   removeRequestedInvestigation(
                     item.id ?? item.name,
@@ -123,15 +121,15 @@ export default function InvestigationSection({
                   size={22}
                   color={COLORS.danger}
                 />
-              </Pressable>
-            </View>
-          </View>
+              </AppPressable>
+            </AppView>
+          </AppView>
         ),
       )}
 
       {investigationsState
         .requestedInvestigations.length > 0 && (
-        <Pressable
+        <AppPressable
           style={styles.openButton}
           onPress={onOpenResults}
         >
@@ -141,14 +139,14 @@ export default function InvestigationSection({
             color={COLORS.white}
           />
 
-          <Text
+          <AppText
             style={styles.openButtonText}
           >
             Enter Results
-          </Text>
-        </Pressable>
+          </AppText>
+        </AppPressable>
       )}
-    </View>
+    </AppView>
   );
 }
 

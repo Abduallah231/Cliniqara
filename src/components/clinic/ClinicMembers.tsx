@@ -1,9 +1,6 @@
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { Alert, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
@@ -84,9 +81,9 @@ export default function ClinicMembers({
   if (members.length === 0) {
     return (
       <AppCard>
-        <Text style={styles.emptyText}>
+        <AppText style={styles.emptyText}>
           No active members.
-        </Text>
+        </AppText>
 
         {!isOwner && (
           <AppButton
@@ -99,7 +96,7 @@ export default function ClinicMembers({
   }
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       {members.map((member) => {
         const isCurrentUser =
           member.id ===
@@ -113,70 +110,70 @@ export default function ClinicMembers({
 
         return (
           <AppCard key={member.id}>
-            <View style={styles.memberHeader}>
-              <View style={styles.memberIdentity}>
-                <Text style={styles.memberName}>
+            <AppView style={styles.memberHeader}>
+              <AppView style={styles.memberIdentity}>
+                <AppText style={styles.memberName}>
                   {member.user.fullName}
-                </Text>
+                </AppText>
 
-                <View style={styles.roleRow}>
-                  <View style={styles.roleBadge}>
-                    <Text style={styles.roleBadgeText}>
+                <AppView style={styles.roleRow}>
+                  <AppView style={styles.roleBadge}>
+                    <AppText style={styles.roleBadgeText}>
                       {getRoleLabel(
                         member.clinicRole,
                       )}
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
 
                   {member.clinicRole === "DOCTOR" &&
                     member.user.doctorLevel && (
-                      <View style={styles.levelBadge}>
-                        <Text style={styles.levelBadgeText}>
+                      <AppView style={styles.levelBadge}>
+                        <AppText style={styles.levelBadgeText}>
                           "Doctor"
-                        </Text>
-                      </View>
+                        </AppText>
+                      </AppView>
                     )}
-                </View>
-              </View>
-            </View>
+                </AppView>
+              </AppView>
+            </AppView>
 
             {(member.user.specialty ||
               member.user.professionalTitle) && (
-              <View style={styles.professionalInfo}>
+              <AppView style={styles.professionalInfo}>
                 {member.user.specialty && (
-                  <View style={styles.infoRow}>
+                  <AppView style={styles.infoRow}>
                     <Ionicons
                       name="medical-outline"
                       size={17}
                       color={COLORS.secondaryText}
                     />
 
-                    <Text style={styles.infoText}>
+                    <AppText style={styles.infoText}>
                       {member.user.specialty}
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
                 )}
 
                 {member.user.professionalTitle && (
-                  <View style={styles.infoRow}>
+                  <AppView style={styles.infoRow}>
                     <Ionicons
                       name="briefcase-outline"
                       size={17}
                       color={COLORS.secondaryText}
                     />
 
-                    <Text style={styles.infoText}>
+                    <AppText style={styles.infoText}>
                       {member.user.professionalTitle}
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
                 )}
-              </View>
+              </AppView>
             )}
 
             {isOwner &&
               !isCurrentUser &&
               !isMemberOwner && (
-                <View style={styles.actionRow}>
+                <AppView style={styles.actionRow}>
                   <AppButton
                     title="Remove"
                     onPress={() =>
@@ -195,7 +192,7 @@ export default function ClinicMembers({
                       }
                     />
                   )}
-                </View>
+                </AppView>
               )}
           </AppCard>
         );
@@ -209,11 +206,11 @@ export default function ClinicMembers({
       )}
 
       {loading && (
-        <Text style={styles.loadingText}>
+        <AppText style={styles.loadingText}>
           Updating members...
-        </Text>
+        </AppText>
       )}
-    </View>
+    </AppView>
   );
 }
 

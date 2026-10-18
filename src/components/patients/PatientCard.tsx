@@ -1,10 +1,6 @@
-import {
-    Pressable,
-    StyleProp,
-    StyleSheet,
-    View,
-    ViewStyle,
-} from "react-native";
+import AppPressable from "@/components/common/AppPressable";
+import AppView from "@/components/common/AppView";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import AppCard from "@/components/common/AppCard";
 import AppDivider from "@/components/common/AppDivider";
@@ -41,7 +37,7 @@ export default function PatientCard({
   style,
 }: Props) {
   return (
-    <Pressable
+    <AppPressable
       onPress={() => onPress?.(patient)}
     >
       <AppCard style={style}>
@@ -52,7 +48,7 @@ export default function PatientCard({
 
         <AppDivider />
 
-        <View style={styles.info}>
+        <AppView style={styles.info}>
           <AppInfoRow
             icon="person-outline"
             label="Age"
@@ -74,11 +70,11 @@ export default function PatientCard({
               value={patient.lastVisit}
             />
           )}
-        </View>
+        </AppView>
 
         <AppDivider />
       </AppCard>
-    </Pressable>
+    </AppPressable>
   );
 }
 

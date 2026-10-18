@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -136,7 +134,7 @@ export default function GynecologyExam() {
     fieldLabel: string;
     normal?: string;
   }) => (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       {items.map((item) => (
         <AppChip
           key={item}
@@ -157,14 +155,14 @@ export default function GynecologyExam() {
           }
         />
       ))}
-    </View>
+    </AppView>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
+    <AppView style={styles.container}>
+      <AppText style={styles.sectionTitle}>
         External Genitalia
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -189,12 +187,12 @@ export default function GynecologyExam() {
       ).includes(
         "Discharge"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Discharge Type
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "White",
               "Yellow",
@@ -218,13 +216,13 @@ export default function GynecologyExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Vaginal Examination
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -237,9 +235,9 @@ export default function GynecologyExam() {
         fieldLabel="Vaginal Findings"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Cervix
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -263,12 +261,12 @@ export default function GynecologyExam() {
       ).includes(
         "Discharge"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Cervical Discharge
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Mucoid",
               "Purulent",
@@ -291,13 +289,13 @@ export default function GynecologyExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Uterus
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -328,11 +326,11 @@ export default function GynecologyExam() {
         placeholder="e.g. 8 weeks"
       />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Mobility
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Normal",
           "Restricted",
@@ -355,11 +353,11 @@ export default function GynecologyExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Adnexa
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -378,12 +376,12 @@ export default function GynecologyExam() {
       ).includes(
         "Mass"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Side
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Right",
               "Left",
@@ -406,13 +404,13 @@ export default function GynecologyExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Consistency
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Cystic",
               "Solid",
@@ -435,13 +433,13 @@ export default function GynecologyExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Fornices
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -454,9 +452,9 @@ export default function GynecologyExam() {
         fieldLabel="Fornix Findings"
       />
 
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
         Pelvic Organ Prolapse
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -471,9 +469,9 @@ export default function GynecologyExam() {
         normal="Absent"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         PID Signs
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -487,9 +485,9 @@ export default function GynecologyExam() {
         normal="Absent"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Red Flags
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -521,7 +519,7 @@ export default function GynecologyExam() {
         placeholder="Add other findings..."
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

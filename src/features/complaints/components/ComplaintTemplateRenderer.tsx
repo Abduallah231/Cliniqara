@@ -1,5 +1,6 @@
-import { View } from "react-native";
 
+
+import AppView from "@/components/common/AppView";
 import { ComplaintTemplate } from "../models/ComplaintTemplate";
 import ComplaintSectionRenderer from "./ComplaintSectionRenderer";
 
@@ -15,7 +16,7 @@ export default function ComplaintTemplateRenderer({
   onChange,
 }: Props) {
   return (
-    <View>
+    <AppView>
       {template.sections.map((section) => (
         <ComplaintSectionRenderer
           key={section.code}
@@ -24,6 +25,6 @@ export default function ComplaintTemplateRenderer({
           onChange={onChange}
         />
       ))}
-    </View>
+    </AppView>
   );
 }

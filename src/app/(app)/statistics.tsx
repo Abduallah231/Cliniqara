@@ -1,16 +1,13 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppPressable from "@/components/common/AppPressable";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
-import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, RefreshControl, StyleSheet } from "react-native";
 import { useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import StatisticsAgeDistribution from "@/components/statistics/StatisticsAgeDistribution";
 import StatisticsAverageTimes from "@/components/statistics/StatisticsAverageTimes";
 import StatisticsDoctorPerformance from "@/components/statistics/StatisticsDoctorPerformance";
@@ -40,98 +37,98 @@ export default function StatisticsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <AppSafeAreaView style={styles.safeArea}>
         <Header />
 
-        <View style={styles.center}>
+        <AppView style={styles.center}>
           <ActivityIndicator
             size="large"
             color={COLORS.primary}
           />
 
-          <Text style={styles.loadingText}>
+          <AppText style={styles.loadingText}>
             Loading statistics...
-          </Text>
-        </View>
-      </SafeAreaView>
+          </AppText>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
   if (isForbidden) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <AppSafeAreaView style={styles.safeArea}>
         <Header />
 
-        <View style={styles.center}>
-          <View style={styles.accessIcon}>
+        <AppView style={styles.center}>
+          <AppView style={styles.accessIcon}>
             <Ionicons
               name="lock-closed-outline"
               size={30}
               color={COLORS.danger}
             />
-          </View>
+          </AppView>
 
-          <Text style={styles.accessTitle}>
+          <AppText style={styles.accessTitle}>
             Access Denied
-          </Text>
+          </AppText>
 
-          <Text style={styles.accessText}>
+          <AppText style={styles.accessText}>
             Statistics are available only to the
             clinic owner.
-          </Text>
+          </AppText>
 
-          <Pressable
+          <AppPressable
             onPress={() => router.back()}
             style={styles.backButton}
           >
-            <Text style={styles.backButtonText}>
+            <AppText style={styles.backButtonText}>
               Go Back
-            </Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
+            </AppText>
+          </AppPressable>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
   if (error || !statistics) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <AppSafeAreaView style={styles.safeArea}>
         <Header />
 
-        <View style={styles.center}>
+        <AppView style={styles.center}>
           <Ionicons
             name="alert-circle-outline"
             size={42}
             color={COLORS.danger}
           />
 
-          <Text style={styles.errorTitle}>
+          <AppText style={styles.errorTitle}>
             Unable to Load Statistics
-          </Text>
+          </AppText>
 
-          <Text style={styles.errorText}>
+          <AppText style={styles.errorText}>
             {error ??
               "Something went wrong. Please try again."}
-          </Text>
+          </AppText>
 
-          <Pressable
+          <AppPressable
             onPress={() => void refresh()}
             style={styles.backButton}
           >
-            <Text style={styles.backButtonText}>
+            <AppText style={styles.backButtonText}>
               Try Again
-            </Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
+            </AppText>
+          </AppPressable>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <AppSafeAreaView style={styles.safeArea}>
       <Header />
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -142,13 +139,13 @@ export default function StatisticsScreen() {
           />
         }
       >
-        <Text style={styles.pageTitle}>
+        <AppText style={styles.pageTitle}>
           Clinic Statistics
-        </Text>
+        </AppText>
 
-        <Text style={styles.pageSubtitle}>
+        <AppText style={styles.pageSubtitle}>
           Overview of visits and clinic performance
-        </Text>
+        </AppText>
 
         {/* ================================================= */}
         {/* Clinic Performance */}
@@ -293,16 +290,16 @@ export default function StatisticsScreen() {
           />
         </Card>
 
-        <View style={styles.bottomSpace} />
-      </ScrollView>
-    </SafeAreaView>
+        <AppView style={styles.bottomSpace} />
+      </AppScrollView>
+    </AppSafeAreaView>
   );
 }
 
 function Header() {
   return (
-    <View style={styles.header}>
-      <Pressable
+    <AppView style={styles.header}>
+      <AppPressable
         onPress={() => router.back()}
         hitSlop={10}
         style={styles.headerButton}
@@ -312,14 +309,14 @@ function Header() {
           size={24}
           color={COLORS.primary}
         />
-      </Pressable>
+      </AppPressable>
 
-      <Text style={styles.headerTitle}>
+      <AppText style={styles.headerTitle}>
         Statistics
-      </Text>
+      </AppText>
 
-      <View style={styles.headerButton} />
-    </View>
+      <AppView style={styles.headerButton} />
+    </AppView>
   );
 }
 
@@ -329,9 +326,9 @@ function SectionTitle({
   title: string;
 }) {
   return (
-    <Text style={styles.sectionTitle}>
+    <AppText style={styles.sectionTitle}>
       {title}
-    </Text>
+    </AppText>
   );
 }
 
@@ -341,9 +338,9 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <View style={styles.card}>
+    <AppView style={styles.card}>
       {children}
-    </View>
+    </AppView>
   );
 }
 

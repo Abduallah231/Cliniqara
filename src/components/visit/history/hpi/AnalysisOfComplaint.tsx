@@ -1,4 +1,5 @@
-import { Text } from "react-native";
+
+import AppText from "@/components/common/AppText";
 import {
   useEffect,
   useMemo,
@@ -360,9 +361,9 @@ export default function AnalysisOfComplaint() {
 
   if (!complaintId) {
     return (
-      <Text>
+      <AppText>
         Please select a chief complaint first.
-      </Text>
+      </AppText>
     );
   }
 

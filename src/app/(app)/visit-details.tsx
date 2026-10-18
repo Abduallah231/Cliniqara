@@ -1,15 +1,11 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppPressable from "@/components/common/AppPressable";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from "react-native";
+import { ActivityIndicator, Image, StyleSheet, useWindowDimensions } from "react-native";
 
 import {
   router,
@@ -23,9 +19,7 @@ import {
   useState,
 } from "react";
 
-import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
+
 
 import AppEmptyState from "@/components/common/AppEmptyState";
 import AppTopBar from "@/components/common/AppTopBar";
@@ -528,27 +522,27 @@ function MajorGroupHeader({
   subtitle: string;
 }) {
   return (
-    <View style={styles.majorGroupHeader}>
-      <View style={styles.majorGroupAccent} />
+    <AppView style={styles.majorGroupHeader}>
+      <AppView style={styles.majorGroupAccent} />
 
-      <View style={styles.majorGroupIcon}>
+      <AppView style={styles.majorGroupIcon}>
         <Ionicons
           name={icon}
           size={22}
           color={COLORS.primary}
         />
-      </View>
+      </AppView>
 
-      <View style={styles.majorGroupText}>
-        <Text style={styles.majorGroupTitle}>
+      <AppView style={styles.majorGroupText}>
+        <AppText style={styles.majorGroupTitle}>
           {title}
-        </Text>
+        </AppText>
 
-        <Text style={styles.majorGroupSubtitle}>
+        <AppText style={styles.majorGroupSubtitle}>
           {subtitle}
-        </Text>
-      </View>
-    </View>
+        </AppText>
+      </AppView>
+    </AppView>
   );
 }
 
@@ -566,29 +560,29 @@ function SubsectionHeader({
   count?: number;
 }) {
   return (
-    <View style={styles.subsectionHeader}>
-      <View style={styles.subsectionHeaderLeft}>
-        <View style={styles.subsectionIcon}>
+    <AppView style={styles.subsectionHeader}>
+      <AppView style={styles.subsectionHeaderLeft}>
+        <AppView style={styles.subsectionIcon}>
           <Ionicons
             name={icon}
             size={17}
             color={COLORS.primary}
           />
-        </View>
+        </AppView>
 
-        <Text style={styles.subsectionTitle}>
+        <AppText style={styles.subsectionTitle}>
           {title}
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
       {count !== undefined ? (
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>
+        <AppView style={styles.countBadge}>
+          <AppText style={styles.countText}>
             {count}
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
       ) : null}
-    </View>
+    </AppView>
   );
 }
 
@@ -608,17 +602,17 @@ function Subsection({
   children: React.ReactNode;
 }) {
   return (
-    <View style={styles.subsection}>
+    <AppView style={styles.subsection}>
       <SubsectionHeader
         icon={icon}
         title={title}
         count={count}
       />
 
-      <View style={styles.subsectionBody}>
+      <AppView style={styles.subsectionBody}>
         {children}
-      </View>
-    </View>
+      </AppView>
+    </AppView>
   );
 }
 
@@ -644,7 +638,7 @@ function Field({
   }
 
   return (
-    <View
+    <AppView
       style={[
         styles.field,
         columns === 2 &&
@@ -653,11 +647,11 @@ function Field({
           styles.fieldThreeColumns,
       ]}
     >
-      <Text style={styles.fieldLabel}>
+      <AppText style={styles.fieldLabel}>
         {label}
-      </Text>
+      </AppText>
 
-      <Text
+      <AppText
         style={[
           styles.fieldValue,
           emphasized &&
@@ -665,8 +659,8 @@ function Field({
         ]}
       >
         {formatSimpleValue(value)}
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 
@@ -680,11 +674,11 @@ function Tag({
   children: string;
 }) {
   return (
-    <View style={styles.tag}>
-      <Text style={styles.tagText}>
+    <AppView style={styles.tag}>
+      <AppText style={styles.tagText}>
         {children}
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 
@@ -721,7 +715,7 @@ function TagList({
   }
 
   return (
-    <View style={styles.tagList}>
+    <AppView style={styles.tagList}>
       {normalized.map(
         (value, index) => (
           <Tag
@@ -731,7 +725,7 @@ function TagList({
           </Tag>
         ),
       )}
-    </View>
+    </AppView>
   );
 }
 
@@ -769,7 +763,7 @@ function DynamicFields({
   }
 
   return (
-    <View style={styles.fieldGrid}>
+    <AppView style={styles.fieldGrid}>
       {fields.map(
         (field, index) => (
           <Field
@@ -795,7 +789,7 @@ function DynamicFields({
           />
         ),
       )}
-    </View>
+    </AppView>
   );
 }
 
@@ -814,9 +808,9 @@ function ClinicalData({
     isEmptyValue(value)
   ) {
     return (
-      <Text style={styles.emptyText}>
+      <AppText style={styles.emptyText}>
         No recorded data
-      </Text>
+      </AppText>
     );
   }
 
@@ -848,10 +842,10 @@ function ClinicalData({
     }
 
     return (
-      <View style={styles.stack}>
+      <AppView style={styles.stack}>
         {value.map(
           (item, index) => (
-            <View
+            <AppView
               key={index}
               style={
                 styles.dynamicItem
@@ -861,10 +855,10 @@ function ClinicalData({
                 value={item}
                 columns={columns}
               />
-            </View>
+            </AppView>
           ),
         )}
-      </View>
+      </AppView>
     );
   }
 
@@ -892,14 +886,14 @@ function ClinicalData({
       entries.length === 0
     ) {
       return (
-        <Text style={styles.emptyText}>
+        <AppText style={styles.emptyText}>
           No recorded data
-        </Text>
+        </AppText>
       );
     }
 
     return (
-      <View style={styles.fieldGrid}>
+      <AppView style={styles.fieldGrid}>
         {entries.map(
           ([key, item]) => {
             // ------------------------------------------
@@ -947,13 +941,13 @@ function ClinicalData({
               Array.isArray(item)
             ) {
               return (
-                <View
+                <AppView
                   key={key}
                   style={
                     styles.complexField
                   }
                 >
-                  <Text
+                  <AppText
                     style={
                       styles.fieldLabel
                     }
@@ -961,13 +955,13 @@ function ClinicalData({
                     {formatLabel(
                       key,
                     )}
-                  </Text>
+                  </AppText>
 
                   <ClinicalData
                     value={item}
                     columns={columns}
                   />
-                </View>
+                </AppView>
               );
             }
 
@@ -979,13 +973,13 @@ function ClinicalData({
               isPlainObject(item)
             ) {
               return (
-                <View
+                <AppView
                   key={key}
                   style={
                     styles.complexField
                   }
                 >
-                  <Text
+                  <AppText
                     style={
                       styles.fieldLabel
                     }
@@ -993,13 +987,13 @@ function ClinicalData({
                     {formatLabel(
                       key,
                     )}
-                  </Text>
+                  </AppText>
 
                   <ClinicalData
                     value={item}
                     columns={columns}
                   />
-                </View>
+                </AppView>
               );
             }
 
@@ -1017,14 +1011,14 @@ function ClinicalData({
             );
           },
         )}
-      </View>
+      </AppView>
     );
   }
 
   return (
-    <Text style={styles.singleValue}>
+    <AppText style={styles.singleValue}>
       {formatSimpleValue(value)}
-    </Text>
+    </AppText>
   );
 }
 
@@ -1051,43 +1045,43 @@ function TextList({
     validItems.length === 0
   ) {
     return (
-      <Text style={styles.emptyText}>
+      <AppText style={styles.emptyText}>
         No recorded data
-      </Text>
+      </AppText>
     );
   }
 
   return (
-    <View style={styles.textList}>
+    <AppView style={styles.textList}>
       {validItems.map(
         (item, index) => (
-          <View
+          <AppView
             key={index}
             style={styles.textListItem}
           >
-            <View
+            <AppView
               style={styles.listBullet}
             >
-              <Text
+              <AppText
                 style={
                   styles.listBulletText
                 }
               >
                 {index + 1}
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
 
-            <Text
+            <AppText
               style={
                 styles.listItemText
               }
             >
               {item.details}
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
         ),
       )}
-    </View>
+    </AppView>
   );
 }
 
@@ -1395,18 +1389,18 @@ export default function VisitDetailsScreen() {
       }
 
       return (
-        <View style={styles.analysisChipList}>
+        <AppView style={styles.analysisChipList}>
           {values.map((answer, index) => (
-            <View
+            <AppView
               key={`${answer}-${index}`}
               style={styles.analysisChip}
             >
-              <Text style={styles.analysisChipText}>
+              <AppText style={styles.analysisChipText}>
                 {answer}
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
           ))}
-        </View>
+        </AppView>
       );
     }
 
@@ -1416,7 +1410,7 @@ export default function VisitDetailsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView
+      <AppSafeAreaView
         style={styles.container}
         edges={[
           "top",
@@ -1430,7 +1424,7 @@ export default function VisitDetailsScreen() {
           }
         />
 
-        <View
+        <AppView
           style={
             styles.centered
           }
@@ -1442,15 +1436,15 @@ export default function VisitDetailsScreen() {
             }
           />
 
-          <Text
+          <AppText
             style={
               styles.loadingText
             }
           >
             Loading visit details...
-          </Text>
-        </View>
-      </SafeAreaView>
+          </AppText>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
@@ -1463,7 +1457,7 @@ export default function VisitDetailsScreen() {
     !visit
   ) {
     return (
-      <SafeAreaView
+      <AppSafeAreaView
         style={styles.container}
         edges={[
           "top",
@@ -1477,7 +1471,7 @@ export default function VisitDetailsScreen() {
           }
         />
 
-        <View
+        <AppView
           style={
             styles.centered
           }
@@ -1491,7 +1485,7 @@ export default function VisitDetailsScreen() {
             icon="alert-circle-outline"
           />
 
-          <Pressable
+          <AppPressable
             onPress={() =>
               void loadVisit()
             }
@@ -1507,16 +1501,16 @@ export default function VisitDetailsScreen() {
               }
             />
 
-            <Text
+            <AppText
               style={
                 styles.retryText
               }
             >
               Try Again
-            </Text>
-          </Pressable>
-        </View>
-      </SafeAreaView>
+            </AppText>
+          </AppPressable>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
@@ -1570,7 +1564,7 @@ export default function VisitDetailsScreen() {
   // ======================================================
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
       edges={[
         "top",
@@ -1584,7 +1578,7 @@ export default function VisitDetailsScreen() {
         }
       />
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={
           styles.content
         }
@@ -1596,12 +1590,12 @@ export default function VisitDetailsScreen() {
             Visit Header
         ================================================== */}
 
-        <View
+        <AppView
           style={
             styles.visitHero
           }
         >
-          <View
+          <AppView
             style={
               styles.heroIcon
             }
@@ -1613,23 +1607,23 @@ export default function VisitDetailsScreen() {
                 COLORS.primary
               }
             />
-          </View>
+          </AppView>
 
-          <View
+          <AppView
             style={
               styles.heroContent
             }
           >
-            <Text
+            <AppText
               style={
                 styles.visitTitle
               }
             >
               Visit{" "}
               {visit.visitCode}
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={
                 styles.visitDate
               }
@@ -1637,10 +1631,10 @@ export default function VisitDetailsScreen() {
               {formatDate(
                 visit.createdAt,
               )}
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
 
-          <View
+          <AppView
             style={[
               styles.statusBadge,
               visit.visitStatus ===
@@ -1667,21 +1661,21 @@ export default function VisitDetailsScreen() {
               }
             />
 
-            <Text
+            <AppText
               style={
                 styles.statusText
               }
             >
               {status}
-            </Text>
-          </View>
-        </View>
+            </AppText>
+          </AppView>
+        </AppView>
 
         {/* ==================================================
             HISTORY
         ================================================== */}
 
-        <View
+        <AppView
           style={
             styles.majorGroup
           }
@@ -1700,7 +1694,7 @@ export default function VisitDetailsScreen() {
             icon="information-circle-outline"
             title="Visit Information"
           >
-            <View
+            <AppView
               style={
                 styles.fieldGrid
               }
@@ -1804,7 +1798,7 @@ export default function VisitDetailsScreen() {
                   }
                 />
               ) : null}
-            </View>
+            </AppView>
           </Subsection>
 
           {/* ----------------------------------------------
@@ -1815,20 +1809,20 @@ export default function VisitDetailsScreen() {
             icon="chatbubble-ellipses-outline"
             title="Chief Complaint"
           >
-            <View
+            <AppView
               style={
                 styles.complaintPanel
               }
             >
-              <Text
+              <AppText
                 style={
                   styles.complaintLabel
                 }
               >
                 Presenting Complaint
-              </Text>
+              </AppText>
 
-              <Text
+              <AppText
                 style={
                   styles.complaintValue
                 }
@@ -1838,15 +1832,15 @@ export default function VisitDetailsScreen() {
                   ?.chiefComplaint
                   ?.name ??
                   "Not recorded"}
-              </Text>
+              </AppText>
 
               {duration ? (
-                <View
+                <AppView
                   style={
                     styles.durationRow
                   }
                 >
-                  <View
+                  <AppView
                     style={
                       styles.durationIcon
                     }
@@ -1858,28 +1852,28 @@ export default function VisitDetailsScreen() {
                         COLORS.primary
                       }
                     />
-                  </View>
+                  </AppView>
 
-                  <View>
-                    <Text
+                  <AppView>
+                    <AppText
                       style={
                         styles.durationLabel
                       }
                     >
                       Duration
-                    </Text>
+                    </AppText>
 
-                    <Text
+                    <AppText
                       style={
                         styles.durationValue
                       }
                     >
                       {duration}
-                    </Text>
-                  </View>
-                </View>
+                    </AppText>
+                  </AppView>
+                </AppView>
               ) : null}
-            </View>
+            </AppView>
           </Subsection>
 
           {/* ----------------------------------------------
@@ -1895,12 +1889,12 @@ export default function VisitDetailsScreen() {
           >
             {analysisFields.length >
             0 ? (
-              <View
+              <AppView
                 style={
                   styles.analysisPanel
                 }
               >
-                <View
+                <AppView
                   style={
                     styles.fieldGrid
                   }
@@ -1909,7 +1903,7 @@ export default function VisitDetailsScreen() {
                     (
                         field,
                     ) => (
-                        <View
+                        <AppView
                         key={
                             field.fieldId
                         }
@@ -1921,31 +1915,31 @@ export default function VisitDetailsScreen() {
                             styles.analysisFieldThreeColumns,
                         ]}
                         >
-                        <Text
+                        <AppText
                             style={
                             styles.analysisFieldLabel
                             }
                         >
                             {field.fieldLabel}
-                        </Text>
+                        </AppText>
 
                         <AnalysisAnswerChips
                           value={field.value}
                           fieldLabel={field.fieldLabel}
                         />
-                        </View>
+                        </AppView>
                     ),
                     )}
-                </View>
-              </View>
+                </AppView>
+              </AppView>
             ) : (
-              <Text
+              <AppText
                 style={
                   styles.emptyText
                 }
               >
                 No analysis recorded
-              </Text>
+              </AppText>
             )}
           </Subsection>
 
@@ -2090,13 +2084,13 @@ export default function VisitDetailsScreen() {
               />
             </Subsection>
           ) : null}
-        </View>
+        </AppView>
 
         {/* ==================================================
             EXAMINATION
         ================================================== */}
 
-        <View
+        <AppView
           style={
             styles.majorGroup
           }
@@ -2194,13 +2188,13 @@ export default function VisitDetailsScreen() {
               />
             </Subsection>
           ) : null}
-        </View>
+        </AppView>
 
         {/* ==================================================
             ASSESSMENT
         ================================================== */}
 
-        <View
+        <AppView
           style={
             styles.majorGroup
           }
@@ -2223,20 +2217,20 @@ export default function VisitDetailsScreen() {
               title="Diagnosis"
             >
               {primaryDiagnosis ? (
-                <View
+                <AppView
                   style={
                     styles.primaryDiagnosis
                   }
                 >
-                  <Text
+                  <AppText
                     style={
                       styles.fieldLabel
                     }
                   >
                     Primary Diagnosis
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={
                       styles.primaryDiagnosisText
                     }
@@ -2244,10 +2238,10 @@ export default function VisitDetailsScreen() {
                     {
                       primaryDiagnosis
                     }
-                  </Text>
+                  </AppText>
 
                   {primaryDiagnosisCode ? (
-                    <View
+                    <AppView
                       style={
                         styles.diagnosisCode
                       }
@@ -2260,7 +2254,7 @@ export default function VisitDetailsScreen() {
                         }
                       />
 
-                      <Text
+                      <AppText
                         style={
                           styles.diagnosisCodeText
                         }
@@ -2268,28 +2262,28 @@ export default function VisitDetailsScreen() {
                         {
                           primaryDiagnosisCode
                         }
-                      </Text>
-                    </View>
+                      </AppText>
+                    </AppView>
                   ) : null}
-                </View>
+                </AppView>
               ) : null}
 
               {differentialDiagnoses.length >
               0 ? (
-                <View
+                <AppView
                   style={
                     styles.differentialSection
                   }
                 >
-                  <Text
+                  <AppText
                     style={
                       styles.fieldLabel
                     }
                   >
                     Differential Diagnoses
-                  </Text>
+                  </AppText>
 
-                  <View
+                  <AppView
                     style={
                       styles.diagnosisList
                     }
@@ -2306,33 +2300,33 @@ export default function VisitDetailsScreen() {
                         }
 
                         return (
-                          <View
+                          <AppView
                             key={`${item.diagnosis}-${index}`}
                             style={
                               styles.diagnosisItem
                             }
                           >
-                            <View
+                            <AppView
                               style={
                                 styles.diagnosisBullet
                               }
                             >
-                              <Text
+                              <AppText
                                 style={
                                   styles.diagnosisBulletText
                                 }
                               >
                                 {index +
                                   1}
-                              </Text>
-                            </View>
+                              </AppText>
+                            </AppView>
 
-                            <View
+                            <AppView
                               style={
                                 styles.diagnosisItemContent
                               }
                             >
-                              <Text
+                              <AppText
                                 style={
                                   styles.diagnosisText
                                 }
@@ -2340,10 +2334,10 @@ export default function VisitDetailsScreen() {
                                 {
                                   item.diagnosis
                                 }
-                              </Text>
+                              </AppText>
 
                               {item.code ? (
-                                <Text
+                                <AppText
                                   style={
                                     styles.differentialCode
                                   }
@@ -2351,27 +2345,27 @@ export default function VisitDetailsScreen() {
                                   {
                                     item.code
                                   }
-                                </Text>
+                                </AppText>
                               ) : null}
-                            </View>
-                          </View>
+                            </AppView>
+                          </AppView>
                         );
                       },
                     )}
-                  </View>
-                </View>
+                  </AppView>
+                </AppView>
               ) : null}
 
               {!primaryDiagnosis &&
               differentialDiagnoses.length ===
                 0 ? (
-                <Text
+                <AppText
                   style={
                     styles.emptyText
                   }
                 >
                   No diagnosis recorded
-                </Text>
+                </AppText>
               ) : null}
             </Subsection>
           ) : null}
@@ -2389,7 +2383,7 @@ export default function VisitDetailsScreen() {
                 investigations.length
               }
             >
-              <View
+              <AppView
                 style={
                   styles.investigationList
                 }
@@ -2399,7 +2393,7 @@ export default function VisitDetailsScreen() {
                     investigation,
                     index,
                   ) => (
-                    <View
+                    <AppView
                       key={
                         investigation.id ??
                         `${investigation.name}-${index}`
@@ -2408,32 +2402,32 @@ export default function VisitDetailsScreen() {
                         styles.investigationItem
                       }
                     >
-                      <View
+                      <AppView
                         style={
                           styles.investigationHeader
                         }
                       >
-                        <View
+                        <AppView
                           style={
                             styles.numberBadge
                           }
                         >
-                          <Text
+                          <AppText
                             style={
                               styles.numberBadgeText
                             }
                           >
                             {index +
                               1}
-                          </Text>
-                        </View>
+                          </AppText>
+                        </AppView>
 
-                        <View
+                        <AppView
                           style={
                             styles.investigationTitleContainer
                           }
                         >
-                          <Text
+                          <AppText
                             style={
                               styles.investigationName
                             }
@@ -2442,10 +2436,10 @@ export default function VisitDetailsScreen() {
                               investigation.name ??
                               "Investigation"
                             }
-                          </Text>
+                          </AppText>
 
                           {investigation.status ? (
-                            <Text
+                            <AppText
                               style={
                                 styles.investigationStatus
                               }
@@ -2453,10 +2447,10 @@ export default function VisitDetailsScreen() {
                               {getInvestigationStatusLabel(
                                 investigation.status,
                               )}
-                            </Text>
+                            </AppText>
                           ) : null}
-                        </View>
-                      </View>
+                        </AppView>
+                      </AppView>
 
                       <DynamicFields
                         values={
@@ -2468,20 +2462,20 @@ export default function VisitDetailsScreen() {
                       />
 
                       {investigation.notes ? (
-                        <View
+                        <AppView
                           style={
                             styles.noteBox
                           }
                         >
-                          <Text
+                          <AppText
                             style={
                               styles.noteLabel
                             }
                           >
                             Notes
-                          </Text>
+                          </AppText>
 
-                          <Text
+                          <AppText
                             style={
                               styles.noteText
                             }
@@ -2489,27 +2483,27 @@ export default function VisitDetailsScreen() {
                             {
                               investigation.notes
                             }
-                          </Text>
-                        </View>
+                          </AppText>
+                        </AppView>
                       ) : null}
 
                       {investigation.images &&
                       investigation.images.length >
                         0 ? (
-                        <View
+                        <AppView
                           style={
                             styles.imagesContainer
                           }
                         >
-                          <Text
+                          <AppText
                             style={
                               styles.noteLabel
                             }
                           >
                             Images
-                          </Text>
+                          </AppText>
 
-                          <View
+                          <AppView
                             style={
                               styles.imageGrid
                             }
@@ -2536,13 +2530,13 @@ export default function VisitDetailsScreen() {
                                   />
                                 ) : null,
                             )}
-                          </View>
-                        </View>
+                          </AppView>
+                        </AppView>
                       ) : null}
-                    </View>
+                    </AppView>
                   ),
                 )}
-              </View>
+              </AppView>
             </Subsection>
           ) : null}
 
@@ -2606,7 +2600,7 @@ export default function VisitDetailsScreen() {
             >
               {medications.length >
               0 ? (
-                <View
+                <AppView
                   style={
                     styles.medicationList
                   }
@@ -2635,33 +2629,33 @@ export default function VisitDetailsScreen() {
                           );
 
                         return (
-                          <View
+                          <AppView
                             key={`${medication.medication}-${index}`}
                             style={
                               styles.medicationItem
                             }
                           >
-                            <View
+                            <AppView
                               style={
                                 styles.medicationIndex
                               }
                             >
-                              <Text
+                              <AppText
                                 style={
                                   styles.medicationIndexText
                                 }
                               >
                                 {index +
                                   1}
-                              </Text>
-                            </View>
+                              </AppText>
+                            </AppView>
 
-                            <View
+                            <AppView
                               style={
                                 styles.medicationContent
                               }
                             >
-                              <Text
+                              <AppText
                                 style={
                                   styles.medicationName
                                 }
@@ -2670,15 +2664,15 @@ export default function VisitDetailsScreen() {
                                   medication.medication ??
                                   "Medication"
                                 }
-                              </Text>
+                              </AppText>
 
-                              <View
+                              <AppView
                                 style={
                                   styles.medicationMeta
                                 }
                               >
                                 {medicationDuration ? (
-                                  <View
+                                  <AppView
                                     style={
                                       styles.medicationMetaItem
                                     }
@@ -2691,7 +2685,7 @@ export default function VisitDetailsScreen() {
                                       }
                                     />
 
-                                    <Text
+                                    <AppText
                                       style={
                                         styles.medicationMetaText
                                       }
@@ -2699,26 +2693,26 @@ export default function VisitDetailsScreen() {
                                       {
                                         medicationDuration
                                       }
-                                    </Text>
-                                  </View>
+                                    </AppText>
+                                  </AppView>
                                 ) : null}
-                              </View>
+                              </AppView>
 
                               {medication.instructions ? (
-                                <View
+                                <AppView
                                   style={
                                     styles.instructionsBlock
                                   }
                                 >
-                                  <Text
+                                  <AppText
                                     style={
                                       styles.fieldLabel
                                     }
                                   >
                                     Instructions
-                                  </Text>
+                                  </AppText>
 
-                                  <Text
+                                  <AppText
                                     style={
                                       styles.instructionText
                                     }
@@ -2726,33 +2720,33 @@ export default function VisitDetailsScreen() {
                                     {
                                       medication.instructions
                                     }
-                                  </Text>
-                                </View>
+                                  </AppText>
+                                </AppView>
                               ) : null}
-                            </View>
-                          </View>
+                            </AppView>
+                          </AppView>
                         );
                       },
                     )}
-                </View>
+                </AppView>
               ) : null}
 
               {visit.prescription
                 ?.advice ? (
-                <View
+                <AppView
                   style={
                     styles.prescriptionNote
                   }
                 >
-                  <Text
+                  <AppText
                     style={
                       styles.fieldLabel
                     }
                   >
                     Advice
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={
                       styles.prescriptionNoteText
                     }
@@ -2762,26 +2756,26 @@ export default function VisitDetailsScreen() {
                         .prescription
                         .advice
                     }
-                  </Text>
-                </View>
+                  </AppText>
+                </AppView>
               ) : null}
 
               {visit.prescription
                 ?.followUp ? (
-                <View
+                <AppView
                   style={
                     styles.prescriptionNote
                   }
                 >
-                  <Text
+                  <AppText
                     style={
                       styles.fieldLabel
                     }
                   >
                     Follow-up
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={
                       styles.prescriptionNoteText
                     }
@@ -2791,26 +2785,26 @@ export default function VisitDetailsScreen() {
                         .prescription
                         .followUp
                     }
-                  </Text>
-                </View>
+                  </AppText>
+                </AppView>
               ) : null}
 
               {visit.prescription
                 ?.notes ? (
-                <View
+                <AppView
                   style={
                     styles.prescriptionNote
                   }
                 >
-                  <Text
+                  <AppText
                     style={
                       styles.fieldLabel
                     }
                   >
                     Notes
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={
                       styles.prescriptionNoteText
                     }
@@ -2820,23 +2814,23 @@ export default function VisitDetailsScreen() {
                         .prescription
                         .notes
                     }
-                  </Text>
-                </View>
+                  </AppText>
+                </AppView>
               ) : null}
             </Subsection>
           ) : null}
-        </View>
+        </AppView>
 
         {/* ==================================================
             Read Only Notice
         ================================================== */}
 
-        <View
+        <AppView
           style={
             styles.readOnlyBanner
           }
         >
-          <View
+          <AppView
             style={
               styles.readOnlyIcon
             }
@@ -2848,39 +2842,39 @@ export default function VisitDetailsScreen() {
                 COLORS.primary
               }
             />
-          </View>
+          </AppView>
 
-          <View
+          <AppView
             style={
               styles.readOnlyContent
             }
           >
-            <Text
+            <AppText
               style={
                 styles.readOnlyTitle
               }
             >
               Read-only visit
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={
                 styles.readOnlyText
               }
             >
               Clinical information on this
               page cannot be edited.
-            </Text>
-          </View>
-        </View>
+            </AppText>
+          </AppView>
+        </AppView>
 
-        <View
+        <AppView
           style={
             styles.bottomSpace
           }
         />
-      </ScrollView>
-    </SafeAreaView>
+      </AppScrollView>
+    </AppSafeAreaView>
   );
 }
 

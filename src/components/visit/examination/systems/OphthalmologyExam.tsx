@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -109,7 +107,7 @@ export default function OphthalmologyExam() {
     fieldLabel: string;
     normal?: string;
   }) => (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       {items.map((item) => (
         <AppChip
           key={item}
@@ -130,14 +128,14 @@ export default function OphthalmologyExam() {
           }
         />
       ))}
-    </View>
+    </AppView>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
+    <AppView style={styles.container}>
+      <AppText style={styles.sectionTitle}>
         Visual Acuity
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -172,11 +170,11 @@ export default function OphthalmologyExam() {
             placeholder="6/6"
           />
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Side
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Right",
               "Left",
@@ -199,13 +197,13 @@ export default function OphthalmologyExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
         </>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         External Eye
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -219,9 +217,9 @@ export default function OphthalmologyExam() {
         fieldLabel="External Findings"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Conjunctiva
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -235,9 +233,9 @@ export default function OphthalmologyExam() {
         fieldLabel="Conjunctiva Findings"
       />
 
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
         Cornea
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -252,9 +250,9 @@ export default function OphthalmologyExam() {
         normal="Clear"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Pupils
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -294,9 +292,9 @@ export default function OphthalmologyExam() {
         />
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Extraocular Movements
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -310,9 +308,9 @@ export default function OphthalmologyExam() {
         normal="Full"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Fundus
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -327,9 +325,9 @@ export default function OphthalmologyExam() {
         fieldLabel="Fundus Findings"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Red Flags
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -361,7 +359,7 @@ export default function OphthalmologyExam() {
         placeholder="Add other findings..."
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

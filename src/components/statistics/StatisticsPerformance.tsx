@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import { COLORS } from "@/theme/colors";
 import { TYPOGRAPHY } from "@/theme/typography";
@@ -15,7 +17,7 @@ export default function StatisticsPerformance({
   visitsThisMonth,
 }: Props) {
   return (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       <Metric
         label="Avg. Visits / Day"
         value={averageVisitsPerDay.toFixed(1)}
@@ -30,7 +32,7 @@ export default function StatisticsPerformance({
         label="This Month"
         value={String(visitsThisMonth)}
       />
-    </View>
+    </AppView>
   );
 }
 
@@ -42,10 +44,10 @@ function Metric({
   value: string;
 }) {
   return (
-    <View style={styles.metric}>
-      <Text style={styles.value}>{value}</Text>
-      <Text style={styles.label}>{label}</Text>
-    </View>
+    <AppView style={styles.metric}>
+      <AppText style={styles.value}>{value}</AppText>
+      <AppText style={styles.label}>{label}</AppText>
+    </AppView>
   );
 }
 

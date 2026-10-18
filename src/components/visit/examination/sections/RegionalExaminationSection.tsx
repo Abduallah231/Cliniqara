@@ -1,13 +1,11 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 import { useVisitStore } from "@/store/visitStore";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import {
   COLORS,
   SPACING,
@@ -62,11 +60,11 @@ function Section({
 
   return (
     <>
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         {title}
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {items.map((item) => (
           <AppChip
             key={item}
@@ -82,7 +80,7 @@ function Section({
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {regional[
         section
@@ -202,7 +200,7 @@ export default function RegionalExaminationSection() {
     updateRegionalSection,
   ]);
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <CollapsibleSection
         title="Regional Examination"
         icon={
@@ -271,7 +269,7 @@ export default function RegionalExaminationSection() {
           ]}
         />
       </CollapsibleSection>
-    </View>
+    </AppView>
   );
 }
 

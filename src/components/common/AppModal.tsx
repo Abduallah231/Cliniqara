@@ -1,11 +1,6 @@
+import AppPressable from "@/components/common/AppPressable";
 import { ReactNode } from "react";
-import {
-    Modal,
-    Pressable,
-    StyleProp,
-    StyleSheet,
-    ViewStyle
-} from "react-native";
+import { Modal, StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import {
     COLORS,
@@ -38,11 +33,11 @@ export default function AppModal({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <Pressable
+      <AppPressable
         style={styles.overlay}
         onPress={onClose}
       >
-        <Pressable
+        <AppPressable
           style={[
             styles.container,
             style,
@@ -50,8 +45,8 @@ export default function AppModal({
           onPress={() => {}}
         >
           {children}
-        </Pressable>
-      </Pressable>
+        </AppPressable>
+      </AppPressable>
     </Modal>
   );
 }

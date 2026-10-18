@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -136,7 +134,7 @@ export default function MusculoskeletalExam() {
     fieldLabel: string;
     normal?: string;
   }) => (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       {items.map((item) => (
         <AppChip
           key={item}
@@ -157,14 +155,14 @@ export default function MusculoskeletalExam() {
           }
         />
       ))}
-    </View>
+    </AppView>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
+    <AppView style={styles.container}>
+      <AppText style={styles.sectionTitle}>
         General
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -184,12 +182,12 @@ export default function MusculoskeletalExam() {
           "generalFindings"
         ) as string[]) ?? []
       ).includes("Pain") && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Pain Site
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Neck",
               "Shoulder",
@@ -219,13 +217,13 @@ export default function MusculoskeletalExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Severity
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Mild",
               "Moderate",
@@ -248,8 +246,8 @@ export default function MusculoskeletalExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
             {(
@@ -259,12 +257,12 @@ export default function MusculoskeletalExam() {
       ).includes(
         "Swelling"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Swelling Site
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Shoulder",
               "Elbow",
@@ -292,13 +290,13 @@ export default function MusculoskeletalExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Swelling Type
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Soft",
               "Firm",
@@ -322,8 +320,8 @@ export default function MusculoskeletalExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
       {(
@@ -358,12 +356,12 @@ export default function MusculoskeletalExam() {
       ).includes(
         "Limited ROM"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Affected Joints
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Shoulder",
               "Elbow",
@@ -389,13 +387,13 @@ export default function MusculoskeletalExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Joint Examination
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -411,11 +409,11 @@ export default function MusculoskeletalExam() {
         normal="Normal"
       />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Pattern
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Monoarticular",
           "Oligoarticular",
@@ -438,11 +436,11 @@ export default function MusculoskeletalExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Muscle Examination
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -464,7 +462,7 @@ export default function MusculoskeletalExam() {
       ).includes(
         "Weakness"
       ) && (
-        <View style={styles.group}>
+        <AppView style={styles.group}>
           <AppTextField
             label="Weakness Location"
             value={
@@ -482,11 +480,11 @@ export default function MusculoskeletalExam() {
             placeholder="Affected muscles"
           />
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Power
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "0",
               "1",
@@ -512,15 +510,15 @@ export default function MusculoskeletalExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
         Gait
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Normal",
           "Antalgic",
@@ -544,11 +542,11 @@ export default function MusculoskeletalExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Red Flags
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -580,7 +578,7 @@ export default function MusculoskeletalExam() {
         placeholder="Add other findings..."
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

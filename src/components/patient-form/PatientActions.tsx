@@ -1,10 +1,10 @@
-import {
-  useState,
-} from "react";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { useState, } from "react";
 
 import {
-  getClinicMembers,
-} from "@/services/clinicApi";
+  getClinicMembers, } from "@/services/clinicApi";
 import { useClinicStore } from "@/store/clinicStore";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {
@@ -12,16 +12,8 @@ import {
 } from "expo-router";
 
 import type {
-  ClinicMember,
-} from "@/types/clinic";
-import {
-  ActivityIndicator,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+  ClinicMember, } from "@/types/clinic";
+import { ActivityIndicator, Modal, StyleSheet } from "react-native";
 
 import {
   createPatient,
@@ -493,38 +485,38 @@ export default function PatientActions({
           setErrorMessage(null)
         }
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.errorModal}>
-            <View style={styles.errorIcon}>
+        <AppView style={styles.modalOverlay}>
+          <AppView style={styles.errorModal}>
+            <AppView style={styles.errorIcon}>
               <Ionicons
                 name="alert-circle-outline"
                 size={30}
                 color={COLORS.danger}
               />
-            </View>
+            </AppView>
 
-            <Text style={styles.errorTitle}>
+            <AppText style={styles.errorTitle}>
               Please check the information
-            </Text>
+            </AppText>
 
-            <View style={styles.errorMessageBox}>
+            <AppView style={styles.errorMessageBox}>
               {errorMessage
                 ?.split("\n")
                 .map((message, index) => (
-                  <View
+                  <AppView
                     key={`${message}-${index}`}
                     style={styles.errorItem}
                   >
-                    <View style={styles.errorBullet} />
+                    <AppView style={styles.errorBullet} />
 
-                    <Text style={styles.errorText}>
+                    <AppText style={styles.errorText}>
                       {message}
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
                 ))}
-            </View>
+            </AppView>
 
-            <Pressable
+            <AppPressable
               style={styles.errorButton}
               onPress={() => {
                 const patientIdToOpen =
@@ -543,12 +535,12 @@ export default function PatientActions({
                 }
               }}
             >
-              <Text style={styles.errorButtonText}>
+              <AppText style={styles.errorButtonText}>
                 OK
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+              </AppText>
+            </AppPressable>
+          </AppView>
+        </AppView>
       </Modal>
 
       <Modal
@@ -559,24 +551,24 @@ export default function PatientActions({
           setDoctorModalVisible(false)
         }
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.doctorModal}>
-            <View style={styles.doctorHeader}>
-              <View>
-                <Text
+        <AppView style={styles.modalOverlay}>
+          <AppView style={styles.doctorModal}>
+            <AppView style={styles.doctorHeader}>
+              <AppView>
+                <AppText
                   style={styles.doctorTitle}
                 >
                   Select Doctor
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={styles.doctorSubtitle}
                 >
                   Choose the doctor who will handle this visit.
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
 
-              <Pressable
+              <AppPressable
                 onPress={() =>
                   setDoctorModalVisible(false)
                 }
@@ -587,11 +579,11 @@ export default function PatientActions({
                   size={22}
                   color={COLORS.text}
                 />
-              </Pressable>
-            </View>
+              </AppPressable>
+            </AppView>
 
             {loadingDoctors ? (
-              <View
+              <AppView
                 style={styles.doctorLoading}
               >
                 <ActivityIndicator
@@ -599,21 +591,21 @@ export default function PatientActions({
                   color={COLORS.primary}
                 />
 
-                <Text
+                <AppText
                   style={styles.doctorLoadingText}
                 >
                   Loading doctors...
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
             ) : (
-              <View style={styles.doctorList}>
+              <AppView style={styles.doctorList}>
                 {doctors.map((doctor) => {
                   const selected =
                     selectedDoctorId ===
                     doctor.userId;
 
                   return (
-                    <Pressable
+                    <AppPressable
                       key={doctor.id}
                       style={[
                         styles.doctorItem,
@@ -626,7 +618,7 @@ export default function PatientActions({
                         )
                       }
                     >
-                      <View
+                      <AppView
                         style={
                           styles.doctorAvatar
                         }
@@ -638,24 +630,24 @@ export default function PatientActions({
                             COLORS.primary
                           }
                         />
-                      </View>
+                      </AppView>
 
-                      <View
+                      <AppView
                         style={
                           styles.doctorInfo
                         }
                       >
-                        <Text
+                        <AppText
                           style={
                             styles.doctorName
                           }
                         >
                           {doctor.user.fullName}
-                        </Text>
+                        </AppText>
 
                         {doctor.user
                           .specialty ? (
-                          <Text
+                          <AppText
                             style={
                               styles.doctorSpecialty
                             }
@@ -664,9 +656,9 @@ export default function PatientActions({
                               doctor.user
                                 .specialty
                             }
-                          </Text>
+                          </AppText>
                         ) : null}
-                      </View>
+                      </AppView>
 
                       <Ionicons
                         name={
@@ -681,13 +673,13 @@ export default function PatientActions({
                             : COLORS.border
                         }
                       />
-                    </Pressable>
+                    </AppPressable>
                   );
                 })}
-              </View>
+              </AppView>
             )}
 
-            <Pressable
+            <AppPressable
               style={[
                 styles.confirmDoctorButton,
                 !selectedDoctorId &&
@@ -715,7 +707,7 @@ export default function PatientActions({
                 />
               )}
 
-              <Text
+              <AppText
                 style={
                   styles.confirmDoctorText
                 }
@@ -724,15 +716,15 @@ export default function PatientActions({
                 "waiting"
                   ? "Saving..."
                   : "Confirm Doctor"}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+              </AppText>
+            </AppPressable>
+          </AppView>
+        </AppView>
       </Modal>
 
-      <View style={styles.container}>
+      <AppView style={styles.container}>
         {/* Save & Start Visit */}
-        <Pressable
+        <AppPressable
           style={[
             styles.primaryButton,
             isLoading && styles.disabledButton,
@@ -753,15 +745,15 @@ export default function PatientActions({
             />
           )}
 
-          <Text style={styles.primaryText}>
+          <AppText style={styles.primaryText}>
             {loadingAction === "start"
               ? "Starting..."
               : "Save & Start Visit"}
-          </Text>
-        </Pressable>
+          </AppText>
+        </AppPressable>
 
         {/* Add To Waiting */}
-        <Pressable
+        <AppPressable
           style={[
             styles.secondaryButton,
             isLoading &&
@@ -783,13 +775,13 @@ export default function PatientActions({
             />
           )}
 
-          <Text style={styles.secondaryText}>
+          <AppText style={styles.secondaryText}>
             {loadingAction === "waiting"
               ? "Saving..."
               : "Add To Waiting"}
-          </Text>
-        </Pressable>
-      </View>
+          </AppText>
+        </AppPressable>
+      </AppView>
     </>
   );
 }

@@ -1,9 +1,7 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
 import { useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import SelectionSheet from "./SelectionSheet";
@@ -37,30 +35,30 @@ export default function AppDropdown({
   return (
     <>
       {label ? (
-        <Text style={styles.label}>
+        <AppText style={styles.label}>
           {label}
-        </Text>
+        </AppText>
       ) : null}
 
-      <Pressable
+      <AppPressable
         style={styles.field}
         onPress={() => setVisible(true)}
       >
-        <Text
+        <AppText
           style={[
             styles.value,
             !selected && styles.placeholder,,
           ]}
         >
           {selected?.label ?? placeholder}
-        </Text>
+        </AppText>
 
         <Ionicons
           name="chevron-down"
           size={20}
           color={COLORS.secondaryText}
         />
-      </Pressable>
+      </AppPressable>
 
       <SelectionSheet
         visible={visible}

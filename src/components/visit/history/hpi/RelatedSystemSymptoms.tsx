@@ -1,17 +1,10 @@
+import AppView from "@/components/common/AppView";
 import AppChip from "@/components/common/AppChip";
-import {
-  getRelatedSystems,
-  saveRelatedSystems,
-  type RelatedSystemItem,
-  type RelatedSystemType,
-} from "@/services/visitApi";
+import { getRelatedSystems, saveRelatedSystems, type RelatedSystemItem, type RelatedSystemType, } from "@/services/visitApi";
 import { useVisitStore } from "@/store/visitStore";
 import { SPACING } from "@/theme";
 import { useEffect, useRef, useState } from "react";
-import {
-  StyleSheet,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import CVSSystem from "../related-systems/CVSSystem";
 import ChestSystem from "../related-systems/ChestSystem";
 import ENTSystem from "../related-systems/ENTSystem";
@@ -296,8 +289,8 @@ export default function RelatedSystemSymptoms() {
     SYSTEM_COMPONENTS[selectedSystem];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.systemContainer}>
+    <AppView style={styles.container}>
+      <AppView style={styles.systemContainer}>
         {systems.map((system) => (
           <AppChip
             key={system.key}
@@ -310,12 +303,12 @@ export default function RelatedSystemSymptoms() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <View style={styles.content}>
+      <AppView style={styles.content}>
         <SelectedSystem />
-      </View>
-    </View>
+      </AppView>
+    </AppView>
   );
 }
 

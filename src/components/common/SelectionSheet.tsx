@@ -1,20 +1,13 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import AppTextField from "@/components/common/AppTextField";
 import { SelectionOption } from "@/models/selection";
 import {
-  COLORS,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+  COLORS, SPACING, TYPOGRAPHY, } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import {
-  FlatList,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, Modal, StyleSheet } from "react-native";
 
 type Props = {
   visible: boolean;
@@ -61,27 +54,27 @@ export default function SelectionSheet({
       transparent
       onRequestClose={closeSheet}
     >
-      <Pressable
+      <AppPressable
         style={styles.overlay}
         onPress={closeSheet}
       >
-        <Pressable
+        <AppPressable
           style={styles.sheet}
           onPress={() => {}}
         >
-          <View style={styles.header}>
-            <Text style={styles.title}>
+          <AppView style={styles.header}>
+            <AppText style={styles.title}>
               {title}
-            </Text>
+            </AppText>
 
-            <Pressable onPress={closeSheet}>
+            <AppPressable onPress={closeSheet}>
               <Ionicons
                 name="close"
                 size={24}
                 color={COLORS.secondaryText}
               />
-            </Pressable>
-          </View>
+            </AppPressable>
+          </AppView>
 
           <AppTextField
             value={search}
@@ -89,7 +82,7 @@ export default function SelectionSheet({
             placeholder={`Search ${title.toLowerCase()}...`}
           />
 
-          <View style={{ height: SPACING.md }} />
+          <AppView style={{ height: SPACING.md }} />
 
           <FlatList
             data={filteredOptions}
@@ -100,7 +93,7 @@ export default function SelectionSheet({
               paddingBottom: SPACING.md,
             }}
             renderItem={({ item }) => (
-              <Pressable
+              <AppPressable
                 style={[
                   styles.item,
                   item.id === selectedId &&
@@ -111,7 +104,7 @@ export default function SelectionSheet({
                   closeSheet();
                 }}
               >
-                <Text
+                <AppText
                   style={[
                     styles.itemText,
                     item.id === selectedId &&
@@ -119,7 +112,7 @@ export default function SelectionSheet({
                   ]}
                 >
                   {item.label}
-                </Text>
+                </AppText>
 
                 {item.id === selectedId && (
                   <Ionicons
@@ -128,10 +121,10 @@ export default function SelectionSheet({
                     color={COLORS.primary}
                   />
                 )}
-              </Pressable>
+              </AppPressable>
             )}
             ListEmptyComponent={
-              <Pressable
+              <AppPressable
                 style={styles.item}
                 onPress={() => {
                   onSelect({
@@ -142,14 +135,14 @@ export default function SelectionSheet({
                   closeSheet();
                 }}
               >
-                <Text style={styles.itemText}>
+                <AppText style={styles.itemText}>
                   Other
-                </Text>
-              </Pressable>
+                </AppText>
+              </AppPressable>
             }
           />
-        </Pressable>
-      </Pressable>
+        </AppPressable>
+      </AppPressable>
     </Modal>
   );
 }

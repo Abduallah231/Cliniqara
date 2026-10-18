@@ -1,4 +1,5 @@
-import { StyleSheet, View } from "react-native";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppSearchBar from "@/components/common/AppSearchBar";
 import { SPACING } from "@/theme";
@@ -23,16 +24,17 @@ export default function WaitingFilters({
   onFilterChange,
 }: Props) {
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <AppSearchBar
         value={search}
         onChangeText={onSearchChange}
         placeholder="Search patient..."
       />
 
-      <View style={styles.filters}>
+      <AppView style={styles.filters}>
         <AppChip
           label="Waiting"
+          style={styles.filterChip}
           selected={
             selectedFilter === "Waiting"
           }
@@ -43,6 +45,7 @@ export default function WaitingFilters({
 
         <AppChip
           label="With Doctor"
+          style={styles.filterChip}
           selected={
             selectedFilter ===
             "With Doctor"
@@ -53,8 +56,8 @@ export default function WaitingFilters({
             )
           }
         />
-      </View>
-    </View>
+      </AppView>
+    </AppView>
   );
 }
 
@@ -64,7 +67,10 @@ const styles = StyleSheet.create({
   },
   filters: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: SPACING.xs,
+    width: "100%",
+    gap: SPACING.sm,
+  },
+  filterChip: {
+    flex: 1,
   },
 });

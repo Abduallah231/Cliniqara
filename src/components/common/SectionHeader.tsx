@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import {
     COLORS,
@@ -14,13 +16,13 @@ export default function SectionHeader({
   title,
 }: SectionHeaderProps) {
   return (
-    <View style={styles.container}>
-      <View style={styles.accent} />
+    <AppView style={styles.container}>
+      <AppView style={styles.accent} />
 
-      <Text style={styles.title}>
+      <AppText style={styles.title}>
         {title}
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 

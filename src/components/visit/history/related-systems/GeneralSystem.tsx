@@ -1,8 +1,6 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -42,12 +40,12 @@ export default function GeneralSystem() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <AppView style={styles.container}>
+      <AppText style={styles.title}>
         General / Constitutional
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {symptoms.map((symptom) => (
           <AppChip
             key={symptom}
@@ -60,7 +58,7 @@ export default function GeneralSystem() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <AppTextField
         label="Other Findings"
@@ -74,7 +72,7 @@ export default function GeneralSystem() {
         }
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

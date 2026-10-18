@@ -1,10 +1,6 @@
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import { PatientSummary } from "@/models";
 
@@ -26,21 +22,21 @@ export default function PatientHeader({
   style,
 }: Props) {
   return (
-    <View style={[styles.container, style]}>
-      <View style={styles.info}>
-        <Text
+    <AppView style={[styles.container, style]}>
+      <AppView style={styles.info}>
+        <AppText
           numberOfLines={1}
           style={styles.name}
         >
           {patient.fullName}
-        </Text>
+        </AppText>
 
-        <Text style={styles.id}>
+        <AppText style={styles.id}>
           Patient ID:{" "}
           {patientCode ?? patient.id}
-        </Text>
-      </View>
-    </View>
+        </AppText>
+      </AppView>
+    </AppView>
   );
 }
 

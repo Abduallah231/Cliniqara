@@ -1,12 +1,8 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet } from "react-native";
 
 import {
   router,
@@ -181,12 +177,12 @@ export default function LatestVisitCard({
   // ======================================================
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <SectionHeader title="Latest Visit" />
 
       {loading ? (
         <AppCard>
-          <View
+          <AppView
             style={
               styles.loadingContainer
             }
@@ -198,14 +194,14 @@ export default function LatestVisitCard({
               }
             />
 
-            <Text
+            <AppText
               style={
                 styles.loadingText
               }
             >
               Loading latest visit...
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
         </AppCard>
       ) : error ? (
         <AppCard>
@@ -217,12 +213,12 @@ export default function LatestVisitCard({
         </AppCard>
       ) : !latestVisit ? (
         <AppCard>
-          <View
+          <AppView
             style={
               styles.emptyContainer
             }
           >
-            <View
+            <AppView
               style={
                 styles.emptyIcon
               }
@@ -234,25 +230,25 @@ export default function LatestVisitCard({
                   COLORS.primary
                 }
               />
-            </View>
+            </AppView>
 
-            <Text
+            <AppText
               style={
                 styles.emptyTitle
               }
             >
               No Completed Visits
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={
                 styles.emptyText
               }
             >
               This patient does not have a
               completed visit yet.
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
         </AppCard>
       ) : (
         <AppCard>
@@ -260,17 +256,17 @@ export default function LatestVisitCard({
               Header
           ============================================ */}
 
-          <View
+          <AppView
             style={
               styles.header
             }
           >
-            <View
+            <AppView
               style={
                 styles.headerContent
               }
             >
-              <View
+              <AppView
                 style={
                   styles.dateRow
                 }
@@ -283,7 +279,7 @@ export default function LatestVisitCard({
                   }
                 />
 
-                <Text
+                <AppText
                   style={
                     styles.date
                   }
@@ -291,10 +287,10 @@ export default function LatestVisitCard({
                   {formatVisitDate(
                     latestVisit.createdAt,
                   )}
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
 
-              <Text
+              <AppText
                 style={
                   styles.complaint
                 }
@@ -305,30 +301,30 @@ export default function LatestVisitCard({
                   ?.chiefComplaint
                   ?.name ??
                   "No chief complaint"}
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
 
             <AppChip
               label="Completed"
               selected
             />
-          </View>
+          </AppView>
 
           {/* ============================================
               Diagnosis
           ============================================ */}
 
-          <View
+          <AppView
             style={
               styles.info
             }
           >
-            <View
+            <AppView
               style={
                 styles.row
               }
             >
-              <View
+              <AppView
                 style={
                   styles.infoIcon
                 }
@@ -340,18 +336,18 @@ export default function LatestVisitCard({
                     COLORS.primary
                   }
                 />
-              </View>
+              </AppView>
 
-              <Text
+              <AppText
                 style={
                   styles.label
                 }
               >
                 Diagnosis
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
 
-            <Text
+            <AppText
               style={
                 styles.value
               }
@@ -361,24 +357,24 @@ export default function LatestVisitCard({
                 .diagnosis
                 ?.primaryDiagnosisName ??
                 "No primary diagnosis"}
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
 
           {/* ============================================
               Doctor
           ============================================ */}
 
-          <View
+          <AppView
             style={
               styles.info
             }
           >
-            <View
+            <AppView
               style={
                 styles.row
               }
             >
-              <View
+              <AppView
                 style={
                   styles.infoIcon
                 }
@@ -390,18 +386,18 @@ export default function LatestVisitCard({
                     COLORS.primary
                   }
                 />
-              </View>
+              </AppView>
 
-              <Text
+              <AppText
                 style={
                   styles.label
                 }
               >
                 Doctor
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
 
-            <Text
+            <AppText
               style={
                 styles.value
               }
@@ -411,8 +407,8 @@ export default function LatestVisitCard({
                 .doctor
                 ?.fullName ??
                 "Unknown doctor"}
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
 
           {/* ============================================
               Open Visit
@@ -435,7 +431,7 @@ export default function LatestVisitCard({
           />
         </AppCard>
       )}
-    </View>
+    </AppView>
   );
 }
 

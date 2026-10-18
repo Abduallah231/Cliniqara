@@ -1,9 +1,7 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  Pressable,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import AppPressable from "@/components/common/AppPressable";
+import { StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import AppCard from "@/components/common/AppCard";
@@ -196,17 +194,17 @@ export default function PatientBasicInformation({
           Basic Information Header
           ========================= */}
 
-      <View style={styles.sectionHeader}>
+      <AppView style={styles.sectionHeader}>
         <Ionicons
           name="person-circle-outline"
           size={20}
           color={COLORS.primary}
         />
 
-        <Text style={styles.sectionTitle}>
+        <AppText style={styles.sectionTitle}>
           Basic Information
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
       <AppCard>
         {/* =========================
@@ -215,7 +213,7 @@ export default function PatientBasicInformation({
 
         <SectionHeader title="Identification Type" />
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           <AppChip
             label="National ID"
             selected={
@@ -266,7 +264,7 @@ export default function PatientBasicInformation({
               )
             }
           />
-        </View>
+        </AppView>
 
         {/* =========================
             Other Document Type
@@ -288,19 +286,19 @@ export default function PatientBasicInformation({
             ========================= */}
 
         {identifierType !== "Unknown" && (
-          <View
+          <AppView
             style={styles.identifierSection}
           >
-            <Text style={styles.fieldLabel}>
+            <AppText style={styles.fieldLabel}>
               Identification Number
-            </Text>
+            </AppText>
 
-            <View
+            <AppView
               style={
                 styles.identifierRow
               }
             >
-              <View
+              <AppView
                 style={
                   styles.identifierInput
                 }
@@ -328,14 +326,14 @@ export default function PatientBasicInformation({
                       : "default"
                   }
                 />
-              </View>
+              </AppView>
 
               {/* =========================
                   National ID Verify
                   ========================= */}
 
               {showVerifyButton && (
-                <Pressable
+                <AppPressable
                   style={[
                     styles.verifyButton,
                     nationalIdVerified &&
@@ -359,7 +357,7 @@ export default function PatientBasicInformation({
                     color="#FFFFFF"
                   />
 
-                  <Text
+                  <AppText
                     style={
                       styles.verifyButtonText
                     }
@@ -369,40 +367,40 @@ export default function PatientBasicInformation({
                       : nationalIdVerified
                         ? "Verified"
                         : "Verify"}
-                  </Text>
-                </Pressable>
+                  </AppText>
+                </AppPressable>
               )}
-            </View>
+            </AppView>
 
             {/* =========================
                 Identifier Search Results
                 ========================= */}
 
             {showIdentifierResults && (
-              <View
+              <AppView
                 style={
                   styles.searchDropdown
                 }
               >
                 {searchingIdentifier ? (
-                  <View
+                  <AppView
                     style={
                       styles.searchState
                     }
                   >
-                    <Text
+                    <AppText
                       style={
                         styles.searchStateText
                       }
                     >
                       Searching...
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
                 ) : identifierSearchResults.length >
                   0 ? (
                   identifierSearchResults.map(
                     (patient) => (
-                      <Pressable
+                      <AppPressable
                         key={patient.id}
                         style={
                           styles.searchResult
@@ -413,7 +411,7 @@ export default function PatientBasicInformation({
                           )
                         }
                       >
-                        <View
+                        <AppView
                           style={
                             styles.resultIcon
                           }
@@ -425,14 +423,14 @@ export default function PatientBasicInformation({
                               COLORS.primary
                             }
                           />
-                        </View>
+                        </AppView>
 
-                        <View
+                        <AppView
                           style={
                             styles.resultContent
                           }
                         >
-                          <Text
+                          <AppText
                             style={
                               styles.resultName
                             }
@@ -440,10 +438,10 @@ export default function PatientBasicInformation({
                             {
                               patient.fullName
                             }
-                          </Text>
+                          </AppText>
 
                           {patient.patientCode && (
-                            <Text
+                            <AppText
                               style={
                                 styles.resultSecondary
                               }
@@ -451,11 +449,11 @@ export default function PatientBasicInformation({
                               {
                                 patient.patientCode
                               }
-                            </Text>
+                            </AppText>
                           )}
 
                           {patient.identifierNumber && (
-                            <Text
+                            <AppText
                               style={
                                 styles.resultSecondary
                               }
@@ -463,9 +461,9 @@ export default function PatientBasicInformation({
                               {
                                 patient.identifierNumber
                               }
-                            </Text>
+                            </AppText>
                           )}
-                        </View>
+                        </AppView>
 
                         <Ionicons
                           name="chevron-forward"
@@ -474,27 +472,27 @@ export default function PatientBasicInformation({
                             COLORS.secondaryText
                           }
                         />
-                      </Pressable>
+                      </AppPressable>
                     ),
                   )
                 ) : (
-                  <View
+                  <AppView
                     style={
                       styles.searchState
                     }
                   >
-                    <Text
+                    <AppText
                       style={
                         styles.searchStateText
                       }
                     >
                       No matching patient found.
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
                 )}
-              </View>
+              </AppView>
             )}
-          </View>
+          </AppView>
         )}
 
         <Divider />
@@ -516,26 +514,26 @@ export default function PatientBasicInformation({
             ========================= */}
 
         {showNameResults && (
-          <View
+          <AppView
             style={styles.searchDropdown}
           >
             {searchingName ? (
-              <View
+              <AppView
                 style={styles.searchState}
               >
-                <Text
+                <AppText
                   style={
                     styles.searchStateText
                   }
                 >
                   Searching...
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
             ) : nameSearchResults.length >
               0 ? (
               nameSearchResults.map(
                 (patient) => (
-                  <Pressable
+                  <AppPressable
                     key={patient.id}
                     style={
                       styles.searchResult
@@ -546,7 +544,7 @@ export default function PatientBasicInformation({
                       )
                     }
                   >
-                    <View
+                    <AppView
                       style={
                         styles.resultIcon
                       }
@@ -558,23 +556,23 @@ export default function PatientBasicInformation({
                           COLORS.primary
                         }
                       />
-                    </View>
+                    </AppView>
 
-                    <View
+                    <AppView
                       style={
                         styles.resultContent
                       }
                     >
-                      <Text
+                      <AppText
                         style={
                           styles.resultName
                         }
                       >
                         {patient.fullName}
-                      </Text>
+                      </AppText>
 
                       {patient.patientCode && (
-                        <Text
+                        <AppText
                           style={
                             styles.resultSecondary
                           }
@@ -582,11 +580,11 @@ export default function PatientBasicInformation({
                           {
                             patient.patientCode
                           }
-                        </Text>
+                        </AppText>
                       )}
 
                       {patient.identifierNumber && (
-                        <Text
+                        <AppText
                           style={
                             styles.resultSecondary
                           }
@@ -594,9 +592,9 @@ export default function PatientBasicInformation({
                           {
                             patient.identifierNumber
                           }
-                        </Text>
+                        </AppText>
                       )}
-                    </View>
+                    </AppView>
 
                     <Ionicons
                       name="chevron-forward"
@@ -605,11 +603,11 @@ export default function PatientBasicInformation({
                         COLORS.secondaryText
                       }
                     />
-                  </Pressable>
+                  </AppPressable>
                 ),
               )
             ) : null}
-          </View>
+          </AppView>
         )}
 
         <Divider />
@@ -620,7 +618,7 @@ export default function PatientBasicInformation({
 
         <SectionHeader title="Age" />
 
-        <View
+        <AppView
           style={[
             styles.derivedField,
             isAgeLocked &&
@@ -638,7 +636,7 @@ export default function PatientBasicInformation({
           />
 
           {isAgeLocked && (
-            <View
+            <AppView
               style={
                 styles.lockIndicator
               }
@@ -651,16 +649,16 @@ export default function PatientBasicInformation({
                 }
               />
 
-              <Text
+              <AppText
                 style={
                   styles.lockText
                 }
               >
                 Calculated from National ID
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
           )}
-        </View>
+        </AppView>
 
         <Divider />
 
@@ -670,7 +668,7 @@ export default function PatientBasicInformation({
 
         <SectionHeader title="Gender" />
 
-        <View
+        <AppView
           style={[
             styles.genderContainer,
             isGenderLocked &&
@@ -700,10 +698,10 @@ export default function PatientBasicInformation({
               onGenderChange("female")
             }
           />
-        </View>
+        </AppView>
 
         {isGenderLocked && (
-          <View
+          <AppView
             style={styles.lockIndicator}
           >
             <Ionicons
@@ -714,12 +712,12 @@ export default function PatientBasicInformation({
               }
             />
 
-            <Text
+            <AppText
               style={styles.lockText}
             >
               Calculated from National ID
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
         )}
 
         <Divider />
@@ -730,7 +728,7 @@ export default function PatientBasicInformation({
 
         <SectionHeader title="Marital Status" />
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           <AppChip
             label="Single"
             selected={
@@ -782,7 +780,7 @@ export default function PatientBasicInformation({
               )
             }
           />
-        </View>
+        </AppView>
 
         {maritalStatus !== "Single" && (
           <AppTextField

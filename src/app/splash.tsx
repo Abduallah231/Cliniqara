@@ -1,9 +1,7 @@
+import AppView from "@/components/common/AppView";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import {
-  ActivityIndicator,
-  View,
-} from "react-native";
+import { ActivityIndicator } from "react-native";
 import { useDoctorStore, type DoctorProfile } from "@/store/doctorStore";
 import { useClinicStore } from "@/store/clinicStore";
 import type { ClinicMember, MyClinic } from "@/types/clinic";
@@ -183,7 +181,7 @@ export default function SplashScreen() {
   }
 
   return (
-    <View
+    <AppView
       style={{
         flex: 1,
         justifyContent: "center",
@@ -191,6 +189,6 @@ export default function SplashScreen() {
       }}
     >
       <ActivityIndicator size="large" />
-    </View>
+    </AppView>
   );
 }

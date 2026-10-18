@@ -1,8 +1,6 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -42,9 +40,9 @@ export default function RenalSystem() {
     items: string[];
   }) => (
     <>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <AppText style={styles.sectionTitle}>{title}</AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {items.map((item) => (
           <AppChip
             key={item}
@@ -53,13 +51,13 @@ export default function RenalSystem() {
             onPress={() => toggle(item)}
           />
         ))}
-      </View>
+      </AppView>
     </>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Renal</Text>
+    <AppView style={styles.container}>
+      <AppText style={styles.title}>Renal</AppText>
 
       <Section
         title="Core"
@@ -151,7 +149,7 @@ export default function RenalSystem() {
         }
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

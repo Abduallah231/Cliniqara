@@ -1,13 +1,11 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 import { useVisitStore } from "@/store/visitStore";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import {
   COLORS,
   RADIUS,
@@ -96,7 +94,7 @@ export default function VitalSignsSection() {
   ]);
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <CollapsibleSection
         title="Vital Signs"
         icon={
@@ -108,12 +106,12 @@ export default function VitalSignsSection() {
         }
         defaultExpanded
       >
-        <Text style={styles.sectionTitle}>
+        <AppText style={styles.sectionTitle}>
           Blood Pressure
-        </Text>
+        </AppText>
 
-        <View style={styles.row}>
-          <View style={styles.half}>
+        <AppView style={styles.row}>
+          <AppView style={styles.half}>
             <AppTextField
               value={vitalSigns.systolicBP}
               onChangeText={(value) =>
@@ -125,9 +123,9 @@ export default function VitalSignsSection() {
               keyboardType="numeric"
               placeholder="Systolic"
             />
-          </View>
+          </AppView>
 
-          <View style={styles.half}>
+          <AppView style={styles.half}>
             <AppTextField
               value={vitalSigns.diastolicBP}
               onChangeText={(value) =>
@@ -139,11 +137,11 @@ export default function VitalSignsSection() {
               keyboardType="numeric"
               placeholder="Diastolic"
             />
-          </View>
-        </View>
+          </AppView>
+        </AppView>
 
-        <View style={styles.row}>
-          <View style={styles.half}>
+        <AppView style={styles.row}>
+          <AppView style={styles.half}>
             <AppTextField
               label="Heart Rate"
               value={vitalSigns.heartRate}
@@ -156,7 +154,7 @@ export default function VitalSignsSection() {
               placeholder="bpm"
             />
 
-            <View style={styles.chipRow}>
+            <AppView style={styles.chipRow}>
               <AppChip
                 label="Regular"
                 selected={
@@ -182,10 +180,10 @@ export default function VitalSignsSection() {
                   })
                 }
               />
-            </View>
-          </View>
+            </AppView>
+          </AppView>
 
-          <View style={styles.half}>
+          <AppView style={styles.half}>
             <AppTextField
               label="SpO₂"
               value={vitalSigns.spo2}
@@ -198,7 +196,7 @@ export default function VitalSignsSection() {
               placeholder="%"
             />
 
-            <View style={styles.chipRow}>
+            <AppView style={styles.chipRow}>
               <AppChip
                 label="Room Air"
                 selected={
@@ -225,9 +223,9 @@ export default function VitalSignsSection() {
                   })
                 }
               />
-            </View>
-          </View>
-        </View>
+            </AppView>
+          </AppView>
+        </AppView>
 
         <AppTextField
           label="Temperature"
@@ -241,7 +239,7 @@ export default function VitalSignsSection() {
           placeholder="°C"
         />
 
-        <View style={styles.chipRow}>
+        <AppView style={styles.chipRow}>
           {[
             "Oral",
             "Axillary",
@@ -264,10 +262,10 @@ export default function VitalSignsSection() {
               }
             />
           ))}
-        </View>
+        </AppView>
 
-        <View style={styles.row}>
-          <View style={styles.half}>
+        <AppView style={styles.row}>
+          <AppView style={styles.half}>
             <AppTextField
               label="Respiratory Rate"
               value={vitalSigns.respiratoryRate}
@@ -279,9 +277,9 @@ export default function VitalSignsSection() {
               keyboardType="numeric"
               placeholder="breaths/min"
             />
-          </View>
+          </AppView>
 
-          <View style={styles.half}>
+          <AppView style={styles.half}>
             <AppTextField
               label="Blood Glucose"
               value={vitalSigns.bloodGlucose}
@@ -293,11 +291,11 @@ export default function VitalSignsSection() {
               keyboardType="numeric"
               placeholder="mg/dL"
             />
-          </View>
-        </View>
+          </AppView>
+        </AppView>
 
-        <View style={styles.row}>
-          <View style={styles.half}>
+        <AppView style={styles.row}>
+          <AppView style={styles.half}>
             <AppTextField
               label="Weight"
               value={vitalSigns.weight}
@@ -309,9 +307,9 @@ export default function VitalSignsSection() {
               keyboardType="numeric"
               placeholder="kg"
             />
-          </View>
+          </AppView>
 
-          <View style={styles.half}>
+          <AppView style={styles.half}>
             <AppTextField
               label="Height"
               value={vitalSigns.height}
@@ -323,20 +321,20 @@ export default function VitalSignsSection() {
               keyboardType="numeric"
               placeholder="cm"
             />
-          </View>
-        </View>
+          </AppView>
+        </AppView>
 
-        <Text style={styles.sectionTitle}>
+        <AppText style={styles.sectionTitle}>
           BMI
-        </Text>
+        </AppText>
 
-        <View style={styles.bmiBox}>
-          <Text style={styles.bmiText}>
+        <AppView style={styles.bmiBox}>
+          <AppText style={styles.bmiText}>
             {vitalSigns.bmi || "--"}
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
       </CollapsibleSection>
-    </View>
+    </AppView>
   );
 }
 

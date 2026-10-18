@@ -1,6 +1,8 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 
 import AnalysisOfComplaint from "./hpi/AnalysisOfComplaint";
 import RelatedSystemSymptoms from "./hpi/RelatedSystemSymptoms";
@@ -14,20 +16,20 @@ import {
 
 export default function HPI() {
   return (
-    <View style={styles.container}>
-    <View style={styles.header}>
+    <AppView style={styles.container}>
+    <AppView style={styles.header}>
     <Ionicons
       name="document-text-outline"
       size={20}
       color={COLORS.primary}
     />
 
-    <Text style={styles.title}>
+    <AppText style={styles.title}>
       History of Present Illness
-    </Text>
-  </View>
+    </AppText>
+  </AppView>
 
-  <View style={styles.content}>
+  <AppView style={styles.content}>
     <CollapsibleSection
       title="Analysis of Complaint"
       keepMounted
@@ -67,8 +69,8 @@ export default function HPI() {
     >
       <SystematicReview />
     </CollapsibleSection> */}
-  </View>
-</View>
+  </AppView>
+</AppView>
   );
 }
 

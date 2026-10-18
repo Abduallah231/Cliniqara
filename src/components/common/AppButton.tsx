@@ -1,11 +1,6 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  Text,
-  ViewStyle
-} from "react-native";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import { ActivityIndicator, StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import {
   COLORS,
@@ -47,7 +42,7 @@ export default function AppButton({
     : COLORS.white;
 
   return (
-    <Pressable
+    <AppPressable
   onPress={onPress}
   disabled={disabled || loading}
   style={[
@@ -77,7 +72,7 @@ export default function AppButton({
             />
           )}
 
-          <Text
+          <AppText
   style={[
     styles.text,
 
@@ -85,10 +80,10 @@ export default function AppButton({
   ]}
 >
   {title}
-</Text>
+</AppText>
         </>
       )}
-    </Pressable>
+    </AppPressable>
   );
 }
 

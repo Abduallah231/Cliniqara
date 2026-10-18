@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 import { COLORS } from "@/theme/colors";
 import { TYPOGRAPHY } from "@/theme/typography";
 
@@ -21,7 +23,7 @@ export default function StatisticsAgeDistribution({
   );
 
   return (
-    <View>
+    <AppView>
       {items.map((item) => {
         const width =
           item.count === 0
@@ -32,38 +34,38 @@ export default function StatisticsAgeDistribution({
               );
 
         return (
-          <View
+          <AppView
             key={item.range}
             style={styles.row}
           >
-            <View style={styles.labelContainer}>
-              <Text style={styles.label}>
+            <AppView style={styles.labelContainer}>
+              <AppText style={styles.label}>
                 {item.range}
-              </Text>
+              </AppText>
 
-              <View style={styles.statsContainer}>
-                <Text style={styles.percentage}>
+              <AppView style={styles.statsContainer}>
+                <AppText style={styles.percentage}>
                   {item.percentage.toFixed(1)}%
-                </Text>
+                </AppText>
 
-                <Text style={styles.count}>
+                <AppText style={styles.count}>
                   {item.count}
-                </Text>
-              </View>
-            </View>
+                </AppText>
+              </AppView>
+            </AppView>
 
-            <View style={styles.barTrack}>
-              <View
+            <AppView style={styles.barTrack}>
+              <AppView
                 style={[
                   styles.bar,
                   { width: `${width}%` },
                 ]}
               />
-            </View>
-          </View>
+            </AppView>
+          </AppView>
         );
       })}
-    </View>
+    </AppView>
   );
 }
 

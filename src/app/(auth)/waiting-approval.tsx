@@ -1,10 +1,9 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { router } from "expo-router";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 
 import AppButton from "@/components/common/AppButton";
@@ -21,70 +20,70 @@ import {
 
 export default function WaitingApprovalScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <AppSafeAreaView style={styles.container}>
       <AppKeyboardAwareScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <View style={styles.logo}>
+        <AppView style={styles.header}>
+          <AppView style={styles.logo}>
             <Ionicons
               name="time"
               size={46}
               color={COLORS.warning}
             />
-          </View>
+          </AppView>
 
-          <Text style={styles.title}>
+          <AppText style={styles.title}>
             Verification Under Review
-          </Text>
+          </AppText>
 
-          <Text style={styles.subtitle}>
+          <AppText style={styles.subtitle}>
             Your verification request has been received and is currently under review.
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
         <AppCard style={styles.card}>
-          <View style={styles.form}>
-            <Text style={styles.sectionTitle}>
+          <AppView style={styles.form}>
+            <AppText style={styles.sectionTitle}>
               Verification Status
-            </Text>
+            </AppText>
 
-            <View style={styles.statusCard}>
+            <AppView style={styles.statusCard}>
               <Ionicons
                 name="time"
                 size={24}
                 color={COLORS.warning}
               />
 
-              <Text style={styles.statusText}>
+              <AppText style={styles.statusText}>
                 Pending Review
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
 
-            <Text style={styles.description}>
+            <AppText style={styles.description}>
               Your account is currently being reviewed by our verification team.
               Once approved, you will be able to use all Cliniqara features.
-            </Text>
+            </AppText>
 
             <AppCard style={styles.infoCard}>
-              <Text style={styles.infoTitle}>
+              <AppText style={styles.infoTitle}>
                 While you wait
-              </Text>
+              </AppText>
 
-              <View style={styles.infoItem}>
+              <AppView style={styles.infoItem}>
                 <Ionicons
                   name="checkmark-circle-outline"
                   size={20}
                   color={COLORS.primary}
                 />
 
-                <Text style={styles.infoText}>
+                <AppText style={styles.infoText}>
                   Your account will unlock automatically after approval.
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
             </AppCard>
 
             <AppButton
@@ -94,10 +93,10 @@ export default function WaitingApprovalScreen() {
                 router.replace("/(auth)/login")
               }
             />
-          </View>
+          </AppView>
         </AppCard>
       </AppKeyboardAwareScrollView>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

@@ -1,12 +1,7 @@
-import {
-  KeyboardTypeOptions,
-  StyleProp,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  ViewStyle,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppTextInput from "@/components/common/AppTextInput";
+import AppView from "@/components/common/AppView";
+import { KeyboardTypeOptions, StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -106,20 +101,20 @@ export default function AppTextField({
   autoCapitalize = "sentences",
 }: Props) {
   return (
-    <View style={style}>
+    <AppView style={style}>
       {showLabel && label.length > 0 && (
-        <Text style={styles.label}>
+        <AppText style={styles.label}>
           {label}
 
           {required && (
-            <Text style={styles.required}>
+            <AppText style={styles.required}>
               {" *"}
-            </Text>
+            </AppText>
           )}
-        </Text>
+        </AppText>
       )}
 
-      <View
+      <AppView
         style={[
           styles.container,
           error && styles.errorContainer,
@@ -136,7 +131,7 @@ export default function AppTextField({
           />
         )}
 
-        <TextInput
+        <AppTextInput
           value={value}
           onChangeText={(text) =>
             onChangeText(convertArabicNumbers(text))
@@ -174,14 +169,14 @@ export default function AppTextField({
             onPress={onRightIconPress}
           />
         )}
-      </View>
+      </AppView>
 
       {error ? (
-        <Text style={styles.error}>
+        <AppText style={styles.error}>
           {error}
-        </Text>
+        </AppText>
       ) : null}
-    </View>
+    </AppView>
   );
 }
 

@@ -1,11 +1,7 @@
-import {
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-} from "react-native";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -47,10 +43,10 @@ export default function AppTopBar({
   style,
 }: Props) {
   return (
-    <View style={[styles.container, style]}>
-      <View style={styles.side}>
+    <AppView style={[styles.container, style]}>
+      <AppView style={styles.side}>
         {onBack ? (
-          <Pressable
+          <AppPressable
             onPress={onBack}
             style={styles.button}
           >
@@ -59,20 +55,20 @@ export default function AppTopBar({
               size={SIZING.iconLg}
               color={COLORS.primary}
             />
-          </Pressable>
+          </AppPressable>
         ) : null}
-      </View>
+      </AppView>
 
-      <Text
+      <AppText
         numberOfLines={1}
         style={styles.title}
       >
         {title}
-      </Text>
+      </AppText>
 
-      <View style={styles.side}>
+      <AppView style={styles.side}>
         {onRightPress ? (
-          <Pressable
+          <AppPressable
             onPress={onRightPress}
             style={styles.button}
           >
@@ -81,10 +77,10 @@ export default function AppTopBar({
               size={SIZING.iconLg}
               color={COLORS.primary}
             />
-          </Pressable>
+          </AppPressable>
         ) : null}
-      </View>
-    </View>
+      </AppView>
+    </AppView>
   );
 }
 

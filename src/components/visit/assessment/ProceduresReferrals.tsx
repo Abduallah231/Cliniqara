@@ -1,10 +1,8 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
 
 import AppTextField from "@/components/common/AppTextField";
@@ -120,28 +118,28 @@ export default function ProceduresReferralsSection() {
   });
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <AppView style={styles.container}>
+      <AppText style={styles.title}>
         Procedures
-      </Text>
+      </AppText>
 
       {procedures.map((item, index) => (
-        <View
+        <AppView
           key={index}
           style={styles.card}
         >
-          <View style={styles.cardHeader}>
+          <AppView style={styles.cardHeader}>
             <Ionicons
               name="construct-outline"
               size={20}
               color={COLORS.primary}
             />
 
-            <Text style={styles.cardTitle}>
+            <AppText style={styles.cardTitle}>
               Procedure {index + 1}
-            </Text>
+            </AppText>
 
-            <Pressable
+            <AppPressable
               onPress={() =>
                 removeProcedure(index)
               }
@@ -151,8 +149,8 @@ export default function ProceduresReferralsSection() {
                 size={20}
                 color="#ef4444"
               />
-            </Pressable>
-          </View>
+            </AppPressable>
+          </AppView>
 
           <AppTextField
             multiline
@@ -165,10 +163,10 @@ export default function ProceduresReferralsSection() {
               )
             }
           />
-        </View>
+        </AppView>
       ))}
 
-      <Pressable
+      <AppPressable
         style={styles.button}
         onPress={() =>
           addProcedure({
@@ -182,32 +180,32 @@ export default function ProceduresReferralsSection() {
           color={COLORS.white}
         />
 
-        <Text style={styles.buttonText}>
+        <AppText style={styles.buttonText}>
           Add Procedure
-        </Text>
-      </Pressable>
+        </AppText>
+      </AppPressable>
 
-      <Text style={styles.title}>
+      <AppText style={styles.title}>
         Referrals
-      </Text>
+      </AppText>
 
       {referrals.map((item, index) => (
-        <View
+        <AppView
           key={index}
           style={styles.card}
         >
-          <View style={styles.cardHeader}>
+          <AppView style={styles.cardHeader}>
             <Ionicons
               name="people-outline"
               size={20}
               color={COLORS.primary}
             />
 
-            <Text style={styles.cardTitle}>
+            <AppText style={styles.cardTitle}>
               Referral {index + 1}
-            </Text>
+            </AppText>
 
-            <Pressable
+            <AppPressable
               onPress={() =>
                 removeReferral(index)
               }
@@ -217,8 +215,8 @@ export default function ProceduresReferralsSection() {
                 size={20}
                 color="#ef4444"
               />
-            </Pressable>
-          </View>
+            </AppPressable>
+          </AppView>
 
           <AppTextField
             multiline
@@ -231,10 +229,10 @@ export default function ProceduresReferralsSection() {
               )
             }
           />
-        </View>
+        </AppView>
       ))}
 
-      <Pressable
+      <AppPressable
         style={styles.button}
         onPress={() =>
           addReferral({
@@ -248,11 +246,11 @@ export default function ProceduresReferralsSection() {
           color={COLORS.white}
         />
 
-        <Text style={styles.buttonText}>
+        <AppText style={styles.buttonText}>
           Add Referral
-        </Text>
-      </Pressable>
-    </View>
+        </AppText>
+      </AppPressable>
+    </AppView>
   );
 }
 

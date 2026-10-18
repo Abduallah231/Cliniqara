@@ -1,5 +1,7 @@
+import AppView from "@/components/common/AppView";
+import AppText from "@/components/common/AppText";
 import { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import {
   CameraView,
   useCameraPermissions,
@@ -24,16 +26,16 @@ export default function ClinicQrScanner({
 
   if (!permission.granted) {
     return (
-      <View style={styles.center}>
-        <Text onPress={requestPermission}>
+      <AppView style={styles.center}>
+        <AppText onPress={requestPermission}>
           Allow camera access to scan the clinic QR code
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <CameraView
         style={styles.camera}
         barcodeScannerSettings={{
@@ -49,12 +51,12 @@ export default function ClinicQrScanner({
         }
       />
 
-      <View style={styles.overlay}>
-        <Text style={styles.text}>
+      <AppView style={styles.overlay}>
+        <AppText style={styles.text}>
           Scan Clinic QR Code
-        </Text>
-      </View>
-    </View>
+        </AppText>
+      </AppView>
+    </AppView>
   );
 }
 

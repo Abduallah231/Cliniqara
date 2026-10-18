@@ -1,11 +1,6 @@
-import {
-  COLORS,
-  RADIUS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
-import { StyleSheet, View } from "react-native";
+import AppView from "@/components/common/AppView";
+import { COLORS, RADIUS, SHADOW, SPACING, TYPOGRAPHY, } from "@/theme";
+import { StyleSheet } from "react-native";
 import GeneralInspectionSection from "./examination/sections/GeneralInspectionSection";
 import RegionalExaminationSection from "./examination/sections/RegionalExaminationSection";
 import SystemExaminationSection from "./examination/sections/SystemExaminationSection";
@@ -13,13 +8,13 @@ import VitalSignsSection from "./examination/sections/VitalSignsSection";
 
 export default function ExaminationTab() {
   return (
-  <View style={styles.container}>
+  <AppView style={styles.container}>
       <VitalSignsSection />
       <GeneralInspectionSection />
       <RegionalExaminationSection />
       <SystemExaminationSection />
-      <View style={{ height: 50 }} />
-    </View>
+      <AppView style={{ height: 50 }} />
+    </AppView>
   );
 }
 

@@ -1,6 +1,7 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
 import { useState } from "react";
 import { router } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Alert } from "react-native";
 import AppTopBar from "@/components/common/AppTopBar";
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
@@ -108,7 +109,7 @@ export default function EditProfileScreen() {
     }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <AppSafeAreaView style={{ flex: 1 }}>
       <AppTopBar
         title="Edit Profile"
         onBack={() => router.back()}
@@ -153,6 +154,6 @@ export default function EditProfileScreen() {
         />
 
       </AppKeyboardAwareScrollView>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }

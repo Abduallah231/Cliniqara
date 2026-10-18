@@ -1,20 +1,11 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
-import {
-  COLORS,
-  RADIUS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+import { COLORS, RADIUS, SHADOW, SPACING, TYPOGRAPHY, } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, StyleSheet } from "react-native";
 import AISuggestionsSection from "./assessment/AISuggestionsSection";
 import DiagnosisSection from "./assessment/DiagnosisSection";
 import InvestigationResultsScreen from "./assessment/InvestigationResultsScreen";
@@ -35,8 +26,8 @@ export default function AssessmentTab({
 ] = useState(false);
 
   return (
-    <View style={styles.container}>
-      <Pressable
+    <AppView style={styles.container}>
+      <AppPressable
         style={styles.aiButton}
         onPress={() => {
           Alert.alert(
@@ -50,13 +41,13 @@ export default function AssessmentTab({
           size={20}
           color={COLORS.white}
         />
-        <Text style={styles.aiButtonText}>
+        <AppText style={styles.aiButtonText}>
           Generate AI Suggestions
-        </Text>
-      </Pressable>
+        </AppText>
+      </AppPressable>
 
-      <View style={styles.aiCard}>
-        <View
+      <AppView style={styles.aiCard}>
+        <AppView
           style={styles.aiHeader}
         >
           <Ionicons
@@ -64,13 +55,13 @@ export default function AssessmentTab({
             size={20}
             color={COLORS.primary}
           />
-          <Text style={styles.aiTitle}>
+          <AppText style={styles.aiTitle}>
             AI Clinical Decision
             Support
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
-        <Text style={styles.aiText}>
+        <AppText style={styles.aiText}>
           AI-generated diagnoses,
           investigations, and
           treatment suggestions are
@@ -86,8 +77,8 @@ export default function AssessmentTab({
           responsible for all
           clinical decisions and
           patient care.
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
       <CollapsibleSection
         title="AI Suggestions"
@@ -166,8 +157,8 @@ export default function AssessmentTab({
         <PrescriptionSection />
       </CollapsibleSection>
 
-      <View style={{ height: 50 }} />
-    </View>
+      <AppView style={{ height: 50 }} />
+    </AppView>
   );
 }
 

@@ -1,41 +1,30 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import AppTopBar from "@/components/common/AppTopBar";
 import AssessmentTab from "@/components/visit/AssessmentTab";
 import ExaminationTab from "@/components/visit/ExaminationTab";
 import HistoryTab from "@/components/visit/HistoryTab";
+import { completeVisit, getVisit, } from "@/services/visitApi";
 import {
-  completeVisit,
-  getVisit,
-} from "@/services/visitApi";
-import {
-  mapBackendVisitToVisitForm,
-} from "@/services/visitMapper";
+  mapBackendVisitToVisitForm, } from "@/services/visitMapper";
 import { useVisitStore } from "@/store/visitStore";
 import VisitHeaderCard from "../../components/visit/VisitHeaderCard";
 
 import {
-  getErrorMessage,
-} from "@/services/errorHandler";
+  getErrorMessage, } from "@/services/errorHandler";
 
 import {
-  router,
-  useLocalSearchParams,
-} from "expo-router";
+  router, useLocalSearchParams, } from "expo-router";
 
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, StyleSheet } from "react-native";
 
-import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
+
 
 import {
   COLORS,
@@ -349,7 +338,7 @@ export default function VisitScreen() {
 
   if (loadingVisit) {
     return (
-      <SafeAreaView
+      <AppSafeAreaView
         style={styles.container}
         edges={["top", "bottom"]}
       >
@@ -365,17 +354,17 @@ export default function VisitScreen() {
           }
         />
 
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>
+        <AppView style={styles.loadingContainer}>
+          <AppText style={styles.loadingText}>
             Loading visit...
-          </Text>
-        </View>
-      </SafeAreaView>
+          </AppText>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
       edges={["top", "bottom"]}
     >
@@ -391,8 +380,8 @@ export default function VisitScreen() {
         }
       />
 
-      <View style={styles.sectionNavigation}>
-        <Pressable
+      <AppView style={styles.sectionNavigation}>
+        <AppPressable
           disabled={completingVisit}
           onPress={() => setActiveSection("history")}
           android_ripple={{ color: "#B8D3F5" }}
@@ -412,7 +401,7 @@ export default function VisitScreen() {
             }
           />
 
-          <Text
+          <AppText
             style={[
               styles.sectionItemTitle,
               activeSection === "history" &&
@@ -420,10 +409,10 @@ export default function VisitScreen() {
             ]}
           >
             History
-          </Text>
-        </Pressable>
+          </AppText>
+        </AppPressable>
 
-        <Pressable
+        <AppPressable
           disabled={completingVisit}
           onPress={() =>
             setActiveSection("examination")
@@ -446,7 +435,7 @@ export default function VisitScreen() {
             }
           />
 
-          <Text
+          <AppText
             style={[
               styles.sectionItemTitle,
               activeSection === "examination" &&
@@ -454,10 +443,10 @@ export default function VisitScreen() {
             ]}
           >
             Examination
-          </Text>
-        </Pressable>
+          </AppText>
+        </AppPressable>
 
-        <Pressable
+        <AppPressable
           disabled={completingVisit}
           onPress={() =>
             setActiveSection("assessment")
@@ -480,7 +469,7 @@ export default function VisitScreen() {
             }
           />
 
-          <Text
+          <AppText
             style={[
               styles.sectionItemTitle,
               activeSection === "assessment" &&
@@ -488,16 +477,16 @@ export default function VisitScreen() {
             ]}
           >
             Assessment
-          </Text>
-        </Pressable>
-      </View>
+          </AppText>
+        </AppPressable>
+      </AppView>
 
       <AppKeyboardAwareScrollView
         style={styles.contentScroll}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.visitHeaderContainer}>
+        <AppView style={styles.visitHeaderContainer}>
           <VisitHeaderCard
             sectionTitle={
               getVisitHeaderConfig().sectionTitle
@@ -505,14 +494,14 @@ export default function VisitScreen() {
             icon={getVisitHeaderConfig().icon}
             visitId={resolvedVisitId}
           />
-        </View>
+        </AppView>
 
         {renderActiveSection()}
       </AppKeyboardAwareScrollView>
 
-      <View style={styles.floatingActions}>
+      <AppView style={styles.floatingActions}>
   {activeSection !== "history" && (
-    <Pressable
+    <AppPressable
       disabled={completingVisit}
       onPress={() => {
         if (activeSection === "assessment") {
@@ -529,11 +518,11 @@ export default function VisitScreen() {
         size={25}
         color={COLORS.primary}
       />
-    </Pressable>
+    </AppPressable>
   )}
 
   {activeSection !== "assessment" ? (
-    <Pressable
+    <AppPressable
       disabled={completingVisit}
       onPress={() => {
         if (activeSection === "history") {
@@ -554,9 +543,9 @@ export default function VisitScreen() {
         size={25}
         color={COLORS.white}
       />
-    </Pressable>
+    </AppPressable>
   ) : (
-    <Pressable
+    <AppPressable
       disabled={completingVisit}
       onPress={handleCompleteVisit}
       android_ripple={{ color: "#DCEBFF" }}
@@ -568,13 +557,13 @@ export default function VisitScreen() {
         color={COLORS.white}
       />
 
-      <Text style={styles.saveVisitText}>
+      <AppText style={styles.saveVisitText}>
         {completingVisit ? "Saving..." : "Save"}
-      </Text>
-    </Pressable>
+      </AppText>
+    </AppPressable>
   )}
-</View>
-    </SafeAreaView>
+</AppView>
+    </AppSafeAreaView>
   );
 }
 

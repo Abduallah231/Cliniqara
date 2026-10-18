@@ -1,15 +1,11 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
-import {
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, Image, StyleSheet } from "react-native";
 
 import AppTextField from "@/components/common/AppTextField";
 
@@ -263,15 +259,15 @@ export default function InvestigationResultsScreen({
   };
 
   return (
-    <ScrollView
+    <AppScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={
         styles.container
       }
     >
-      <Text style={styles.title}>
+      <AppText style={styles.title}>
         Investigation Results
-      </Text>
+      </AppText>
 
       {investigationsState.requestedInvestigations.map(
         (investigation) => {
@@ -307,11 +303,11 @@ export default function InvestigationResultsScreen({
             investigation.id;
 
           return (
-            <View
+            <AppView
               key={accordionId}
               style={styles.card}
             >
-              <Pressable
+              <AppPressable
                 style={styles.header}
                 onPress={() =>
                   setExpandedItem(
@@ -321,7 +317,7 @@ export default function InvestigationResultsScreen({
                   )
                 }
               >
-                <View
+                <AppView
                   style={
                     styles.headerLeft
                   }
@@ -334,14 +330,14 @@ export default function InvestigationResultsScreen({
                     }
                   />
 
-                  <Text
+                  <AppText
                     style={
                       styles.headerTitle
                     }
                   >
                     {investigation.name}
-                  </Text>
-                </View>
+                  </AppText>
+                </AppView>
 
                 <Ionicons
                   name={
@@ -354,10 +350,10 @@ export default function InvestigationResultsScreen({
                     COLORS.secondaryText
                   }
                 />
-              </Pressable>
+              </AppPressable>
 
               {expanded && (
-                <View
+                <AppView
                   style={
                     styles.content
                   }
@@ -495,20 +491,20 @@ export default function InvestigationResultsScreen({
 
                   {images.length >
                     0 && (
-                    <View
+                    <AppView
                       style={
                         styles.imagesSection
                       }
                     >
-                      <Text
+                      <AppText
                         style={
                           styles.imagesTitle
                         }
                       >
                         Result Images
-                      </Text>
+                      </AppText>
 
-                      <View
+                      <AppView
                         style={
                           styles.imagesGrid
                         }
@@ -518,7 +514,7 @@ export default function InvestigationResultsScreen({
                             image,
                             index,
                           ) => (
-                            <View
+                            <AppView
                               key={`${image.fileUrl}-${index}`}
                               style={
                                 styles.imageCard
@@ -534,7 +530,7 @@ export default function InvestigationResultsScreen({
                                 resizeMode="cover"
                               />
 
-                              <Pressable
+                              <AppPressable
                                 style={
                                   styles.removeImageButton
                                 }
@@ -555,15 +551,15 @@ export default function InvestigationResultsScreen({
                                     "#FFFFFF"
                                   }
                                 />
-                              </Pressable>
-                            </View>
+                              </AppPressable>
+                            </AppView>
                           ),
                         )}
-                      </View>
-                    </View>
+                      </AppView>
+                    </AppView>
                   )}
 
-                  <Pressable
+                  <AppPressable
                     style={[
                       styles.imagePlaceholder,
                       isUploading &&
@@ -590,12 +586,12 @@ export default function InvestigationResultsScreen({
                       }
                     />
 
-                    <View
+                    <AppView
                       style={
                         styles.imagePlaceholderText
                       }
                     >
-                      <Text
+                      <AppText
                         style={
                           styles.imagePlaceholderTitle
                         }
@@ -603,9 +599,9 @@ export default function InvestigationResultsScreen({
                         {isUploading
                           ? "Uploading..."
                           : "Add Result Image"}
-                      </Text>
+                      </AppText>
 
-                      <Text
+                      <AppText
                         style={
                           styles.imagePlaceholderSubtitle
                         }
@@ -613,16 +609,16 @@ export default function InvestigationResultsScreen({
                         {investigation.id
                           ? "Upload an image of the investigation result"
                           : "Save the investigation first to add an image"}
-                      </Text>
-                    </View>
-                  </Pressable>
-                </View>
+                      </AppText>
+                    </AppView>
+                  </AppPressable>
+                </AppView>
               )}
-            </View>
+            </AppView>
           );
         },
       )}
-    </ScrollView>
+    </AppScrollView>
   );
 }
 

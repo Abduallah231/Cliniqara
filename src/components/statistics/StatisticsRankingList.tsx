@@ -1,9 +1,7 @@
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import { COLORS } from "@/theme/colors";
 import { TYPOGRAPHY } from "@/theme/typography";
@@ -34,16 +32,16 @@ export default function StatisticsRankingList({
 
   if (!items.length) {
     return (
-      <View style={styles.empty}>
-        <Text style={styles.emptyText}>
+      <AppView style={styles.empty}>
+        <AppText style={styles.emptyText}>
           {emptyText}
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
     );
   }
 
   return (
-    <View>
+    <AppView>
       {visibleItems.map((item, index) => {
         const itemKey =
           item.id ??
@@ -51,7 +49,7 @@ export default function StatisticsRankingList({
           `${item.name}-${index}`;
 
         return (
-          <View
+          <AppView
             key={itemKey}
             style={[
               styles.item,
@@ -59,51 +57,51 @@ export default function StatisticsRankingList({
                 styles.itemBorder,
             ]}
           >
-            <View style={styles.rank}>
-              <Text style={styles.rankText}>
+            <AppView style={styles.rank}>
+              <AppText style={styles.rankText}>
                 {index + 1}
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
 
-            <View style={styles.content}>
-              <Text
+            <AppView style={styles.content}>
+              <AppText
                 style={styles.name}
                 numberOfLines={2}
               >
                 {item.name}
-              </Text>
+              </AppText>
 
               {item.code ? (
-                <Text style={styles.code}>
+                <AppText style={styles.code}>
                   {item.code}
-                </Text>
+                </AppText>
               ) : null}
-            </View>
+            </AppView>
 
-            <View style={styles.countContainer}>
-              <Text style={styles.count}>
+            <AppView style={styles.countContainer}>
+              <AppText style={styles.count}>
                 {item.count}
-              </Text>
+              </AppText>
 
-              <Text style={styles.visits}>
+              <AppText style={styles.visits}>
                 visits
-              </Text>
-            </View>
-          </View>
+              </AppText>
+            </AppView>
+          </AppView>
         );
       })}
 
       {items.length > 5 ? (
-        <Pressable
+        <AppPressable
           onPress={onToggleShowAll}
           style={styles.viewAllButton}
         >
-          <Text style={styles.viewAllText}>
+          <AppText style={styles.viewAllText}>
             {showAll ? "Show Less" : "View All"}
-          </Text>
-        </Pressable>
+          </AppText>
+        </AppPressable>
       ) : null}
-    </View>
+    </AppView>
   );
 }
 

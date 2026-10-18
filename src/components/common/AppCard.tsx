@@ -1,11 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { ReactNode } from "react";
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-} from "react-native";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import {
   COLORS,
@@ -29,15 +25,15 @@ export default function AppCard({
   style,
 }: Props) {
   return (
-    <View style={[styles.container, style]}>
+    <AppView style={[styles.container, style]}>
       {title ? (
-        <Text style={styles.title}>
+        <AppText style={styles.title}>
           {title}
-        </Text>
+        </AppText>
       ) : null}
 
       {children}
-    </View>
+    </AppView>
   );
 }
 

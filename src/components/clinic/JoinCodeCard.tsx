@@ -1,10 +1,7 @@
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { Alert, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 
@@ -35,17 +32,17 @@ export default function JoinCodeCard({
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <AppView style={styles.container}>
+      <AppText style={styles.title}>
         Clinic Join Code
-      </Text>
+      </AppText>
 
-      <View style={styles.codeBox}>
-        <Text style={styles.code}>
+      <AppView style={styles.codeBox}>
+        <AppText style={styles.code}>
           {code}
-        </Text>
+        </AppText>
 
-        <Pressable
+        <AppPressable
           style={styles.copyButton}
           onPress={handleCopy}
         >
@@ -54,21 +51,21 @@ export default function JoinCodeCard({
             size={20}
             color={COLORS.primary}
           />
-          <Text style={styles.copyText}>
+          <AppText style={styles.copyText}>
             Copy
-          </Text>
-        </Pressable>
-      </View>
+          </AppText>
+        </AppPressable>
+      </AppView>
 
-      <Text style={styles.expires}>
+      <AppText style={styles.expires}>
         Expires:{" "}
         {new Date(expiresAt).toLocaleString()}
-      </Text>
+      </AppText>
 
-      <View style={styles.qrContainer}>
+      <AppView style={styles.qrContainer}>
         <ClinicJoinQr code={code} />
-      </View>
-    </View>
+      </AppView>
+    </AppView>
   );
 }
 

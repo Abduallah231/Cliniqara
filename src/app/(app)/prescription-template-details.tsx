@@ -1,16 +1,10 @@
-import {
-  router,
-  useLocalSearchParams,
-} from "expo-router";
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { router, useLocalSearchParams, } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, FlatList, StyleSheet } from "react-native";
+
 
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
@@ -111,7 +105,7 @@ export default function PrescriptionTemplateDetails() {
 
   if (loading) {
     return (
-      <SafeAreaView
+      <AppSafeAreaView
         style={styles.container}
         edges={[
           "top",
@@ -125,7 +119,7 @@ export default function PrescriptionTemplateDetails() {
           }
         />
 
-        <View
+        <AppView
           style={
             styles.center
           }
@@ -137,15 +131,15 @@ export default function PrescriptionTemplateDetails() {
             }
           />
 
-          <Text
+          <AppText
             style={
               styles.loadingText
             }
           >
             Loading template...
-          </Text>
-        </View>
-      </SafeAreaView>
+          </AppText>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
@@ -155,7 +149,7 @@ export default function PrescriptionTemplateDetails() {
 
   if (error || !template) {
     return (
-      <SafeAreaView
+      <AppSafeAreaView
         style={styles.container}
         edges={[
           "top",
@@ -169,16 +163,16 @@ export default function PrescriptionTemplateDetails() {
           }
         />
 
-        <View
+        <AppView
           style={styles.center}
         >
-          <Text
+          <AppText
             style={
               styles.errorTitle
             }
           >
             Template not found
-          </Text>
+          </AppText>
 
           <AppButton
             title="Back"
@@ -187,8 +181,8 @@ export default function PrescriptionTemplateDetails() {
               router.back()
             }
           />
-        </View>
-      </SafeAreaView>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
@@ -197,7 +191,7 @@ export default function PrescriptionTemplateDetails() {
   // ======================================================
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
       edges={[
         "top",
@@ -242,39 +236,39 @@ export default function PrescriptionTemplateDetails() {
                 styles.medicationCard
               }
             >
-              <Text
+              <AppText
                 style={
                   styles.medicationName
                 }
               >
                 {item.medication}
-              </Text>
+              </AppText>
 
               {!!item.instructions && (
-                <Text
+                <AppText
                   style={
                     styles.secondary
                   }
                 >
                   {item.instructions}
-                </Text>
+                </AppText>
               )}
 
               {!!duration && (
-                <Text
+                <AppText
                   style={
                     styles.secondary
                   }
                 >
                   Duration:{" "}
                   {duration}
-                </Text>
+                </AppText>
               )}
             </AppCard>
           );
         }}
         ItemSeparatorComponent={() => (
-          <View
+          <AppView
             style={{
               height:
                 SPACING.md,
@@ -288,7 +282,7 @@ export default function PrescriptionTemplateDetails() {
                 <SectionHeader title="Patient Advice" />
 
                 <AppCard>
-                  <Text
+                  <AppText
                     style={
                       styles.primaryText
                     }
@@ -296,7 +290,7 @@ export default function PrescriptionTemplateDetails() {
                     {
                       template.advice
                     }
-                  </Text>
+                  </AppText>
                 </AppCard>
               </>
             )}
@@ -306,7 +300,7 @@ export default function PrescriptionTemplateDetails() {
                 <SectionHeader title="Follow-up" />
 
                 <AppCard>
-                  <Text
+                  <AppText
                     style={
                       styles.primaryText
                     }
@@ -314,7 +308,7 @@ export default function PrescriptionTemplateDetails() {
                     {
                       template.followUp
                     }
-                  </Text>
+                  </AppText>
                 </AppCard>
               </>
             )}
@@ -324,18 +318,18 @@ export default function PrescriptionTemplateDetails() {
                 <SectionHeader title="Notes" />
 
                 <AppCard>
-                  <Text
+                  <AppText
                     style={
                       styles.secondary
                     }
                   >
                     {template.notes}
-                  </Text>
+                  </AppText>
                 </AppCard>
               </>
             )}
 
-            <View
+            <AppView
               style={styles.actions}
             >
               <AppButton
@@ -355,11 +349,11 @@ export default function PrescriptionTemplateDetails() {
                   })
                 }
               />
-            </View>
+            </AppView>
           </>
         }
       />
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

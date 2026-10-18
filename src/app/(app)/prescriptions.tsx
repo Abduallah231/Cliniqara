@@ -1,13 +1,12 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+
 
 import AppButton from "@/components/common/AppButton";
 import AppTopBar from "@/components/common/AppTopBar";
@@ -331,7 +330,7 @@ export default function PrescriptionsScreen() {
   // ======================================================
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
       edges={["top", "bottom"]}
     >
@@ -349,10 +348,10 @@ export default function PrescriptionsScreen() {
           Tabs
       ================================================== */}
 
-      <View
+      <AppView
         style={styles.tabsWrapper}
       >
-        <View
+        <AppView
           style={styles.segmentedControl}
         >
           {tabs.map((tab) => {
@@ -360,7 +359,7 @@ export default function PrescriptionsScreen() {
               activeTab === tab.key;
 
             return (
-              <Pressable
+              <AppPressable
                 key={tab.key}
                 style={[
                   styles.segment,
@@ -374,7 +373,7 @@ export default function PrescriptionsScreen() {
                   );
                 }}
               >
-                <Text
+                <AppText
                   style={[
                     styles.segmentText,
                     selected &&
@@ -382,18 +381,18 @@ export default function PrescriptionsScreen() {
                   ]}
                 >
                   {tab.label}
-                </Text>
-              </Pressable>
+                </AppText>
+              </AppPressable>
             );
           })}
-        </View>
-      </View>
+        </AppView>
+      </AppView>
 
       {/* ==================================================
           Content
       ================================================== */}
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={
           styles.content
         }
@@ -413,13 +412,13 @@ export default function PrescriptionsScreen() {
         ================================================== */}
 
         {loading && (
-          <Text
+          <AppText
             style={
               styles.loadingText
             }
           >
             Loading templates...
-          </Text>
+          </AppText>
         )}
 
         {/* ==================================================
@@ -458,7 +457,7 @@ export default function PrescriptionsScreen() {
             <>
               <SectionHeader title="Other" />
 
-              <View
+              <AppView
                 style={styles.list}
               >
                 {templatesWithoutFolder.map(
@@ -478,7 +477,7 @@ export default function PrescriptionsScreen() {
                     />
                   ),
                 )}
-              </View>
+              </AppView>
             </>
           )}
 
@@ -489,14 +488,14 @@ export default function PrescriptionsScreen() {
         {!loading &&
           filteredTemplates.length ===
             0 && <EmptyTemplates />}
-      </ScrollView>
+      </AppScrollView>
 
       {/* ==================================================
           Bottom Actions
       ================================================== */}
 
       {activeTab !== "GLOBAL" && (
-        <View style={styles.fab}>
+        <AppView style={styles.fab}>
           <AppButton
             title="New Section"
             icon="folder-open-outline"
@@ -517,7 +516,7 @@ export default function PrescriptionsScreen() {
               handleNewTemplate
             }
           />
-        </View>
+        </AppView>
       )}
 
       {/* ==================================================
@@ -537,7 +536,7 @@ export default function PrescriptionsScreen() {
           handleCreateFolder
         }
       />
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

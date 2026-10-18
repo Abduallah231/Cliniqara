@@ -1,7 +1,5 @@
-import {
-  StyleSheet,
-  View,
-} from "react-native";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import AppCard from "@/components/common/AppCard";
 import AppDropdown from "@/components/common/AppDropdown";
@@ -169,10 +167,10 @@ export default function PatientAddressInformation({
           Governorate + City
           ========================= */}
 
-      <View
+      <AppView
         style={styles.addressRow}
       >
-        <View
+        <AppView
           style={styles.addressField}
         >
           <AppDropdown
@@ -200,9 +198,9 @@ export default function PatientAddressInformation({
                 }
               />
             )}
-        </View>
+        </AppView>
 
-        <View
+        <AppView
           style={styles.addressField}
         >
           <AppDropdown
@@ -233,17 +231,17 @@ export default function PatientAddressInformation({
                 }
               />
             )}
-        </View>
-      </View>
+        </AppView>
+      </AppView>
 
       {/* =========================
           District + Street
           ========================= */}
 
-      <View
+      <AppView
         style={styles.addressRow}
       >
-        <View
+        <AppView
           style={styles.addressField}
         >
           <AppTextField
@@ -254,9 +252,9 @@ export default function PatientAddressInformation({
             }
             placeholder="Enter district"
           />
-        </View>
+        </AppView>
 
-        <View
+        <AppView
           style={styles.addressField}
         >
           <AppTextField
@@ -267,8 +265,8 @@ export default function PatientAddressInformation({
             }
             placeholder="Enter street"
           />
-        </View>
-      </View>
+        </AppView>
+      </AppView>
     </AppCard>
   );
 }

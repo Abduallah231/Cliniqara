@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -137,7 +135,7 @@ export default function EndocrineExam() {
     fieldLabel: string;
     normal?: string;
   }) => (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       {items.map((item) => (
         <AppChip
           key={item}
@@ -158,14 +156,14 @@ export default function EndocrineExam() {
           }
         />
       ))}
-    </View>
+    </AppView>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
+    <AppView style={styles.container}>
+      <AppText style={styles.sectionTitle}>
         General Appearance
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -179,9 +177,9 @@ export default function EndocrineExam() {
         fieldLabel="General Findings"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Thyroid Examination
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -195,11 +193,11 @@ export default function EndocrineExam() {
         fieldLabel="Thyroid Findings"
       />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Thyroid Eye Signs
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Lid Retraction",
           "Exophthalmos",
@@ -223,13 +221,13 @@ export default function EndocrineExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Diabetes
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "None",
           "Peripheral Neuropathy",
@@ -255,7 +253,7 @@ export default function EndocrineExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
             {(
         (getValue(
@@ -264,12 +262,12 @@ export default function EndocrineExam() {
       ).includes(
         "Diabetic Foot"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Diabetic Foot
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Ulcer",
               "Callus",
@@ -293,8 +291,8 @@ export default function EndocrineExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
       {(
@@ -304,12 +302,12 @@ export default function EndocrineExam() {
       ).includes(
         "Peripheral Neuropathy"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Neuropathy Type
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Sensory",
               "Motor",
@@ -332,13 +330,13 @@ export default function EndocrineExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Hypothyroidism
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -353,9 +351,9 @@ export default function EndocrineExam() {
         normal="Absent"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Hyperthyroidism
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -370,9 +368,9 @@ export default function EndocrineExam() {
         normal="Absent"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Cushing Syndrome
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -387,9 +385,9 @@ export default function EndocrineExam() {
         normal="Absent"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Acromegaly
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -404,9 +402,9 @@ export default function EndocrineExam() {
         normal="Absent"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Addison Disease
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -437,7 +435,7 @@ export default function EndocrineExam() {
         placeholder="Add other findings..."
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

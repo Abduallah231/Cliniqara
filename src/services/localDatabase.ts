@@ -44,6 +44,20 @@ export type LocalRecord<T> = {
   updatedAt: string;
 };
 
+export type LocalRecordsBackup = {
+  format: "cliniqara-local-records-backup";
+  version: 1;
+  exportedAt: string;
+  records: Array<{
+    collection: string;
+    id: string;
+    clinicId: string | null;
+    parentId: string | null;
+    value: unknown;
+    updatedAt: string;
+  }>;
+};
+
 let databasePromise: Promise<SQLite.SQLiteDatabase> | undefined;
 
 async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
@@ -187,6 +201,81 @@ export async function deleteLocalRecord(
     collection,
     id,
   );
+}
+
+export async function exportLocalRecordsBackup(): Promise<LocalRecordsBackup> {
+  const db = await getDatabase();
+  const rows = await db.getAllAsync<{
+    collection: string;
+    id: string;
+    clinic_id: string | null;
+    parent_id: string | null;
+    payload: string;
+    updated_at: string;
+  }>("SELECT collection, id, clinic_id, parent_id, payload, updated_at FROM local_records ORDER BY collection, id");
+
+  return {
+    format: "cliniqara-local-records-backup",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    records: rows.map((row) => ({
+      collection: row.collection,
+      id: row.id,
+      clinicId: row.clinic_id,
+      parentId: row.parent_id,
+      value: JSON.parse(row.payload) as unknown,
+      updatedAt: row.updated_at,
+    })),
+  };
+}
+
+function parseLocalRecordsBackup(input: unknown): LocalRecordsBackup {
+  if (!input || typeof input !== "object") {
+    throw new Error("This file is not a Cliniqara backup.");
+  }
+  const backup = input as Partial<LocalRecordsBackup>;
+  if (
+    backup.format !== "cliniqara-local-records-backup" ||
+    backup.version !== 1 ||
+    !Array.isArray(backup.records)
+  ) {
+    throw new Error("This file is not a supported Cliniqara backup.");
+  }
+  for (const record of backup.records) {
+    if (
+      !record ||
+      typeof record.collection !== "string" ||
+      typeof record.id !== "string" ||
+      !(record.clinicId === null || typeof record.clinicId === "string") ||
+      !(record.parentId === null || typeof record.parentId === "string") ||
+      typeof record.updatedAt !== "string" ||
+      !Object.prototype.hasOwnProperty.call(record, "value")
+    ) {
+      throw new Error("The backup file contains an invalid record.");
+    }
+  }
+  return backup as LocalRecordsBackup;
+}
+
+export async function restoreLocalRecordsBackup(input: unknown): Promise<number> {
+  const backup = parseLocalRecordsBackup(input);
+  const db = await getDatabase();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync("DELETE FROM local_records");
+    for (const record of backup.records) {
+      await db.runAsync(
+        `INSERT INTO local_records (collection, id, clinic_id, parent_id, payload, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?)` ,
+        record.collection,
+        record.id,
+        record.clinicId,
+        record.parentId,
+        JSON.stringify(record.value),
+        record.updatedAt,
+      );
+    }
+  });
+  return backup.records.length;
 }
 
 export async function ensureLocalPrismaIdentity(input: {

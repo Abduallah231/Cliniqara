@@ -1,8 +1,6 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 import AppCard from "@/components/common/AppCard";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
@@ -85,25 +83,25 @@ export default function ClinicInformationForm({
           Basic Clinic Information
           ========================= */}
       <AppCard>
-        <View style={styles.cardHeader}>
-          <View style={styles.headerIcon}>
-            <Text style={styles.headerIconText}>
+        <AppView style={styles.cardHeader}>
+          <AppView style={styles.headerIcon}>
+            <AppText style={styles.headerIconText}>
               🏥
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
 
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.cardTitle}>
+          <AppView style={styles.headerTextContainer}>
+            <AppText style={styles.cardTitle}>
               Clinic Details
-            </Text>
+            </AppText>
 
-            <Text style={styles.cardSubtitle}>
+            <AppText style={styles.cardSubtitle}>
               Basic information about the clinic
-            </Text>
-          </View>
-        </View>
+            </AppText>
+          </AppView>
+        </AppView>
 
-        <View style={styles.formSection}>
+        <AppView style={styles.formSection}>
           <AppTextField
             label="Clinic Name"
             placeholder="Enter clinic name"
@@ -146,32 +144,32 @@ export default function ClinicInformationForm({
               )
             }
           />
-        </View>
+        </AppView>
       </AppCard>
 
       {/* =========================
           Clinic Address
           ========================= */}
-      <View style={styles.addressSection}>
-        <View style={styles.addressHeader}>
-          <View style={styles.addressIcon}>
-            <Text style={styles.addressIconText}>
+      <AppView style={styles.addressSection}>
+        <AppView style={styles.addressHeader}>
+          <AppView style={styles.addressIcon}>
+            <AppText style={styles.addressIconText}>
               📍
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
 
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.addressTitle}>
+          <AppView style={styles.headerTextContainer}>
+            <AppText style={styles.addressTitle}>
               Clinic Address
-            </Text>
+            </AppText>
 
-            <Text style={styles.addressSubtitle}>
+            <AppText style={styles.addressSubtitle}>
               Location and contact address
-            </Text>
-          </View>
-        </View>
+            </AppText>
+          </AppView>
+        </AppView>
 
-        <View style={styles.addressCardWrapper}>
+        <AppView style={styles.addressCardWrapper}>
           <PatientAddressInformation
             title="Clinic Address"
             governorate={
@@ -334,8 +332,8 @@ export default function ClinicInformationForm({
               });
             }}
           />
-        </View>
-      </View>
+        </AppView>
+      </AppView>
     </>
   );
 }

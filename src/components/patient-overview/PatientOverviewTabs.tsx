@@ -1,4 +1,5 @@
-import { StyleSheet, View } from "react-native";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import AppChip from "@/components/common/AppChip";
 import { SPACING } from "@/theme";
@@ -19,7 +20,7 @@ export default function PatientOverviewTabs({
   onChange,
 }: Props) {
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <AppChip
         label="Overview"
         selected={
@@ -41,7 +42,7 @@ export default function PatientOverviewTabs({
           onChange("visits")
         }
       />
-    </View>
+    </AppView>
   );
 }
 

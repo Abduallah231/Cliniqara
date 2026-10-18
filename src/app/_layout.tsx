@@ -1,13 +1,18 @@
+import AppView from "@/components/common/AppView";
 import { useEffect, useState } from "react";
 import { Stack, router, useSegments } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator } from "react-native";
 import { stackOptions } from "@/navigation";
+import AppLockController from "@/components/settings/AppLockController";
+import { StatusBar } from "expo-status-bar";
+import { useAppSettingsStore } from "@/store/appSettingsStore";
 
 export default function RootLayout() {
   const [loading, setLoading] = useState(true);
   const segments = useSegments();
+  const activeColorScheme = useAppSettingsStore((state) => state.activeColorScheme);
 
   useEffect(() => {
     checkSession();
@@ -31,7 +36,7 @@ export default function RootLayout() {
 
   if (loading) {
     return (
-      <View
+      <AppView
         style={{
           flex: 1,
           justifyContent: "center",
@@ -39,13 +44,17 @@ export default function RootLayout() {
         }}
       >
         <ActivityIndicator size="large" />
-      </View>
+      </AppView>
     );
   }
 
   return (
     <SafeAreaProvider>
-      <Stack screenOptions={stackOptions} />
+      <>
+        <StatusBar style={activeColorScheme === "dark" ? "light" : "dark"} />
+        <Stack screenOptions={stackOptions} />
+        <AppLockController />
+      </>
     </SafeAreaProvider>
   );
 }

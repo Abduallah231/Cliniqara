@@ -1,9 +1,5 @@
-import {
-  StyleProp,
-  StyleSheet,
-  View,
-  ViewStyle,
-} from "react-native";
+import AppView from "@/components/common/AppView";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
 
@@ -25,7 +21,7 @@ export default function PatientQuickActions({
   style,
 }: Props) {
   return (
-    <View style={[styles.container, style]}>
+    <AppView style={[styles.container, style]}>
       <AppButton
         title="View Patient"
         variant="secondary"
@@ -38,7 +34,7 @@ export default function PatientQuickActions({
         onPress={onStartVisit}
         style={styles.button}
       />
-    </View>
+    </AppView>
   );
 }
 

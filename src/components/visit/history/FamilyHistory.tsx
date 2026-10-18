@@ -1,14 +1,9 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
-  useState,
-} from "react";
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+  useState, } from "react";
+import { Alert, StyleSheet, TouchableOpacity } from "react-native";
 
 import type {
   FamilyDisease,
@@ -474,7 +469,7 @@ export default function FamilyHistory() {
   // ======================================================
 
   return (
-    <View
+    <AppView
       style={styles.container}
     >
       {/* ==================================================
@@ -482,13 +477,13 @@ export default function FamilyHistory() {
       ================================================== */}
 
       {isHydrating && (
-        <Text
+        <AppText
           style={
             styles.statusText
           }
         >
           Loading family history...
-        </Text>
+        </AppText>
       )}
 
       {/* ==================================================
@@ -499,16 +494,16 @@ export default function FamilyHistory() {
         title="Family History"
       />
 
-      <View style={styles.card}>
-        <Text
+      <AppView style={styles.card}>
+        <AppText
           style={
             styles.sectionTitle
           }
         >
           Relationship
-        </Text>
+        </AppText>
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           {familyRelatives.map((relative) => (
             <AppChip
               key={relative.value}
@@ -521,7 +516,7 @@ export default function FamilyHistory() {
               }
             />
           ))}
-        </View>
+        </AppView>
 
         {relationship ===
           "OTHER" && (
@@ -546,15 +541,15 @@ export default function FamilyHistory() {
             Diseases
         ================================================== */}
 
-        <Text
+        <AppText
           style={
             styles.sectionTitle
           }
         >
           Diseases
-        </Text>
+        </AppText>
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           {chronicDiseases.map(
             (disease) => (
               <AppChip
@@ -579,7 +574,7 @@ export default function FamilyHistory() {
               />
             ),
           )}
-        </View>
+        </AppView>
 
         <AppTextField
           label="Other Disease"
@@ -600,15 +595,15 @@ export default function FamilyHistory() {
             Alive
         ================================================== */}
 
-        <Text
+        <AppText
           style={
             styles.sectionTitle
           }
         >
           Alive
-        </Text>
+        </AppText>
 
-        <View style={styles.row}>
+        <AppView style={styles.row}>
           <AppChip
             label="Yes"
             selected={alive}
@@ -632,7 +627,7 @@ export default function FamilyHistory() {
               setAlive(false)
             }
           />
-        </View>
+        </AppView>
 
         {!alive && (
           <>
@@ -694,7 +689,7 @@ export default function FamilyHistory() {
             isActionRunning
           }
         />
-      </View>
+      </AppView>
 
       {/* ==================================================
           FAMILY HISTORY LIST
@@ -707,13 +702,13 @@ export default function FamilyHistory() {
             item.id;
 
           return (
-            <View
+            <AppView
               key={item.id}
               style={
                 styles.recordCard
               }
             >
-              <Text
+              <AppText
                 style={
                   styles.recordTitle
                 }
@@ -722,30 +717,30 @@ export default function FamilyHistory() {
                 "OTHER"
                   ? item.otherRelation
                   : item.relation}
-              </Text>
+              </AppText>
 
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
               >
                 Diseases:
-              </Text>
+              </AppText>
 
               {item.diseases.map(
                 (disease) => (
-                  <Text
+                  <AppText
                     key={disease}
                     style={
                       styles.recordText
                     }
                   >
                     • {disease}
-                  </Text>
+                  </AppText>
                 ),
               )}
 
-              <Text
+              <AppText
                 style={
                   styles.recordText
                 }
@@ -754,7 +749,7 @@ export default function FamilyHistory() {
                 {item.alive
                   ? "Yes"
                   : "No"}
-              </Text>
+              </AppText>
 
               {!item.alive && (
                 <>
@@ -762,7 +757,7 @@ export default function FamilyHistory() {
                     null &&
                     item.ageAtDeath !==
                       undefined && (
-                      <Text
+                      <AppText
                         style={
                           styles.recordText
                         }
@@ -771,11 +766,11 @@ export default function FamilyHistory() {
                         {
                           item.ageAtDeath
                         }
-                      </Text>
+                      </AppText>
                     )}
 
                   {!!item.causeOfDeath && (
-                    <Text
+                    <AppText
                       style={
                         styles.recordText
                       }
@@ -784,23 +779,23 @@ export default function FamilyHistory() {
                       {
                         item.causeOfDeath
                       }
-                    </Text>
+                    </AppText>
                   )}
                 </>
               )}
 
               {!!item.notes && (
-                <Text
+                <AppText
                   style={
                     styles.recordText
                   }
                 >
                   Notes:{" "}
                   {item.notes}
-                </Text>
+                </AppText>
               )}
 
-              <View
+              <AppView
                 style={
                   styles.actionRow
                 }
@@ -915,18 +910,18 @@ export default function FamilyHistory() {
                     }
                   />
                 </TouchableOpacity>
-              </View>
+              </AppView>
 
               {isDeleting && (
-                <Text
+                <AppText
                   style={
                     styles.savingText
                   }
                 >
                   Deleting...
-                </Text>
+                </AppText>
               )}
-            </View>
+            </AppView>
           );
         },
       )}
@@ -936,15 +931,15 @@ export default function FamilyHistory() {
       ================================================== */}
 
       {isSaving && (
-        <Text
+        <AppText
           style={
             styles.savingText
           }
         >
           Saving family history...
-        </Text>
+        </AppText>
       )}
-    </View>
+    </AppView>
   );
 }
 

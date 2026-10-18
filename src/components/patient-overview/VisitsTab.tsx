@@ -1,11 +1,8 @@
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, StyleSheet } from "react-native";
 import { router } from "expo-router";
 
 import AppChip from "@/components/common/AppChip";
@@ -209,23 +206,23 @@ export default function VisitsTab({
 
   if (loading) {
     return (
-      <View
+      <AppView
         style={[
           styles.container,
           styles.centered,
         ]}
       >
         <ActivityIndicator />
-        <Text style={styles.loadingText}>
+        <AppText style={styles.loadingText}>
           Loading visits...
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
     );
   }
 
   if (error) {
     return (
-      <View
+      <AppView
         style={[
           styles.container,
           styles.centered,
@@ -236,12 +233,12 @@ export default function VisitsTab({
           subtitle={error}
           icon="alert-circle-outline"
         />
-      </View>
+      </AppView>
     );
   }
 
   return (
-    <ScrollView
+    <AppScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
@@ -252,7 +249,7 @@ export default function VisitsTab({
         onChangeText={setSearch}
       />
 
-      <View style={styles.filters}>
+      <AppView style={styles.filters}>
         <AppChip
           label="All"
           selected={filter === "All"}
@@ -288,7 +285,7 @@ export default function VisitsTab({
             setFilter("Cancelled")
           }
         />
-      </View>
+      </AppView>
 
       {filteredVisits.length === 0 ? (
         <AppEmptyState
@@ -303,13 +300,13 @@ export default function VisitsTab({
       ) : (
         Object.entries(groupedVisits).map(
           ([year, yearVisits]) => (
-            <View
+            <AppView
               key={year}
               style={styles.yearGroup}
             >
-              <Text style={styles.year}>
+              <AppText style={styles.year}>
                 {year}
-              </Text>
+              </AppText>
 
               {yearVisits.map((visit) => (
                 <VisitCard
@@ -329,11 +326,11 @@ export default function VisitsTab({
                   }}
                 />
               ))}
-            </View>
+            </AppView>
           ),
         )
       )}
-    </ScrollView>
+    </AppScrollView>
   );
 }
 

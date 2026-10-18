@@ -1,3 +1,7 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppView from "@/components/common/AppView";
 import ClinicSelector from "@/components/clinic/ClinicSelector";
 import AppTopBar from "@/components/common/AppTopBar";
 import SectionHeader from "@/components/common/SectionHeader";
@@ -9,28 +13,15 @@ import { getWaitingVisits } from "@/services/visitApi";
 import { useClinicStore } from "@/store/clinicStore";
 import { useDoctorStore } from "@/store/doctorStore";
 import {
-  getTodayVisitCount,
-} from "@/services/visitApi";
+  getTodayVisitCount, } from "@/services/visitApi";
 import {
-  COLORS,
-  SPACING,
-} from "@/theme";
+  COLORS, SPACING, } from "@/theme";
 import {
-  router,
-  useFocusEffect,
-} from "expo-router";
+  router, useFocusEffect, } from "expo-router";
 import {
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+  useCallback, useMemo, useState, } from "react";
+import { StyleSheet } from "react-native";
+
 
 type WaitingVisit = {
   id: string;
@@ -204,7 +195,7 @@ export default function DashboardScreen() {
     }, [waitingVisits, now]);
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
     >
       <AppTopBar
@@ -215,7 +206,7 @@ export default function DashboardScreen() {
         }
       />
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={
           styles.content
         }
@@ -248,8 +239,8 @@ export default function DashboardScreen() {
             }
           />
 
-        <View style={styles.statsRow}>
-          <Pressable
+        <AppView style={styles.statsRow}>
+          <AppPressable
             style={({ pressed }) => [
               styles.flex,
               pressed && styles.pressedCard,
@@ -274,9 +265,9 @@ export default function DashboardScreen() {
               icon="people-outline"
               style={styles.statCard}
             />
-          </Pressable>
+          </AppPressable>
 
-          <Pressable
+          <AppPressable
             style={({ pressed }) => [
               styles.flex,
               pressed && styles.pressedCard,
@@ -298,8 +289,8 @@ export default function DashboardScreen() {
               color="#16A34A"
               style={styles.statCard}
             />
-          </Pressable>
-        </View>
+          </AppPressable>
+        </AppView>
 
         <SectionHeader
           title="Quick Actions"
@@ -318,7 +309,7 @@ export default function DashboardScreen() {
           }
         />
 
-        <View
+        <AppView
           style={{
             height: SPACING.md,
           }}
@@ -337,7 +328,7 @@ export default function DashboardScreen() {
           }
         />
 
-        <View
+        <AppView
           style={styles.actionsRow}
         >
           <DashboardActionCard
@@ -367,9 +358,9 @@ export default function DashboardScreen() {
               )
             }
           />
-        </View>
+        </AppView>
 
-        <View
+        <AppView
           style={styles.actionsRow}
         >
           <DashboardActionCard
@@ -409,9 +400,9 @@ export default function DashboardScreen() {
               }
             }}
           />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </AppView>
+      </AppScrollView>
+    </AppSafeAreaView>
   );
 }
 

@@ -1,15 +1,11 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { ReactNode, useState } from "react";
 
 import { Ionicons } from "@expo/vector-icons";
 
-import {
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-} from "react-native";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import {
   BORDERS,
@@ -47,23 +43,23 @@ export default function CollapsibleSection({
     useState(defaultExpanded);
 
   return (
-    <View
+    <AppView
       style={[
         styles.container,
         style,
       ]}
     >
-      <Pressable
+      <AppPressable
   style={styles.header}
   onPress={() => setExpanded(!expanded)}
 >
-  <View style={styles.left}>
+  <AppView style={styles.left}>
     {icon}
 
-    <Text style={styles.title}>
+    <AppText style={styles.title}>
       {title}
-    </Text>
-  </View>
+    </AppText>
+  </AppView>
 
   <Ionicons
     name={
@@ -74,19 +70,19 @@ export default function CollapsibleSection({
     size={SIZING.iconMd}
     color={COLORS.secondaryText}
   />
-</Pressable>
+</AppPressable>
 
       {(expanded || keepMounted) && (
-        <View
+        <AppView
           style={[
             styles.content,
             !expanded && styles.hiddenContent,
           ]}
         >
           {children}
-        </View>
+        </AppView>
       )}
-    </View>
+    </AppView>
   );
 }
 

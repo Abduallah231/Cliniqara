@@ -1,14 +1,8 @@
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { useCallback, useEffect, useState, } from "react";
+import { StyleSheet } from "react-native";
 import { router } from "expo-router";
 
 import AppCard from "@/components/common/AppCard";
@@ -189,14 +183,14 @@ export default function ClinicalSnapshot({
   ) => {
     if (items.length === 0) {
       return (
-        <Text style={styles.emptyText}>
+        <AppText style={styles.emptyText}>
           {emptyLabel}
-        </Text>
+        </AppText>
       );
     }
 
     return (
-      <View style={styles.chips}>
+      <AppView style={styles.chips}>
         {items.map(
           (item, index) => (
             <AppChip
@@ -205,28 +199,28 @@ export default function ClinicalSnapshot({
             />
           ),
         )}
-      </View>
+      </AppView>
     );
   };
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <SectionHeader title="Clinical Snapshot" />
 
       <AppCard>
         {loading ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>
+          <AppView style={styles.loadingContainer}>
+            <AppText style={styles.loadingText}>
               Loading clinical history...
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
         ) : error ? (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>
+          <AppView style={styles.errorContainer}>
+            <AppText style={styles.errorText}>
               {error}
-            </Text>
+            </AppText>
 
-            <Pressable
+            <AppPressable
               onPress={loadSnapshot}
               style={({ pressed }) => [
                 styles.retryButton,
@@ -234,93 +228,93 @@ export default function ClinicalSnapshot({
                   styles.retryButtonPressed,
               ]}
             >
-              <Text style={styles.retryText}>
+              <AppText style={styles.retryText}>
                 Retry
-              </Text>
-            </Pressable>
-          </View>
+              </AppText>
+            </AppPressable>
+          </AppView>
         ) : (
           <>
-            <View style={styles.section}>
-              <View style={styles.labelRow}>
-                <Text style={styles.label}>
+            <AppView style={styles.section}>
+              <AppView style={styles.labelRow}>
+                <AppText style={styles.label}>
                   Chronic Diseases
-                </Text>
+                </AppText>
 
                 {data.chronicDiseases
                   .length > 0 && (
-                  <Text
+                  <AppText
                     style={
                       styles.count
                     }
                   >
                     {data.chronicDiseases.length}
-                  </Text>
+                  </AppText>
                 )}
-              </View>
+              </AppView>
 
               {renderItems(
                 data.chronicDiseases,
                 "No chronic diseases recorded.",
               )}
-            </View>
+            </AppView>
 
-            <View style={styles.divider} />
+            <AppView style={styles.divider} />
 
-            <View style={styles.section}>
-              <View style={styles.labelRow}>
-                <Text style={styles.label}>
+            <AppView style={styles.section}>
+              <AppView style={styles.labelRow}>
+                <AppText style={styles.label}>
                   Current Medications
-                </Text>
+                </AppText>
 
                 {data.medications
                   .length > 0 && (
-                  <Text
+                  <AppText
                     style={
                       styles.count
                     }
                   >
                     {data.medications.length}
-                  </Text>
+                  </AppText>
                 )}
-              </View>
+              </AppView>
 
               {renderItems(
                 data.medications,
                 "No current medications recorded.",
               )}
-            </View>
+            </AppView>
 
-            <View style={styles.divider} />
+            <AppView style={styles.divider} />
 
-            <View style={styles.section}>
-              <View style={styles.labelRow}>
-                <Text style={styles.label}>
+            <AppView style={styles.section}>
+              <AppView style={styles.labelRow}>
+                <AppText style={styles.label}>
                   Allergies
-                </Text>
+                </AppText>
 
                 {data.allergies
                   .length > 0 && (
-                  <Text
+                  <AppText
                     style={
                       styles.count
                     }
                   >
                     {data.allergies.length}
-                  </Text>
+                  </AppText>
                 )}
-              </View>
+              </AppView>
 
               {renderItems(
                 data.allergies,
                 "No allergies recorded.",
               )}
-            </View>
+            </AppView>
           </>
         )}
 
-        <View style={styles.viewAllContainer}>
-          <Pressable
+        <AppView style={styles.viewAllContainer}>
+          <AppPressable
             onPress={() =>
               router.push({
                 pathname:
@@ -337,15 +331,15 @@ export default function ClinicalSnapshot({
                 styles.viewAllPressed,
             ]}
           >
-            <Text
+            <AppText
               style={styles.viewAllText}
             >
               View All
-            </Text>
-          </Pressable>
-        </View>
+            </AppText>
+          </AppPressable>
+        </AppView>
       </AppCard>
-    </View>
+    </AppView>
   );
 }
 

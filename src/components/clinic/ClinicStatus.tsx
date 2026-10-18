@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
@@ -24,8 +26,8 @@ export default function ClinicStatus({
 }: Props) {
   return (
     <AppCard>
-      <View style={styles.statusRow}>
-        <View
+      <AppView style={styles.statusRow}>
+        <AppView
           style={[
             styles.statusDot,
             {
@@ -36,12 +38,12 @@ export default function ClinicStatus({
           ]}
         />
 
-        <Text style={styles.statusText}>
+        <AppText style={styles.statusText}>
           {isActive
             ? "Clinic is Active"
             : "Clinic is Inactive"}
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
       {isOwner && (
         <AppButton

@@ -1,18 +1,12 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import AppCard from "@/components/common/AppCard";
 import AppChip from "@/components/common/AppChip";
-import {
-  COLORS,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+import { COLORS, SPACING, TYPOGRAPHY, } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import { useVisitStore } from "@/store/visitStore";
 
 const SYSTEMATIC_REVIEW_DATA = [
@@ -215,7 +209,7 @@ export default function SystematicReview() {
   };
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       {SYSTEMATIC_REVIEW_DATA.map(
         (system) => {
           const selected =
@@ -229,7 +223,7 @@ export default function SystematicReview() {
               key={system.title}
               style={styles.card}
             >
-              <Pressable
+              <AppPressable
                 style={styles.header}
                 onPress={() =>
                   setExpanded(
@@ -239,14 +233,14 @@ export default function SystematicReview() {
                   )
                 }
               >
-                <View style={styles.headerContent}>
-                  <View style={styles.titleContainer}>
-                    <View style={styles.accent} />
+                <AppView style={styles.headerContent}>
+                  <AppView style={styles.titleContainer}>
+                    <AppView style={styles.accent} />
 
-                    <Text style={styles.title}>
+                    <AppText style={styles.title}>
                       {system.title}
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
 
                   <Ionicons
                     name={
@@ -257,10 +251,10 @@ export default function SystematicReview() {
                     size={22}
                     color={COLORS.primary}
                   />
-                </View>
-              </Pressable>
+                </AppView>
+              </AppPressable>
               {expanded === system.title && (
-  <View style={styles.row}>
+  <AppView style={styles.row}>
     {system.symptoms.map(
       (symptom) => (
         <AppChip
@@ -278,14 +272,14 @@ export default function SystematicReview() {
         />
       )
     )}
-  </View>
+  </AppView>
 )}
 
           </AppCard>
         );
       }
     )}
-  </View>
+  </AppView>
 );}
 const styles = StyleSheet.create({
   container: {

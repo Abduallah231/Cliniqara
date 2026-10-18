@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import { COLORS } from "@/theme/colors";
 import { TYPOGRAPHY } from "@/theme/typography";
@@ -26,37 +28,37 @@ export default function StatisticsDoctorPerformance({
 }: Props) {
   if (!doctors.length) {
     return (
-      <View style={styles.empty}>
-        <Text style={styles.emptyText}>
+      <AppView style={styles.empty}>
+        <AppText style={styles.emptyText}>
           No doctor visit data available.
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
     );
   }
 
   return (
-    <View>
+    <AppView>
       {doctors.map((doctor) => (
-        <View
+        <AppView
           key={doctor.doctorId}
           style={styles.doctorCard}
         >
-          <View style={styles.header}>
-            <View style={styles.nameContainer}>
-              <Text
+          <AppView style={styles.header}>
+            <AppView style={styles.nameContainer}>
+              <AppText
                 style={styles.doctorName}
                 numberOfLines={1}
               >
                 {doctor.doctorName}
-              </Text>
+              </AppText>
 
-              <Text style={styles.totalVisits}>
+              <AppText style={styles.totalVisits}>
                 {doctor.totalVisits} visits
-              </Text>
-            </View>
-          </View>
+              </AppText>
+            </AppView>
+          </AppView>
 
-          <View style={styles.grid}>
+          <AppView style={styles.grid}>
             <Stat
               label="Avg. Waiting"
               value={formatMinutes(
@@ -98,10 +100,10 @@ export default function StatisticsDoctorPerformance({
                 doctor.maximumConsultationMinutes,
               )}
             />
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       ))}
-    </View>
+    </AppView>
   );
 }
 
@@ -113,15 +115,15 @@ function Stat({
   value: string;
 }) {
   return (
-    <View style={styles.stat}>
-      <Text style={styles.statLabel}>
+    <AppView style={styles.stat}>
+      <AppText style={styles.statLabel}>
         {label}
-      </Text>
+      </AppText>
 
-      <Text style={styles.statValue}>
+      <AppText style={styles.statValue}>
         {value}
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 

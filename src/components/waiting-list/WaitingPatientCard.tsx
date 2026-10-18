@@ -1,22 +1,15 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppTextInput from "@/components/common/AppTextInput";
+import AppView from "@/components/common/AppView";
 import { getPatient } from "@/services/patientApi";
 import { usePatientStore } from "@/store/patientStore";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import {
-  useEffect,
-  useState,
-} from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View
-} from "react-native";
+  useEffect, useState, } from "react";
+import { ActivityIndicator, Alert, Modal, StyleSheet } from "react-native";
 
 import {
   getClinicMembers,
@@ -666,33 +659,33 @@ export default function WaitingPatientCard({
           HEADER
       ======================================= */}
 
-      <View
+      <AppView
         style={
           styles.header
         }
       >
-        <View
+        <AppView
           style={
             styles.visitBadge
           }
         >
-          <Text
+          <AppText
             style={
               styles.visitBadgeText
             }
           >
             {patient.visitCode}
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
-        <View
+        <AppView
           style={[
             styles.statusBadge,
             isWithDoctor &&
               styles.inProgressBadge,
           ]}
         >
-          <Text
+          <AppText
             style={[
               styles.statusText,
               isWithDoctor &&
@@ -702,26 +695,26 @@ export default function WaitingPatientCard({
             {getStatusLabel(
               patient.status,
             )}
-          </Text>
-        </View>
-      </View>
+          </AppText>
+        </AppView>
+      </AppView>
 
       {/* ======================================
           PATIENT NAME
       ======================================= */}
 
-      <Text
+      <AppText
         style={styles.name}
         numberOfLines={1}
       >
         {patient.fullName}
-      </Text>
+      </AppText>
 
       {/* ======================================
           DOCTOR
       ======================================= */}
 
-      <View
+      <AppView
         style={
           styles.doctorRow
         }
@@ -734,7 +727,7 @@ export default function WaitingPatientCard({
           }
         />
 
-        <Text
+        <AppText
           style={
             styles.doctorLabel
           }
@@ -742,9 +735,9 @@ export default function WaitingPatientCard({
           {isWithDoctor
             ? "With Doctor"
             : "Assigned Doctor"}
-        </Text>
+        </AppText>
 
-        <Text
+        <AppText
           style={
             styles.doctorName
           }
@@ -752,19 +745,19 @@ export default function WaitingPatientCard({
         >
           Dr.{" "}
           {patient.doctorName}
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
       {/* ======================================
           INFORMATION
       ======================================= */}
 
-      <View
+      <AppView
         style={
           styles.infoRow
         }
       >
-        <View
+        <AppView
           style={
             styles.infoItem
           }
@@ -777,16 +770,16 @@ export default function WaitingPatientCard({
             }
           />
 
-          <Text
+          <AppText
             style={
               styles.infoText
             }
           >
             Patient
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
-        <View
+        <AppView
           style={
             styles.infoItem
           }
@@ -799,7 +792,7 @@ export default function WaitingPatientCard({
             }
           />
 
-          <Text
+          <AppText
             style={
               styles.infoText
             }
@@ -808,13 +801,13 @@ export default function WaitingPatientCard({
             {formatTime(
               patient.createdAt,
             )}
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
         {/* WAITING */}
 
         {!isWithDoctor && (
-          <View
+          <AppView
             style={
               styles.infoItem
             }
@@ -827,21 +820,21 @@ export default function WaitingPatientCard({
               }
             />
 
-            <Text
+            <AppText
               style={
                 styles.infoText
               }
             >
               {waitingElapsedTime}
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
         )}
 
         {/* WITH DOCTOR */}
 
         {isWithDoctor && (
           <>
-            <View
+            <AppView
               style={
                 styles.infoItem
               }
@@ -854,7 +847,7 @@ export default function WaitingPatientCard({
                 }
               />
 
-              <Text
+              <AppText
                 style={
                   styles.infoText
                 }
@@ -863,10 +856,10 @@ export default function WaitingPatientCard({
                 {formatTime(
                   patient.startedAt,
                 )}
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
 
-            <View
+            <AppView
               style={
                 styles.infoItem
               }
@@ -879,17 +872,17 @@ export default function WaitingPatientCard({
                 }
               />
 
-              <Text
+              <AppText
                 style={
                   styles.infoText
                 }
               >
                 {activeElapsedTime}
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
           </>
         )}
-      </View>
+      </AppView>
 
       {/* ======================================
           QUEUE / ACTIVE VISIT NUMBER
@@ -897,7 +890,7 @@ export default function WaitingPatientCard({
 
       {patient.queueNumber !=
         null && (
-        <View
+        <AppView
           style={
             styles.queueRow
           }
@@ -910,7 +903,7 @@ export default function WaitingPatientCard({
             }
           />
 
-          <Text
+          <AppText
             style={
               styles.queueLabel
             }
@@ -918,9 +911,9 @@ export default function WaitingPatientCard({
             {isWithDoctor
               ? "Active Visit"
               : "Queue"}
-          </Text>
+          </AppText>
 
-          <Text
+          <AppText
             style={
               styles.queueNumber
             }
@@ -929,28 +922,28 @@ export default function WaitingPatientCard({
             {
               patient.queueNumber
             }
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
       )}
 
       {/* ======================================
           PATIENT ID
       ======================================= */}
 
-      <Text
+      <AppText
         style={
           styles.patientCode
         }
       >
         Patient ID:{" "}
         {patient.patientCode}
-      </Text>
+      </AppText>
 
       {/* ======================================
           ACTIONS
       ======================================= */}
 
-      <View
+      <AppView
         style={
           styles.buttonRow
         }
@@ -1037,7 +1030,7 @@ export default function WaitingPatientCard({
               : handleUnauthorizedVisit
           }
         />
-      </View>
+      </AppView>
 
       <Modal
         visible={showCancelReasons}
@@ -1049,17 +1042,17 @@ export default function WaitingPatientCard({
           }
         }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.cancelModal}>
-            <Text style={styles.modalTitle}>
+        <AppView style={styles.modalOverlay}>
+          <AppView style={styles.cancelModal}>
+            <AppText style={styles.modalTitle}>
               Cancel Visit
-            </Text>
+            </AppText>
 
-            <Text style={styles.modalSubtitle}>
+            <AppText style={styles.modalSubtitle}>
               Select one or more reasons, then confirm.
-            </Text>
+            </AppText>
 
-            <ScrollView
+            <AppScrollView
               style={styles.reasonsScroll}
               contentContainerStyle={
                 styles.reasonsContent
@@ -1068,14 +1061,14 @@ export default function WaitingPatientCard({
               persistentScrollbar
               nestedScrollEnabled
             >
-              <View style={styles.reasonsHeader}>
-                <Text style={styles.reasonsTitle}>
+              <AppView style={styles.reasonsHeader}>
+                <AppText style={styles.reasonsTitle}>
                   Cancellation Reasons
-                </Text>
-                <Text style={styles.reasonsHint}>
+                </AppText>
+                <AppText style={styles.reasonsHint}>
                   Select one or more
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
 
               {cancellationReasons
                 .filter(
@@ -1111,16 +1104,16 @@ export default function WaitingPatientCard({
                   );
                 })}
 
-              <View style={styles.otherSection}>
-                <Text style={styles.otherTitle}>
+              <AppView style={styles.otherSection}>
+                <AppText style={styles.otherTitle}>
                   Other reason
-                </Text>
+                </AppText>
 
-                <Text style={styles.otherHint}>
+                <AppText style={styles.otherHint}>
                   Add any additional reason if needed
-                </Text>
+                </AppText>
 
-                <TextInput
+                <AppTextInput
                   value={customCancelReason}
                   onChangeText={setCustomCancelReason}
                   placeholder="Enter another reason..."
@@ -1128,10 +1121,10 @@ export default function WaitingPatientCard({
                   style={styles.otherReasonInput}
                   multiline
                 />
-              </View>
-            </ScrollView>
+              </AppView>
+            </AppScrollView>
 
-            <View style={styles.modalActions}>
+            <AppView style={styles.modalActions}>
               <AppButton
                 title="Confirm Cancellation"
                 loading={cancelling}
@@ -1155,9 +1148,9 @@ export default function WaitingPatientCard({
                   setShowCancelReasons(false)
                 }
               />
-            </View>
-          </View>
-        </View>
+            </AppView>
+          </AppView>
+        </AppView>
       </Modal>
 
       <Modal
@@ -1170,24 +1163,24 @@ export default function WaitingPatientCard({
           }
         }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.doctorModal}>
-            <View style={styles.doctorHeader}>
-              <View style={styles.doctorHeaderContent}>
-                <Text
+        <AppView style={styles.modalOverlay}>
+          <AppView style={styles.doctorModal}>
+            <AppView style={styles.doctorHeader}>
+              <AppView style={styles.doctorHeaderContent}>
+                <AppText
                   style={styles.doctorTitle}
                 >
                   Change Doctor
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={styles.doctorSubtitle}
                 >
                   Choose the doctor who will handle this visit.
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
 
-              <Pressable
+              <AppPressable
                 onPress={() => {
                   if (!changingDoctor) {
                     setDoctorModalVisible(false);
@@ -1200,11 +1193,11 @@ export default function WaitingPatientCard({
                   size={22}
                   color={COLORS.text}
                 />
-              </Pressable>
-            </View>
+              </AppPressable>
+            </AppView>
 
             {loadingDoctors ? (
-              <View
+              <AppView
                 style={styles.doctorLoading}
               >
                 <ActivityIndicator
@@ -1212,23 +1205,23 @@ export default function WaitingPatientCard({
                   color={COLORS.primary}
                 />
 
-                <Text
+                <AppText
                   style={
                     styles.doctorLoadingText
                   }
                 >
                   Loading doctors...
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
             ) : (
-              <View style={styles.doctorList}>
+              <AppView style={styles.doctorList}>
                 {doctors.map((doctor) => {
                   const selected =
                     selectedDoctorId ===
                     doctor.userId;
 
                   return (
-                    <Pressable
+                    <AppPressable
                       key={doctor.id}
                       style={[
                         styles.doctorItem,
@@ -1244,7 +1237,7 @@ export default function WaitingPatientCard({
                         changingDoctor
                       }
                     >
-                      <View
+                      <AppView
                         style={
                           styles.doctorAvatar
                         }
@@ -1256,24 +1249,24 @@ export default function WaitingPatientCard({
                             COLORS.primary
                           }
                         />
-                      </View>
+                      </AppView>
 
-                      <View
+                      <AppView
                         style={
                           styles.doctorInfo
                         }
                       >
-                        <Text
+                        <AppText
                           style={
                             styles.doctorName
                           }
                         >
                           {doctor.user.fullName}
-                        </Text>
+                        </AppText>
 
                         {doctor.user
                           .specialty ? (
-                          <Text
+                          <AppText
                             style={
                               styles.doctorSpecialty
                             }
@@ -1282,20 +1275,20 @@ export default function WaitingPatientCard({
                               doctor.user
                                 .specialty
                             }
-                          </Text>
+                          </AppText>
                         ) : null}
 
                         {doctor.userId ===
                           patient.doctorId && (
-                          <Text
+                          <AppText
                             style={
                               styles.currentDoctorText
                             }
                           >
                             Current doctor
-                          </Text>
+                          </AppText>
                         )}
-                      </View>
+                      </AppView>
 
                       <Ionicons
                         name={
@@ -1310,13 +1303,13 @@ export default function WaitingPatientCard({
                             : COLORS.border
                         }
                       />
-                    </Pressable>
+                    </AppPressable>
                   );
                 })}
-              </View>
+              </AppView>
             )}
 
-            <Pressable
+            <AppPressable
               style={[
                 styles.confirmDoctorButton,
                 (
@@ -1350,7 +1343,7 @@ export default function WaitingPatientCard({
                 />
               )}
 
-              <Text
+              <AppText
                 style={
                   styles.confirmDoctorText
                 }
@@ -1358,10 +1351,10 @@ export default function WaitingPatientCard({
                 {changingDoctor
                   ? "Changing..."
                   : "Confirm Doctor"}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+              </AppText>
+            </AppPressable>
+          </AppView>
+        </AppView>
       </Modal>
     </AppCard>
   );

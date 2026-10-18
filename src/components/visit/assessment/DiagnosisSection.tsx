@@ -1,3 +1,5 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import AppDropdown from "@/components/common/AppDropdown";
 import AppChip from "@/components/common/AppChip";
 import diagnoses from "@/data/diagnoses";
@@ -5,17 +7,8 @@ import { getTopDiagnosisNames } from "@/services/statisticsApi";
 import { useClinicStore } from "@/store/clinicStore";
 import { useVisitStore } from "@/store/visitStore";
 import {
-  COLORS,
-  RADIUS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+  COLORS, RADIUS, SHADOW, SPACING, TYPOGRAPHY, } from "@/theme";
+import { StyleSheet } from "react-native";
 import DiagnosisCard from "./DiagnosisCard";
 import { useEffect, useRef, useState } from "react";
 import { getDiagnosis } from "@/services/visitApi";
@@ -197,15 +190,15 @@ export default function DiagnosisSection() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <AppView style={styles.container}>
+      <AppText style={styles.title}>
         Primary Diagnosis
-      </Text>
+      </AppText>
 
-      <Text style={styles.quickSelectionTitle}>
+      <AppText style={styles.quickSelectionTitle}>
         Quick Selection
-      </Text>
-      <View style={styles.quickSelectionRow}>
+      </AppText>
+      <AppView style={styles.quickSelectionRow}>
         {quickDiagnosisNames.map((name) => (
           <AppChip
             key={name}
@@ -214,7 +207,7 @@ export default function DiagnosisSection() {
             onPress={() => selectPrimaryDiagnosis(name)}
           />
         ))}
-      </View>
+      </AppView>
 
       <AppDropdown
         placeholder="Search diagnosis..."
@@ -252,9 +245,9 @@ export default function DiagnosisSection() {
         />
       )}
 
-      <Text style={styles.title}>
+      <AppText style={styles.title}>
         Differential Diagnoses
-      </Text>
+      </AppText>
 
       <AppDropdown
         placeholder="Search differential diagnosis..."
@@ -293,7 +286,7 @@ export default function DiagnosisSection() {
           />
         ),
       )}
-    </View>
+    </AppView>
   );
 }
 

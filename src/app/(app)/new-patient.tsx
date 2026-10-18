@@ -1,21 +1,13 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import { useEffect, useRef, useState, } from "react";
 
-import {
-  Alert,
-  StyleSheet,
-} from "react-native";
+import { Alert, StyleSheet } from "react-native";
 
 import {
   router,
 } from "expo-router";
 
-import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
+
 
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import AppTopBar from "@/components/common/AppTopBar";
@@ -799,7 +791,7 @@ export default function NewPatientScreen() {
    * =========================
    */
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
     >
       <AppTopBar
@@ -1105,7 +1097,7 @@ export default function NewPatientScreen() {
           patient={patient}
         />
       </AppKeyboardAwareScrollView>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

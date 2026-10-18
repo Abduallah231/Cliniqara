@@ -1,3 +1,4 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
 import AppButton from "@/components/common/AppButton";
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import AppTopBar from "@/components/common/AppTopBar";
@@ -5,21 +6,11 @@ import type {
   MaritalStatus,
   PatientIdentifierType,
 } from "@/types/patient";
+import { router, useLocalSearchParams, } from "expo-router";
 import {
-  router,
-  useLocalSearchParams,
-} from "expo-router";
-import {
-  useEffect,
-  useState,
-} from "react";
-import {
-  Alert,
-  StyleSheet,
-} from "react-native";
-import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
+  useEffect, useState, } from "react";
+import { Alert, StyleSheet } from "react-native";
+
 
 import PatientAddressInformation from "@/components/patient-form/PatientAddressInformation";
 import PatientBasicInformation from "@/components/patient-form/PatientBasicInformation";
@@ -580,7 +571,7 @@ export default function EditPatientScreen() {
   };
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
     >
       <AppTopBar
@@ -865,7 +856,7 @@ export default function EditPatientScreen() {
         />
 
       </AppKeyboardAwareScrollView>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

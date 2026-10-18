@@ -1,19 +1,12 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
-import {
-  COLORS,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+import { COLORS, SPACING, TYPOGRAPHY, } from "@/theme";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
-  useState,
-} from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+  useState, } from "react";
+import { StyleSheet } from "react-native";
 
 import type {
   WeekDay,
@@ -272,12 +265,12 @@ export default function ClinicWorkingDays({
   };
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       {value.map((item) => (
         <AppCard
           key={item.day}
         >
-          <View
+          <AppView
             style={[
               styles.dayCard,
               item.isClosed
@@ -288,17 +281,17 @@ export default function ClinicWorkingDays({
             {/* =========================
                 Day Header
                ========================= */}
-            <View
+            <AppView
               style={
                 styles.dayHeader
               }
             >
-              <View
+              <AppView
                 style={
                   styles.dayTitleContainer
                 }
               >
-                <View
+                <AppView
                   style={[
                     styles.dayIndicator,
                     item.isClosed
@@ -307,8 +300,8 @@ export default function ClinicWorkingDays({
                   ]}
                 />
 
-                <View>
-                  <Text
+                <AppView>
+                  <AppText
                     style={
                       styles.dayName
                     }
@@ -318,9 +311,9 @@ export default function ClinicWorkingDays({
                         item.day
                       ]
                     }
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={[
                       styles.dayStatus,
                       item.isClosed
@@ -331,9 +324,9 @@ export default function ClinicWorkingDays({
                     {item.isClosed
                       ? "Clinic closed"
                       : "Clinic open"}
-                  </Text>
-                </View>
-              </View>
+                  </AppText>
+                </AppView>
+              </AppView>
 
               <AppButton
                 title={
@@ -352,10 +345,10 @@ export default function ClinicWorkingDays({
                     : "primary"
                 }
               />
-            </View>
+            </AppView>
 
             {!item.isClosed && (
-              <View
+              <AppView
                 style={
                   styles.dayContent
                 }
@@ -363,33 +356,33 @@ export default function ClinicWorkingDays({
                 {/* =========================
                     Working Hours Header
                    ========================= */}
-                <View
+                <AppView
                   style={
                     styles.workingHoursHeader
                   }
                 >
-                  <View
+                  <AppView
                     style={
                       styles.sectionTitleContainer
                     }
                   >
-                    <Text
+                    <AppText
                       style={
                         styles.sectionTitle
                       }
                     >
                       Working Hours
-                    </Text>
+                    </AppText>
 
-                    <Text
+                    <AppText
                       style={
                         styles.sectionSubtitle
                       }
                     >
                       Set the clinic hours
                       for this day
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
 
                   <AppButton
                     title={
@@ -408,13 +401,13 @@ export default function ClinicWorkingDays({
                       )
                     }
                   />
-                </View>
+                </AppView>
 
                 {/* =========================
                     Shifts
                    ========================= */}
                 {!item.is24Hours && (
-                  <View
+                  <AppView
                     style={
                       styles.shiftsSection
                     }
@@ -424,40 +417,40 @@ export default function ClinicWorkingDays({
                         shift,
                         shiftIndex,
                       ) => (
-                        <View
+                        <AppView
                           key={`${item.day}-${shiftIndex}`}
                           style={
                             styles.shiftContainer
                           }
                         >
                           {/* Shift Header */}
-                          <View
+                          <AppView
                             style={
                               styles.shiftHeader
                             }
                           >
-                            <View
+                            <AppView
                               style={
                                 styles.shiftTitleContainer
                               }
                             >
-                              <View
+                              <AppView
                                 style={
                                   styles.shiftNumber
                                 }
                               >
-                                <Text
+                                <AppText
                                   style={
                                     styles.shiftNumberText
                                   }
                                 >
                                   {shiftIndex +
                                     1}
-                                </Text>
-                              </View>
+                                </AppText>
+                              </AppView>
 
-                              <View>
-                                <Text
+                              <AppView>
+                                <AppText
                                   style={
                                     styles.shiftTitle
                                   }
@@ -465,18 +458,18 @@ export default function ClinicWorkingDays({
                                   Shift{" "}
                                   {shiftIndex +
                                     1}
-                                </Text>
+                                </AppText>
 
-                                <Text
+                                <AppText
                                   style={
                                     styles.shiftSubtitle
                                   }
                                 >
                                   Clinic working
                                   period
-                                </Text>
-                              </View>
-                            </View>
+                                </AppText>
+                              </AppView>
+                            </AppView>
 
                             {item
                               .shifts
@@ -493,26 +486,26 @@ export default function ClinicWorkingDays({
                                 }
                               />
                             )}
-                          </View>
+                          </AppView>
 
                           {/* Time Fields */}
-                          <View
+                          <AppView
                             style={
                               styles.timeRow
                             }
                           >
-                            <View
+                            <AppView
                               style={
                                 styles.timeField
                               }
                             >
-                              <Text
+                              <AppText
                                 style={
                                   styles.timeLabel
                                 }
                               >
                                 Opening
-                              </Text>
+                              </AppText>
 
                               <AppButton
                                 title={
@@ -528,44 +521,44 @@ export default function ClinicWorkingDays({
                                   )
                                 }
                               />
-                            </View>
+                            </AppView>
 
-                            <View
+                            <AppView
                               style={
                                 styles.timeSeparator
                               }
                             >
-                              <View
+                              <AppView
                                 style={
                                   styles.separatorDot
                                 }
                               />
-                              <Text
+                              <AppText
                                 style={
                                   styles.separatorText
                                 }
                               >
                                 to
-                              </Text>
-                              <View
+                              </AppText>
+                              <AppView
                                 style={
                                   styles.separatorDot
                                 }
                               />
-                            </View>
+                            </AppView>
 
-                            <View
+                            <AppView
                               style={
                                 styles.timeField
                               }
                             >
-                              <Text
+                              <AppText
                                 style={
                                   styles.timeLabel
                                 }
                               >
                                 Closing
-                              </Text>
+                              </AppText>
 
                               <AppButton
                                 title={
@@ -581,14 +574,14 @@ export default function ClinicWorkingDays({
                                   )
                                 }
                               />
-                            </View>
-                          </View>
-                        </View>
+                            </AppView>
+                          </AppView>
+                        </AppView>
                       ),
                     )}
 
                     {/* Add Shift */}
-                    <View
+                    <AppView
                       style={
                         styles.addShiftContainer
                       }
@@ -602,60 +595,60 @@ export default function ClinicWorkingDays({
                           )
                         }
                       />
-                    </View>
-                  </View>
+                    </AppView>
+                  </AppView>
                 )}
 
                 {/* =========================
                     24 Hours State
                    ========================= */}
                 {item.is24Hours && (
-                  <View
+                  <AppView
                     style={
                       styles.fullDayContainer
                     }
                   >
-                    <View
+                    <AppView
                       style={
                         styles.fullDayIcon
                       }
                     >
-                      <Text
+                      <AppText
                         style={
                           styles.fullDayIconText
                         }
                       >
                         24
-                      </Text>
-                    </View>
+                      </AppText>
+                    </AppView>
 
-                    <View
+                    <AppView
                       style={
                         styles.fullDayContent
                       }
                     >
-                      <Text
+                      <AppText
                         style={
                           styles.fullDayTitle
                         }
                       >
                         Open 24 Hours
-                      </Text>
+                      </AppText>
 
-                      <Text
+                      <AppText
                         style={
                           styles.fullDayText
                         }
                       >
                         The clinic is available
                         throughout the entire day.
-                      </Text>
-                    </View>
-                  </View>
+                      </AppText>
+                    </AppView>
+                  </AppView>
                 )}
-              </View>
+              </AppView>
             )}
-          </View>
+          </AppView>
         </AppCard>
       ))}
 
@@ -701,7 +694,7 @@ export default function ClinicWorkingDays({
           }}
         />
       )}
-    </View>
+    </AppView>
   );
 }
 

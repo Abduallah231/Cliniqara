@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
@@ -227,20 +225,20 @@ export default function VaccinationHistory() {
   // Render
   // ======================================================
   return (
-    <View
+    <AppView
       style={styles.container}
     >
       {/* ==================================================
           HYDRATION
       ================================================== */}
       {isHydrating && (
-        <Text
+        <AppText
           style={
             styles.statusText
           }
         >
           Loading vaccination history...
-        </Text>
+        </AppText>
       )}
 
       {/* =========================
@@ -250,7 +248,7 @@ export default function VaccinationHistory() {
         title="Vaccination Status"
       />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "UP_TO_DATE",
           "PARTIALLY_VACCINATED",
@@ -353,7 +351,7 @@ export default function VaccinationHistory() {
             }}
           />
         ))}
-      </View>
+      </AppView>
 
       {getValue(
         "vaccinationStatus",
@@ -373,7 +371,7 @@ export default function VaccinationHistory() {
             title="Missed Vaccines"
           />
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Birth",
               "2 Months",
@@ -405,13 +403,13 @@ export default function VaccinationHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           <Divider />
 
           <SectionHeader title="Reason" />
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "MISSED_APPOINTMENT",
               "VACCINE_UNAVAILABLE",
@@ -456,7 +454,7 @@ export default function VaccinationHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           {getValue(
             "partialReason",
@@ -493,7 +491,7 @@ export default function VaccinationHistory() {
         <>
           <SectionHeader title="Reason" />
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "PARENT_REFUSED",
               "MEDICAL_CONTRAINDICATION",
@@ -534,7 +532,7 @@ export default function VaccinationHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           {getValue(
             "unvaccinatedReason",
@@ -573,7 +571,7 @@ export default function VaccinationHistory() {
             title="Previous Vaccine Reaction"
           />
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               {
                 label: "No",
@@ -615,7 +613,7 @@ export default function VaccinationHistory() {
                 }}
               />
             ))}
-          </View>
+          </AppView>
 
           {getValue(
             "previousReaction",
@@ -623,13 +621,13 @@ export default function VaccinationHistory() {
             <>
               <Divider />
 
-              <Text
+              <AppText
                 style={styles.label}
               >
                 Severity
-              </Text>
+              </AppText>
 
-              <View style={styles.row}>
+              <AppView style={styles.row}>
                 {[
                   "MILD",
                   "MODERATE",
@@ -661,7 +659,7 @@ export default function VaccinationHistory() {
                     }
                   />
                 ))}
-              </View>
+              </AppView>
 
               <AppTextField
                 value={
@@ -689,15 +687,15 @@ export default function VaccinationHistory() {
           AUTO SAVE STATUS
       ================================================== */}
       {isAutoSaving && (
-        <Text
+        <AppText
           style={
             styles.savingText
           }
         >
           Saving changes...
-        </Text>
+        </AppText>
       )}
-    </View>
+    </AppView>
   );
 }
 

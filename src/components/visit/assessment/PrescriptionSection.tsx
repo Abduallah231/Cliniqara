@@ -1,10 +1,8 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import { useEffect, useRef, useState } from "react";
 
 import PrescriptionForm from "./PrescriptionForm";
@@ -178,12 +176,12 @@ export default function PrescriptionSection() {
   };
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       {/* ==================================================
           Import Prescription Template
           This belongs to PrescriptionSection only
       ================================================== */}
-      <Pressable
+      <AppPressable
         style={styles.templateButton}
         onPress={() => {
           if (!visitId) {
@@ -205,10 +203,10 @@ export default function PrescriptionSection() {
           color={COLORS.primary}
         />
 
-        <Text style={styles.templateText}>
+        <AppText style={styles.templateText}>
           Import Prescription Template
-        </Text>
-      </Pressable>
+        </AppText>
+      </AppPressable>
 
       {/* ==================================================
           Shared Prescription Form
@@ -250,7 +248,7 @@ export default function PrescriptionSection() {
           Print Prescription
           This belongs to PrescriptionSection only
       ================================================== */}
-      <Pressable
+      <AppPressable
         style={styles.printButton}
         onPress={() => {
           // TODO:
@@ -263,15 +261,15 @@ export default function PrescriptionSection() {
           color={COLORS.primary}
         />
 
-        <Text
+        <AppText
           style={
             styles.printButtonText
           }
         >
           Print Prescription
-        </Text>
-      </Pressable>
-    </View>
+        </AppText>
+      </AppPressable>
+    </AppView>
   );
 }
 

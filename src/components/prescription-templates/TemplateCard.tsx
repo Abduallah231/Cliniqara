@@ -1,10 +1,8 @@
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 
 import AppCard from "@/components/common/AppCard";
 
@@ -35,10 +33,10 @@ export default function TemplateCard({
       : "";
 
   return (
-    <Pressable onPress={onPress}>
+    <AppPressable onPress={onPress}>
       <AppCard style={styles.card}>
-        <View style={styles.header}>
-          <View
+        <AppView style={styles.header}>
+          <AppView
             style={
               styles.titleContainer
             }
@@ -51,32 +49,32 @@ export default function TemplateCard({
               }
             />
 
-            <Text
+            <AppText
               style={styles.title}
               numberOfLines={2}
             >
               {template.title}
-            </Text>
-          </View>
-        </View>
+            </AppText>
+          </AppView>
+        </AppView>
 
-        <Text style={styles.count}>
+        <AppText style={styles.count}>
           {template.medications.length}{" "}
           {template.medications.length ===
           1
             ? "Medication"
             : "Medications"}
-        </Text>
+        </AppText>
 
         {updatedText ? (
-          <Text
+          <AppText
             style={styles.updated}
           >
             Updated {updatedText}
-          </Text>
+          </AppText>
         ) : null}
 
-        <View
+        <AppView
           style={styles.footer}
         >
           <Ionicons
@@ -86,9 +84,9 @@ export default function TemplateCard({
               COLORS.secondaryText
             }
           />
-        </View>
+        </AppView>
       </AppCard>
-    </Pressable>
+    </AppPressable>
   );
 }
 

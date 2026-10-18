@@ -1,17 +1,13 @@
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppTextInput from "@/components/common/AppTextInput";
+import AppView from "@/components/common/AppView";
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
-import {
-  Alert,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Alert, Modal, StyleSheet } from "react-native";
 
 import { useEffect, useState } from "react";
 
@@ -304,10 +300,10 @@ export default function VisitHeaderCard({
       <AppCard
         style={styles.patientCard}
       >
-        <View
+        <AppView
           style={styles.patientHeader}
         >
-          <View
+          <AppView
             style={
               styles.patientIconContainer
             }
@@ -317,45 +313,45 @@ export default function VisitHeaderCard({
               size={22}
               color={COLORS.primary}
             />
-          </View>
+          </AppView>
 
-          <View
+          <AppView
             style={styles.patientMainInfo}
           >
-            <Text
+            <AppText
               style={styles.patientName}
               numberOfLines={1}
             >
               {patient?.fullName ||
                 "Patient"}
-            </Text>
+            </AppText>
 
             {patient?.patientCode ? (
-              <Text
+              <AppText
                 style={styles.patientCode}
               >
                 Patient ID:{" "}
                 {patient.patientCode}
-              </Text>
+              </AppText>
             ) : null}
 
             {visitCode ? (
-              <Text
+              <AppText
                 style={styles.visitCode}
               >
                 Visit Code:{" "}
                 {visitCode}
-              </Text>
+              </AppText>
             ) : null}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
 
         {(genderLabel || ageLabel) && (
-          <View
+          <AppView
             style={styles.infoRow}
           >
             {genderLabel && (
-              <View
+              <AppView
                 style={
                   styles.infoChip
                 }
@@ -368,18 +364,18 @@ export default function VisitHeaderCard({
                   }
                 />
 
-                <Text
+                <AppText
                   style={
                     styles.infoChipText
                   }
                 >
                   {genderLabel}
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
             )}
 
             {ageLabel && (
-              <View
+              <AppView
                 style={
                   styles.infoChip
                 }
@@ -392,23 +388,23 @@ export default function VisitHeaderCard({
                   }
                 />
 
-                <Text
+                <AppText
                   style={
                     styles.infoChipText
                   }
                 >
                   {ageLabel}
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
             )}
-          </View>
+          </AppView>
         )}
 
         {/* ======================================
             PATIENT ACTIONS
         ======================================= */}
 
-        <View
+        <AppView
           style={styles.actionRow}
         >
           <AppButton
@@ -435,17 +431,17 @@ export default function VisitHeaderCard({
               handleCancelVisit
             }
           />
-        </View>
+        </AppView>
       </AppCard>
 
       {/* ======================================
           SECTION HEADER
       ======================================= */}
 
-      <View
+      <AppView
         style={styles.sectionHeader}
       >
-        <View
+        <AppView
           style={
             styles.sectionIconContainer
           }
@@ -455,14 +451,14 @@ export default function VisitHeaderCard({
             size={19}
             color={COLORS.primary}
           />
-        </View>
+        </AppView>
 
-        <Text
+        <AppText
           style={styles.sectionTitle}
         >
           {sectionTitle}
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
       {/* ======================================
           CANCEL MODAL
@@ -478,32 +474,32 @@ export default function VisitHeaderCard({
           }
         }}
       >
-        <View
+        <AppView
           style={
             styles.modalOverlay
           }
         >
-          <View
+          <AppView
             style={
               styles.cancelModal
             }
           >
-            <Text
+            <AppText
               style={styles.modalTitle}
             >
               Cancel Visit
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={
                 styles.modalSubtitle
               }
             >
               Select one or more reasons,
               then confirm.
-            </Text>
+            </AppText>
 
-            <ScrollView
+            <AppScrollView
               style={
                 styles.reasonsScroll
               }
@@ -514,27 +510,27 @@ export default function VisitHeaderCard({
               persistentScrollbar
               nestedScrollEnabled
             >
-              <View
+              <AppView
                 style={
                   styles.reasonsHeader
                 }
               >
-                <Text
+                <AppText
                   style={
                     styles.reasonsTitle
                   }
                 >
                   Cancellation Reasons
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={
                     styles.reasonsHint
                   }
                 >
                   Select one or more
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
 
               {cancellationReasons.map(
                 (reason) => {
@@ -574,29 +570,29 @@ export default function VisitHeaderCard({
                 }
               )}
 
-              <View
+              <AppView
                 style={
                   styles.otherSection
                 }
               >
-                <Text
+                <AppText
                   style={
                     styles.otherTitle
                   }
                 >
                   Other reason
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={
                     styles.otherHint
                   }
                 >
                   Add any additional reason
                   if needed
-                </Text>
+                </AppText>
 
-                <TextInput
+                <AppTextInput
                   value={
                     customCancelReason
                   }
@@ -612,10 +608,10 @@ export default function VisitHeaderCard({
                   }
                   multiline
                 />
-              </View>
-            </ScrollView>
+              </AppView>
+            </AppScrollView>
 
-            <View
+            <AppView
               style={
                 styles.modalActions
               }
@@ -653,9 +649,9 @@ export default function VisitHeaderCard({
                   )
                 }
               />
-            </View>
-          </View>
-        </View>
+            </AppView>
+          </AppView>
+        </AppView>
       </Modal>
     </>
   );

@@ -1,10 +1,6 @@
-import {
-    Pressable,
-    StyleProp,
-    StyleSheet,
-    Text,
-    ViewStyle,
-} from "react-native";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -43,7 +39,7 @@ export default function AppChip({
     : COLORS.primary;
 
   return (
-    <Pressable
+    <AppPressable
       onPress={onPress}
       disabled={disabled}
       style={[
@@ -65,7 +61,7 @@ export default function AppChip({
         />
       )}
 
-      <Text
+      <AppText
         style={[
           styles.label,
 
@@ -73,8 +69,8 @@ export default function AppChip({
         ]}
       >
         {label}
-      </Text>
-    </Pressable>
+      </AppText>
+    </AppPressable>
   );
 }
 

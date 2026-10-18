@@ -1,10 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useEffect, useState } from "react";
-import {
-  Modal,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Modal, StyleSheet } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
 import AppTextField from "@/components/common/AppTextField";
@@ -46,11 +43,11 @@ export default function TemplateFolderDialog({
       transparent
       animationType="fade"
     >
-      <View style={styles.overlay}>
-        <View style={styles.dialog}>
-          <Text style={styles.title}>
+      <AppView style={styles.overlay}>
+        <AppView style={styles.dialog}>
+          <AppText style={styles.title}>
             Folder Name
-          </Text>
+          </AppText>
 
           <AppTextField
             placeholder="Folder Name"
@@ -58,7 +55,7 @@ export default function TemplateFolderDialog({
             onChangeText={setName}
           />
 
-          <View style={styles.actions}>
+          <AppView style={styles.actions}>
             <AppButton
               title="Cancel"
               variant="secondary"
@@ -74,9 +71,9 @@ export default function TemplateFolderDialog({
                 setName("");
               }}
             />
-          </View>
-        </View>
-      </View>
+          </AppView>
+        </AppView>
+      </AppView>
     </Modal>
   );
 }

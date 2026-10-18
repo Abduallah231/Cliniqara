@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
 import AppChip from "@/components/common/AppChip";
@@ -32,14 +34,14 @@ export default function GenericAnalysis() {
     getValue("treatmentEffect") as string;
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <SectionHeader title="Onset" />
 
-      <Text style={styles.subTitle}>
+      <AppText style={styles.subTitle}>
         Mode of Onset
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Sudden",
           "Insidious",
@@ -60,7 +62,7 @@ export default function GenericAnalysis() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {modeOfOnset === "Other" && (
         <AppTextField
@@ -76,11 +78,11 @@ export default function GenericAnalysis() {
         />
       )}
 
-      <Text style={styles.subTitle}>
+      <AppText style={styles.subTitle}>
         Circumstances at Onset
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "At Rest",
           "During Exertion",
@@ -103,13 +105,13 @@ export default function GenericAnalysis() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.subTitle}>
+      <AppText style={styles.subTitle}>
         Trigger at Onset
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Spontaneous",
           "Activity",
@@ -131,13 +133,13 @@ export default function GenericAnalysis() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <Divider />
 
       <SectionHeader title="Course" />
 
-            <View style={styles.row}>
+            <AppView style={styles.row}>
         {[
           "Progressive",
           "Static",
@@ -161,7 +163,7 @@ export default function GenericAnalysis() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {course === "Other" && (
         <AppTextField
@@ -227,7 +229,7 @@ export default function GenericAnalysis() {
           )
         }
       />
-    </View>
+    </AppView>
   );
 }
 const styles = StyleSheet.create({

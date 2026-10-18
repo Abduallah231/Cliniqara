@@ -1,14 +1,12 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppPressable from "@/components/common/AppPressable";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppTextInput from "@/components/common/AppTextInput";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, StyleSheet } from "react-native";
+
 import {
   router,
   useLocalSearchParams,
@@ -421,7 +419,7 @@ export default function PrescriptionTemplateImportScreen() {
    */
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
       edges={[
         "top",
@@ -438,8 +436,8 @@ export default function PrescriptionTemplateImportScreen() {
         }
       />
 
-      <View style={styles.content}>
-        <View style={styles.tabs}>
+      <AppView style={styles.content}>
+        <AppView style={styles.tabs}>
           <TabButton
             label="My Templates"
             active={
@@ -469,16 +467,16 @@ export default function PrescriptionTemplateImportScreen() {
               setActiveTab("GLOBAL")
             }
           />
-        </View>
+        </AppView>
 
-        <View style={styles.searchContainer}>
+        <AppView style={styles.searchContainer}>
           <Ionicons
             name="search-outline"
             size={20}
             color={COLORS.text}
           />
 
-          <TextInput
+          <AppTextInput
             value={search}
             onChangeText={setSearch}
             placeholder="Search templates..."
@@ -490,7 +488,7 @@ export default function PrescriptionTemplateImportScreen() {
           />
 
           {search.length > 0 && (
-            <Pressable
+            <AppPressable
               onPress={() =>
                 setSearch("")
               }
@@ -501,11 +499,11 @@ export default function PrescriptionTemplateImportScreen() {
                 size={19}
                 color={COLORS.text}
               />
-            </Pressable>
+            </AppPressable>
           )}
-        </View>
+        </AppView>
 
-        <ScrollView
+        <AppScrollView
           style={styles.list}
           contentContainerStyle={
             styles.listContent
@@ -515,16 +513,16 @@ export default function PrescriptionTemplateImportScreen() {
           }
         >
           {loading ? (
-            <View style={styles.loading}>
+            <AppView style={styles.loading}>
               <ActivityIndicator
                 size="large"
                 color={COLORS.primary}
               />
 
-              <Text style={styles.loadingText}>
+              <AppText style={styles.loadingText}>
                 Loading templates...
-              </Text>
-            </View>
+              </AppText>
+            </AppView>
           ) : (
             <>
               {folders.map(
@@ -558,18 +556,18 @@ export default function PrescriptionTemplateImportScreen() {
 
               {unfiledTemplates.length >
                 0 && (
-                <View
+                <AppView
                   style={
                     styles.unfiledSection
                   }
                 >
-                  <Text
+                  <AppText
                     style={
                       styles.sectionTitle
                     }
                   >
                     Templates
-                  </Text>
+                  </AppText>
 
                   {unfiledTemplates.map(
                     (template) => (
@@ -588,13 +586,13 @@ export default function PrescriptionTemplateImportScreen() {
                       />
                     ),
                   )}
-                </View>
+                </AppView>
               )}
 
               {!loading &&
                 filteredTemplates.length ===
                   0 && (
-                  <View
+                  <AppView
                     style={
                       styles.empty
                     }
@@ -605,15 +603,15 @@ export default function PrescriptionTemplateImportScreen() {
                       color={COLORS.text}
                     />
 
-                    <Text
+                    <AppText
                       style={
                         styles.emptyTitle
                       }
                     >
                       No templates found
-                    </Text>
+                    </AppText>
 
-                    <Text
+                    <AppText
                       style={
                         styles.emptyText
                       }
@@ -625,13 +623,13 @@ export default function PrescriptionTemplateImportScreen() {
                           !currentClinicId
                         ? "No clinic is currently selected."
                         : "There are no templates available here yet."}
-                    </Text>
-                  </View>
+                    </AppText>
+                  </AppView>
                 )}
             </>
           )}
-        </ScrollView>
-      </View>
+        </AppScrollView>
+      </AppView>
 
       <ImportTemplateDialog
         visible={dialogVisible}
@@ -648,7 +646,7 @@ export default function PrescriptionTemplateImportScreen() {
           handleImport
         }
       />
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 
@@ -662,7 +660,7 @@ function TabButton({
   onPress: () => void;
 }) {
   return (
-    <Pressable
+    <AppPressable
       onPress={onPress}
       style={[
         styles.tab,
@@ -670,7 +668,7 @@ function TabButton({
           styles.activeTab,
       ]}
     >
-      <Text
+      <AppText
         style={[
           styles.tabText,
           active &&
@@ -679,8 +677,8 @@ function TabButton({
         numberOfLines={1}
       >
         {label}
-      </Text>
-    </Pressable>
+      </AppText>
+    </AppPressable>
   );
 }
 

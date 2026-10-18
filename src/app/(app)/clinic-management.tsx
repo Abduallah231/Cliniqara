@@ -1,15 +1,12 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppPressable from "@/components/common/AppPressable";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import { router } from "expo-router";
 import ClinicStatus from "@/components/clinic/ClinicStatus";
 import {
@@ -770,7 +767,7 @@ export default function ClinicManagementScreen() {
 
   if (!clinic) {
     return (
-      <SafeAreaView
+      <AppSafeAreaView
         style={styles.container}
       >
         <AppTopBar
@@ -780,18 +777,18 @@ export default function ClinicManagementScreen() {
           }
         />
 
-        <View
+        <AppView
           style={styles.center}
         >
-          <Text
+          <AppText
             style={
               styles.emptyText
             }
           >
             No clinic selected.
-          </Text>
-        </View>
-      </SafeAreaView>
+          </AppText>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
@@ -802,7 +799,7 @@ export default function ClinicManagementScreen() {
    */
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
       edges={[
         "top",
@@ -816,7 +813,7 @@ export default function ClinicManagementScreen() {
         }
       />
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={
           styles.content
         }
@@ -957,9 +954,9 @@ export default function ClinicManagementScreen() {
           onDeactivate={handleDeactivateClinic}
           onReactivate={handleReactivateClinic}
         />
-      </ScrollView>
+      </AppScrollView>
 
-      <Pressable
+      <AppPressable
         style={styles.refreshButton}
         onPress={handleRefresh}
         disabled={refreshing}
@@ -977,9 +974,9 @@ export default function ClinicManagementScreen() {
             color="#FFFFFF"
           />
         )}
-      </Pressable>
+      </AppPressable>
 
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

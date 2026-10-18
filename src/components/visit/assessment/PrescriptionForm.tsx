@@ -1,18 +1,10 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import AppPressable from "@/components/common/AppPressable";
 import AppTextField from "@/components/common/AppTextField";
-import {
-  COLORS,
-  RADIUS,
-  SHADOW,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+import { COLORS, RADIUS, SHADOW, SPACING, TYPOGRAPHY, } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Pressable,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   searchDrugs,
@@ -228,7 +220,7 @@ export default function PrescriptionForm({
   };
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       {/* ==================================================
           Medications
       ================================================== */}
@@ -238,13 +230,13 @@ export default function PrescriptionForm({
           medication,
           index
         ) => (
-          <View
+          <AppView
             key={index}
             style={styles.card}
           >
             {/* Medication Header */}
 
-            <View
+            <AppView
               style={
                 styles.cardHeader
               }
@@ -257,16 +249,16 @@ export default function PrescriptionForm({
                 }
               />
 
-              <Text
+              <AppText
                 style={
                   styles.cardTitle
                 }
               >
                 Medication{" "}
                 {index + 1}
-              </Text>
+              </AppText>
 
-              <Pressable
+              <AppPressable
                 onPress={() => {
                   if (
                     medications.length ===
@@ -286,12 +278,12 @@ export default function PrescriptionForm({
                   size={20}
                   color="#ef4444"
                 />
-              </Pressable>
-            </View>
+              </AppPressable>
+            </AppView>
 
             {/* Medication */}
 
-            <View style={styles.drugSearchContainer}>
+            <AppView style={styles.drugSearchContainer}>
               <AppTextField
                 label="Medication"
                 placeholder="Search medication..."
@@ -315,29 +307,29 @@ export default function PrescriptionForm({
                   searchingDrug[index] ||
                   (drugResults[index]?.length ?? 0) > 0
                 ) && (
-                  <View
+                  <AppView
                     style={
                       styles.searchDropdown
                     }
                   >
                     {searchingDrug[index] ? (
-                      <View
+                      <AppView
                         style={
                           styles.searchState
                         }
                       >
-                        <Text
+                        <AppText
                           style={
                             styles.searchStateText
                           }
                         >
                           Searching...
-                        </Text>
-                      </View>
+                        </AppText>
+                      </AppView>
                     ) : drugResults[index]?.length ? (
                       drugResults[index].map(
                         (drug) => (
-                          <Pressable
+                          <AppPressable
                             key={drug.id}
                             style={
                               styles.searchResult
@@ -349,7 +341,7 @@ export default function PrescriptionForm({
                               )
                             }
                           >
-                            <View
+                            <AppView
                               style={
                                 styles.resultIcon
                               }
@@ -361,14 +353,14 @@ export default function PrescriptionForm({
                                   COLORS.primary
                                 }
                               />
-                            </View>
+                            </AppView>
 
-                            <View
+                            <AppView
                               style={
                                 styles.resultContent
                               }
                             >
-                              <Text
+                              <AppText
                                 style={
                                   styles.resultName
                                 }
@@ -376,10 +368,10 @@ export default function PrescriptionForm({
                                 {
                                   drug.commercialNameEn
                                 }
-                              </Text>
+                              </AppText>
 
                               {drug.scientificName && (
-                                <Text
+                                <AppText
                                   style={
                                     styles.resultSecondary
                                   }
@@ -387,11 +379,11 @@ export default function PrescriptionForm({
                                   {
                                     drug.scientificName
                                   }
-                                </Text>
+                                </AppText>
                               )}
 
                               {drug.manufacturer && (
-                                <Text
+                                <AppText
                                   style={
                                     styles.resultSecondary
                                   }
@@ -399,9 +391,9 @@ export default function PrescriptionForm({
                                   {
                                     drug.manufacturer
                                   }
-                                </Text>
+                                </AppText>
                               )}
-                            </View>
+                            </AppView>
 
                             <Ionicons
                               name="chevron-forward"
@@ -410,27 +402,27 @@ export default function PrescriptionForm({
                                 COLORS.secondaryText
                               }
                             />
-                          </Pressable>
+                          </AppPressable>
                         ),
                       )
                     ) : (
-                      <View
+                      <AppView
                         style={
                           styles.searchState
                         }
                       >
-                        <Text
+                        <AppText
                           style={
                             styles.searchStateText
                           }
                         >
                           No matching drug found.
-                        </Text>
-                      </View>
+                        </AppText>
+                      </AppView>
                     )}
-                  </View>
+                  </AppView>
                 )}
-            </View>
+            </AppView>
 
             {/* Instructions */}
 
@@ -456,20 +448,20 @@ export default function PrescriptionForm({
 
             {/* Duration */}
 
-            <Text
+            <AppText
               style={
                 styles.durationLabel
               }
             >
               Duration
-            </Text>
+            </AppText>
 
-            <View
+            <AppView
               style={
                 styles.durationRow
               }
             >
-              <View
+              <AppView
                 style={
                   styles.durationValue
                 }
@@ -493,16 +485,16 @@ export default function PrescriptionForm({
                   }
                   keyboardType="numeric"
                 />
-              </View>
+              </AppView>
 
-              <View
+              <AppView
                 style={
                   styles.durationUnits
                 }
               >
                 {durationUnits.map(
                   (unit) => (
-                    <Pressable
+                    <AppPressable
                       key={
                         unit.value
                       }
@@ -522,7 +514,7 @@ export default function PrescriptionForm({
                         )
                       }
                     >
-                      <Text
+                      <AppText
                         style={[
                           styles.durationChipText,
                           medication.durationUnit ===
@@ -533,13 +525,13 @@ export default function PrescriptionForm({
                         {
                           unit.label
                         }
-                      </Text>
-                    </Pressable>
+                      </AppText>
+                    </AppPressable>
                   )
                 )}
-              </View>
-            </View>
-          </View>
+              </AppView>
+            </AppView>
+          </AppView>
         )
       )}
 
@@ -547,7 +539,7 @@ export default function PrescriptionForm({
           Add Medication
       ================================================== */}
 
-      <Pressable
+      <AppPressable
         style={styles.addButton}
         onPress={
           onAddMedication
@@ -561,22 +553,22 @@ export default function PrescriptionForm({
           }
         />
 
-        <Text
+        <AppText
           style={
             styles.addButtonText
           }
         >
           Add Medication
-        </Text>
-      </Pressable>
+        </AppText>
+      </AppPressable>
 
       {/* ==================================================
           Advice
       ================================================== */}
 
-      <Text style={styles.title}>
+      <AppText style={styles.title}>
         Advice
-      </Text>
+      </AppText>
 
       <AppTextField
         multiline
@@ -591,9 +583,9 @@ export default function PrescriptionForm({
           Notes
       ================================================== */}
 
-      <Text style={styles.title}>
+      <AppText style={styles.title}>
         Notes
-      </Text>
+      </AppText>
 
       <AppTextField
         multiline
@@ -608,16 +600,16 @@ export default function PrescriptionForm({
           Follow Up
       ================================================== */}
 
-      <Text style={styles.title}>
+      <AppText style={styles.title}>
         Follow Up
-      </Text>
+      </AppText>
 
-      <View
+      <AppView
         style={styles.chips}
       >
         {followUpOptions.map(
           (item) => (
-            <Pressable
+            <AppPressable
               key={item}
               style={[
                 styles.chip,
@@ -631,7 +623,7 @@ export default function PrescriptionForm({
                 )
               }
             >
-              <Text
+              <AppText
                 style={[
                   styles.chipText,
                   followUp ===
@@ -642,11 +634,11 @@ export default function PrescriptionForm({
                 ]}
               >
                 {item}
-              </Text>
-            </Pressable>
+              </AppText>
+            </AppPressable>
           )
         )}
-      </View>
+      </AppView>
 
       <AppTextField
         placeholder="Custom follow up..."
@@ -655,7 +647,7 @@ export default function PrescriptionForm({
           onUpdateFollowUp
         }
       />
-    </View>
+    </AppView>
   );
 }
 

@@ -1,19 +1,14 @@
-import {
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { useCallback, useEffect, useState, } from "react";
+import { StyleSheet } from "react-native";
 import {
   useLocalSearchParams,
   router,
 } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import Ionicons from "@expo/vector-icons/Ionicons";
 import type { ReactNode } from "react";
 
@@ -235,11 +230,11 @@ function Chip({
   }
 
   return (
-    <View style={styles.chip}>
-      <Text style={styles.chipText}>
+    <AppView style={styles.chip}>
+      <AppText style={styles.chipText}>
         {label}
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 
@@ -275,7 +270,7 @@ function ChipList({
   }
 
   return (
-    <View
+    <AppView
       style={styles.chipContainer}
     >
       {cleanedValues.map(
@@ -286,7 +281,7 @@ function ChipList({
           />
         ),
       )}
-    </View>
+    </AppView>
   );
 }
 
@@ -298,8 +293,8 @@ function SectionTitle({
   title: string;
 }) {
   return (
-    <View style={styles.sectionTitle}>
-      <View
+    <AppView style={styles.sectionTitle}>
+      <AppView
         style={styles.sectionTitleIcon}
       >
         <Ionicons
@@ -307,14 +302,14 @@ function SectionTitle({
           size={20}
           color={COLORS.primary}
         />
-      </View>
+      </AppView>
 
-      <Text
+      <AppText
         style={styles.sectionTitleText}
       >
         {title}
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 
@@ -337,19 +332,19 @@ function Field({
   }
 
   return (
-    <View style={styles.field}>
-      <Text
+    <AppView style={styles.field}>
+      <AppText
         style={styles.fieldLabel}
       >
         {label}
-      </Text>
+      </AppText>
 
-      <Text
+      <AppText
         style={styles.fieldValue}
       >
         {text}
-      </Text>
-    </View>
+      </AppText>
+    </AppView>
   );
 }
 
@@ -374,19 +369,19 @@ function ChipField({
   }
 
   return (
-    <View style={styles.field}>
-      <Text
+    <AppView style={styles.field}>
+      <AppText
         style={styles.fieldLabel}
       >
         {label}
-      </Text>
+      </AppText>
 
-      <View
+      <AppView
         style={styles.chipContainer}
       >
         <Chip label={text} />
-      </View>
-    </View>
+      </AppView>
+    </AppView>
   );
 }
 
@@ -404,7 +399,7 @@ function MajorSection({
 
 function ItemDivider() {
   return (
-    <View
+    <AppView
       style={styles.itemDivider}
     />
   );
@@ -421,10 +416,10 @@ function PatientHeader({
 }) {
   return (
     <AppCard>
-      <View
+      <AppView
         style={styles.patientHeader}
       >
-        <View
+        <AppView
           style={styles.patientIcon}
         >
           <Ionicons
@@ -432,27 +427,27 @@ function PatientHeader({
             size={24}
             color={COLORS.primary}
           />
-        </View>
+        </AppView>
 
-        <View
+        <AppView
           style={styles.patientInfo}
         >
-          <Text
+          <AppText
             style={styles.patientName}
           >
             {patient.fullName ??
               "Patient"}
-          </Text>
+          </AppText>
 
-          <Text
+          <AppText
             style={
               styles.patientSubtitle
             }
           >
             Clinical History
-          </Text>
-        </View>
-      </View>
+          </AppText>
+        </AppView>
+      </AppView>
     </AppCard>
   );
 }
@@ -606,7 +601,7 @@ export default function ClinicalHistoryScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView
+      <AppSafeAreaView
         style={styles.container}
       >
         <AppTopBar
@@ -616,14 +611,14 @@ export default function ClinicalHistoryScreen() {
           }
         />
 
-        <View style={styles.center}>
-          <Text
+        <AppView style={styles.center}>
+          <AppText
             style={styles.loadingText}
           >
             Loading clinical history...
-          </Text>
-        </View>
-      </SafeAreaView>
+          </AppText>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
@@ -633,7 +628,7 @@ export default function ClinicalHistoryScreen() {
 
   if (error || !data) {
     return (
-      <SafeAreaView
+      <AppSafeAreaView
         style={styles.container}
       >
         <AppTopBar
@@ -643,13 +638,13 @@ export default function ClinicalHistoryScreen() {
           }
         />
 
-        <View style={styles.center}>
-          <Text style={styles.errorText}>
+        <AppView style={styles.center}>
+          <AppText style={styles.errorText}>
             {error ??
               "Unable to load clinical history."}
-          </Text>
-        </View>
-      </SafeAreaView>
+          </AppText>
+        </AppView>
+      </AppSafeAreaView>
     );
   }
 
@@ -865,7 +860,7 @@ export default function ClinicalHistoryScreen() {
   // ====================================================
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
     >
       <AppTopBar
@@ -875,7 +870,7 @@ export default function ClinicalHistoryScreen() {
         }
       />
 
-      <ScrollView
+      <AppScrollView
         showsVerticalScrollIndicator={
           false
         }
@@ -902,7 +897,7 @@ export default function ClinicalHistoryScreen() {
               title="Past Medical History"
             />
 
-            <View
+            <AppView
               style={
                 styles.sectionContent
               }
@@ -912,13 +907,13 @@ export default function ClinicalHistoryScreen() {
               {chronicDiseases.length >
                 0 && (
                 <>
-                  <Text
+                  <AppText
                     style={
                       styles.subsectionTitle
                     }
                   >
                     Chronic Diseases
-                  </Text>
+                  </AppText>
 
                   <ChipList
                     values={chronicDiseases.map(
@@ -934,23 +929,23 @@ export default function ClinicalHistoryScreen() {
               {hospitalizations.length >
                 0 && (
                 <>
-                  <View
+                  <AppView
                     style={
                       styles.subsectionSpacing
                     }
                   />
 
-                  <Text
+                  <AppText
                     style={
                       styles.subsectionTitle
                     }
                   >
                     Hospitalizations
-                  </Text>
+                  </AppText>
 
                   {hospitalizations.map(
                     (item, index) => (
-                      <View
+                      <AppView
                         key={`hospitalization-${index}`}
                       >
                         {index > 0 && (
@@ -984,7 +979,7 @@ export default function ClinicalHistoryScreen() {
                             item.notes
                           }
                         />
-                      </View>
+                      </AppView>
                     ),
                   )}
                 </>
@@ -994,23 +989,23 @@ export default function ClinicalHistoryScreen() {
 
               {operations.length > 0 && (
                 <>
-                  <View
+                  <AppView
                     style={
                       styles.subsectionSpacing
                     }
                   />
 
-                  <Text
+                  <AppText
                     style={
                       styles.subsectionTitle
                     }
                   >
                     Operations
-                  </Text>
+                  </AppText>
 
                   {operations.map(
                     (item, index) => (
-                      <View
+                      <AppView
                         key={`operation-${index}`}
                       >
                         {index > 0 && (
@@ -1044,7 +1039,7 @@ export default function ClinicalHistoryScreen() {
                             item.notes
                           }
                         />
-                      </View>
+                      </AppView>
                     ),
                   )}
                 </>
@@ -1055,23 +1050,23 @@ export default function ClinicalHistoryScreen() {
               {bloodTransfusions.length >
                 0 && (
                 <>
-                  <View
+                  <AppView
                     style={
                       styles.subsectionSpacing
                     }
                   />
 
-                  <Text
+                  <AppText
                     style={
                       styles.subsectionTitle
                     }
                   >
                     Blood Transfusions
-                  </Text>
+                  </AppText>
 
                   {bloodTransfusions.map(
                     (item, index) => (
-                      <View
+                      <AppView
                         key={`transfusion-${index}`}
                       >
                         {index > 0 && (
@@ -1105,7 +1100,7 @@ export default function ClinicalHistoryScreen() {
                             item.notes
                           }
                         />
-                      </View>
+                      </AppView>
                     ),
                   )}
                 </>
@@ -1116,23 +1111,23 @@ export default function ClinicalHistoryScreen() {
               {majorTraumas.length >
                 0 && (
                 <>
-                  <View
+                  <AppView
                     style={
                       styles.subsectionSpacing
                     }
                   />
 
-                  <Text
+                  <AppText
                     style={
                       styles.subsectionTitle
                     }
                   >
                     Major Traumas
-                  </Text>
+                  </AppText>
 
                   {majorTraumas.map(
                     (item, index) => (
-                      <View
+                      <AppView
                         key={`trauma-${index}`}
                       >
                         {index > 0 && (
@@ -1166,7 +1161,7 @@ export default function ClinicalHistoryScreen() {
                             item.notes
                           }
                         />
-                      </View>
+                      </AppView>
                     ),
                   )}
                 </>
@@ -1177,23 +1172,23 @@ export default function ClinicalHistoryScreen() {
               {icuAdmissions.length >
                 0 && (
                 <>
-                  <View
+                  <AppView
                     style={
                       styles.subsectionSpacing
                     }
                   />
 
-                  <Text
+                  <AppText
                     style={
                       styles.subsectionTitle
                     }
                   >
                     ICU Admissions
-                  </Text>
+                  </AppText>
 
                   {icuAdmissions.map(
                     (item, index) => (
-                      <View
+                      <AppView
                         key={`icu-${index}`}
                       >
                         {index > 0 && (
@@ -1234,12 +1229,12 @@ export default function ClinicalHistoryScreen() {
                             item.notes
                           }
                         />
-                      </View>
+                      </AppView>
                     ),
                   )}
                 </>
               )}
-            </View>
+            </AppView>
           </MajorSection>
         )}
 
@@ -1254,7 +1249,7 @@ export default function ClinicalHistoryScreen() {
               title="Drug History"
             />
 
-            <View
+            <AppView
               style={
                 styles.sectionContent
               }
@@ -1262,17 +1257,17 @@ export default function ClinicalHistoryScreen() {
               {medications.length >
                 0 && (
                 <>
-                  <Text
+                  <AppText
                     style={
                       styles.subsectionTitle
                     }
                   >
                     Current Medications
-                  </Text>
+                  </AppText>
 
                   {medications.map(
                     (item, index) => (
-                      <View
+                      <AppView
                         key={
                           item.id ??
                           `medication-${index}`
@@ -1313,7 +1308,7 @@ export default function ClinicalHistoryScreen() {
                             item.notes
                           }
                         />
-                      </View>
+                      </AppView>
                     ),
                   )}
                 </>
@@ -1326,7 +1321,7 @@ export default function ClinicalHistoryScreen() {
                 <>
                   {medications.length >
                     0 && (
-                    <View
+                    <AppView
                       style={
                         styles.subsectionSpacing
                       }
@@ -1342,7 +1337,7 @@ export default function ClinicalHistoryScreen() {
                   />
                 </>
               )}
-            </View>
+            </AppView>
           </MajorSection>
         )}
 
@@ -1357,7 +1352,7 @@ export default function ClinicalHistoryScreen() {
               title="Allergy History"
             />
 
-            <View
+            <AppView
               style={
                 styles.sectionContent
               }
@@ -1377,17 +1372,17 @@ export default function ClinicalHistoryScreen() {
 
               {allergies.length > 0 && (
                 <>
-                  <Text
+                  <AppText
                     style={
                       styles.subsectionTitle
                     }
                   >
                     Allergies
-                  </Text>
+                  </AppText>
 
                   {allergies.map(
                     (item, index) => (
-                      <View
+                      <AppView
                         key={
                           item.id ??
                           `allergy-${index}`
@@ -1431,12 +1426,12 @@ export default function ClinicalHistoryScreen() {
                             item.notes
                           }
                         />
-                      </View>
+                      </AppView>
                     ),
                   )}
                 </>
               )}
-            </View>
+            </AppView>
           </MajorSection>
         )}
 
@@ -1451,14 +1446,14 @@ export default function ClinicalHistoryScreen() {
               title="Family History"
             />
 
-            <View
+            <AppView
               style={
                 styles.sectionContent
               }
             >
               {familyHistory.map(
                 (item, index) => (
-                  <View
+                  <AppView
                     key={
                       item.id ??
                       `family-${index}`
@@ -1481,25 +1476,25 @@ export default function ClinicalHistoryScreen() {
                     {hasValue(
                       item.diseases,
                     ) && (
-                      <View
+                      <AppView
                         style={
                           styles.field
                         }
                       >
-                        <Text
+                        <AppText
                           style={
                             styles.fieldLabel
                           }
                         >
                           Diseases
-                        </Text>
+                        </AppText>
 
                         <ChipList
                           values={[
                             item.diseases,
                           ]}
                         />
-                      </View>
+                      </AppView>
                     )}
 
                     <ChipField
@@ -1529,10 +1524,10 @@ export default function ClinicalHistoryScreen() {
                         item.notes
                       }
                     />
-                  </View>
+                  </AppView>
                 ),
               )}
-            </View>
+            </AppView>
           </MajorSection>
         )}
 
@@ -1547,7 +1542,7 @@ export default function ClinicalHistoryScreen() {
               title="Social History"
             />
 
-            <View
+            <AppView
               style={
                 styles.sectionContent
               }
@@ -1626,21 +1621,21 @@ export default function ClinicalHistoryScreen() {
 
               {substanceUse.length >
                 0 && (
-                <View
+                <AppView
                   style={styles.field}
                 >
-                  <Text
+                  <AppText
                     style={
                       styles.fieldLabel
                     }
                   >
                     Substance Use
-                  </Text>
+                  </AppText>
 
                   <ChipList
                     values={substanceUse}
                   />
-                </View>
+                </AppView>
               )}
 
               <Field
@@ -1714,7 +1709,7 @@ export default function ClinicalHistoryScreen() {
                     ?.sexualHistoryNotes
                 }
               />
-            </View>
+            </AppView>
           </MajorSection>
         )}
 
@@ -1729,7 +1724,7 @@ export default function ClinicalHistoryScreen() {
               title="Vaccination History"
             />
 
-            <View
+            <AppView
               style={
                 styles.sectionContent
               }
@@ -1801,13 +1796,13 @@ export default function ClinicalHistoryScreen() {
               {missedVaccines.length >
                 0 && (
                 <>
-                  <Text
+                  <AppText
                     style={
                       styles.subsectionTitle
                     }
                   >
                     Missed Vaccines
-                  </Text>
+                  </AppText>
 
                   <ChipList
                     values={
@@ -1816,11 +1811,11 @@ export default function ClinicalHistoryScreen() {
                   />
                 </>
               )}
-            </View>
+            </AppView>
           </MajorSection>
         )}
-      </ScrollView>
-    </SafeAreaView>
+      </AppScrollView>
+    </AppSafeAreaView>
   );
 }
 

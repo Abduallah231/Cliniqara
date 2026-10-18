@@ -1,8 +1,6 @@
-import {
-  Text,
-  View,
-  StyleSheet,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleSheet } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
@@ -34,24 +32,24 @@ export default function ClinicMembershipRequests({
     <>
       {requests.length === 0 ? (
         <AppCard>
-          <Text
+          <AppText
             style={styles.emptyText}
           >
             No pending membership requests.
-          </Text>
+          </AppText>
         </AppCard>
       ) : (
         requests.map((request) => (
           <AppCard
             key={request.id}
           >
-            <Text
+            <AppText
               style={styles.memberName}
             >
               {request.user.fullName}
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={styles.memberInfo}
             >
               {request.user.accountType}
@@ -59,9 +57,9 @@ export default function ClinicMembershipRequests({
               {request.user.specialty
                 ? ` • ${request.user.specialty}`
                 : ""}
-            </Text>
+            </AppText>
 
-            <View
+            <AppView
               style={styles.actionRow}
             >
               <AppButton
@@ -77,7 +75,7 @@ export default function ClinicMembershipRequests({
                   onReject(request.id)
                 }
               />
-            </View>
+            </AppView>
           </AppCard>
         ))
       )}

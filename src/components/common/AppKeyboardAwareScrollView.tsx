@@ -1,5 +1,7 @@
 import { ReactNode } from "react";
 import { StyleSheet } from "react-native";
+import { useAppSettingsStore } from "@/store/appSettingsStore";
+import { transformRuntimeStyle } from "./runtimeTheme";
 import {
   KeyboardAwareScrollView,
 } from "react-native-keyboard-aware-scroll-view";
@@ -15,13 +17,14 @@ export default function AppKeyboardAwareScrollView({
   contentContainerStyle,
   ...props
 }: Props) {
+  const theme = useAppSettingsStore((state) => state.activeColorScheme);
   return (
     <KeyboardAwareScrollView
       {...props}
-      style={styles.container}
+      style={transformRuntimeStyle(styles.container, theme)}
       contentContainerStyle={[
-        styles.content,
-        contentContainerStyle,
+        transformRuntimeStyle(styles.content, theme),
+        transformRuntimeStyle(contentContainerStyle, theme),
       ]}
       enableOnAndroid
       enableAutomaticScroll

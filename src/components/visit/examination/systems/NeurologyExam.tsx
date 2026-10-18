@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -136,7 +134,7 @@ export default function NeurologyExam() {
     fieldLabel: string;
     normal?: string;
   }) => (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       {items.map((item) => (
         <AppChip
           key={item}
@@ -157,16 +155,16 @@ export default function NeurologyExam() {
           }
         />
       ))}
-    </View>
+    </AppView>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
+    <AppView style={styles.container}>
+      <AppText style={styles.sectionTitle}>
         Mental Status
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Normal",
           "Confused",
@@ -191,11 +189,11 @@ export default function NeurologyExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Cranial Nerves
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -211,9 +209,9 @@ export default function NeurologyExam() {
         fieldLabel="Cranial Findings"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Motor Examination
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -234,12 +232,12 @@ export default function NeurologyExam() {
           "motorFindings"
         ) as string[]) ?? []
       ).includes("Weakness") && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Weakness Location
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Right Upper Limb",
               "Left Upper Limb",
@@ -265,13 +263,13 @@ export default function NeurologyExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Power Grade
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "0",
               "1",
@@ -297,8 +295,8 @@ export default function NeurologyExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
       {(
@@ -306,12 +304,12 @@ export default function NeurologyExam() {
           "motorFindings"
         ) as string[]) ?? []
       ).includes("Tremor") && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Tremor Type
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Resting",
               "Postural",
@@ -334,13 +332,13 @@ export default function NeurologyExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Sensory Examination
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -366,12 +364,12 @@ export default function NeurologyExam() {
           ) as string[]) ?? ["NAD"]
         ).includes("NAD")
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Distribution
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Dermatomal",
               "Peripheral Nerve",
@@ -395,15 +393,15 @@ export default function NeurologyExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Reflexes
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Normal",
           "Hyperreflexia",
@@ -427,13 +425,13 @@ export default function NeurologyExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-            <Text style={styles.sectionTitle}>
+            <AppText style={styles.sectionTitle}>
         Coordination
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Normal",
           "Dysmetria",
@@ -458,13 +456,13 @@ export default function NeurologyExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Gait
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Normal",
           "Hemiplegic",
@@ -488,7 +486,7 @@ export default function NeurologyExam() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <AppTextField
         value={
@@ -506,7 +504,7 @@ export default function NeurologyExam() {
         placeholder="Add other findings..."
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

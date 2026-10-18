@@ -1,5 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
@@ -28,57 +30,57 @@ export default function VisitCard({
 }: Props) {
   return (
     <AppCard>
-      <View style={styles.header}>
-        <View style={styles.dateRow}>
+      <AppView style={styles.header}>
+        <AppView style={styles.dateRow}>
           <Ionicons
             name="calendar-outline"
             size={18}
             color={COLORS.primary}
           />
 
-          <Text style={styles.date}>
+          <AppText style={styles.date}>
             {date}
-          </Text>
-        </View>
-      </View>
+          </AppText>
+        </AppView>
+      </AppView>
 
-      <Text style={styles.complaint}>
+      <AppText style={styles.complaint}>
         {complaint}
-      </Text>
+      </AppText>
 
-      <View style={styles.info}>
+      <AppView style={styles.info}>
         <Ionicons
           name="pulse-outline"
           size={18}
           color={COLORS.secondaryText}
         />
 
-        <Text style={styles.label}>
+        <AppText style={styles.label}>
           Diagnosis
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
-      <Text style={styles.value}>
+      <AppText style={styles.value}>
         {diagnosis}
-      </Text>
+      </AppText>
 
       {!!doctor && (
         <>
-          <View style={styles.info}>
+          <AppView style={styles.info}>
             <Ionicons
               name="person-outline"
               size={18}
               color={COLORS.secondaryText}
             />
 
-            <Text style={styles.label}>
+            <AppText style={styles.label}>
               Doctor
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
 
-          <Text style={styles.value}>
+          <AppText style={styles.value}>
             {doctor}
-          </Text>
+          </AppText>
         </>
       )}
 

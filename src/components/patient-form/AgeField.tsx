@@ -1,9 +1,7 @@
+import AppView from "@/components/common/AppView";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
-import {
-  StyleSheet,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import {
   SPACING,
 } from "@/theme";
@@ -41,9 +39,9 @@ export default function AgeField({
   disabled = false,
 }: Props) {
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       {/* Age Value */}
-      <View
+      <AppView
         pointerEvents={
           disabled ? "none" : "auto"
         }
@@ -59,10 +57,10 @@ export default function AgeField({
           onChangeText={setAge}
           keyboardType="numeric"
         />
-      </View>
+      </AppView>
 
       {/* Age Unit */}
-      <View
+      <AppView
         style={[
           styles.row,
           disabled &&
@@ -84,8 +82,8 @@ export default function AgeField({
             }
           />
         ))}
-      </View>
-    </View>
+      </AppView>
+    </AppView>
   );
 }
 

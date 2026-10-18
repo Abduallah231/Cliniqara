@@ -1,11 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useState } from "react";
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import AppButton from "@/components/common/AppButton";
@@ -327,16 +323,16 @@ export default function DrugHistory() {
       .currentMedications;
 
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       {/* ==================================================
           HYDRATION
       ================================================== */}
       {isHydrating && (
-        <Text
+        <AppText
           style={styles.statusText}
         >
           Loading drug history...
-        </Text>
+        </AppText>
       )}
 
       {/* ==================================================
@@ -346,7 +342,7 @@ export default function DrugHistory() {
         title="Current Medication"
       />
 
-      <View style={styles.card}>
+      <AppView style={styles.card}>
         <AppTextField
           placeholder="Medication Name"
           value={medicationName}
@@ -369,10 +365,10 @@ export default function DrugHistory() {
           }
         />
         
-        <View
+        <AppView
           style={styles.inlineRow}
         >
-          <View
+          <AppView
             style={{ flex: 1 }}
           >
             <AppTextField
@@ -387,9 +383,9 @@ export default function DrugHistory() {
                 !isHydrating
               }
             />
-          </View>
+          </AppView>
 
-          <View
+          <AppView
             style={[
               styles.row,
               {
@@ -452,8 +448,8 @@ export default function DrugHistory() {
                 }
               }}
             />
-          </View>
-        </View>
+          </AppView>
+        </AppView>
 
         <AppTextField
           placeholder="Notes"
@@ -465,13 +461,13 @@ export default function DrugHistory() {
           }
         />
 
-        <Text
+        <AppText
           style={styles.helperText}
         >
           {editingMedicationId
             ? "Tap Update Medication to save your changes."
             : 'Tap "Add Medication" to save this medication.'}
-        </Text>
+        </AppText>
 
         <AppButton
           title={
@@ -489,7 +485,7 @@ export default function DrugHistory() {
             isHydrating
           }
         />
-      </View>
+      </AppView>
 
       {/* ==================================================
           MEDICATION LIST
@@ -501,7 +497,7 @@ export default function DrugHistory() {
             medication.id;
 
           return (
-            <View
+            <AppView
               key={
                 medication.id
               }
@@ -509,7 +505,7 @@ export default function DrugHistory() {
                 styles.medicationCard
               }
             >
-              <Text
+              <AppText
                 style={
                   styles.medicationName
                 }
@@ -517,10 +513,10 @@ export default function DrugHistory() {
                 {
                   medication.medicationName
                 }
-              </Text>
+              </AppText>
 
               {!!medication.dose && (
-                <Text
+                <AppText
                   style={
                     styles.medicationText
                   }
@@ -529,12 +525,12 @@ export default function DrugHistory() {
                   {
                     medication.dose
                   }
-                </Text>
+                </AppText>
               )}
 
               {medication.durationValue !=
                 null && (
-                <Text
+                <AppText
                   style={
                     styles.medicationText
                   }
@@ -546,21 +542,21 @@ export default function DrugHistory() {
                   {
                     medication.durationUnit
                   }
-                </Text>
+                </AppText>
               )}
 
               {!!medication.notes && (
-                <Text
+                <AppText
                   style={
                     styles.medicationText
                   }
                 >
                   Notes:{" "}
                   {medication.notes}
-                </Text>
+                </AppText>
               )}
 
-              <View
+              <AppView
                 style={
                   styles.actionRow
                 }
@@ -661,18 +657,18 @@ export default function DrugHistory() {
                     }
                   />
                 </TouchableOpacity>
-              </View>
+              </AppView>
 
               {isDeleting && (
-                <Text
+                <AppText
                   style={
                     styles.savingText
                   }
                 >
                   Deleting...
-                </Text>
+                </AppText>
               )}
-            </View>
+            </AppView>
           );
         },
       )}
@@ -687,7 +683,7 @@ export default function DrugHistory() {
         title="Compliance"
       />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         <AppChip
           label="Good"
           selected={
@@ -732,7 +728,7 @@ export default function DrugHistory() {
             )
           }
         />
-      </View>
+      </AppView>
 
       {/* ==================================================
           SELF MEDICATION
@@ -744,7 +740,7 @@ export default function DrugHistory() {
         title="Self Medication"
       />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         <AppChip
           label="Yes"
           selected={
@@ -774,7 +770,7 @@ export default function DrugHistory() {
             )
           }
         />
-      </View>
+      </AppView>
 
       {visit.history.drugHistory
         .selfMedication && (
@@ -802,7 +798,7 @@ export default function DrugHistory() {
         title="Herbal / Supplements"
       />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         <AppChip
           label="Yes"
           selected={
@@ -832,7 +828,7 @@ export default function DrugHistory() {
             )
           }
         />
-      </View>
+      </AppView>
 
       {visit.history.drugHistory
         .supplements && (
@@ -854,15 +850,15 @@ export default function DrugHistory() {
           AUTO SAVE STATUS
       ================================================== */}
       {isAutoSaving && (
-        <Text
+        <AppText
           style={
             styles.savingText
           }
         >
           Saving changes...
-        </Text>
+        </AppText>
       )}
-    </View>
+    </AppView>
   );
 }
 

@@ -1,12 +1,8 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, StyleSheet, TouchableOpacity } from "react-native";
 
 import AppButton from "@/components/common/AppButton";
 import AppChip from "@/components/common/AppChip";
@@ -559,7 +555,7 @@ export default function AllergyHistory() {
       .hasAllergy;
 
   return (
-    <View
+    <AppView
       style={styles.container}
     >
       {/* ==================================================
@@ -567,13 +563,13 @@ export default function AllergyHistory() {
       ================================================== */}
 
       {isHydrating && (
-        <Text
+        <AppText
           style={
             styles.statusText
           }
         >
           Loading allergy history...
-        </Text>
+        </AppText>
       )}
 
       {/* ==================================================
@@ -584,7 +580,7 @@ export default function AllergyHistory() {
         title="Any Allergy?"
       />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         <AppChip
           label="Yes"
           selected={
@@ -616,7 +612,7 @@ export default function AllergyHistory() {
             isActionRunning
           }
         />
-      </View>
+      </AppView>
 
       {/* ==================================================
           ALLERGY FORM
@@ -630,7 +626,7 @@ export default function AllergyHistory() {
             title="Type"
           />
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               {
                 label: "Drug",
@@ -669,7 +665,7 @@ export default function AllergyHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           <AppTextField
             label="Allergen"
@@ -710,13 +706,13 @@ export default function AllergyHistory() {
             }
           />
 
-          <Text
+          <AppText
             style={styles.label}
           >
             Severity
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               {
                 label: "Mild",
@@ -756,15 +752,15 @@ export default function AllergyHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text
+          <AppText
             style={styles.helperText}
           >
             {editingAllergyId
               ? "Tap Update Allergy to save your changes."
               : 'Tap "Add Allergy" to save this allergy.'}
-          </Text>
+          </AppText>
 
           {/* ==================================================
               ADD / UPDATE
@@ -799,7 +795,7 @@ export default function AllergyHistory() {
                 allergy.id;
 
               return (
-                <View
+                <AppView
                   key={
                     allergy.id
                   }
@@ -807,7 +803,7 @@ export default function AllergyHistory() {
                     styles.allergyCard
                   }
                 >
-                  <Text
+                  <AppText
                     style={
                       styles.allergyTitle
                     }
@@ -815,9 +811,9 @@ export default function AllergyHistory() {
                     {
                       allergy.allergen
                     }
-                  </Text>
+                  </AppText>
 
-                  <Text
+                  <AppText
                     style={
                       styles.allergyText
                     }
@@ -826,10 +822,10 @@ export default function AllergyHistory() {
                     {allergyTypeLabel(
                       allergy.type,
                     )}
-                  </Text>
+                  </AppText>
 
                   {!!allergy.reaction && (
-                    <Text
+                    <AppText
                       style={
                         styles.allergyText
                       }
@@ -838,21 +834,21 @@ export default function AllergyHistory() {
                       {
                         allergy.reaction
                       }
-                    </Text>
+                    </AppText>
                   )}
 
                   {!!allergy.notes && (
-                    <Text
+                    <AppText
                       style={
                         styles.allergyText
                       }
                     >
                       Notes:{" "}
                       {allergy.notes}
-                    </Text>
+                    </AppText>
                   )}
 
-                  <Text
+                  <AppText
                     style={
                       styles.allergyText
                     }
@@ -861,9 +857,9 @@ export default function AllergyHistory() {
                     {allergySeverityLabel(
                       allergy.severity,
                     )}
-                  </Text>
+                  </AppText>
 
-                  <View
+                  <AppView
                     style={
                       styles.actionRow
                     }
@@ -960,18 +956,18 @@ export default function AllergyHistory() {
                         }
                       />
                     </TouchableOpacity>
-                  </View>
+                  </AppView>
 
                   {isDeleting && (
-                    <Text
+                    <AppText
                       style={
                         styles.savingText
                       }
                     >
                       Deleting...
-                    </Text>
+                    </AppText>
                   )}
-                </View>
+                </AppView>
               );
             },
           )}
@@ -983,15 +979,15 @@ export default function AllergyHistory() {
       ================================================== */}
 
       {isAutoSaving && (
-        <Text
+        <AppText
           style={
             styles.savingText
           }
         >
           Saving changes...
-        </Text>
+        </AppText>
       )}
-    </View>
+    </AppView>
   );
 }
 

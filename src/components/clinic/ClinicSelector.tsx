@@ -1,11 +1,8 @@
-import {
-  Modal,
-  ScrollView,
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-} from "react-native";
+import AppScrollView from "@/components/common/AppScrollView";
+import AppView from "@/components/common/AppView";
+import AppText from "@/components/common/AppText";
+import AppPressable from "@/components/common/AppPressable";
+import { Modal, StyleSheet } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -84,13 +81,13 @@ export default function ClinicSelector({
   return (
     <>
       <AppCard style={styles.card}>
-        <View style={styles.header}>
-          <Text style={styles.title}>
+        <AppView style={styles.header}>
+          <AppText style={styles.title}>
             My Clinics
-          </Text>
+          </AppText>
 
           {clinics.length > 1 && (
-            <Pressable
+            <AppPressable
               style={styles.organizeButton}
               onPress={() =>
                 setOrganizeMode(true)
@@ -102,19 +99,19 @@ export default function ClinicSelector({
                 color={COLORS.primary}
               />
 
-              <Text
+              <AppText
                 style={
                   styles.organizeButtonText
                 }
               >
                 Organize
-              </Text>
-            </Pressable>
+              </AppText>
+            </AppPressable>
           )}
-        </View>
+        </AppView>
 
         {clinics.length > 0 ? (
-          <ScrollView
+          <AppScrollView
             horizontal
             showsHorizontalScrollIndicator={
               false
@@ -129,7 +126,7 @@ export default function ClinicSelector({
                 currentClinic?.clinic.id;
 
               return (
-                <Pressable
+                <AppPressable
                   key={item.clinic.id}
                   style={[
                     styles.clinicRow,
@@ -140,7 +137,7 @@ export default function ClinicSelector({
                     handleSelectClinic(item.clinic.id)
                   }
                 >
-                  <View
+                  <AppView
                     style={styles.icon}
                   >
                     <Ionicons
@@ -150,24 +147,24 @@ export default function ClinicSelector({
                         COLORS.primary
                       }
                     />
-                  </View>
+                  </AppView>
 
-                  <View
+                  <AppView
                     style={styles.info}
                   >
-                    <Text
+                    <AppText
                       style={styles.name}
                       numberOfLines={1}
                     >
                       {item.clinic.name}
-                    </Text>
+                    </AppText>
 
-                    <View
+                    <AppView
                       style={
                         styles.roleBadge
                       }
                     >
-                      <Text
+                      <AppText
                         style={
                           styles.roleBadgeText
                         }
@@ -175,9 +172,9 @@ export default function ClinicSelector({
                         {getRoleLabel(
                           item.role,
                         )}
-                      </Text>
-                    </View>
-                  </View>
+                      </AppText>
+                    </AppView>
+                  </AppView>
 
                   {selected && (
                     <Ionicons
@@ -188,15 +185,15 @@ export default function ClinicSelector({
                       }
                     />
                   )}
-                </Pressable>
+                </AppPressable>
               );
             })}
-          </ScrollView>
+          </AppScrollView>
         ) : (
-          <View
+          <AppView
             style={styles.emptyState}
           >
-            <View
+            <AppView
               style={styles.emptyIcon}
             >
               <Ionicons
@@ -204,25 +201,25 @@ export default function ClinicSelector({
                 size={30}
                 color={COLORS.primary}
               />
-            </View>
+            </AppView>
 
-            <Text
+            <AppText
               style={styles.emptyTitle}
             >
               No Clinic Yet
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               style={styles.emptyText}
             >
               Create a new clinic or join
               an existing clinic using a
               join code.
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
         )}
 
-        <View style={styles.actions}>
+        <AppView style={styles.actions}>
           <AppButton
             title="Create New Clinic"
             icon="add-outline"
@@ -230,7 +227,7 @@ export default function ClinicSelector({
             onPress={onCreateClinic}
           />
 
-          <Pressable
+          <AppPressable
             style={styles.joinButton}
             onPress={onJoinClinic}
           >
@@ -240,15 +237,15 @@ export default function ClinicSelector({
               color={COLORS.primary}
             />
 
-            <Text
+            <AppText
               style={
                 styles.joinButtonText
               }
             >
               Join Existing Clinic
-            </Text>
-          </Pressable>
-        </View>
+            </AppText>
+          </AppPressable>
+        </AppView>
       </AppCard>
 
       <Modal
@@ -259,33 +256,33 @@ export default function ClinicSelector({
           setOrganizeMode(false)
         }
       >
-        <View style={styles.modalOverlay}>
-          <View
+        <AppView style={styles.modalOverlay}>
+          <AppView
             style={styles.organizeModal}
           >
-            <View
+            <AppView
               style={styles.modalHeader}
             >
-              <View>
-                <Text
+              <AppView>
+                <AppText
                   style={
                     styles.modalTitle
                   }
                 >
                   Organize Clinics
-                </Text>
+                </AppText>
 
-                <Text
+                <AppText
                   style={
                     styles.modalSubtitle
                   }
                 >
                   Arrange your clinics in
                   the order you prefer.
-                </Text>
-              </View>
+                </AppText>
+              </AppView>
 
-              <Pressable
+              <AppPressable
                 style={
                   styles.modalCloseButton
                 }
@@ -298,10 +295,10 @@ export default function ClinicSelector({
                   size={22}
                   color={COLORS.text}
                 />
-              </Pressable>
-            </View>
+              </AppPressable>
+            </AppView>
 
-            <ScrollView
+            <AppScrollView
               showsVerticalScrollIndicator={
                 false
               }
@@ -311,27 +308,27 @@ export default function ClinicSelector({
             >
               {clinics.map(
                 (item, index) => (
-                  <View
+                  <AppView
                     key={item.clinic.id}
                     style={
                       styles.organizeRow
                     }
                   >
-                    <View
+                    <AppView
                       style={
                         styles.orderNumber
                       }
                     >
-                      <Text
+                      <AppText
                         style={
                           styles.orderNumberText
                         }
                       >
                         {index + 1}
-                      </Text>
-                    </View>
+                      </AppText>
+                    </AppView>
 
-                    <View
+                    <AppView
                       style={
                         styles.organizeIcon
                       }
@@ -343,23 +340,23 @@ export default function ClinicSelector({
                           COLORS.primary
                         }
                       />
-                    </View>
+                    </AppView>
 
-                    <View
+                    <AppView
                       style={
                         styles.organizeInfo
                       }
                     >
-                      <Text
+                      <AppText
                         style={
                           styles.organizeName
                         }
                         numberOfLines={1}
                       >
                         {item.clinic.name}
-                      </Text>
+                      </AppText>
 
-                      <Text
+                      <AppText
                         style={
                           styles.organizeRole
                         }
@@ -367,15 +364,15 @@ export default function ClinicSelector({
                         {getRoleLabel(
                           item.role,
                         )}
-                      </Text>
-                    </View>
+                      </AppText>
+                    </AppView>
 
-                    <View
+                    <AppView
                       style={
                         styles.moveButtons
                       }
                     >
-                      <Pressable
+                      <AppPressable
                         disabled={
                           index === 0
                         }
@@ -399,9 +396,9 @@ export default function ClinicSelector({
                               : COLORS.primary
                           }
                         />
-                      </Pressable>
+                      </AppPressable>
 
-                      <Pressable
+                      <AppPressable
                         disabled={
                           index ===
                           clinics.length -
@@ -431,14 +428,14 @@ export default function ClinicSelector({
                               : COLORS.primary
                           }
                         />
-                      </Pressable>
-                    </View>
-                  </View>
+                      </AppPressable>
+                    </AppView>
+                  </AppView>
                 ),
               )}
-            </ScrollView>
+            </AppScrollView>
 
-            <Pressable
+            <AppPressable
               style={styles.doneButton}
               onPress={() =>
                 setOrganizeMode(false)
@@ -450,14 +447,14 @@ export default function ClinicSelector({
                 color={COLORS.white}
               />
 
-              <Text
+              <AppText
                 style={styles.doneButtonText}
               >
                 Done
-              </Text>
-            </Pressable>
-          </View>
-        </View>
+              </AppText>
+            </AppPressable>
+          </AppView>
+        </AppView>
       </Modal>
     </>
   );

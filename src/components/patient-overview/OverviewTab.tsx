@@ -1,12 +1,8 @@
+import AppScrollView from "@/components/common/AppScrollView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  useWindowDimensions,
-} from "react-native";
+import { StyleSheet, TouchableOpacity, useWindowDimensions } from "react-native";
 
 import AppCard from "@/components/common/AppCard";
 
@@ -155,33 +151,33 @@ function InfoItem({
   width,
 }: InfoItemProps) {
   return (
-    <View
+    <AppView
       style={[
         styles.infoItem,
         { width },
       ]}
     >
-      <View style={styles.iconContainer}>
+      <AppView style={styles.iconContainer}>
         <Ionicons
           name={icon}
           size={20}
           color={COLORS.primary}
         />
-      </View>
+      </AppView>
 
-      <View style={styles.infoContent}>
-        <Text style={styles.label}>
+      <AppView style={styles.infoContent}>
+        <AppText style={styles.label}>
           {label}
-        </Text>
+        </AppText>
 
-        <Text
+        <AppText
           style={styles.value}
           numberOfLines={2}
         >
           {value}
-        </Text>
-      </View>
-    </View>
+        </AppText>
+      </AppView>
+    </AppView>
   );
 }
 
@@ -229,7 +225,7 @@ export default function OverviewTab({
     columns;
 
   return (
-    <ScrollView
+    <AppScrollView
       style={styles.container}
       contentContainerStyle={
         styles.content
@@ -237,28 +233,28 @@ export default function OverviewTab({
       showsVerticalScrollIndicator={false}
     >
       <AppCard style={styles.card}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>
+        <AppView style={styles.header}>
+          <AppView>
+            <AppText style={styles.title}>
               Patient Information
-            </Text>
+            </AppText>
 
-            <Text style={styles.subtitle}>
+            <AppText style={styles.subtitle}>
               Basic patient details
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
 
-          <View style={styles.headerIcon}>
+          <AppView style={styles.headerIcon}>
             <Ionicons
               name="person-outline"
               size={22}
               color={COLORS.primary}
             />
-          </View>
-        </View>
+          </AppView>
+        </AppView>
 
         {/* Basic Information */}
-        <View style={styles.grid}>
+        <AppView style={styles.grid}>
           <InfoItem
             label="Age"
             value={formatAge(patient)}
@@ -279,7 +275,7 @@ export default function OverviewTab({
             icon="call-outline"
             width={itemWidth}
           />
-        </View>
+        </AppView>
 
         {/* View All */}
         <TouchableOpacity
@@ -291,11 +287,11 @@ export default function OverviewTab({
           }
           activeOpacity={0.7}
         >
-          <Text style={styles.viewAllText}>
+          <AppText style={styles.viewAllText}>
             {showAllPatientInfo
               ? "View Less"
               : "View All"}
-          </Text>
+          </AppText>
 
           <Ionicons
             name={
@@ -310,8 +306,8 @@ export default function OverviewTab({
 
         {/* Additional Information */}
         {showAllPatientInfo && (
-          <View style={styles.additionalInfo}>
-            <View style={styles.grid}>
+          <AppView style={styles.additionalInfo}>
+            <AppView style={styles.grid}>
               <InfoItem
                 label="Patient Code"
                 value={patient.patientCode}
@@ -351,8 +347,8 @@ export default function OverviewTab({
                 icon="location-outline"
                 width={itemWidth}
               />
-            </View>
-          </View>
+            </AppView>
+          </AppView>
         )}
       </AppCard>
 
@@ -363,7 +359,7 @@ export default function OverviewTab({
       <LatestVisitCard
         patientId={patient.id}
       />
-    </ScrollView>
+    </AppScrollView>
   );
 }
 

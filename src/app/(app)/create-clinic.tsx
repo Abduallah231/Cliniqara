@@ -1,11 +1,9 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppScrollView from "@/components/common/AppScrollView";
 import { router } from "expo-router";
 import { useState } from "react";
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Alert, StyleSheet } from "react-native";
+
 
 import AppButton from "@/components/common/AppButton";
 import AppTopBar from "@/components/common/AppTopBar";
@@ -338,7 +336,7 @@ export default function CreateClinicScreen() {
   // ====================================================
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
       edges={["top", "bottom"]}
     >
@@ -353,7 +351,7 @@ export default function CreateClinicScreen() {
         }
       />
 
-      <ScrollView
+      <AppScrollView
         contentContainerStyle={
           styles.content
         }
@@ -398,8 +396,8 @@ export default function CreateClinicScreen() {
           loading={loading}
           onPress={handleCreate}
         />
-      </ScrollView>
-    </SafeAreaView>
+      </AppScrollView>
+    </AppSafeAreaView>
   );
 }
 

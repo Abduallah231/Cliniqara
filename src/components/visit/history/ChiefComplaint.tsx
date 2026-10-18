@@ -1,3 +1,5 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import AppChip from "@/components/common/AppChip";
 import AppDropdown from "@/components/common/AppDropdown";
 import AppTextField from "@/components/common/AppTextField";
@@ -9,23 +11,14 @@ import { useEffect, useRef, useState } from "react";
 import { getClinicChiefComplaints } from "@/services/chiefComplaintApi";
 import { getTopChiefComplaintIds } from "@/services/statisticsApi";
 import {
-  getChiefComplaint,
-  saveChiefComplaint,
-} from "@/services/visitApi";
+  getChiefComplaint, saveChiefComplaint, } from "@/services/visitApi";
 import { useClinicStore } from "@/store/clinicStore";
 import { useVisitStore } from "@/store/visitStore";
 
 import {
-  COLORS,
-  SPACING,
-  TYPOGRAPHY,
-} from "@/theme";
+  COLORS, SPACING, TYPOGRAPHY, } from "@/theme";
 
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 
 export default function ChiefComplaint() {
   const {
@@ -357,18 +350,18 @@ export default function ChiefComplaint() {
    */
 
   return (
-    <View
+    <AppView
       style={{
         gap: SPACING.sm,
       }}
     >
       <SectionHeader title="Chief Complaint" />
 
-      <Text style={styles.subTitle}>
+      <AppText style={styles.subTitle}>
         Quick Selection
-      </Text>
+      </AppText>
 
-      <View style={styles.quickRow}>
+      <AppView style={styles.quickRow}>
         {quickComplaints.map(
           (item) => (
             <AppChip
@@ -389,13 +382,13 @@ export default function ChiefComplaint() {
             />
           )
         )}
-      </View>
+      </AppView>
 
       <Divider />
 
-      <Text style={styles.subTitle}>
+      <AppText style={styles.subTitle}>
         All Chief Complaints
-      </Text>
+      </AppText>
 
       <AppDropdown
         placeholder="Search all complaints..."
@@ -438,7 +431,7 @@ export default function ChiefComplaint() {
         keyboardType="numeric"
       />
 
-      <View
+      <AppView
         style={{
           flexDirection: "row",
           flexWrap: "wrap",
@@ -482,31 +475,31 @@ export default function ChiefComplaint() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
-      <View
+      <AppView
         style={{
           gap: SPACING.xs,
         }}
       >
         <SectionHeader title="Selected Complaint" />
 
-        <View
+        <AppView
           style={
             styles.selectedComplaintBox
           }
         >
-          <Text
+          <AppText
             style={
               styles.selectedComplaintText
             }
           >
             {chiefComplaint.complaintName ||
               "No complaint selected"}
-          </Text>
-        </View>
-      </View>
-    </View>
+          </AppText>
+        </AppView>
+      </AppView>
+    </AppView>
   );
 }
 

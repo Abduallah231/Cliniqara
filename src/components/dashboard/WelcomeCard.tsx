@@ -1,10 +1,6 @@
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -31,29 +27,29 @@ export default function WelcomeCard({
 }: Props) {
   return (
     <AppCard style={[styles.card, style]}>
-      <Text style={styles.greeting}>
+      <AppText style={styles.greeting}>
         Welcome back
-      </Text>
+      </AppText>
 
-      <Text style={styles.name}>
+      <AppText style={styles.name}>
         {doctorName}
-      </Text>
+      </AppText>
 
-      <Text style={styles.specialty}>
+      <AppText style={styles.specialty}>
         {specialty}
-      </Text>
+      </AppText>
 
-      <View style={styles.clinicRow}>
+      <AppView style={styles.clinicRow}>
         <Ionicons
           name="business-outline"
           size={20}
           color={COLORS.primary}
         />
 
-        <Text style={styles.clinicName}>
+        <AppText style={styles.clinicName}>
           {clinicName}
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
     </AppCard>
   );
 }

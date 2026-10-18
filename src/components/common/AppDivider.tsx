@@ -1,9 +1,5 @@
-import {
-    StyleProp,
-    StyleSheet,
-    View,
-    ViewStyle,
-} from "react-native";
+import AppView from "@/components/common/AppView";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import {
     COLORS,
@@ -18,7 +14,7 @@ export default function AppDivider({
   style,
 }: Props) {
   return (
-    <View
+    <AppView
       style={[
         styles.container,
         style,

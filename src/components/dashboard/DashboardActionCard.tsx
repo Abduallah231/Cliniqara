@@ -1,11 +1,7 @@
-import {
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-} from "react-native";
+import AppPressable from "@/components/common/AppPressable";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -55,7 +51,7 @@ export default function DashboardActionCard({
   const theme = getVariant(variant);
 
   return (
-    <Pressable
+    <AppPressable
       onPress={onPress}
       android_ripple={{
         color: theme.accent + "18",
@@ -79,7 +75,7 @@ export default function DashboardActionCard({
           style,
         ]}
       >
-        <View
+        <AppView
           style={[
             styles.circle1,
             {
@@ -88,7 +84,7 @@ export default function DashboardActionCard({
           ]}
         />
 
-        <View
+        <AppView
           style={[
             styles.circle2,
             {
@@ -97,8 +93,8 @@ export default function DashboardActionCard({
           ]}
         />
 
-        <View style={styles.content}>
-          <View
+        <AppView style={styles.content}>
+          <AppView
             style={[
               styles.iconContainer,
               {
@@ -111,10 +107,10 @@ export default function DashboardActionCard({
               size={26}
               color={theme.accent}
             />
-          </View>
+          </AppView>
 
-          <View style={styles.textContainer}>
-            <Text
+          <AppView style={styles.textContainer}>
+            <AppText
               numberOfLines={compact ? 2 : 1}
               style={[
                 styles.title,
@@ -125,15 +121,15 @@ export default function DashboardActionCard({
               ]}
             >
               {title}
-            </Text>
+            </AppText>
 
-            <Text
+            <AppText
               numberOfLines={2}
               style={styles.subtitle}
             >
               {subtitle}
-            </Text>
-          </View>
+            </AppText>
+          </AppView>
 
           {!compact && (
             <Ionicons
@@ -142,9 +138,9 @@ export default function DashboardActionCard({
               color={theme.accent}
             />
           )}
-        </View>
+        </AppView>
       </AppCard>
-    </Pressable>
+    </AppPressable>
   );
 }
 

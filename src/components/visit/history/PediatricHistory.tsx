@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useEffect, useRef, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
@@ -246,14 +244,14 @@ export default function PediatricHistory() {
    * to hide the form.
    */
   return (
-    <View style={styles.container}>
+    <AppView style={styles.container}>
       <SectionHeader title="Prenatal History" />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Antenatal Care
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           {
             label: "Regular",
@@ -287,7 +285,7 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.antenatalCare ===
         "IRREGULAR" && (
@@ -307,11 +305,11 @@ export default function PediatricHistory() {
 
       <Divider />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Maternal Illnesses
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "None",
           "Diabetes",
@@ -334,7 +332,7 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.maternalIllnesses.includes(
         "Other",
@@ -355,11 +353,11 @@ export default function PediatricHistory() {
 
       <Divider />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Pregnancy Complications
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "PIH",
           "GDM",
@@ -383,7 +381,7 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.pregnancyComplications.includes(
         "Other",
@@ -404,11 +402,11 @@ export default function PediatricHistory() {
 
       <Divider />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Drug Intake During Pregnancy
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {["No", "Yes"].map((item) => (
           <AppChip
             key={item}
@@ -425,7 +423,7 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.drugIntake ===
         true && (
@@ -445,11 +443,11 @@ export default function PediatricHistory() {
 
       <Divider />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Smoking Exposure
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           {
             label: "No",
@@ -480,15 +478,15 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <Divider />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Alcohol Exposure
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {["No", "Yes"].map((item) => (
           <AppChip
             key={item}
@@ -505,7 +503,7 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.alcoholExposure ===
         true && (
@@ -527,11 +525,11 @@ export default function PediatricHistory() {
 
       <SectionHeader title="Birth History" />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Gestational Age
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           {
             label: "Term",
@@ -565,7 +563,7 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.gestationalAge ===
         "PRETERM" && (
@@ -589,11 +587,11 @@ export default function PediatricHistory() {
 
       <Divider />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Delivery Mode
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           {
             label: "Normal Vaginal",
@@ -630,13 +628,13 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <Divider />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Birth Weight (g)
-      </Text>
+      </AppText>
 
       <AppTextField
         value={
@@ -659,7 +657,7 @@ export default function PediatricHistory() {
 
       <SectionHeader title="NICU Admission" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {["No", "Yes"].map((item) => (
           <AppChip
             key={item}
@@ -676,11 +674,11 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.nicuAdmission ===
         true && (
-        <View style={styles.box}>
+        <AppView style={styles.box}>
           <AppTextField
             value={
               pediatricHistory.nicuReason
@@ -710,14 +708,14 @@ export default function PediatricHistory() {
             placeholder="NICU Duration (days)"
             keyboardType="numeric"
           />
-        </View>
+        </AppView>
       )}
 
       <Divider />
 
       <SectionHeader title="Birth Complications" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "None",
           "Birth Asphyxia",
@@ -740,7 +738,7 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.birthComplications.includes(
         "Other",
@@ -763,11 +761,11 @@ export default function PediatricHistory() {
 
       <SectionHeader title="Neonatal History" />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Neonatal Jaundice
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {["No", "Yes"].map((item) => (
           <AppChip
             key={item}
@@ -784,18 +782,18 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.neonatalJaundice ===
         true && (
         <>
           <Divider />
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Phototherapy
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {["No", "Yes"].map(
               (item) => (
                 <AppChip
@@ -815,15 +813,15 @@ export default function PediatricHistory() {
                 />
               ),
             )}
-          </View>
+          </AppView>
 
           <Divider />
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Exchange Transfusion
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {["No", "Yes"].map(
               (item) => (
                 <AppChip
@@ -844,17 +842,17 @@ export default function PediatricHistory() {
                 />
               ),
             )}
-          </View>
+          </AppView>
         </>
       )}
 
       <Divider />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Neonatal Seizures
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {["No", "Yes"].map((item) => (
           <AppChip
             key={item}
@@ -871,17 +869,17 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <Divider />
 
       <SectionHeader title="Feeding History" />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Feeding Type
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           "Breastfeeding",
           "Formula Feeding",
@@ -902,13 +900,13 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       <Divider />
 
       <SectionHeader title="Developmental History" />
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {[
           {
             label: "Normal",
@@ -938,16 +936,16 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.development ===
         "DELAYED" && (
-        <View style={styles.box}>
-          <Text style={styles.label}>
+        <AppView style={styles.box}>
+          <AppText style={styles.label}>
             Delay Type
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               {
                 label: "Gross Motor",
@@ -990,7 +988,7 @@ export default function PediatricHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           <AppTextField
             value={
@@ -1004,18 +1002,18 @@ export default function PediatricHistory() {
             }
             placeholder="Delay Details"
           />
-        </View>
+        </AppView>
       )}
 
       <Divider />
 
       <SectionHeader title="School History" />
 
-      <Text style={styles.label}>
+      <AppText style={styles.label}>
         Attends School
-      </Text>
+      </AppText>
 
-      <View style={styles.row}>
+      <AppView style={styles.row}>
         {["Yes", "No"].map((item) => (
           <AppChip
             key={item}
@@ -1032,11 +1030,11 @@ export default function PediatricHistory() {
             }
           />
         ))}
-      </View>
+      </AppView>
 
       {pediatricHistory.attendsSchool ===
         true && (
-        <View style={styles.box}>
+        <AppView style={styles.box}>
           <AppTextField
             value={
               pediatricHistory.grade
@@ -1050,11 +1048,11 @@ export default function PediatricHistory() {
             placeholder="School Grade"
           />
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             School Performance
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               {
                 label: "Good",
@@ -1087,7 +1085,7 @@ export default function PediatricHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           {pediatricHistory.schoolPerformance ===
             "POOR" && (
@@ -1105,11 +1103,11 @@ export default function PediatricHistory() {
             />
           )}
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             School Attendance
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               {
                 label: "Regular",
@@ -1137,7 +1135,7 @@ export default function PediatricHistory() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
           {pediatricHistory.schoolAttendance ===
             "IRREGULAR" && (
@@ -1154,9 +1152,9 @@ export default function PediatricHistory() {
               placeholder="Reason"
             />
           )}
-        </View>
+        </AppView>
       )}
-    </View>
+    </AppView>
   );
 }
 

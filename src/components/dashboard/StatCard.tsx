@@ -1,10 +1,6 @@
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  View,
-  ViewStyle,
-} from "react-native";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
+import { StyleProp, StyleSheet, ViewStyle } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -36,8 +32,8 @@ export default function StatCard({
 }: Props) {
   return (
     <AppCard style={[styles.card, style]}>
-      <View style={styles.header}>
-        <View
+      <AppView style={styles.header}>
+        <AppView
           style={[
             styles.iconContainer,
             {
@@ -50,27 +46,27 @@ export default function StatCard({
             size={22}
             color={color}
           />
-        </View>
+        </AppView>
 
-        <Text
+        <AppText
           numberOfLines={2}
           style={styles.title}
         >
           {title}
-        </Text>
-      </View>
+        </AppText>
+      </AppView>
 
-      <Text style={styles.value}>
+      <AppText style={styles.value}>
         {value}
-      </Text>
+      </AppText>
 
       {!!subtitle && (
-        <Text
+        <AppText
           numberOfLines={1}
           style={styles.subtitle}
         >
           {subtitle}
-        </Text>
+        </AppText>
       )}
     </AppCard>
   );

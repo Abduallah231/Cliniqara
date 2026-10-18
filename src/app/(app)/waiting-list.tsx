@@ -1,19 +1,10 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppView from "@/components/common/AppView";
 import { router } from "expo-router";
 import {
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from "react-native";
-import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
+  useCallback, useMemo, useState, } from "react";
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet } from "react-native";
+
 import {
   useFocusEffect,
 } from "expo-router";
@@ -376,7 +367,7 @@ export default function WaitingListScreen() {
     ).length;
 
   return (
-    <SafeAreaView
+    <AppSafeAreaView
       style={styles.container}
       edges={[
         "top",
@@ -398,7 +389,7 @@ export default function WaitingListScreen() {
       />
 
       {loading ? (
-        <View
+        <AppView
           style={
             styles.loadingContainer
           }
@@ -409,7 +400,7 @@ export default function WaitingListScreen() {
               COLORS.primary
             }
           />
-        </View>
+        </AppView>
       ) : (
         <FlatList
           data={filteredPatients}
@@ -441,7 +432,7 @@ export default function WaitingListScreen() {
                 }
               />
 
-              <View
+              <AppView
                 style={
                   styles.headerGap
                 }
@@ -470,7 +461,7 @@ export default function WaitingListScreen() {
             />
           )}
           ItemSeparatorComponent={() => (
-            <View
+            <AppView
               style={
                 styles.separator
               }
@@ -493,7 +484,7 @@ export default function WaitingListScreen() {
           }
         />
       )}
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 

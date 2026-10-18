@@ -1,9 +1,7 @@
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useVisitStore } from "@/store/visitStore";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import {
@@ -135,7 +133,7 @@ export default function CVSExam() {
     fieldId: string;
     fieldLabel: string;
   }) => (
-    <View style={styles.row}>
+    <AppView style={styles.row}>
       {items.map((item) => (
         <AppChip
           key={item}
@@ -155,14 +153,14 @@ export default function CVSExam() {
           }
         />
       ))}
-    </View>
+    </AppView>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>
+    <AppView style={styles.container}>
+      <AppText style={styles.sectionTitle}>
         Neck
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -203,9 +201,9 @@ export default function CVSExam() {
         />
       )}
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Inspection
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -220,9 +218,9 @@ export default function CVSExam() {
         fieldLabel="Inspection Findings"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Palpation
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -235,9 +233,9 @@ export default function CVSExam() {
         fieldLabel="Palpation Findings"
       />
 
-      <Text style={styles.sectionTitle}>
+      <AppText style={styles.sectionTitle}>
         Auscultation
-      </Text>
+      </AppText>
 
       <ChipGroup
         items={[
@@ -258,12 +256,12 @@ export default function CVSExam() {
       ).includes(
         "Murmur"
       ) && (
-        <View style={styles.group}>
-          <Text style={styles.label}>
+        <AppView style={styles.group}>
+          <AppText style={styles.label}>
             Timing
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Systolic",
               "Diastolic",
@@ -286,13 +284,13 @@ export default function CVSExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Grade
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "I",
               "II",
@@ -318,13 +316,13 @@ export default function CVSExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Best Heard At
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Aortic",
               "Pulmonary",
@@ -348,13 +346,13 @@ export default function CVSExam() {
                 }
               />
             ))}
-          </View>
+          </AppView>
 
-          <Text style={styles.label}>
+          <AppText style={styles.label}>
             Radiation
-          </Text>
+          </AppText>
 
-          <View style={styles.row}>
+          <AppView style={styles.row}>
             {[
               "Neck",
               "Axilla",
@@ -378,8 +376,8 @@ export default function CVSExam() {
                 }
               />
             ))}
-          </View>
-        </View>
+          </AppView>
+        </AppView>
       )}
 
             <AppTextField
@@ -398,7 +396,7 @@ export default function CVSExam() {
         }
         multiline
       />
-    </View>
+    </AppView>
   );
 }
 

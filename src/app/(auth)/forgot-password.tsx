@@ -1,11 +1,10 @@
+import AppSafeAreaView from "@/components/common/AppSafeAreaView";
+import AppText from "@/components/common/AppText";
+import AppView from "@/components/common/AppView";
 import { useState } from "react";
 import { router } from "expo-router";
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 
 import AppButton from "@/components/common/AppButton";
@@ -24,32 +23,32 @@ export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
 
   return (
-    <SafeAreaView style={styles.container}>
+    <AppSafeAreaView style={styles.container}>
       <AppKeyboardAwareScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <View style={styles.logo}>
+        <AppView style={styles.header}>
+          <AppView style={styles.logo}>
             <Ionicons
               name="lock-open"
               size={40}
               color={COLORS.primary}
             />
-          </View>
+          </AppView>
 
-          <Text style={styles.title}>
+          <AppText style={styles.title}>
             Forgot Password
-          </Text>
+          </AppText>
 
-          <Text style={styles.subtitle}>
+          <AppText style={styles.subtitle}>
             Enter your email to receive a reset link.
-          </Text>
-        </View>
+          </AppText>
+        </AppView>
 
         <AppCard style={styles.card}>
-          <View style={styles.form}>
+          <AppView style={styles.form}>
             <AppTextField
               label="Email"
               placeholder="Enter your email"
@@ -62,17 +61,17 @@ export default function ForgotPasswordScreen() {
               title="Send Reset Link"
               onPress={() => {}}
             />
-          </View>
+          </AppView>
         </AppCard>
 
-        <View style={styles.footer}>
+        <AppView style={styles.footer}>
           <AppButton
             title="Back to Login"
             onPress={() => router.back()}
           />
-        </View>
+        </AppView>
       </AppKeyboardAwareScrollView>
-    </SafeAreaView>
+    </AppSafeAreaView>
   );
 }
 
