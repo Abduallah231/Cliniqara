@@ -7,7 +7,7 @@ import type {
   PatientVisitSummary,
 } from "@/types/visit";
 
-import { api } from "./api";
+import { localVisitApi as api } from "./localVisitApi";
 
 // ======================================================
 // Shared

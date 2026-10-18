@@ -13,7 +13,6 @@ import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 import AppTextField from "@/components/common/AppTextField";
-import { saveGuestSession } from "@/services/authStorage";
 import {
   COLORS,
   SHADOW,
@@ -200,14 +199,6 @@ export default function LoginScreen() {
               loading={loading}
             />
 
-            <AppButton
-              title="Continue as Guest"
-              variant="secondary"
-              onPress={async () => {
-                await saveGuestSession();
-                router.replace("/splash");
-              }}
-            />
           </View>
         </AppCard>
 

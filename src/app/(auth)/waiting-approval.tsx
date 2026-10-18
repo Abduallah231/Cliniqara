@@ -11,7 +11,6 @@ import AppButton from "@/components/common/AppButton";
 import AppCard from "@/components/common/AppCard";
 import AppKeyboardAwareScrollView from "@/components/common/AppKeyboardAwareScrollView";
 
-import { saveGuestSession } from "@/services/authStorage";
 
 import {
   COLORS,
@@ -83,30 +82,10 @@ export default function WaitingApprovalScreen() {
                 />
 
                 <Text style={styles.infoText}>
-                  You can continue using Cliniqara in Guest Mode.
-                </Text>
-              </View>
-
-              <View style={styles.infoItem}>
-                <Ionicons
-                  name="checkmark-circle-outline"
-                  size={20}
-                  color={COLORS.primary}
-                />
-
-                <Text style={styles.infoText}>
                   Your account will unlock automatically after approval.
                 </Text>
               </View>
             </AppCard>
-
-            <AppButton
-              title="Continue as Guest"
-              onPress={async () => {
-                await saveGuestSession();
-                router.replace("/(app)");
-              }}
-            />
 
             <AppButton
               title="Logout"
@@ -229,4 +208,4 @@ const styles = StyleSheet.create({
     color: COLORS.secondaryText,
     lineHeight: 22,
   },
-});            
+});

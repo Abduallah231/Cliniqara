@@ -1,8 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDoctorStore } from "@/store/doctorStore";
 import { useClinicStore } from "@/store/clinicStore";
+import { deleteLocalRecord } from "./localDatabase";
 const ACCESS_TOKEN_KEY = "accessToken";
-const GUEST_MODE_KEY = "guestMode";
 const REFRESH_TOKEN_KEY = "refreshToken";
 class SessionService {
   async saveTokens(accessToken: string, refreshToken: string): Promise<void> {
@@ -29,8 +29,8 @@ class SessionService {
     await AsyncStorage.multiRemove([
       ACCESS_TOKEN_KEY,
       REFRESH_TOKEN_KEY,
-      GUEST_MODE_KEY,
     ]);
+    await deleteLocalRecord("auth_user", "current").catch(() => undefined);
 
     useDoctorStore
       .getState()
@@ -40,19 +40,6 @@ class SessionService {
       .getState()
       .clearClinics();
   }
-  async enableGuestMode(): Promise<void> {
-    await AsyncStorage.setItem(GUEST_MODE_KEY, "true");
-  }
-
-  async disableGuestMode(): Promise<void> {
-    await AsyncStorage.removeItem(GUEST_MODE_KEY);
-  }
-
-  async isGuestMode(): Promise<boolean> {
-    const value = await AsyncStorage.getItem(GUEST_MODE_KEY);
-    return value === "true";
-  }
-
   async logout(): Promise<void> {
     await this.clearSession();
   }

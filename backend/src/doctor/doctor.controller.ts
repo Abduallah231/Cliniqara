@@ -8,8 +8,6 @@ import { Body, Put } from "@nestjs/common";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { DoctorService } from "./doctor.service";
-import { Post } from "@nestjs/common";
-import { UpgradeDoctorDto } from "./dto/upgrade-doctor.dto";
 
 @Controller("doctor")
 @UseGuards(JwtAuthGuard)
@@ -35,15 +33,4 @@ export class DoctorController {
       dto,
     );
   }
-
-  @Post("upgrade")
-  upgrade(
-    @Req() req: any,
-    @Body() dto: UpgradeDoctorDto,
-  ) {
-    return this.doctorService.upgradeToDoctor(
-      req.user.id,
-      dto,
-    );
-  }
-  }
+}

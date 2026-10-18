@@ -1,5 +1,7 @@
 import { api } from "./api";
 import SessionService from "./session.service";
+import { getLocalRecord, putLocalRecord } from "./localDatabase";
+import { AUTH_ENABLED } from "@/config/features";
 
 export type RegisterDto = {
   fullName: string;
@@ -8,7 +10,7 @@ export type RegisterDto = {
   password: string;
 
   accountType: "DOCTOR" | "RECEPTION";
-  doctorLevel?: "INTERN" | "DOCTOR";
+  doctorLevel?: "DOCTOR";
 
   nationalId?: string;
 
@@ -23,6 +25,9 @@ export type RegisterDto = {
 };
 
 export async function register(dto: RegisterDto) {
+  if (!AUTH_ENABLED) {
+    throw new Error("Account registration is disabled in offline mode.");
+  }
   const { data } = await api.post("/auth/register", dto);
   return data;
 }
@@ -31,6 +36,9 @@ export async function login(
   email: string,
   password: string
 ) {
+  if (!AUTH_ENABLED) {
+    throw new Error("Login is disabled in offline mode.");
+  }
   const { data } = await api.post("/auth/login", {
     email,
     password,
@@ -41,5 +49,17 @@ export async function login(
     data.refreshToken,
   );
 
+  if (data.user?.id) {
+    await putLocalRecord({
+      collection: "auth_user",
+      id: "current",
+      value: data.user,
+    });
+  }
+
   return data;
+}
+
+export async function getCachedUser() {
+  return (await getLocalRecord<Record<string, unknown>>("auth_user", "current"))?.value ?? null;
 }

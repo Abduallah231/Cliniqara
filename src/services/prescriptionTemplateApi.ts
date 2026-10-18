@@ -1,4 +1,43 @@
-import { api } from "./api";
+import { getLocalRecord, listLocalRecords, putLocalRecord } from "./localDatabase";
+import { useDoctorStore } from "@/store/doctorStore";
+
+const localId = () => `local-template-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const clinicTemplates = async (clinicId?: string) => (await listLocalRecords<PrescriptionTemplate>("prescription_templates")).map((row) => row.value).filter((item) => item.isActive && (clinicId ? item.scope === "CLINIC" && item.clinicId === clinicId : item.scope === "USER" && item.userId === useDoctorStore.getState().doctor?.id));
+const clinicFolders = async (clinicId?: string) => (await listLocalRecords<PrescriptionTemplateFolder>("prescription_template_folders")).map((row) => row.value).filter((item) => item.isActive && (clinicId ? item.scope === "CLINIC" && item.clinicId === clinicId : item.scope === "USER" && item.userId === useDoctorStore.getState().doctor?.id));
+async function createTemplate(scope: "USER" | "CLINIC", clinicId: string | undefined, dto: CreatePrescriptionTemplateInput): Promise<PrescriptionTemplate> {
+  const now = new Date().toISOString();
+  const template: PrescriptionTemplate = {
+    ...dto,
+    id: localId(),
+    scope,
+    userId: scope === "USER" ? useDoctorStore.getState().doctor?.id : null,
+    clinicId: clinicId ?? null,
+    folderId: dto.folderId ?? null,
+    advice: dto.advice ?? null,
+    notes: dto.notes ?? null,
+    followUp: dto.followUp ?? null,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+    medications: dto.medications.map((medication, index) => ({
+      id: localId(), drugId: medication.drugId, medication: medication.drugId,
+      instructions: medication.instructions, durationValue: medication.durationValue ?? null,
+      durationUnit: medication.durationUnit ?? null, sortOrder: medication.sortOrder ?? index,
+    })),
+  };
+  await putLocalRecord({ collection: "prescription_templates", id: template.id, clinicId, value: template });
+  return template;
+}
+async function createFolder(scope: "USER" | "CLINIC", clinicId: string | undefined, dto: CreatePrescriptionTemplateFolderInput): Promise<PrescriptionTemplateFolder> {
+  const now = new Date().toISOString();
+  const folder: PrescriptionTemplateFolder = {
+    id: localId(), name: dto.name.trim(), scope,
+    userId: scope === "USER" ? useDoctorStore.getState().doctor?.id : null,
+    clinicId: clinicId ?? null, isActive: true, createdAt: now, updatedAt: now,
+  };
+  await putLocalRecord({ collection: "prescription_template_folders", id: folder.id, clinicId, value: folder });
+  return folder;
+}
 
 export type PrescriptionTemplateScope =
   | "USER"
@@ -92,47 +131,25 @@ export type UpdatePrescriptionTemplateFolderInput = {
 export async function getUserTemplates(): Promise<
   PrescriptionTemplate[]
 > {
-  const { data } = await api.get(
-    "/prescription-templates/user",
-  );
-
-  return data;
+  return clinicTemplates();
 }
 
 export async function createUserTemplate(
   dto: CreatePrescriptionTemplateInput,
 ): Promise<PrescriptionTemplate> {
-  const { data } = await api.post(
-    "/prescription-templates/user",
-    dto,
-  );
-
-  return data;
+  return createTemplate("USER", undefined, dto);
 }
 
 export async function getUserTemplateFolders(): Promise<
   PrescriptionTemplateFolder[]
 > {
-  const { data } = await api.get(
-    "/prescription-templates/user/folders",
-  );
-
-  /*
-   * The backend returns folders with their templates.
-   * We only need the folder information here.
-   */
-  return data;
+  return clinicFolders();
 }
 
 export async function createUserTemplateFolder(
   dto: CreatePrescriptionTemplateFolderInput,
 ): Promise<PrescriptionTemplateFolder> {
-  const { data } = await api.post(
-    "/prescription-templates/user/folders",
-    dto,
-  );
-
-  return data;
+  return createFolder("USER", undefined, dto);
 }
 
 // ======================================================
@@ -142,45 +159,27 @@ export async function createUserTemplateFolder(
 export async function getClinicTemplates(
   clinicId: string,
 ): Promise<PrescriptionTemplate[]> {
-  const { data } = await api.get(
-    `/prescription-templates/clinic/${clinicId}`,
-  );
-
-  return data;
+  return clinicTemplates(clinicId);
 }
 
 export async function createClinicTemplate(
   clinicId: string,
   dto: CreatePrescriptionTemplateInput,
 ): Promise<PrescriptionTemplate> {
-  const { data } = await api.post(
-    `/prescription-templates/clinic/${clinicId}`,
-    dto,
-  );
-
-  return data;
+  return createTemplate("CLINIC", clinicId, dto);
 }
 
 export async function getClinicTemplateFolders(
   clinicId: string,
 ): Promise<PrescriptionTemplateFolder[]> {
-  const { data } = await api.get(
-    `/prescription-templates/clinic/${clinicId}/folders`,
-  );
-
-  return data;
+  return clinicFolders(clinicId);
 }
 
 export async function createClinicTemplateFolder(
   clinicId: string,
   dto: CreatePrescriptionTemplateFolderInput,
 ): Promise<PrescriptionTemplateFolder> {
-  const { data } = await api.post(
-    `/prescription-templates/clinic/${clinicId}/folders`,
-    dto,
-  );
-
-  return data;
+  return createFolder("CLINIC", clinicId, dto);
 }
 
 // ======================================================
@@ -190,21 +189,13 @@ export async function createClinicTemplateFolder(
 export async function getGlobalTemplates(): Promise<
   PrescriptionTemplate[]
 > {
-  const { data } = await api.get(
-    "/prescription-templates/global",
-  );
-
-  return data;
+  return (await listLocalRecords<PrescriptionTemplate>("prescription_templates")).map((row) => row.value).filter((item) => item.scope === "GLOBAL" && item.isActive);
 }
 
 export async function getGlobalTemplateFolders(): Promise<
   PrescriptionTemplateFolder[]
 > {
-  const { data } = await api.get(
-    "/prescription-templates/global/folders",
-  );
-
-  return data;
+  return (await listLocalRecords<PrescriptionTemplateFolder>("prescription_template_folders")).map((row) => row.value).filter((item) => item.scope === "GLOBAL" && item.isActive);
 }
 
 // ======================================================
@@ -214,33 +205,25 @@ export async function getGlobalTemplateFolders(): Promise<
 export async function getPrescriptionTemplate(
   templateId: string,
 ): Promise<PrescriptionTemplate> {
-  const { data } = await api.get(
-    `/prescription-templates/${templateId}`,
-  );
-
-  return data;
+  const template = await getLocalRecord<PrescriptionTemplate>("prescription_templates", templateId);
+  if (!template) throw new Error("Template not found on this device");
+  return template.value;
 }
 
 export async function updatePrescriptionTemplate(
   templateId: string,
   dto: UpdatePrescriptionTemplateInput,
 ): Promise<PrescriptionTemplate> {
-  const { data } = await api.patch(
-    `/prescription-templates/${templateId}`,
-    dto,
-  );
-
-  return data;
+  const current = await getPrescriptionTemplate(templateId);
+  const updated = { ...current, ...dto, updatedAt: new Date().toISOString() };
+  await putLocalRecord({ collection: "prescription_templates", id: templateId, clinicId: current.clinicId, value: updated });
+  return updated;
 }
 
 export async function deactivatePrescriptionTemplate(
   templateId: string,
 ) {
-  const { data } = await api.delete(
-    `/prescription-templates/${templateId}`,
-  );
-
-  return data;
+  return updatePrescriptionTemplate(templateId, { isActive: false });
 }
 
 // ======================================================
@@ -251,20 +234,15 @@ export async function updatePrescriptionTemplateFolder(
   folderId: string,
   dto: UpdatePrescriptionTemplateFolderInput,
 ): Promise<PrescriptionTemplateFolder> {
-  const { data } = await api.patch(
-    `/prescription-templates/folders/${folderId}`,
-    dto,
-  );
-
-  return data;
+  const current = await getLocalRecord<PrescriptionTemplateFolder>("prescription_template_folders", folderId);
+  if (!current) throw new Error("Folder not found on this device");
+  const updated = { ...current.value, ...dto, updatedAt: new Date().toISOString() };
+  await putLocalRecord({ collection: "prescription_template_folders", id: folderId, clinicId: current.clinicId, value: updated });
+  return updated;
 }
 
 export async function deactivatePrescriptionTemplateFolder(
   folderId: string,
 ) {
-  const { data } = await api.delete(
-    `/prescription-templates/folders/${folderId}`,
-  );
-
-  return data;
+  return updatePrescriptionTemplateFolder(folderId, { isActive: false });
 }

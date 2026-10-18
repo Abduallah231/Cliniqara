@@ -34,7 +34,7 @@ import {
 } from "@/data/doctorOptions";
 
 type UserRole = "DOCTOR" | "RECEPTION";
-type DoctorLevel = "INTERN" | "DOCTOR";
+type DoctorLevel = "DOCTOR";
 
 export default function CreateAccountScreen() {
   const [step, setStep] = useState(1);
@@ -42,8 +42,7 @@ export default function CreateAccountScreen() {
   const [role, setRole] =
     useState<UserRole>("DOCTOR");
   
-  const [doctorLevel, setDoctorLevel] =
-  useState<DoctorLevel>("DOCTOR");
+  const doctorLevel: DoctorLevel = "DOCTOR";
 
   const [fullName, setFullName] =
     useState("");
@@ -635,90 +634,6 @@ export default function CreateAccountScreen() {
                 Professional Information
               </Text>
 
-              <Text style={styles.sectionTitle}>
-                Doctor Level
-              </Text>
-
-              <View style={styles.roleContainer}>
-                <Pressable
-                  style={[
-                    styles.roleCard,
-                    doctorLevel === "INTERN" &&
-                      styles.roleCardActive,
-                  ]}
-                  onPress={() =>
-                    setDoctorLevel("INTERN")
-                  }
-                >
-                  <Ionicons
-                    name="school-outline"
-                    size={34}
-                    color={
-                      doctorLevel === "INTERN"
-                        ? COLORS.primary
-                        : COLORS.secondaryText
-                    }
-                  />
-
-                  <View style={styles.roleContent}>
-                    <Text style={styles.roleTitle}>
-                      Intern
-                    </Text>
-
-                    <Text style={styles.roleSubtitle}>
-                      Student & Intern • No Medical License Required • Limited Access
-                    </Text>
-                  </View>
-
-                  {doctorLevel === "INTERN" && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={24}
-                      color={COLORS.primary}
-                    />
-                  )}
-                </Pressable>
-
-                <Pressable
-                  style={[
-                    styles.roleCard,
-                    doctorLevel === "DOCTOR" &&
-                      styles.roleCardActive,
-                  ]}
-                  onPress={() =>
-                    setDoctorLevel("DOCTOR")
-                  }
-                >
-                  <Ionicons
-                    name="medkit-outline"
-                    size={34}
-                    color={
-                      doctorLevel === "DOCTOR"
-                        ? COLORS.primary
-                        : COLORS.secondaryText
-                    }
-                  />
-
-                  <View style={styles.roleContent}>
-                    <Text style={styles.roleTitle}>
-                      Licensed Doctor
-                    </Text>
-
-                    <Text style={styles.roleSubtitle}>
-                      Medical License Required • Full Access
-                    </Text>
-                  </View>
-
-                  {doctorLevel === "DOCTOR" && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={24}
-                      color={COLORS.primary}
-                    />
-                  )}
-                </Pressable>
-              </View>
-
               {doctorLevel === "DOCTOR" && (
                 <>
                   <AppTextField
@@ -846,22 +761,9 @@ export default function CreateAccountScreen() {
                 {role === "DOCTOR" && (
                   <>
                     <View style={styles.reviewRow}>
-                      <Text style={styles.reviewLabel}>Doctor Level</Text>
-                      <Text style={styles.reviewValue}>
-                        {doctorLevel === "DOCTOR"
-                          ? "Licensed Doctor"
-                          : "Intern"}
-                      </Text>
-                    </View>
-
-                    <View style={styles.reviewRow}>
                       <Text style={styles.reviewLabel}>Medical License</Text>
                       <Text style={styles.reviewValue}>
-                        {doctorLevel === "DOCTOR"
-                          ? medicalLicenseImage
-                            ? "Uploaded"
-                            : "Not Uploaded"
-                          : "Not Required"}
+                        {medicalLicenseImage ? "Uploaded" : "Not Uploaded"}
                       </Text>
                     </View>
                   </>

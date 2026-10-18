@@ -15,15 +15,14 @@ export default function RootLayout() {
 
   const checkSession = async () => {
     const token = await AsyncStorage.getItem("accessToken");
-    const guest = await AsyncStorage.getItem("guestMode");
 
     const inAuthGroup = segments[0] === "(auth)";
 
-    if ((token || guest === "true") && inAuthGroup) {
+    if (token && inAuthGroup) {
       router.replace("/splash");
     }
 
-    if (!token && guest !== "true" && !inAuthGroup) {
+    if (!token && !inAuthGroup) {
       router.replace("/splash");
     }
 

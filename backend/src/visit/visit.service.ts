@@ -179,8 +179,8 @@ export class VisitService {
      * Only a verified doctor can enter
      * the clinical visit.
      *
-     * Interns and Reception accounts
-     * are not allowed to enter the visit.
+     * Reception accounts are not allowed
+     * to enter the clinical visit.
      */
     if (
       membership.user.accountType !==

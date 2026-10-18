@@ -17,7 +17,6 @@ enum AccountType {
 }
 
 enum DoctorLevel {
-  INTERN
   DOCTOR
 }
 

@@ -22,6 +22,7 @@ import {
 } from "@/services/clinicApi";
 
 import SessionService from "@/services/session.service";
+import { AUTH_ENABLED } from "@/config/features";
 
 import type { MyMembershipRequest } from "@/types/clinic";
 
@@ -316,20 +317,22 @@ export default function JoinClinicScreen() {
           </View>
         </AppCard>
 
-        <Pressable
-          style={styles.signOutButton}
-          onPress={handleSignOut}
-        >
-          <Ionicons
-            name="log-out-outline"
-            size={18}
-            color={COLORS.danger}
-          />
+        {AUTH_ENABLED && (
+          <Pressable
+            style={styles.signOutButton}
+            onPress={handleSignOut}
+          >
+            <Ionicons
+              name="log-out-outline"
+              size={18}
+              color={COLORS.danger}
+            />
 
-          <Text style={styles.signOutText}>
-            Sign Out
-          </Text>
-        </Pressable>
+            <Text style={styles.signOutText}>
+              Sign Out
+            </Text>
+          </Pressable>
+        )}
       </AppKeyboardAwareScrollView>
 
       <Pressable

@@ -1,9 +1,10 @@
-import { api } from "./api";
 import { useDoctorStore } from "@/store/doctorStore";
+import { getLocalRecord, putLocalRecord } from "./localDatabase";
 
 export async function getDoctorProfile() {
-  const { data } = await api.get("/doctor/profile");
-  return data;
+  const cached = await getLocalRecord<Record<string, unknown>>("auth_user", "current");
+  if (!cached) throw new Error("Local account profile is unavailable");
+  return cached.value;
 }
 
 export async function updateDoctorProfile(
@@ -14,38 +15,13 @@ export async function updateDoctorProfile(
     professionalTitle?: string;
   }
 ) {
-  const { data } = await api.put(
-    "/doctor/profile",
-    body,
-  );
-
+  const current = useDoctorStore.getState().doctor;
+  if (!current) throw new Error("Local account profile is unavailable");
+  const data = { ...current, ...body };
+  await putLocalRecord({ collection: "auth_user", id: "current", value: data });
   useDoctorStore
     .getState()
     .updateDoctor(data);
-
-  return data;
-}
-
-export async function upgradeDoctor(body: {
-  medicalLicenseNumber: string;
-  medicalLicenseImage: string;
-}) {
-  const { data } = await api.post(
-    "/doctor/upgrade",
-    body,
-  );
-
-  useDoctorStore
-    .getState()
-    .updateDoctor({
-        doctorLevel: data.doctorLevel,
-        verificationStatus:
-        data.verificationStatus,
-        medicalLicenseNumber:
-        data.medicalLicenseNumber,
-        medicalLicenseImage:
-        data.medicalLicenseImage,
-    });
 
   return data;
 }

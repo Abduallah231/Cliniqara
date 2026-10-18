@@ -1,4 +1,6 @@
 import { api } from "./api";
+import { Directory, File, Paths } from "expo-file-system";
+import { AUTH_ENABLED } from "@/config/features";
 
 async function uploadImage(
   uri: string,
@@ -43,6 +45,9 @@ async function uploadImage(
 export async function uploadNationalIdImage(
   uri: string,
 ) {
+  if (!AUTH_ENABLED) {
+    throw new Error("Account registration is disabled in offline mode.");
+  }
   return uploadImage(
     uri,
     "/upload/user/national-id",
@@ -52,6 +57,9 @@ export async function uploadNationalIdImage(
 export async function uploadMedicalLicenseImage(
   uri: string,
 ) {
+  if (!AUTH_ENABLED) {
+    throw new Error("Account registration is disabled in offline mode.");
+  }
   return uploadImage(
     uri,
     "/upload/user/medical-license",
@@ -63,8 +71,11 @@ export async function uploadInvestigationImage(
   visitId: string,
   investigationId: string,
 ) {
-  return uploadImage(
-    uri,
-    `/upload/visits/${visitId}/investigations/${investigationId}`,
-  );
+  const sourceName = decodeURIComponent(uri.split("/").pop() || "image.jpg");
+  const extension = sourceName.split(".").pop()?.replace(/[^a-zA-Z0-9]/g, "") || "jpg";
+  const directory = new Directory(Paths.document, "investigations");
+  directory.create({ idempotent: true, intermediates: true });
+  const destination = new File(directory, `${visitId}-${investigationId}-${Date.now()}.${extension}`);
+  await new File(uri).copy(destination);
+  return destination.uri;
 }

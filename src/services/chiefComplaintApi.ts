@@ -1,4 +1,5 @@
-import { api } from "./api";
+import chiefComplaints from "@/data/chiefComplaints";
+import { getComplaintTemplate } from "@/features/complaints/registry/ComplaintRegistry";
 
 export type ChiefComplaintOption = {
   id: string;
@@ -10,36 +11,22 @@ export type ChiefComplaintOption = {
 export async function getChiefComplaints(
   search?: string,
 ) {
-  const { data } = await api.get(
-    "/chief-complaints",
-    {
-      params: { search },
-    },
-  );
-
-  return data;
+  const query = search?.trim().toLocaleLowerCase() ?? "";
+  return chiefComplaints
+    .filter((item) => !query || item.label.toLocaleLowerCase().includes(query))
+    .map((item) => ({ id: item.id, code: item.id.replaceAll("-", "_").toUpperCase(), name: item.label, usageCount: 0 }));
 }
 
 export async function getClinicChiefComplaints(
   clinicId: string,
 ): Promise<ChiefComplaintOption[]> {
-  const { data } = await api.get<
-    ChiefComplaintOption[]
-  >(
-    `/chief-complaints/clinic/${clinicId}`,
-  );
-
-  return Array.isArray(data)
-    ? data
-    : [];
+  void clinicId;
+  return getChiefComplaints();
 }
 
 export async function getChiefComplaintTemplate(
   id: string,
 ) {
-  const { data } = await api.get(
-    `/chief-complaints/${id}/template`,
-  );
-
-  return data;
+  const normalized = id.replaceAll("-", "_").toUpperCase();
+  return { template: getComplaintTemplate(normalized) ?? null };
 }

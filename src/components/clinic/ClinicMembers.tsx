@@ -132,10 +132,7 @@ export default function ClinicMembers({
                     member.user.doctorLevel && (
                       <View style={styles.levelBadge}>
                         <Text style={styles.levelBadgeText}>
-                          {member.user.doctorLevel ===
-                          "DOCTOR"
-                            ? "Doctor"
-                            : "Intern"}
+                          "Doctor"
                         </Text>
                       </View>
                     )}

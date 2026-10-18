@@ -25,7 +25,7 @@ export interface DoctorProfile {
 
   accountType: "DOCTOR" | "RECEPTION";
 
-  doctorLevel: "INTERN" | "DOCTOR";
+  doctorLevel: "DOCTOR";
 
   verificationStatus:
     | "PENDING"

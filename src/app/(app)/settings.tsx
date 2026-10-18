@@ -21,6 +21,7 @@ import {
   TYPOGRAPHY
 } from "@/theme";
 import SessionService from "@/services/session.service";
+import { AUTH_ENABLED } from "@/config/features";
 
 import { useState } from "react";
 import AppButton from "@/components/common/AppButton";
@@ -67,11 +68,13 @@ export default function SettingsScreen() {
         }
       >
 
-        <AppButton
-          title="Logout"
-          variant="secondary"
-          onPress={handleLogout}
-        />
+        {AUTH_ENABLED && (
+          <AppButton
+            title="Logout"
+            variant="secondary"
+            onPress={handleLogout}
+          />
+        )}
         <SectionHeader title="Doctor Profile" />
 
         <AppCard>
@@ -91,12 +94,6 @@ export default function SettingsScreen() {
           <AppTextField
             label="Phone Number"
             value={doctor?.phone ?? ""}
-            editable={false}
-          />
-
-          <AppTextField
-            label="Doctor Level"
-            value={doctor?.doctorLevel ?? ""}
             editable={false}
           />
 

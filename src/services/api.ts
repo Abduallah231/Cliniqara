@@ -4,6 +4,7 @@ import axios, {
 } from "axios";
 
 import { API_CONFIG } from "../config/apiConfig";
+import { AUTH_ENABLED } from "@/config/features";
 import SessionService from "./session.service";
 
 type RetryableRequestConfig =
@@ -28,7 +29,9 @@ export function getApiFileUrl(
 
   if (
     fileUrl.startsWith("http://") ||
-    fileUrl.startsWith("https://")
+    fileUrl.startsWith("https://") ||
+    fileUrl.startsWith("file://") ||
+    fileUrl.startsWith("content://")
   ) {
     return fileUrl;
   }
@@ -40,6 +43,10 @@ export function getApiFileUrl(
 }
 
 api.interceptors.request.use(async (config) => {
+  if (!AUTH_ENABLED) {
+    return config;
+  }
+
   const token =
     await SessionService.getAccessToken();
 
@@ -55,6 +62,10 @@ api.interceptors.response.use(
   (response) => response,
 
   async (error: AxiosError) => {
+    if (!AUTH_ENABLED) {
+      return Promise.reject(error);
+    }
+
     const originalRequest =
       error.config as
         | RetryableRequestConfig

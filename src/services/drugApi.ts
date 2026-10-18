@@ -1,4 +1,4 @@
-import { api } from "./api";
+import drugCatalog from "@/data/egyptian-drugs.json";
 
 // ======================================================
 // Drug
@@ -42,26 +42,22 @@ export async function searchDrugs(
   page = 1,
   limit = 20,
 ): Promise<DrugSearchResponse> {
-  const { data } = await api.get(
-    "/drugs/search",
-    {
-      params: {
-        q,
-        page,
-        limit,
-      },
-    },
+  const query = q.trim().toLocaleLowerCase();
+  const matches = (drugCatalog as Drug[]).filter((drug) =>
+    !query || [drug.commercialNameEn, drug.commercialNameAr, drug.scientificName]
+      .some((value) => value?.toLocaleLowerCase().includes(query)),
   );
-
-  return data;
+  const start = Math.max(0, page - 1) * limit;
+  return {
+    data: matches.slice(start, start + limit),
+    meta: { page, limit, total: matches.length, totalPages: Math.ceil(matches.length / limit) },
+  };
 }
 
 export async function getDrugById(
   id: string,
 ): Promise<Drug> {
-  const { data } = await api.get(
-    `/drugs/${id}`,
-  );
-
-  return data;
+  const drug = (drugCatalog as Drug[]).find((item) => item.id === id);
+  if (!drug) throw new Error("Drug not found in the offline catalogue");
+  return drug;
 }

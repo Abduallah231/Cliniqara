@@ -1,13 +1,10 @@
 import ClinicSelector from "@/components/clinic/ClinicSelector";
-import { loadClinics } from "@/services/clinicApi";
 import AppTopBar from "@/components/common/AppTopBar";
 import SectionHeader from "@/components/common/SectionHeader";
 import DashboardActionCard from "@/components/dashboard/DashboardActionCard";
-import GuestBanner from "@/components/dashboard/GuestBanner";
 import StatCard from "@/components/dashboard/StatCard";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import dashboardStats from "@/data/dashboard";
-import SessionService from "@/services/session.service";
 import { getWaitingVisits } from "@/services/visitApi";
 import { useClinicStore } from "@/store/clinicStore";
 import { useDoctorStore } from "@/store/doctorStore";
@@ -24,7 +21,6 @@ import {
 } from "expo-router";
 import {
   useCallback,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -100,30 +96,11 @@ export default function DashboardScreen() {
     }, [clinic?.id]),
   );
   
-  const [isGuest, setIsGuest] =
-    useState(!doctor);
-
   const [waitingVisits, setWaitingVisits] =
     useState<WaitingVisit[]>([]);
 
   const [now, setNow] =
     useState(Date.now());
-
-  useEffect(() => {
-    SessionService.isGuestMode().then(
-      setIsGuest
-    );
-  }, [doctor]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!doctor) {
-        return;
-      }
-
-      loadClinics().catch(() => {});
-    }, [doctor])
-  );
 
   const loadWaitingStats =
     useCallback(async () => {
@@ -246,34 +223,19 @@ export default function DashboardScreen() {
           false
         }
       >
-        {isGuest ? (
-          <GuestBanner
-            onCreateAccount={() =>
-              router.push(
-                "/(auth)/create-account"
-              )
-            }
-          />
-        ) : (
-          <WelcomeCard
+        <WelcomeCard
             doctorName={`Dr. ${
               doctor?.fullName ?? ""
             }`}
             specialty={
-              doctor?.specialty ??
-              (doctor?.doctorLevel ===
-              "INTERN"
-                ? "Intern"
-                : "")
+              doctor?.specialty ?? ""
             }
             clinicName={
               clinic?.name ?? ""
             }
           />
-        )}
 
-        {!isGuest && (
-          <ClinicSelector
+        <ClinicSelector
             onCreateClinic={() =>
               router.push(
                 "/(app)/create-clinic"
@@ -285,7 +247,6 @@ export default function DashboardScreen() {
               )
             }
           />
-        )}
 
         <View style={styles.statsRow}>
           <Pressable

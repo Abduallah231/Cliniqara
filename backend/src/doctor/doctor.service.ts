@@ -4,7 +4,6 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
-import { UpgradeDoctorDto } from "./dto/upgrade-doctor.dto";
 
 @Injectable()
 export class DoctorService {
@@ -91,37 +90,4 @@ export class DoctorService {
     });
   }
 
-  async upgradeToDoctor(
-    userId: string,
-    dto: UpgradeDoctorDto,
-  ) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-
-    if (!user) {
-      throw new BadRequestException("User not found");
-    }
-
-    if (user.doctorLevel !== "INTERN") {
-      throw new BadRequestException(
-        "Only interns can request an upgrade",
-      );
-    }
-
-    return this.prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        medicalLicenseNumber:
-          dto.medicalLicenseNumber,
-        medicalLicenseImage:
-          dto.medicalLicenseImage,
-        verificationStatus: "PENDING",
-      },
-    });
-  }
 }

@@ -93,6 +93,19 @@ export const useClinicStore =
       const currentClinicId =
         get().currentClinicId;
 
+      const selectedClinic =
+        (currentClinicId
+          ? incomingClinics.find(
+              (item) => item.clinic.id === currentClinicId,
+            )
+          : undefined) ?? incomingClinics[0] ?? null;
+
+      set({
+        clinics: incomingClinics,
+        currentClinic: selectedClinic,
+        currentClinicId: selectedClinic?.clinic.id ?? null,
+      });
+
       AsyncStorage.getItem(
         CLINIC_ORDER_STORAGE_KEY,
       )
@@ -117,13 +130,14 @@ export const useClinicStore =
             }
           }
 
+          const currentSelection =
+            get().currentClinicId;
           const selectedClinic =
-            currentClinicId
+            (currentSelection
               ? orderedClinics.find(
-                  (item) =>
-                    item.clinic.id === currentClinicId,
-                ) ?? null
-              : null;
+                  (item) => item.clinic.id === currentSelection,
+                )
+              : undefined) ?? orderedClinics[0] ?? null;
 
           set({
             clinics: orderedClinics,
@@ -133,13 +147,13 @@ export const useClinicStore =
           });
         })
         .catch(() => {
+          const currentSelection = get().currentClinicId;
           const selectedClinic =
-            currentClinicId
+            (currentSelection
               ? incomingClinics.find(
-                  (item) =>
-                    item.clinic.id === currentClinicId,
-                ) ?? null
-              : null;
+                  (item) => item.clinic.id === currentSelection,
+                )
+              : undefined) ?? incomingClinics[0] ?? null;
 
           set({
             clinics: incomingClinics,

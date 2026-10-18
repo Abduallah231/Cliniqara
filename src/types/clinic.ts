@@ -42,7 +42,7 @@ export type ClinicMember = {
     id: string;
     userCode: string;
     accountType: "DOCTOR" | "RECEPTION";
-    doctorLevel: "INTERN" | "DOCTOR" | null;
+    doctorLevel: "DOCTOR" | null;
     fullName: string;
     specialty: string | null;
     professionalTitle: string | null;
