@@ -7,6 +7,7 @@ import SectionHeader from "@/components/common/SectionHeader";
 import { useEffect, useRef, useState } from "react";
 
 import { getClinicChiefComplaints } from "@/services/chiefComplaintApi";
+import { getTopChiefComplaintIds } from "@/services/statisticsApi";
 import {
   getChiefComplaint,
   saveChiefComplaint,
@@ -50,6 +51,9 @@ export default function ChiefComplaint() {
       { id: string; label: string }[]
     >([]);
 
+  const [quickComplaintIds, setQuickComplaintIds] =
+    useState<string[]>([]);
+
   /*
    * Prevent an old GET response from overwriting
    * a newer complaint selected by the user.
@@ -69,10 +73,13 @@ export default function ChiefComplaint() {
     async function loadComplaints() {
       if (!currentClinicId) {
         setComplaints([]);
+        setQuickComplaintIds([]);
         return;
       }
 
       try {
+        const topComplaintIds =
+          await getTopChiefComplaintIds(currentClinicId);
         const data =
           await getClinicChiefComplaints(
             currentClinicId,
@@ -88,6 +95,7 @@ export default function ChiefComplaint() {
             label: item.name,
           })),
         );
+        setQuickComplaintIds(topComplaintIds);
       } catch (error) {
         if (!cancelled) {
           console.error(
@@ -263,9 +271,17 @@ export default function ChiefComplaint() {
           | "WEEKS"
           | "MONTHS"
           | "YEARS";
+        answers?: Record<string, never>;
       } = {};
 
+      // A new complaint starts with a clean analysis. This removes saved answers
+      // for the previous complaint and prevents its fields leaking into the new one.
+      if (complaintChanged) {
+        payload.answers = {};
+      }
+
       if (
+        !complaintChanged &&
         typeof
           updatedChiefComplaint.durationValue ===
           "number" &&
@@ -288,6 +304,7 @@ export default function ChiefComplaint() {
       ] as const;
 
       if (
+        !complaintChanged &&
         updatedChiefComplaint.durationUnit &&
         validDurationUnits.includes(
           updatedChiefComplaint.durationUnit as
@@ -323,8 +340,12 @@ export default function ChiefComplaint() {
         }
       : undefined;
 
-  const quickComplaints =
-    complaints.slice(0, 5);
+  const complaintById = new Map(
+    complaints.map((item) => [item.id, item]),
+  );
+  const quickComplaints = quickComplaintIds
+    .map((id) => complaintById.get(id))
+    .filter((item): item is { id: string; label: string } => Boolean(item));
 
   const dropdownComplaints =
     complaints;

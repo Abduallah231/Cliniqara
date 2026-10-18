@@ -1,5 +1,8 @@
 import AppDropdown from "@/components/common/AppDropdown";
+import AppChip from "@/components/common/AppChip";
 import diagnoses from "@/data/diagnoses";
+import { getTopDiagnosisNames } from "@/services/statisticsApi";
+import { useClinicStore } from "@/store/clinicStore";
 import { useVisitStore } from "@/store/visitStore";
 import {
   COLORS,
@@ -57,6 +60,12 @@ export default function DiagnosisSection() {
   const [isHydrating, setIsHydrating] =
     useState(false);
 
+  const clinicId = useClinicStore(
+    (state) => state.currentClinicId,
+  );
+  const [quickDiagnosisNames, setQuickDiagnosisNames] =
+    useState<string[]>([]);
+
   const loadedVisitId = useRef<string | null>(
     null,
   );
@@ -66,6 +75,28 @@ export default function DiagnosisSection() {
     diagnosis,
     isHydrating,
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadQuickDiagnoses() {
+      if (!clinicId) {
+        setQuickDiagnosisNames([]);
+        return;
+      }
+      try {
+        const names = await getTopDiagnosisNames(clinicId);
+        if (!cancelled) setQuickDiagnosisNames(names);
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Failed to load quick diagnoses:", error);
+        }
+      }
+    }
+    void loadQuickDiagnoses();
+    return () => {
+      cancelled = true;
+    };
+  }, [clinicId]);
 
   useEffect(() => {
     if (
@@ -156,11 +187,34 @@ export default function DiagnosisSection() {
     );
   };
 
+  const selectPrimaryDiagnosis = (name: string) => {
+    const selectedDiagnosis = findDiagnosisByName(name);
+    if (!selectedDiagnosis) return;
+    updatePrimaryDiagnosis({
+      code: selectedDiagnosis.code,
+      diagnosis: selectedDiagnosis.name,
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
         Primary Diagnosis
       </Text>
+
+      <Text style={styles.quickSelectionTitle}>
+        Quick Selection
+      </Text>
+      <View style={styles.quickSelectionRow}>
+        {quickDiagnosisNames.map((name) => (
+          <AppChip
+            key={name}
+            label={name}
+            selected={diagnosis.primaryDiagnosis?.diagnosis === name}
+            onPress={() => selectPrimaryDiagnosis(name)}
+          />
+        ))}
+      </View>
 
       <AppDropdown
         placeholder="Search diagnosis..."
@@ -178,18 +232,7 @@ export default function DiagnosisSection() {
         }
         options={primaryOptions}
         onChange={(item) => {
-          const selectedDiagnosis =
-            findDiagnosisByName(item.id);
-
-          if (!selectedDiagnosis) {
-            return;
-          }
-
-          updatePrimaryDiagnosis({
-            code: selectedDiagnosis.code,
-            diagnosis:
-              selectedDiagnosis.name,
-          });
+          selectPrimaryDiagnosis(item.id);
         }}
       />
 
@@ -263,6 +306,19 @@ const styles = StyleSheet.create({
     fontSize: TYPOGRAPHY.body,
     fontWeight: "700",
     color: COLORS.text,
+  },
+
+  quickSelectionTitle: {
+    marginTop: -SPACING.xs,
+    fontSize: TYPOGRAPHY.small,
+    fontWeight: "600",
+    color: COLORS.secondaryText,
+  },
+
+  quickSelectionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: SPACING.xs,
   },
 
   aiCard: {

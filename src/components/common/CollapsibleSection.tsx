@@ -30,6 +30,8 @@ type Props = {
 
   defaultExpanded?: boolean;
 
+  keepMounted?: boolean;
+
   style?: StyleProp<ViewStyle>;
 };
 
@@ -38,6 +40,7 @@ export default function CollapsibleSection({
   children,
   icon,
   defaultExpanded = false,
+  keepMounted = false,
   style,
 }: Props) {
   const [expanded, setExpanded] =
@@ -73,8 +76,13 @@ export default function CollapsibleSection({
   />
 </Pressable>
 
-      {expanded && (
-        <View style={styles.content}>
+      {(expanded || keepMounted) && (
+        <View
+          style={[
+            styles.content,
+            !expanded && styles.hiddenContent,
+          ]}
+        >
           {children}
         </View>
       )}
@@ -117,6 +125,9 @@ const styles = StyleSheet.create({
     borderTopWidth: BORDERS.thin,
 
     borderTopColor: COLORS.border,
+  },
+  hiddenContent: {
+    display: "none",
   },
   left: {
   flexDirection: "row",

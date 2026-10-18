@@ -30,6 +30,7 @@ export default function HPI() {
   <View style={styles.content}>
     <CollapsibleSection
       title="Analysis of Complaint"
+      keepMounted
       icon={
         <Ionicons
           name="analytics-outline"

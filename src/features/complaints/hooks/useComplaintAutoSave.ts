@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { saveChiefComplaint } from "@/services/visitApi";
+import { useVisitStore } from "@/store/visitStore";
 
 interface Props {
   visitId?: string;
@@ -94,6 +95,15 @@ export default function useComplaintAutoSave({
 
     const timer =
       setTimeout(() => {
+        // A debounced save from the previous complaint may fire just after
+        // the user selects another one. Never let that stale write win.
+        if (
+          useVisitStore.getState().visit.history.chiefComplaint.complaintId !==
+          chiefComplaintId
+        ) {
+          return;
+        }
+
         saveChiefComplaint(
           visitId,
           chiefComplaintId,

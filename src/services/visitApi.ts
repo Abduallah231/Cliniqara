@@ -338,6 +338,11 @@ export async function getRelatedSystems(
 // Chief Complaint
 // ======================================================
 
+const chiefComplaintSaveQueues = new Map<
+  string,
+  Promise<unknown>
+>();
+
 export async function saveChiefComplaint(
   visitId: string,
   chiefComplaintId: string,
@@ -352,15 +357,31 @@ export async function saveChiefComplaint(
     answers?: Record<string, any>;
   },
 ) {
-  const { data } = await api.post(
-    `/visits/${visitId}/chief-complaint`,
-    {
-      chiefComplaintId,
-      ...payload,
-    },
-  );
+  const previousSave =
+    chiefComplaintSaveQueues.get(visitId) ??
+    Promise.resolve();
 
-  return data;
+  const currentSave = previousSave
+    .catch(() => undefined)
+    .then(async () => {
+      const { data } = await api.post(
+        `/visits/${visitId}/chief-complaint`,
+        {
+          chiefComplaintId,
+          ...payload,
+        },
+      );
+      return data;
+    });
+
+  chiefComplaintSaveQueues.set(visitId, currentSave);
+  try {
+    return await currentSave;
+  } finally {
+    if (chiefComplaintSaveQueues.get(visitId) === currentSave) {
+      chiefComplaintSaveQueues.delete(visitId);
+    }
+  }
 }
 
 export async function getChiefComplaint(
