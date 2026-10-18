@@ -18,6 +18,7 @@ export async function updateDoctorProfile(
   const current = useDoctorStore.getState().doctor;
   if (!current) throw new Error("Local account profile is unavailable");
   const data = { ...current, ...body };
+  await putLocalRecord({ collection: "offline_profile", id: "current", value: data });
   await putLocalRecord({ collection: "auth_user", id: "current", value: data });
   useDoctorStore
     .getState()

@@ -95,7 +95,7 @@ type PatientForm = {
 const createEmptyPatient =
   (): PatientForm => ({
     identifierType:
-      "National ID",
+      "Unknown",
 
     identifierNumber: "",
 

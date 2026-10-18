@@ -160,7 +160,7 @@ export default function ClinicManagementScreen() {
     setWorkingDays(
       DAYS.map((day) => {
         const existing =
-          clinic.workingDays.find(
+          (clinic.workingDays ?? []).find(
             (item) =>
               item.day === day,
           );

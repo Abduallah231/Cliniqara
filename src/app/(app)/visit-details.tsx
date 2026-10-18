@@ -162,6 +162,12 @@ type ReadOnlyVisit = {
   systematicReview?: unknown;
 
   pediatricHistory?: unknown;
+  pastHistory?: unknown;
+  socialHistory?: unknown;
+  drugHistory?: unknown;
+  vaccinationHistory?: unknown;
+  allergyHistory?: unknown;
+  familyHistory?: unknown;
   menstrualHistory?: unknown;
 
   vitalSigns?: unknown;
@@ -2006,6 +2012,60 @@ export default function VisitDetailsScreen() {
                   columns
                 }
               />
+            </Subsection>
+          ) : null}
+
+          {!isEmptyValue(visit.pastHistory) ? (
+            <Subsection
+              icon="medkit-outline"
+              title="Past History"
+            >
+              <ClinicalData value={visit.pastHistory} columns={columns} />
+            </Subsection>
+          ) : null}
+
+          {!isEmptyValue(visit.socialHistory) ? (
+            <Subsection
+              icon="people-outline"
+              title="Social History"
+            >
+              <ClinicalData value={visit.socialHistory} columns={columns} />
+            </Subsection>
+          ) : null}
+
+          {!isEmptyValue(visit.drugHistory) ? (
+            <Subsection
+              icon="medical-outline"
+              title="Drug History"
+            >
+              <ClinicalData value={visit.drugHistory} columns={columns} />
+            </Subsection>
+          ) : null}
+
+          {!isEmptyValue(visit.vaccinationHistory) ? (
+            <Subsection
+              icon="shield-checkmark-outline"
+              title="Vaccination History"
+            >
+              <ClinicalData value={visit.vaccinationHistory} columns={columns} />
+            </Subsection>
+          ) : null}
+
+          {!isEmptyValue(visit.allergyHistory) ? (
+            <Subsection
+              icon="warning-outline"
+              title="Allergy History"
+            >
+              <ClinicalData value={visit.allergyHistory} columns={columns} />
+            </Subsection>
+          ) : null}
+
+          {!isEmptyValue(visit.familyHistory) ? (
+            <Subsection
+              icon="git-branch-outline"
+              title="Family History"
+            >
+              <ClinicalData value={visit.familyHistory} columns={columns} />
             </Subsection>
           ) : null}
 

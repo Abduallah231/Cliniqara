@@ -1,5 +1,6 @@
 import { useClinicStore } from "@/store/clinicStore";
 import { useDoctorStore } from "@/store/doctorStore";
+import { getChiefComplaints } from "@/services/chiefComplaintApi";
 import type { Patient } from "@/types/patient";
 import type { Visit, WaitingVisit } from "@/types/visit";
 import {
@@ -27,10 +28,34 @@ async function section(collection: string, visitId: string) {
   return (await getLocalRecord<unknown>(collection, visitId))?.value ?? null;
 }
 
+async function savedChiefComplaint(visitId: string) {
+  const saved = await section("visit_chief-complaint", visitId) as Record<string, any> | null;
+  if (!saved?.chiefComplaintId) return null;
+
+  const complaints = await getChiefComplaints();
+  const complaint = complaints.find((item) => item.id === saved.chiefComplaintId);
+  return {
+    chiefComplaint: {
+      id: saved.chiefComplaintId,
+      name: complaint?.name ?? saved.chiefComplaintId,
+    },
+    durationValue: saved.durationValue ?? null,
+    durationUnit: saved.durationUnit ?? null,
+    analysis: { values: saved.answers ?? {} },
+  };
+}
+
 async function saveSection(collection: string, visitId: string, value: unknown) {
   const visit = await visitRecord(visitId);
   let normalized: any = value;
   const now = new Date().toISOString();
+  if (collection === "visit_chief-complaint") {
+    const previous = await section(collection, visitId) as Record<string, any> | null;
+    const next = value as Record<string, any>;
+    normalized = previous?.chiefComplaintId === next?.chiefComplaintId
+      ? { ...previous, ...next }
+      : next;
+  }
   if (collection === "visit_related-systems") normalized = (value as any)?.systems ?? [];
   if (collection === "visit_regional-examination") normalized = (value as any)?.regionalExaminations ?? [];
   if (collection === "visit_system-examination") normalized = (value as any)?.systems ?? [];
@@ -80,7 +105,9 @@ async function get(path: string, config?: Config): Promise<{ data: any }> {
   if (path === "/visits/waiting") {
     const clinicId = String(config?.params?.clinicId ?? selectedClinicId());
     const records = await listLocalRecords<Visit>("visits", clinicId);
-    const visits = records.map((record) => record.value).filter((visit) => visit.visitStatus === "WAITING");
+    const visits = records
+      .map((record) => record.value)
+      .filter((visit) => visit.visitStatus === "WAITING" || visit.visitStatus === "IN_PROGRESS");
     const rows: WaitingVisit[] = [];
     for (const visit of visits) {
       const patient = await getLocalRecord<Patient>("patients", visit.patientId);
@@ -116,13 +143,25 @@ async function get(path: string, config?: Config): Promise<{ data: any }> {
   }
   match = path.match(/^\/visits\/([^/]+)\/chief-complaint\/([^/]+)$/);
   if (match) {
-    const saved = await section("visit_chief-complaint", match[1]) as Record<string, unknown> | null;
-    return { data: saved?.chiefComplaintId === match[2] ? saved : null };
+    const saved = await savedChiefComplaint(match[1]);
+    return { data: saved?.chiefComplaint.id === match[2] ? saved : null };
   }
   match = path.match(/^\/patients\/([^/]+)\/([^/]+)$/);
   if (match) return { data: await section(`patient_${match[2]}`, match[1]) };
   match = path.match(/^\/visits\/([^/]+)\/(.+)$/);
-  if (match) return { data: await section(`visit_${match[2]}`, match[1]) ?? (match[2].includes("examination") || match[2] === "related-systems" ? [] : null) };
+  if (match) {
+    const collection = match[2];
+    const saved = await section(`visit_${collection}`, match[1]);
+    const emptyListSections = [
+      "related-systems",
+      "regional-examination",
+      "system-examination",
+      "investigations",
+      "procedures",
+      "referrals",
+    ];
+    return { data: saved ?? (emptyListSections.includes(collection) ? [] : null) };
+  }
   throw new Error(`Offline operation is not supported: GET ${path}`);
 }
 
@@ -156,12 +195,49 @@ async function post(path: string, body?: any): Promise<{ data: any }> {
   if (path === "/visits/details" || path === "/visits/read-only-details") {
     const visit = await visitRecord(body.visitId);
     const patient = await getLocalRecord<Patient>("patients", visit.patientId);
+    const pastHistory = await getLocalRecord<unknown>("patient_past-history", visit.patientId);
+    const socialHistory = await getLocalRecord<unknown>("patient_social_history", visit.patientId);
+    const drugHistory = await getLocalRecord<unknown>("patient_drug_history", visit.patientId);
+    const vaccinationHistory = await getLocalRecord<unknown>("patient_vaccination-history", visit.patientId);
+    const allergyHistory = await getLocalRecord<unknown>("patient_allergy_history", visit.patientId);
+    const familyHistory = await getLocalRecord<unknown>("patient_family_history", visit.patientId);
+    // Read sections sequentially from the shared SQLite connection.
+    const chiefComplaint = await savedChiefComplaint(visit.id);
+    const diagnosis = await section("visit_diagnosis", visit.id);
+    const relatedSystems = await section("visit_related-systems", visit.id);
+    const pediatricHistory = await section("visit_pediatric-history", visit.id);
+    const menstrualHistory = await section("visit_menstrual-history", visit.id);
+    const vitalSigns = await section("visit_vital-signs", visit.id);
+    const generalInspection = await section("visit_general-inspection", visit.id);
+    const regionalExaminations = await section("visit_regional-examination", visit.id);
+    const systemExaminations = await section("visit_system-examination", visit.id);
+    const investigations = await section("visit_investigations", visit.id);
+    const procedures = await section("visit_procedures", visit.id);
+    const referrals = await section("visit_referrals", visit.id);
+    const prescription = await section("visit_prescription", visit.id);
     return { data: {
       ...visit,
       patient: patient ? { id: patient.id, fullName: patient.value.fullName, patientCode: patient.value.patientCode } : null,
       doctor: { id: visit.doctorId, fullName: useDoctorStore.getState().doctor?.fullName ?? "Doctor" },
-      chiefComplaint: await section("visit_chief-complaint", visit.id),
-      diagnosis: await section("visit_diagnosis", visit.id),
+      chiefComplaint,
+      diagnosis,
+      relatedSystems,
+      pediatricHistory,
+      menstrualHistory,
+      vitalSigns,
+      generalInspection,
+      regionalExaminations,
+      systemExaminations,
+      investigations: investigations ?? [],
+      procedures: procedures ?? [],
+      referrals: referrals ?? [],
+      prescription,
+      pastHistory: pastHistory?.value ?? null,
+      socialHistory: socialHistory?.value ?? null,
+      drugHistory: drugHistory?.value ?? null,
+      vaccinationHistory: vaccinationHistory?.value ?? null,
+      allergyHistory: allergyHistory?.value ?? null,
+      familyHistory: familyHistory?.value ?? null,
     } };
   }
   let match = path.match(/^\/visits\/([^/]+)\/([^/]+)$/);

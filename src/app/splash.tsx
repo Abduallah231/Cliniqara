@@ -60,7 +60,9 @@ export default function SplashScreen() {
       "auth_user",
       "current",
     );
-    const user = savedOfflineProfile?.value ?? oldCachedUser?.value ?? {
+    // The cached authenticated profile may contain newer edits than the
+    // original offline bootstrap profile. Keep both records synchronized.
+    const user = oldCachedUser?.value ?? savedOfflineProfile?.value ?? {
       id: "offline-doctor",
       userCode: "LOCAL-DOCTOR",
       fullName: "Offline Doctor",
@@ -71,13 +73,11 @@ export default function SplashScreen() {
       verificationStatus: "APPROVED",
     };
 
-    if (!savedOfflineProfile) {
-      await putLocalRecord({
-        collection: "offline_profile",
-        id: "current",
-        value: user,
-      });
-    }
+    await putLocalRecord({
+      collection: "offline_profile",
+      id: "current",
+      value: user,
+    });
 
     const doctor: DoctorProfile = {
       id: String(user.id),

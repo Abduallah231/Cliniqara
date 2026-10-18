@@ -1059,7 +1059,7 @@ export async function getInvestigations(
     `/visits/${visitId}/investigations`,
   );
 
-  return (data as InvestigationResponse[]).map(
+  return (Array.isArray(data) ? data as InvestigationResponse[] : []).map(
     mapInvestigationToUi,
   );
 }
@@ -1085,7 +1085,7 @@ export async function saveProcedures(
     dto,
   );
 
-  return data;
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getProcedures(
@@ -1095,7 +1095,7 @@ export async function getProcedures(
     `/visits/${visitId}/procedures`,
   );
 
-  return data;
+  return Array.isArray(data) ? data : [];
 }
 
 // ======================================================
@@ -1119,7 +1119,7 @@ export async function saveReferrals(
     dto,
   );
 
-  return data;
+  return Array.isArray(data) ? data : [];
 }
 
 export async function getReferrals(
@@ -1129,7 +1129,7 @@ export async function getReferrals(
     `/visits/${visitId}/referrals`,
   );
 
-  return data;
+  return Array.isArray(data) ? data : [];
 }
 
 // ======================================================

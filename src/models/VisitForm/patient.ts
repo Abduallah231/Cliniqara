@@ -55,7 +55,7 @@ export interface Patient {
 export function createEmptyPatient(): Patient {
   return {
     // Identification
-    identifierType: "National ID",
+    identifierType: "Unknown",
     identifierNumber: "",
     documentType: "",
 

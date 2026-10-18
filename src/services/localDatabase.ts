@@ -9,6 +9,10 @@ function createSQLiteSchemaSql(): string {
     (_match, column: string, comma: string) => `${column} CHECK (${column.split(" ")[0]} IN (0, 1))${comma}`,
   );
 
+  // Prisma emits JSON object/array defaults as bare tokens, which SQLite rejects.
+  // Store them as quoted JSON text so SQLite can parse the schema and keep the same defaults.
+  sql = sql.replace(/(\bJSONB(?: NOT NULL)? DEFAULT )(\{\}|\[\])/g, "$1'$2'");
+
   const enumChecks: Array<[string, string]> = [
     ['"accountType" TEXT NOT NULL', "'DOCTOR', 'RECEPTION'"],
     ['"doctorLevel" TEXT', "'DOCTOR'"],
@@ -45,7 +49,10 @@ let databasePromise: Promise<SQLite.SQLiteDatabase> | undefined;
 async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!databasePromise) {
     databasePromise = (async () => {
-      const db = await SQLite.openDatabaseAsync("cliniqara.db");
+      // Avoid reusing a stale Android native connection after Expo Go reloads.
+      const db = await SQLite.openDatabaseAsync("cliniqara.db", {
+        useNewConnection: true,
+      });
       await db.execAsync(`
         PRAGMA foreign_keys = ON;
         PRAGMA journal_mode = WAL;
