@@ -2,19 +2,31 @@ import AppPressable from "@/components/common/AppPressable";
 import AppText from "@/components/common/AppText";
 import AppView from "@/components/common/AppView";
 import CollapsibleSection from "@/components/common/CollapsibleSection";
+import chronicDiseases from "@/data/chronicDiseases";
+import { AI_TREATMENT_SUGGESTIONS_VISIBLE } from "@/config/features";
+import {
+  buildClinicalSections,
+  getAIAPIKey,
+  requestAISuggestions,
+  requestAITreatmentSuggestions,
+  type AISuggestionResult,
+  type AITreatmentResult,
+} from "@/services/aiClinicalSuggestionsApi";
+import { getReadOnlyVisitDetails } from "@/services/visitApi";
+import { useAppSettingsStore } from "@/store/appSettingsStore";
+import { useVisitStore } from "@/store/visitStore";
 import { COLORS, RADIUS, SHADOW, SPACING, TYPOGRAPHY, } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, StyleSheet } from "react-native";
 import AISuggestionsSection from "./assessment/AISuggestionsSection";
+import AITreatmentSuggestionsSection from "./assessment/AITreatmentSuggestionsSection";
 import DiagnosisSection from "./assessment/DiagnosisSection";
 import InvestigationResultsScreen from "./assessment/InvestigationResultsScreen";
 import InvestigationSection from "./assessment/InvestigationSection";
 import PrescriptionSection from "./assessment/PrescriptionSection";
 import ProceduresReferralsSection from "./assessment/ProceduresReferrals";
-import { useVisitStore } from "@/store/visitStore";
-import chronicDiseases from "@/data/chronicDiseases";
-import { getReadOnlyVisitDetails } from "@/services/visitApi";
 
 interface Props {
   visitId?: string;
@@ -23,23 +35,173 @@ export default function AssessmentTab({
   visitId,
 }: Props) {
   const visit = useVisitStore((state) => state.visit);
+  const primaryDiagnosis = useVisitStore((state) => state.visit.assessment.diagnosis.primaryDiagnosis);
+  const aiEndpoint = useAppSettingsStore((state) => state.aiEndpoint);
+  const aiModel = useAppSettingsStore((state) => state.aiModel);
+  const [aiSuggestions, setAiSuggestions] = useState<AISuggestionResult | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [treatmentSuggestions, setTreatmentSuggestions] = useState<AITreatmentResult | null>(null);
+  const [treatmentLoading, setTreatmentLoading] = useState(false);
+  const [treatmentError, setTreatmentError] = useState<string | null>(null);
+  const waitingForAISetup = useRef<"diagnosis" | "treatment" | null>(null);
 
   const [
   showInvestigationResults,
   setShowInvestigationResults,
 ] = useState(false);
 
+  const confirmAndGenerateSuggestions = useCallback(async (apiKey: string) => {
+    let savedVisit: unknown = null;
+    if (visitId) {
+      try {
+        savedVisit = await getReadOnlyVisitDetails(visitId);
+      } catch (error) {
+        console.warn("Could not load saved visit context for AI:", error);
+      }
+    }
+    const sections = buildClinicalSections(visit, savedVisit);
+    if (!sections.length) {
+      Alert.alert("No visit information", "Record clinical information in History or Examination before requesting AI suggestions.");
+      return;
+    }
+    Alert.alert(
+      "Send clinical information to the selected AI service?",
+      `Selected history and examination details will be sent to ${getEndpointHost(aiEndpoint)} for analysis. Patient name, patient code, doctor, and clinic details are excluded. Continue only if you are allowed to use this external AI service for this visit.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Send and generate", onPress: () => void (async () => {
+          setAiLoading(true);
+          setAiError(null);
+          setAiSuggestions(null);
+          try {
+            const result = await requestAISuggestions(apiKey, aiEndpoint, aiModel, sections);
+            setAiSuggestions(result);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : "AI suggestions could not be generated.";
+            setAiError(message);
+            Alert.alert("AI suggestions unavailable", message);
+          } finally {
+            setAiLoading(false);
+          }
+        })() },
+      ],
+    );
+  }, [aiEndpoint, aiModel, visit, visitId]);
+
+  const handleGenerateSuggestions = useCallback(async () => {
+    try {
+      const apiKey = await getAIAPIKey();
+      if (!apiKey || !aiEndpoint || !aiModel) {
+        waitingForAISetup.current = "diagnosis";
+        router.push("/settings?aiSetup=1");
+        return;
+      }
+      await confirmAndGenerateSuggestions(apiKey);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not read the saved API key.";
+      setAiError(message);
+      Alert.alert("AI settings unavailable", message);
+    }
+  }, [aiEndpoint, aiModel, confirmAndGenerateSuggestions]);
+
+  const confirmAndGenerateTreatment = useCallback(async (apiKey: string) => {
+    if (!primaryDiagnosis?.diagnosis) {
+      Alert.alert("Choose a diagnosis first", "Select the primary diagnosis in the Diagnosis section before requesting treatment options.");
+      return;
+    }
+    let savedVisit: unknown = null;
+    if (visitId) {
+      try {
+        savedVisit = await getReadOnlyVisitDetails(visitId);
+      } catch (error) {
+        console.warn("Could not load saved visit context for treatment suggestions:", error);
+      }
+    }
+    const relevantTitles = new Set(["Patient demographics", "Past history", "Pediatric history", "Drug history", "Allergy history", "Menstrual history"]);
+    const patientContext = {
+      age: visit.patient.age || undefined,
+      ageUnit: visit.patient.ageUnit || undefined,
+      sex: visit.patient.gender || undefined,
+      relevantRecordedHistory: buildClinicalSections(visit, savedVisit).filter((section) => relevantTitles.has(section.title)),
+    };
+    Alert.alert(
+      "Send treatment context to the selected AI service?",
+      `The selected diagnosis and recorded age and safety history will be sent to ${getEndpointHost(aiEndpoint)}. Patient name, patient code, doctor, and clinic details are excluded. Continue only if this use is permitted.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Send and generate", onPress: () => void (async () => {
+          setTreatmentLoading(true);
+          setTreatmentError(null);
+          setTreatmentSuggestions(null);
+          try {
+            const result = await requestAITreatmentSuggestions(
+              apiKey,
+              aiEndpoint,
+              aiModel,
+              { name: primaryDiagnosis.diagnosis, code: primaryDiagnosis.code },
+              patientContext,
+            );
+            setTreatmentSuggestions(result);
+          } catch (error) {
+            const message = error instanceof Error ? error.message : "Treatment suggestions could not be generated.";
+            setTreatmentError(message);
+            Alert.alert("Treatment suggestions unavailable", message);
+          } finally {
+            setTreatmentLoading(false);
+          }
+        })() },
+      ],
+    );
+  }, [aiEndpoint, aiModel, primaryDiagnosis, visit, visitId]);
+
+  const handleGenerateTreatment = useCallback(async () => {
+    if (!primaryDiagnosis?.diagnosis) {
+      Alert.alert("Choose a diagnosis first", "Select the primary diagnosis in the Diagnosis section before requesting treatment options.");
+      return;
+    }
+    try {
+      const apiKey = await getAIAPIKey();
+      if (!apiKey || !aiEndpoint || !aiModel) {
+        waitingForAISetup.current = "treatment";
+        router.push("/settings?aiSetup=1");
+        return;
+      }
+      await confirmAndGenerateTreatment(apiKey);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not read the saved API key.";
+      setTreatmentError(message);
+      Alert.alert("AI settings unavailable", message);
+    }
+  }, [aiEndpoint, aiModel, confirmAndGenerateTreatment, primaryDiagnosis]);
+
+  useFocusEffect(useCallback(() => {
+    const pendingAction = waitingForAISetup.current;
+    if (!pendingAction) return;
+    let active = true;
+    waitingForAISetup.current = null;
+    void getAIAPIKey().then((apiKey) => {
+      if (!active || !apiKey || !aiEndpoint || !aiModel) return;
+      if (pendingAction === "treatment") void confirmAndGenerateTreatment(apiKey);
+      else void confirmAndGenerateSuggestions(apiKey);
+    }).catch((error) => {
+      console.warn("Could not resume AI request after setup:", error);
+    });
+    return () => { active = false; };
+  }, [aiEndpoint, aiModel, confirmAndGenerateSuggestions, confirmAndGenerateTreatment]));
+
+  useEffect(() => {
+    setTreatmentSuggestions(null);
+    setTreatmentError(null);
+  }, [primaryDiagnosis?.diagnosis]);
+
   return (
     <AppView style={styles.container}>
       <ClinicalContextSummary visitId={visitId} visit={visit} />
       <AppPressable
-        style={styles.aiButton}
-        onPress={() => {
-          Alert.alert(
-            "Coming Soon",
-            "AI Suggestions will be available in a future update.",
-          );
-        }}
+        style={[styles.aiButton, aiLoading && styles.aiButtonDisabled]}
+        onPress={() => void handleGenerateSuggestions()}
+        disabled={aiLoading}
       >
         <Ionicons
           name="sparkles-outline"
@@ -47,7 +209,7 @@ export default function AssessmentTab({
           color={COLORS.white}
         />
         <AppText style={styles.aiButtonText}>
-          Generate AI Suggestions
+          {aiLoading ? "Generating AI Suggestions..." : "Generate AI Diagnosis"}
         </AppText>
       </AppPressable>
 
@@ -95,7 +257,7 @@ export default function AssessmentTab({
           />
         }
       >
-        <AISuggestionsSection />
+        <AISuggestionsSection result={aiSuggestions} loading={aiLoading} error={aiError} />
       </CollapsibleSection>
 
       <CollapsibleSection
@@ -147,6 +309,28 @@ export default function AssessmentTab({
       >
         <ProceduresReferralsSection />
       </CollapsibleSection>
+
+      {AI_TREATMENT_SUGGESTIONS_VISIBLE && <>
+      <AppPressable
+        style={[styles.aiButton, styles.treatmentAiButton, treatmentLoading && styles.aiButtonDisabled]}
+        onPress={() => void handleGenerateTreatment()}
+        disabled={treatmentLoading}
+      >
+        <Ionicons name="medkit-outline" size={20} color={COLORS.white} />
+        <AppText style={styles.aiButtonText}>
+          {treatmentLoading ? "Preparing Treatment Options…" : "AI Treatment Options for Selected Diagnosis"}
+        </AppText>
+      </AppPressable>
+      <AppText style={styles.treatmentDisclaimer}>
+        AI suggestions are only to support the physician, not to make decisions or prescribe in their place. AI can be wrong. Verify each recommendation, dose, patient-specific risk, and cited source before use.
+      </AppText>
+      <CollapsibleSection
+        title="AI Treatment Options"
+        icon={<Ionicons name="medkit-outline" size={20} color={COLORS.primary} />}
+      >
+        <AITreatmentSuggestionsSection result={treatmentSuggestions} loading={treatmentLoading} error={treatmentError} />
+      </CollapsibleSection>
+      </>}
 
       <CollapsibleSection
         title="Prescription"
@@ -326,6 +510,14 @@ function isEmptyAnswer(value: string): boolean {
   return /^(no|none|n\/a|not recorded|unknown)$/i.test(value);
 }
 
+function getEndpointHost(endpoint: string): string {
+  try {
+    return new URL(endpoint).host;
+  } catch {
+    return "the configured AI provider";
+  }
+}
+
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.background,
@@ -398,6 +590,8 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
     ...SHADOW,
   },
+  aiButtonDisabled: { opacity: 0.7 },
+  treatmentAiButton: { backgroundColor: COLORS.primary },
 
   aiButtonText: {
     color: COLORS.white,
@@ -431,5 +625,15 @@ const styles = StyleSheet.create({
     color: COLORS.secondaryText,
     fontSize: TYPOGRAPHY.small,
     lineHeight: 20,
+  },
+  treatmentDisclaimer: {
+    color: COLORS.secondaryText,
+    fontSize: TYPOGRAPHY.small,
+    lineHeight: 20,
+    backgroundColor: COLORS.card,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: SPACING.md,
   },
 });

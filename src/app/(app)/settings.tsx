@@ -3,7 +3,7 @@ import AppScrollView from "@/components/common/AppScrollView";
 import AppText from "@/components/common/AppText";
 import AppView from "@/components/common/AppView";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Alert, ActivityIndicator, Modal, StyleSheet } from "react-native";
 import AppSafeAreaView from "@/components/common/AppSafeAreaView";
 import { useDoctorStore } from "@/store/doctorStore";
@@ -28,15 +28,22 @@ import { File, Paths } from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 import * as Sharing from "expo-sharing";
 import * as LocalAuthentication from "expo-local-authentication";
+import * as WebBrowser from "expo-web-browser";
+import * as Clipboard from "expo-clipboard";
 import {
   exportLocalRecordsBackup,
   restoreLocalRecordsBackup,
 } from "@/services/localDatabase";
 import { useAppSettingsStore, type AppSettings } from "@/store/appSettingsStore";
+import { deleteAIAPIKey, getAIAPIKey, saveAIAPIKey } from "@/services/aiClinicalSuggestionsApi";
+import { SUGGESTED_GEMINI_ENDPOINT, SUGGESTED_GEMINI_MODEL } from "@/config/ai";
 
 export default function SettingsScreen() {
+  const params = useLocalSearchParams<{ aiSetup?: string }>();
   const theme = useAppSettingsStore((state) => state.theme);
   const fontSize = useAppSettingsStore((state) => state.fontSize);
+  const savedAiModel = useAppSettingsStore((state) => state.aiModel);
+  const savedAiEndpoint = useAppSettingsStore((state) => state.aiEndpoint);
   const appLock = useAppSettingsStore((state) => state.appLock);
   const biometric = useAppSettingsStore((state) => state.biometric);
   const preferencesHydrated = useAppSettingsStore((state) => state.hydrated);
@@ -47,10 +54,102 @@ export default function SettingsScreen() {
   const [pinInput, setPinInput] = useState("");
   const [firstPin, setFirstPin] = useState("");
   const [pinSetupError, setPinSetupError] = useState("");
+  const [aiEndpoint, setAiEndpoint] = useState(savedAiEndpoint);
+  const [aiModel, setAiModel] = useState(savedAiModel);
+  const [aiKeyDraft, setAiKeyDraft] = useState("");
+  const [aiKeyConfigured, setAiKeyConfigured] = useState(false);
+  const [aiSettingsSaving, setAiSettingsSaving] = useState(false);
 
   useEffect(() => {
     void hydratePreferences().catch((error) => console.error("Unable to load settings:", error));
   }, [hydratePreferences]);
+
+  useEffect(() => {
+    setAiModel(savedAiModel);
+  }, [savedAiModel]);
+
+  useEffect(() => {
+    setAiEndpoint(savedAiEndpoint);
+  }, [savedAiEndpoint]);
+
+  useEffect(() => {
+    let active = true;
+    void getAIAPIKey().then((key) => {
+      if (active) setAiKeyConfigured(Boolean(key));
+    }).catch((error) => console.error("Unable to read AI key status:", error));
+    return () => { active = false; };
+  }, []);
+
+  const saveAISettings = async () => {
+    if (!aiKeyDraft.trim() && !aiKeyConfigured) {
+      Alert.alert("API key required", "Add an API key for your chosen AI service to enable suggestions.");
+      return;
+    }
+    if (!aiEndpoint.trim() || !aiModel.trim()) {
+      Alert.alert("AI settings incomplete", "Enter the service endpoint and model name.");
+      return;
+    }
+    try {
+      const endpoint = new URL(aiEndpoint.trim());
+      if (endpoint.protocol !== "https:") throw new Error("HTTPS required");
+    } catch {
+      Alert.alert("Invalid endpoint", "Enter a complete API URL that starts with https://.");
+      return;
+    }
+    setAiSettingsSaving(true);
+    try {
+      if (aiKeyDraft.trim()) await saveAIAPIKey(aiKeyDraft.trim());
+      await savePreferences({ aiEndpoint: aiEndpoint.trim(), aiModel: aiModel.trim() });
+      setAiKeyConfigured(Boolean(aiKeyDraft.trim()) || aiKeyConfigured);
+      setAiKeyDraft("");
+      if (params.aiSetup === "1") {
+        router.back();
+      } else {
+        Alert.alert("AI settings saved", "The API key is stored securely on this device.");
+      }
+    } catch (error) {
+      Alert.alert("Could not save AI settings", "Check device storage and try again.");
+      console.error("Unable to save AI settings:", error);
+    } finally {
+      setAiSettingsSaving(false);
+    }
+  };
+
+  const pasteAISettingsFromCurl = async () => {
+    try {
+      const copiedCommand = await Clipboard.getStringAsync();
+      const parsed = parseAIConfigFromCurl(copiedCommand);
+      setAiEndpoint(parsed.endpoint);
+      setAiModel(parsed.model);
+      setAiKeyDraft(parsed.apiKey);
+      Alert.alert(
+        parsed.apiKey ? "cURL settings loaded" : "Endpoint and model loaded",
+        parsed.apiKey
+          ? "The endpoint, model, and API key were filled in. Review them, then tap Save AI settings."
+          : "This example contains a placeholder for its API key. Paste your real key into the API key field, then save.",
+      );
+    } catch (error) {
+      Alert.alert(
+        "Could not read AI settings",
+        error instanceof Error ? error.message : "Copy the complete cURL example from your AI provider and try again.",
+      );
+    }
+  };
+
+  const removeAIKey = () => Alert.alert("Remove saved API key?", "AI suggestions will require a new key before they can be generated.", [
+    { text: "Cancel", style: "cancel" },
+    { text: "Remove", style: "destructive", onPress: () => void (async () => {
+      try {
+        await deleteAIAPIKey();
+        setAiKeyConfigured(false);
+        setAiKeyDraft("");
+        Alert.alert("API key removed", "The key has been deleted from this device.");
+      } catch (error) {
+        Alert.alert("Could not remove API key", "Try again.");
+        console.error("Unable to remove AI key:", error);
+      }
+    })() },
+  ]);
 
   const updatePreferences = async (updates: Partial<AppSettings>) => {
     try {
@@ -272,6 +371,73 @@ export default function SettingsScreen() {
             onPress={handleLogout}
           />
         )}
+
+      <SectionHeader title="AI Suggestions" />
+        <AppCard style={styles.aiSettingsCard}>
+          <AppText style={styles.backupDescription}>
+            Configure an AI service by entering its API endpoint, model name, and API key. The key is stored securely on this device and is sent only when you generate suggestions.
+          </AppText>
+          <AppText style={styles.privacyNote}>
+            Visit details are sent to the selected AI provider when you request suggestions. Patient name and code are excluded. Review that provider’s privacy and billing terms; do not send identifiable or sensitive patient information unless this use is permitted.
+          </AppText>
+          <AppCard style={styles.aiSuggestionCard}>
+            <AppText style={styles.aiSuggestionTitle}>Free option suggestion: Gemini</AppText>
+            <AppText style={styles.fieldHint}>
+              Google AI Studio may offer a free usage tier with limits. Some models or higher usage may require paid billing. Google’s terms and data handling can differ by plan, so check them before sending clinical information.
+            </AppText>
+            <AppText style={styles.fieldHint}>Suggested endpoint: {SUGGESTED_GEMINI_ENDPOINT}</AppText>
+            <AppText style={styles.fieldHint}>Suggested model: {SUGGESTED_GEMINI_MODEL}</AppText>
+            <AppPressable style={styles.aiLinkRow} onPress={() => {
+              void WebBrowser.openBrowserAsync("https://aistudio.google.com/api-keys");
+            }}>
+              <AppView style={styles.left}>
+                <Ionicons name="open-outline" size={20} color={COLORS.primary} />
+                <AppText style={styles.aiLinkText}>Get an API key for this option</AppText>
+              </AppView>
+              <Ionicons name="chevron-forward" size={20} color={COLORS.secondaryText} />
+            </AppPressable>
+          </AppCard>
+          <AppButton title="Paste cURL command" type="secondary" onPress={() => void pasteAISettingsFromCurl()} />
+          <AppText style={styles.fieldHint}>
+            Paste a Gemini API or OpenAI-compatible chat-completions cURL example. API formats vary by provider. The app extracts its endpoint, model, and key; nothing is sent until you save and request suggestions.
+          </AppText>
+          <AppTextField
+            label="AI API endpoint"
+            value={aiEndpoint}
+            onChangeText={setAiEndpoint}
+            placeholder="https://your-provider.example/v1"
+            autoCapitalize="none"
+          />
+          <AppText style={styles.fieldHint}>Use an HTTPS endpoint that supports a common chat-completions or content-generation format.</AppText>
+          <AppTextField
+            label="Model name"
+            value={aiModel}
+            onChangeText={setAiModel}
+            placeholder="Enter your selected model ID"
+            autoCapitalize="none"
+          />
+          <AppTextField
+            label={aiKeyConfigured ? "Replace saved API key (optional)" : "API key"}
+            value={aiKeyDraft}
+            onChangeText={setAiKeyDraft}
+            placeholder={aiKeyConfigured ? "A key is saved securely on this device" : "Paste your API key here"}
+            secureTextEntry
+            autoCapitalize="none"
+          />
+          <AppText style={styles.fieldHint}>
+            The key is saved in secure device storage and is not included in the local database backup.
+          </AppText>
+          <AppButton
+            title={params.aiSetup === "1" ? "Save and return to visit" : "Save AI settings"}
+            onPress={() => void saveAISettings()}
+            loading={aiSettingsSaving}
+            disabled={aiSettingsSaving}
+          />
+          {aiKeyConfigured ? <AppPressable onPress={removeAIKey} style={styles.removeAIKey}>
+            <AppText style={styles.removeAIKeyText}>Remove saved API key</AppText>
+          </AppPressable> : null}
+        </AppCard>
+
         <SectionHeader title="Doctor Profile" />
 
         <AppCard>
@@ -584,6 +750,69 @@ export default function SettingsScreen() {
   );
 }
 
+function parseAIConfigFromCurl(command: string): { endpoint: string; model: string; apiKey: string } {
+  if (!command.trim()) throw new Error("The clipboard is empty. Copy the provider's complete cURL example first.");
+  if (!/\bcurl\b/i.test(command)) throw new Error("The copied text does not look like a cURL command.");
+
+  const urlMatch = command.match(/https:\/\/[^\s"'\\]+/i);
+  if (!urlMatch) throw new Error("No HTTPS API URL was found in the cURL command.");
+  let parsedURL: URL;
+  try {
+    parsedURL = new URL(urlMatch[0].replace(/[),]+$/, ""));
+  } catch {
+    throw new Error("The API URL in the cURL command is invalid.");
+  }
+
+  const headers = [...command.matchAll(/(?:^|\s)(?:-H|--header)\s+(['"])([\s\S]*?)\1/g)].map((match) => match[2]);
+  let apiKey = "";
+  for (const header of headers) {
+    const separator = header.indexOf(":");
+    if (separator < 0) continue;
+    const name = header.slice(0, separator).trim().toLowerCase();
+    let value = header.slice(separator + 1).trim();
+    if (name === "authorization") value = value.replace(/^Bearer\s+/i, "");
+    if (["x-goog-api-key", "x-api-key", "api-key", "authorization"].includes(name)) apiKey = value;
+  }
+  const queryKey = parsedURL.searchParams.get("key") ?? parsedURL.searchParams.get("api_key");
+  if (!apiKey && queryKey) apiKey = queryKey;
+  parsedURL.searchParams.delete("key");
+  parsedURL.searchParams.delete("api_key");
+
+  const dataMatch = command.match(/(?:--data(?:-raw|-binary)?|-d)\s+(['"])([\s\S]*?)\1/i);
+  let requestBody: Record<string, unknown> = {};
+  if (dataMatch) {
+    const rawBody = dataMatch[2];
+    try {
+      requestBody = JSON.parse(rawBody);
+    } catch {
+      try {
+        requestBody = JSON.parse(rawBody.replace(/\\(["'\\])/g, "$1"));
+      } catch {
+        throw new Error("The cURL request body is not valid JSON. Copy the full example command and try again.");
+      }
+    }
+  }
+
+  const modelInPath = parsedURL.pathname.match(/(?:^|\/)models\/([^/:?]+)/i)?.[1];
+  const modelInBody = typeof requestBody.model === "string" ? requestBody.model : "";
+  const model = decodeURIComponent(modelInPath ?? modelInBody).trim();
+  if (!apiKey) throw new Error("No API key was found in the cURL headers or URL.");
+  const keyIsPlaceholder = /^(?:\$[\w{}]+|<[^>]+>|YOUR[_ -]?API[_ -]?KEY|API[_ -]?KEY[_ -]?HERE)$/i.test(apiKey);
+  if (!model) throw new Error("No model name was found. This command must include a model in its URL or JSON body.");
+
+  const isGeminiAPI = parsedURL.hostname === "generativelanguage.googleapis.com";
+  const hasChatCompletionsPath = parsedURL.pathname.replace(/\/+$/, "").endsWith("/chat/completions");
+  const hasChatCompletionsBody = Array.isArray(requestBody.messages);
+  if (!isGeminiAPI && !hasChatCompletionsPath && !hasChatCompletionsBody) {
+    throw new Error("This API uses a format the app does not support yet. Use a Gemini generateContent or OpenAI-compatible chat-completions cURL example.");
+  }
+
+  const endpoint = isGeminiAPI
+    ? parsedURL.origin
+    : parsedURL.toString();
+  return { endpoint, model, apiKey: keyIsPlaceholder ? "" : apiKey.replace(/\s+/g, "") };
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -652,6 +881,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: SPACING.md,
   },
+  aiSettingsCard: { gap: SPACING.sm },
+  aiSuggestionCard: { gap: SPACING.sm, borderColor: COLORS.primary },
+  aiSuggestionTitle: { color: COLORS.primary, fontSize: TYPOGRAPHY.body, fontWeight: "700" },
+  privacyNote: { color: COLORS.text, fontSize: TYPOGRAPHY.small, lineHeight: 21, backgroundColor: COLORS.primaryLight, borderRadius: 12, padding: SPACING.sm },
+  fieldHint: { color: COLORS.secondaryText, fontSize: TYPOGRAPHY.caption, lineHeight: 18 },
+  aiLinkRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: SPACING.sm },
+  aiLinkText: { color: COLORS.primary, fontSize: TYPOGRAPHY.small, fontWeight: "600", flexShrink: 1 },
+  removeAIKey: { alignItems: "center", paddingVertical: SPACING.sm },
+  removeAIKeyText: { color: COLORS.danger, fontSize: TYPOGRAPHY.small, fontWeight: "600" },
 
   pinModalBackdrop: {
     flex: 1,

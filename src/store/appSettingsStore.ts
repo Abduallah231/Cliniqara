@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { getLocalRecord, putLocalRecord } from "@/services/localDatabase";
+import { SUGGESTED_GEMINI_ENDPOINT, SUGGESTED_GEMINI_MODEL } from "@/config/ai";
 
 export type ThemePreference = "System" | "Light" | "Dark";
 export type FontSizePreference = "Small" | "Medium" | "Large";
@@ -9,6 +10,8 @@ export interface AppSettings {
   fontSize: FontSizePreference;
   appLock: boolean;
   biometric: boolean;
+  aiEndpoint: string;
+  aiModel: string;
 }
 
 export type ActiveColorScheme = "light" | "dark";
@@ -18,6 +21,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   fontSize: "Medium",
   appLock: false,
   biometric: false,
+  aiEndpoint: "",
+  aiModel: "",
 };
 
 interface AppSettingsStore extends AppSettings {
@@ -47,6 +52,16 @@ export const useAppSettingsStore = create<AppSettingsStore>((set, get) => ({
       fontSize: value.fontSize === "Small" || value.fontSize === "Large" ? value.fontSize : "Medium",
       appLock: value.appLock === true,
       biometric: value.biometric === true,
+      aiEndpoint: typeof value.aiEndpoint === "string" && value.aiEndpoint.trim()
+        ? value.aiEndpoint
+        : typeof value.aiModel === "string" && value.aiModel.startsWith("gemini-")
+          ? SUGGESTED_GEMINI_ENDPOINT
+          : "",
+      aiModel: typeof value.aiModel === "string" && value.aiModel.trim()
+        ? value.aiModel
+        : typeof value.aiEndpoint === "string" && value.aiEndpoint.includes("generativelanguage.googleapis.com")
+          ? SUGGESTED_GEMINI_MODEL
+          : "",
       hydrated: true,
     });
   },
@@ -58,6 +73,8 @@ export const useAppSettingsStore = create<AppSettingsStore>((set, get) => ({
       fontSize: state.fontSize,
       appLock: state.appLock,
       biometric: state.biometric,
+      aiEndpoint: state.aiEndpoint,
+      aiModel: state.aiModel,
     };
     const next = { ...current, ...updates };
     await putLocalRecord({
