@@ -54,6 +54,7 @@ type PatientForm = {
     | "Months"
     | "Years";
   gender:
+    | ""
     | "male"
     | "female";
   maritalStatus:
@@ -101,7 +102,7 @@ const createEmptyPatient =
 
     ageUnit: "Years",
 
-    gender: "male",
+    gender: "",
 
     maritalStatus:
       "Single",

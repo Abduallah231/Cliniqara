@@ -20,14 +20,8 @@ import { COLORS } from "@/theme/colors";
 import { TYPOGRAPHY } from "@/theme/typography";
 
 export default function StatisticsScreen() {
-  const {
-    statistics,
-    loading,
-    refreshing,
-    error,
-    isForbidden,
-    refresh,
-  } = useClinicStatistics();
+  const [activeScope, setActiveScope] = useState<"clinic" | "doctor">("clinic");
+  const { statistics, loading, refreshing, error, refresh } = useClinicStatistics(activeScope);
 
   const [showAllComplaints, setShowAllComplaints] =
     useState(false);
@@ -39,6 +33,7 @@ export default function StatisticsScreen() {
     return (
       <AppSafeAreaView style={styles.safeArea}>
         <Header />
+        <ScopeTabs activeScope={activeScope} onChange={setActiveScope} />
 
         <AppView style={styles.center}>
           <ActivityIndicator
@@ -54,46 +49,11 @@ export default function StatisticsScreen() {
     );
   }
 
-  if (isForbidden) {
-    return (
-      <AppSafeAreaView style={styles.safeArea}>
-        <Header />
-
-        <AppView style={styles.center}>
-          <AppView style={styles.accessIcon}>
-            <Ionicons
-              name="lock-closed-outline"
-              size={30}
-              color={COLORS.danger}
-            />
-          </AppView>
-
-          <AppText style={styles.accessTitle}>
-            Access Denied
-          </AppText>
-
-          <AppText style={styles.accessText}>
-            Statistics are available only to the
-            clinic owner.
-          </AppText>
-
-          <AppPressable
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <AppText style={styles.backButtonText}>
-              Go Back
-            </AppText>
-          </AppPressable>
-        </AppView>
-      </AppSafeAreaView>
-    );
-  }
-
   if (error || !statistics) {
     return (
       <AppSafeAreaView style={styles.safeArea}>
         <Header />
+        <ScopeTabs activeScope={activeScope} onChange={setActiveScope} />
 
         <AppView style={styles.center}>
           <Ionicons
@@ -127,6 +87,7 @@ export default function StatisticsScreen() {
   return (
     <AppSafeAreaView style={styles.safeArea}>
       <Header />
+      <ScopeTabs activeScope={activeScope} onChange={setActiveScope} />
 
       <AppScrollView
         contentContainerStyle={styles.content}
@@ -140,18 +101,18 @@ export default function StatisticsScreen() {
         }
       >
         <AppText style={styles.pageTitle}>
-          Clinic Statistics
+          {activeScope === "clinic" ? "Clinic Statistics" : "Doctor Statistics"}
         </AppText>
 
         <AppText style={styles.pageSubtitle}>
-          Overview of visits and clinic performance
+          {activeScope === "clinic" ? "Completed visits and clinic performance" : "Your completed visits across all clinics"}
         </AppText>
 
         {/* ================================================= */}
         {/* Clinic Performance */}
         {/* ================================================= */}
 
-        <SectionTitle title="Clinic Performance" />
+        <SectionTitle title={activeScope === "clinic" ? "Clinic Performance" : "Doctor Performance"} />
 
         <StatisticsPerformance
           averageVisitsPerDay={
@@ -296,6 +257,18 @@ export default function StatisticsScreen() {
   );
 }
 
+function ScopeTabs({ activeScope, onChange }: { activeScope: "clinic" | "doctor"; onChange: (scope: "clinic" | "doctor") => void }) {
+  return <AppView style={styles.scopeTabs}>
+    {(["clinic", "doctor"] as const).map((scope) => (
+      <AppPressable key={scope} onPress={() => onChange(scope)} style={[styles.scopeTab, activeScope === scope && styles.scopeTabActive]}>
+        <AppText style={[styles.scopeTabText, activeScope === scope && styles.scopeTabTextActive]}>
+          {scope === "clinic" ? "Clinic Statistics" : "Doctor Statistics"}
+        </AppText>
+      </AppPressable>
+    ))}
+  </AppView>;
+}
+
 function Header() {
   return (
     <AppView style={styles.header}>
@@ -377,6 +350,12 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
   },
+
+  scopeTabs: { flexDirection: "row", borderRadius: 12, padding: 4, backgroundColor: COLORS.border, gap: 4, marginBottom: 12 },
+  scopeTab: { flex: 1, alignItems: "center", paddingVertical: 10, borderRadius: 9 },
+  scopeTabActive: { backgroundColor: COLORS.card },
+  scopeTabText: { color: COLORS.secondaryText, fontSize: TYPOGRAPHY.small, fontWeight: "600" },
+  scopeTabTextActive: { color: COLORS.primary },
 
   pageTitle: {
     fontSize: TYPOGRAPHY.title,

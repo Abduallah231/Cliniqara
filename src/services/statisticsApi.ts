@@ -61,23 +61,24 @@ function dateKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth()}`;
 }
 
-export async function getClinicStatistics(clinicId: string): Promise<ClinicStatistics> {
+async function calculateStatistics(scope: { clinicId?: string; doctorId?: string }, id: string): Promise<ClinicStatistics> {
   // Keep SQLite reads sequential; this avoids overlapping reads on the Expo connection.
-  const visitRecords = await listLocalRecords<Visit>("visits", clinicId);
-  const patientRecords = await listLocalRecords<Patient>("patients", clinicId);
-  const complaintRecords = await listLocalRecords<SavedComplaint>("visit_chief-complaint", clinicId);
-  const diagnosisRecords = await listLocalRecords<SavedDiagnosis>("visit_diagnosis", clinicId);
+  const visitRecords = await listLocalRecords<Visit>("visits", scope.clinicId);
+  const patientRecords = await listLocalRecords<Patient>("patients", scope.clinicId);
+  const complaintRecords = await listLocalRecords<SavedComplaint>("visit_chief-complaint", scope.clinicId);
+  const diagnosisRecords = await listLocalRecords<SavedDiagnosis>("visit_diagnosis", scope.clinicId);
 
   const visits = visitRecords
     .map((record) => record.value)
-    .filter((visit) => visit.visitStatus !== "CANCELLED");
+    .filter((visit) => visit.visitStatus === "COMPLETED" && (!scope.doctorId || visit.doctorId === scope.doctorId));
   const activeVisitIds = new Set(visits.map((visit) => visit.id));
-  const patients = patientRecords.map((record) => record.value);
+  const patientIds = new Set(visits.map((visit) => visit.patientId));
+  const patients = patientRecords.map((record) => record.value).filter((patient) => patientIds.has(patient.id));
   const complaints = await getChiefComplaints();
   const complaintNames = new Map(complaints.map((item) => [item.id, item.name]));
   const complaintCounts = countBy(
     complaintRecords
-      .filter((record) => activeVisitIds.has(record.parentId ?? record.id))
+    .filter((record) => activeVisitIds.has(record.parentId ?? record.id))
       .map((record) => record.value),
     (item) => item.chiefComplaintId,
   );
@@ -179,7 +180,7 @@ export async function getClinicStatistics(clinicId: string): Promise<ClinicStati
   const genderTotal = male + female;
 
   return {
-    clinicId,
+    clinicId: id,
     performance: {
       averageVisitsPerDay: Math.round((thisMonth.length / Math.max(now.getDate(), 1)) * 10) / 10,
       visitsThisWeek: thisWeek.length,
@@ -219,12 +220,20 @@ export async function getClinicStatistics(clinicId: string): Promise<ClinicStati
   };
 }
 
+export function getClinicStatistics(clinicId: string): Promise<ClinicStatistics> {
+  return calculateStatistics({ clinicId }, clinicId);
+}
+
+export function getDoctorStatistics(doctorId: string): Promise<ClinicStatistics> {
+  return calculateStatistics({ doctorId }, `doctor:${doctorId}`);
+}
+
 export async function getTopChiefComplaintIds(clinicId: string, limit = 5): Promise<string[]> {
   const records = await listLocalRecords<SavedComplaint>("visit_chief-complaint", clinicId);
   const visits = await listLocalRecords<Visit>("visits", clinicId);
   const activeVisitIds = new Set(visits
     .map((record) => record.value)
-    .filter((visit) => visit.visitStatus !== "CANCELLED")
+    .filter((visit) => visit.visitStatus === "COMPLETED")
     .map((visit) => visit.id));
   const counts = countBy(
     records
@@ -244,7 +253,7 @@ export async function getTopDiagnosisNames(clinicId: string, limit = 5): Promise
   const visits = await listLocalRecords<Visit>("visits", clinicId);
   const activeVisitIds = new Set(visits
     .map((record) => record.value)
-    .filter((visit) => visit.visitStatus !== "CANCELLED")
+    .filter((visit) => visit.visitStatus === "COMPLETED")
     .map((visit) => visit.id));
   const counts = new Map<string, number>();
   for (const record of records) {

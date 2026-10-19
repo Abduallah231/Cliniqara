@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
-
 import { useClinicStore } from "@/store/clinicStore";
-import { getClinicStatistics } from "@/services/statisticsApi";
+import { getClinicStatistics, getDoctorStatistics } from "@/services/statisticsApi";
+import { useDoctorStore } from "@/store/doctorStore";
 import type { ClinicStatistics } from "@/types/statistics";
 
 interface UseClinicStatisticsResult {
@@ -14,10 +13,11 @@ interface UseClinicStatisticsResult {
   refresh: () => Promise<void>;
 }
 
-export function useClinicStatistics(): UseClinicStatisticsResult {
+export function useClinicStatistics(scope: "clinic" | "doctor" = "clinic"): UseClinicStatisticsResult {
   const currentClinicId = useClinicStore(
     (state) => state.currentClinicId,
   );
+  const doctorId = useDoctorStore((state) => state.doctor?.id ?? null);
 
   const [statistics, setStatistics] =
     useState<ClinicStatistics | null>(null);
@@ -29,11 +29,12 @@ export function useClinicStatistics(): UseClinicStatisticsResult {
 
   const loadStatistics = useCallback(
     async (isRefresh = false) => {
-      if (!currentClinicId) {
+      const scopeId = scope === "doctor" ? doctorId : currentClinicId;
+      if (!scopeId) {
         setStatistics(null);
         setLoading(false);
         setRefreshing(false);
-        setError("No clinic selected.");
+        setError(scope === "doctor" ? "Doctor profile is not available." : "No clinic selected.");
         setIsForbidden(false);
         return;
       }
@@ -48,48 +49,30 @@ export function useClinicStatistics(): UseClinicStatisticsResult {
       setIsForbidden(false);
 
       try {
-        const data = await getClinicStatistics(
-          currentClinicId,
-        );
+        const data = scope === "doctor"
+          ? await getDoctorStatistics(scopeId)
+          : await getClinicStatistics(scopeId);
 
         // Extra safety against a stale response from
         // a previously selected clinic.
         if (
-          useClinicStore.getState().currentClinicId !==
-          currentClinicId
+          (scope === "clinic" && useClinicStore.getState().currentClinicId !== currentClinicId) ||
+          (scope === "doctor" && useDoctorStore.getState().doctor?.id !== doctorId)
         ) {
           return;
         }
 
         setStatistics(data);
       } catch (err) {
-        if (
-          axios.isAxiosError(err) &&
-          err.response?.status === 403
-        ) {
-          setStatistics(null);
-          setIsForbidden(true);
-          setError(
-            "Statistics are available only to the clinic owner.",
-          );
-        } else if (
-          axios.isAxiosError(err) &&
-          err.response?.status === 404
-        ) {
-          setStatistics(null);
-          setError("Clinic membership was not found.");
-        } else {
-          setStatistics(null);
-          setError(
-            "Unable to load clinic statistics. Please try again.",
-          );
-        }
+        console.error("Failed to load local statistics:", err);
+        setStatistics(null);
+        setError("Unable to load local statistics. Please try again.");
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [currentClinicId],
+    [currentClinicId, doctorId, scope],
   );
 
   useEffect(() => {

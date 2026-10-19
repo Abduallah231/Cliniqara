@@ -34,7 +34,7 @@ type Props = {
   age: string;
   ageUnit: "Days" | "Months" | "Years";
 
-  gender: "male" | "female";
+  gender: "" | "male" | "female";
 
   maritalStatus:
     | "Single"

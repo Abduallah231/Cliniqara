@@ -443,6 +443,7 @@ export default function NewTemplateScreen() {
             validMedications.map(
               (item, index) => ({
                 drugId: item.drugId,
+                medication: item.medication.trim(),
 
                 instructions:
                   item.instructions.trim(),

@@ -1,6 +1,7 @@
 import { useClinicStore } from "@/store/clinicStore";
 import { useDoctorStore } from "@/store/doctorStore";
 import { getChiefComplaints } from "@/services/chiefComplaintApi";
+import { getDrugById } from "@/services/drugApi";
 import type { Patient } from "@/types/patient";
 import type { Visit, WaitingVisit } from "@/types/visit";
 import {
@@ -42,6 +43,23 @@ async function savedChiefComplaint(visitId: string) {
     durationValue: saved.durationValue ?? null,
     durationUnit: saved.durationUnit ?? null,
     analysis: { values: saved.answers ?? {} },
+  };
+}
+
+async function hydratePrescriptionMedicationNames(value: any): Promise<any> {
+  if (!value || !Array.isArray(value.medications)) return value;
+  return {
+    ...value,
+    medications: await Promise.all(value.medications.map(async (item: any) => {
+      const label = String(item.medication ?? "").trim();
+      if (!label || (item.drugId && label !== String(item.drugId))) return item;
+      try {
+        const drug = await getDrugById(String(item.drugId ?? label));
+        return { ...item, medication: drug.commercialNameEn };
+      } catch {
+        return item;
+      }
+    })),
   };
 }
 
@@ -92,7 +110,7 @@ async function saveSection(collection: string, visitId: string, value: unknown) 
       followUp: (value as any)?.followUp ?? null, createdAt: now, updatedAt: now,
       medications: ((value as any)?.medications ?? []).map((medication: any, index: number) => ({
         ...medication, id: id(), prescriptionId: `local-prescription-${visitId}`,
-        medication: medication.drugId, durationValue: medication.durationValue ?? null,
+        medication: medication.medication || medication.drugId, durationValue: medication.durationValue ?? null,
         durationUnit: medication.durationUnit ?? null, sortOrder: medication.sortOrder ?? index,
       })),
     };
@@ -133,13 +151,19 @@ async function get(path: string, config?: Config): Promise<{ data: any }> {
   }
   match = path.match(/^\/visits\/patient\/([^/]+)$/);
   if (match) {
-    const records = await listLocalRecords<Visit>("visits", selectedClinicId(), match[1]);
-    return { data: records.map(({ value: visit }) => ({
-      ...visit,
-      doctor: { id: visit.doctorId, fullName: useDoctorStore.getState().doctor?.fullName ?? "Doctor" },
-      chiefComplaint: null,
-      diagnosis: null,
-    })) };
+    const records = await listLocalRecords<Visit>("visits", undefined, match[1]);
+    const summaries = [];
+    for (const { value: visit } of records) {
+      const chiefComplaint = await savedChiefComplaint(visit.id);
+      const diagnosis = await section("visit_diagnosis", visit.id);
+      summaries.push({
+        ...visit,
+        doctor: { id: visit.doctorId, fullName: useDoctorStore.getState().doctor?.id === visit.doctorId ? useDoctorStore.getState().doctor?.fullName ?? "Doctor" : "Doctor" },
+        chiefComplaint,
+        diagnosis,
+      });
+    }
+    return { data: summaries };
   }
   match = path.match(/^\/visits\/([^/]+)\/chief-complaint\/([^/]+)$/);
   if (match) {
@@ -160,7 +184,9 @@ async function get(path: string, config?: Config): Promise<{ data: any }> {
       "procedures",
       "referrals",
     ];
-    return { data: saved ?? (emptyListSections.includes(collection) ? [] : null) };
+    return { data: collection === "prescription"
+      ? await hydratePrescriptionMedicationNames(saved)
+      : saved ?? (emptyListSections.includes(collection) ? [] : null) };
   }
   throw new Error(`Offline operation is not supported: GET ${path}`);
 }
@@ -214,7 +240,7 @@ async function post(path: string, body?: any): Promise<{ data: any }> {
     const investigations = await section("visit_investigations", visit.id);
     const procedures = await section("visit_procedures", visit.id);
     const referrals = await section("visit_referrals", visit.id);
-    const prescription = await section("visit_prescription", visit.id);
+    const prescription = await hydratePrescriptionMedicationNames(await section("visit_prescription", visit.id));
     return { data: {
       ...visit,
       patient: patient ? { id: patient.id, fullName: patient.value.fullName, patientCode: patient.value.patientCode } : null,

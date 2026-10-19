@@ -1,7 +1,7 @@
 import AppText from "@/components/common/AppText";
 import AppView from "@/components/common/AppView";
-import { useState } from "react";
-import { Alert, StyleSheet, TouchableOpacity } from "react-native";
+import { useRef, useState } from "react";
+import { Alert, Keyboard, StyleSheet, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import AppButton from "@/components/common/AppButton";
@@ -9,6 +9,8 @@ import AppChip from "@/components/common/AppChip";
 import AppTextField from "@/components/common/AppTextField";
 import Divider from "@/components/common/Divider";
 import SectionHeader from "@/components/common/SectionHeader";
+import AppPressable from "@/components/common/AppPressable";
+import { searchDrugs, type Drug } from "@/services/drugApi";
 
 import { Medication } from "@/models/VisitForm/history";
 import { useVisitStore } from "@/store/visitStore";
@@ -50,6 +52,25 @@ export default function DrugHistory() {
     medicationName,
     setMedicationName,
   ] = useState("");
+  const [drugResults, setDrugResults] = useState<Drug[]>([]);
+  const [searchingDrugs, setSearchingDrugs] = useState(false);
+  const [showDrugResults, setShowDrugResults] = useState(false);
+  const drugSearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const searchMedication = (value: string) => {
+    setMedicationName(value);
+    setShowDrugResults(true);
+    if (drugSearchTimer.current) clearTimeout(drugSearchTimer.current);
+    if (value.trim().length < 2) {
+      setDrugResults([]);
+      setSearchingDrugs(false);
+      return;
+    }
+    setSearchingDrugs(true);
+    drugSearchTimer.current = setTimeout(() => {
+      void searchDrugs(value, 1, 20).then((result) => setDrugResults(result.data)).catch(() => setDrugResults([])).finally(() => setSearchingDrugs(false));
+    }, 300);
+  };
 
   const [dose, setDose] =
     useState("");
@@ -343,17 +364,31 @@ export default function DrugHistory() {
       />
 
       <AppView style={styles.card}>
-        <AppTextField
-          placeholder="Medication Name"
-          value={medicationName}
-          onChangeText={
-            setMedicationName
-          }
-          editable={
-            !isMedicationActionRunning &&
-            !isHydrating
-          }
-        />
+        <AppView style={styles.searchContainer}>
+          <AppTextField
+            label="Medication"
+            placeholder="Search medication..."
+            value={medicationName}
+            onChangeText={searchMedication}
+            onFocus={() => setShowDrugResults(true)}
+            editable={!isMedicationActionRunning && !isHydrating}
+          />
+          {showDrugResults && (searchingDrugs || drugResults.length > 0) && (
+            <AppView style={styles.searchDropdown}>
+              {searchingDrugs ? <AppText style={styles.helperText}>Searching medications...</AppText> : drugResults.map((drug) => (
+                <AppPressable key={drug.id} style={styles.searchResult} onPress={() => {
+                  Keyboard.dismiss();
+                  setMedicationName(drug.commercialNameEn);
+                  setDrugResults([]);
+                  setShowDrugResults(false);
+                }}>
+                  <AppText style={styles.medicationName}>{drug.commercialNameEn}</AppText>
+                  {!!drug.scientificName && <AppText style={styles.medicationText}>{drug.scientificName}</AppText>}
+                </AppPressable>
+              ))}
+            </AppView>
+          )}
+        </AppView>
 
         <AppTextField
           placeholder="Dose Per day"
@@ -870,6 +905,10 @@ const styles = StyleSheet.create({
   card: {
     gap: SPACING.sm,
   },
+
+  searchContainer: { position: "relative", zIndex: 5 },
+  searchDropdown: { backgroundColor: COLORS.white, borderColor: COLORS.border, borderWidth: 1, borderRadius: 10, marginTop: 4 },
+  searchResult: { padding: SPACING.sm, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: COLORS.border },
 
   row: {
     flexDirection: "row",

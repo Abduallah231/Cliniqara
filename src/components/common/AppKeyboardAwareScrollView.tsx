@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { useAppSettingsStore } from "@/store/appSettingsStore";
 import { transformRuntimeStyle } from "./runtimeTheme";
 import {
@@ -27,7 +27,10 @@ export default function AppKeyboardAwareScrollView({
         transformRuntimeStyle(contentContainerStyle, theme),
       ]}
       enableOnAndroid
-      enableAutomaticScroll
+      // Android's keyboard already resizes/scrolls focused inputs. The
+      // library's extra viewIsDescendantOf lookup can target a stale native
+      // tag when suggestion rows unmount after a selection (ReactTag warning).
+      enableAutomaticScroll={Platform.OS === "ios"}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       extraScrollHeight={120}

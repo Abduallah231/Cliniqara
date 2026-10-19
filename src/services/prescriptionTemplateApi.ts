@@ -1,8 +1,9 @@
 import { getLocalRecord, listLocalRecords, putLocalRecord } from "./localDatabase";
 import { useDoctorStore } from "@/store/doctorStore";
+import { getDrugById } from "@/services/drugApi";
 
 const localId = () => `local-template-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-const clinicTemplates = async (clinicId?: string) => (await listLocalRecords<PrescriptionTemplate>("prescription_templates")).map((row) => row.value).filter((item) => item.isActive && (clinicId ? item.scope === "CLINIC" && item.clinicId === clinicId : item.scope === "USER" && item.userId === useDoctorStore.getState().doctor?.id));
+const clinicTemplates = async (clinicId?: string) => Promise.all((await listLocalRecords<PrescriptionTemplate>("prescription_templates")).map((row) => row.value).filter((item) => item.isActive && (clinicId ? item.scope === "CLINIC" && item.clinicId === clinicId : item.scope === "USER" && item.userId === useDoctorStore.getState().doctor?.id)).map(normalizeTemplate));
 const clinicFolders = async (clinicId?: string) => (await listLocalRecords<PrescriptionTemplateFolder>("prescription_template_folders")).map((row) => row.value).filter((item) => item.isActive && (clinicId ? item.scope === "CLINIC" && item.clinicId === clinicId : item.scope === "USER" && item.userId === useDoctorStore.getState().doctor?.id));
 async function createTemplate(scope: "USER" | "CLINIC", clinicId: string | undefined, dto: CreatePrescriptionTemplateInput): Promise<PrescriptionTemplate> {
   const now = new Date().toISOString();
@@ -20,7 +21,7 @@ async function createTemplate(scope: "USER" | "CLINIC", clinicId: string | undef
     createdAt: now,
     updatedAt: now,
     medications: dto.medications.map((medication, index) => ({
-      id: localId(), drugId: medication.drugId, medication: medication.drugId,
+      id: localId(), drugId: medication.drugId, medication: medication.medication,
       instructions: medication.instructions, durationValue: medication.durationValue ?? null,
       durationUnit: medication.durationUnit ?? null, sortOrder: medication.sortOrder ?? index,
     })),
@@ -93,6 +94,7 @@ export type PrescriptionTemplate = {
 
 export type CreatePrescriptionTemplateMedicationInput = {
   drugId: string;
+  medication: string;
   instructions: string;
   durationValue?: number | null;
   durationUnit?:
@@ -189,7 +191,7 @@ export async function createClinicTemplateFolder(
 export async function getGlobalTemplates(): Promise<
   PrescriptionTemplate[]
 > {
-  return (await listLocalRecords<PrescriptionTemplate>("prescription_templates")).map((row) => row.value).filter((item) => item.scope === "GLOBAL" && item.isActive);
+  return Promise.all((await listLocalRecords<PrescriptionTemplate>("prescription_templates")).map((row) => row.value).filter((item) => item.scope === "GLOBAL" && item.isActive).map(normalizeTemplate));
 }
 
 export async function getGlobalTemplateFolders(): Promise<
@@ -207,7 +209,26 @@ export async function getPrescriptionTemplate(
 ): Promise<PrescriptionTemplate> {
   const template = await getLocalRecord<PrescriptionTemplate>("prescription_templates", templateId);
   if (!template) throw new Error("Template not found on this device");
-  return template.value;
+  return normalizeTemplate(template.value);
+}
+
+async function normalizeTemplate(template: PrescriptionTemplate): Promise<PrescriptionTemplate> {
+  let changed = false;
+  const medications = await Promise.all(template.medications.map(async (item) => {
+    const savedLabel = item.medication?.trim() ?? "";
+    if (!savedLabel || (item.drugId && savedLabel !== item.drugId)) return item;
+    try {
+      const drug = await getDrugById(item.drugId || savedLabel);
+      if (drug.commercialNameEn !== savedLabel) changed = true;
+      return { ...item, medication: drug.commercialNameEn };
+    } catch {
+      return item;
+    }
+  }));
+  if (!changed) return template;
+  const updated = { ...template, medications, updatedAt: new Date().toISOString() };
+  await putLocalRecord({ collection: "prescription_templates", id: template.id, clinicId: template.clinicId, value: updated });
+  return updated;
 }
 
 export async function updatePrescriptionTemplate(
@@ -215,7 +236,23 @@ export async function updatePrescriptionTemplate(
   dto: UpdatePrescriptionTemplateInput,
 ): Promise<PrescriptionTemplate> {
   const current = await getPrescriptionTemplate(templateId);
-  const updated = { ...current, ...dto, updatedAt: new Date().toISOString() };
+  const updated: PrescriptionTemplate = {
+    ...current,
+    ...dto,
+    medications: dto.medications
+      ? dto.medications.map((item, index) => ({
+          id: localId(),
+          templateId,
+          drugId: item.drugId,
+          medication: item.medication,
+          instructions: item.instructions,
+          durationValue: item.durationValue ?? null,
+          durationUnit: item.durationUnit ?? null,
+          sortOrder: item.sortOrder ?? index,
+        }))
+      : current.medications,
+    updatedAt: new Date().toISOString(),
+  };
   await putLocalRecord({ collection: "prescription_templates", id: templateId, clinicId: current.clinicId, value: updated });
   return updated;
 }

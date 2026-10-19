@@ -66,6 +66,7 @@ type PatientForm = {
     | "Years";
 
   gender:
+    | ""
     | "male"
     | "female";
 
@@ -96,6 +97,11 @@ type Props = {
   patient: PatientForm;
   existingPatientId?: string;
 };
+
+function isValidAge(value: string): boolean {
+  const age = Number(value);
+  return value.trim() !== "" && Number.isFinite(age) && age >= 0;
+}
 
 export default function PatientActions({
   patient,
@@ -160,6 +166,11 @@ export default function PatientActions({
   const handleAddToWaiting =
     async () => {
       if (loadingAction) {
+        return;
+      }
+
+      if (!existingPatientId && (!patient.fullName.trim() || !isValidAge(patient.age) || !patient.gender)) {
+        setErrorMessage("Enter the patient's name, a valid age, and select a gender before continuing.");
         return;
       }
 
@@ -343,6 +354,11 @@ export default function PatientActions({
        * Prevent duplicate requests.
        */
       if (loadingAction) {
+        return;
+      }
+
+      if (!existingPatientId && (!patient.fullName.trim() || !isValidAge(patient.age) || !patient.gender)) {
+        setErrorMessage("Enter the patient's name, a valid age, and select a gender before continuing.");
         return;
       }
 

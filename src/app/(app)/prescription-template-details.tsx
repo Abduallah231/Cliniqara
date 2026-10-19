@@ -210,9 +210,7 @@ export default function PrescriptionTemplateDetails() {
 
       <FlatList
         data={template.medications}
-        keyExtractor={(item) =>
-          item.id
-        }
+        keyExtractor={(item, index) => `${template.id}-medication-${item.id || index}-${index}`}
         contentContainerStyle={
           styles.content
         }

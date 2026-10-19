@@ -333,7 +333,7 @@ function formatEnum(
     return "—";
   }
 
-  return formatLabel(value);
+  return formatLabel(value.toLocaleLowerCase());
 }
 
 function formatSimpleValue(
@@ -374,6 +374,10 @@ function formatSimpleValue(
     return "—";
   }
 
+  if (typeof value === "string") {
+    const readable = value.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim().toLocaleLowerCase();
+    return readable ? readable.charAt(0).toLocaleUpperCase() + readable.slice(1) : "—";
+  }
   return String(value);
 }
 
@@ -800,9 +804,11 @@ function DynamicFields({
 function ClinicalData({
   value,
   columns,
+  hideCodes = false,
 }: {
   value: unknown;
   columns: number;
+  hideCodes?: boolean;
 }) {
   if (
     isEmptyValue(value)
@@ -854,6 +860,7 @@ function ClinicalData({
               <ClinicalData
                 value={item}
                 columns={columns}
+                hideCodes={hideCodes}
               />
             </AppView>
           ),
@@ -877,6 +884,7 @@ function ClinicalData({
           !HIDDEN_KEYS.has(
             key,
           ) &&
+          !(hideCodes && ["code", "diseaseCode", "icdCode"].includes(key)) &&
           !isEmptyValue(
             item,
           ),
@@ -960,6 +968,7 @@ function ClinicalData({
                   <ClinicalData
                     value={item}
                     columns={columns}
+                    hideCodes={hideCodes}
                   />
                 </AppView>
               );
@@ -992,6 +1001,7 @@ function ClinicalData({
                   <ClinicalData
                     value={item}
                     columns={columns}
+                    hideCodes={hideCodes}
                   />
                 </AppView>
               );
@@ -2014,7 +2024,7 @@ export default function VisitDetailsScreen() {
               icon="medkit-outline"
               title="Past History"
             >
-              <ClinicalData value={visit.pastHistory} columns={columns} />
+              <ClinicalData value={visit.pastHistory} columns={columns} hideCodes />
             </Subsection>
           ) : null}
 

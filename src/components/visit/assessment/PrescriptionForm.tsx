@@ -6,6 +6,7 @@ import { COLORS, RADIUS, SHADOW, SPACING, TYPOGRAPHY, } from "@/theme";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { StyleSheet } from "react-native";
 import { useEffect, useRef, useState } from "react";
+import { Keyboard } from "react-native";
 import {
   searchDrugs,
   type Drug,
@@ -95,10 +96,6 @@ export default function PrescriptionForm({
   onUpdateFollowUp,
 }: PrescriptionFormProps) {
 
-  const [drugSearch, setDrugSearch] = useState<
-    Record<number, string>
-  >({});
-
   const [drugResults, setDrugResults] = useState<
     Record<number, Drug[]>
   >({});
@@ -118,10 +115,7 @@ export default function PrescriptionForm({
     index: number,
     text: string,
   ) => {
-    setDrugSearch((current) => ({
-      ...current,
-      [index]: text,
-    }));
+    onUpdateMedication(index, { medication: text, drugId: "" });
 
     setActiveDrugSearch(index);
 
@@ -196,6 +190,7 @@ export default function PrescriptionForm({
     index: number,
     drug: Drug,
   ) => {
+    Keyboard.dismiss();
     onUpdateMedication(
       index,
       {
@@ -204,12 +199,6 @@ export default function PrescriptionForm({
           drug.commercialNameEn,
       },
     );
-
-    setDrugSearch((current) => ({
-      ...current,
-      [index]:
-        drug.commercialNameEn,
-    }));
 
     setDrugResults((current) => ({
       ...current,
@@ -287,10 +276,7 @@ export default function PrescriptionForm({
               <AppTextField
                 label="Medication"
                 placeholder="Search medication..."
-                value={
-                  drugSearch[index] ??
-                  medication.medication
-                }
+                value={medication.medication}
                 onChangeText={(text) =>
                   handleDrugSearch(
                     index,
