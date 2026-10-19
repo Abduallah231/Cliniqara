@@ -25,6 +25,9 @@ import {
 import { router } from "expo-router";
 
 import usePrescriptionAutoSave from "@/hooks/usePrescriptionAutoSave";
+import { Alert } from "react-native";
+import { getVisit } from "@/services/visitApi";
+import { assertClinicPrintAccess, getClinicPrescriptionPrintTemplate } from "@/services/prescriptionPrintApi";
 
 export default function PrescriptionSection() {
   const prescription = useVisitStore(
@@ -79,6 +82,7 @@ export default function PrescriptionSection() {
 
   const [isHydrating, setIsHydrating] =
     useState(false);
+  const [isOpeningPrint, setIsOpeningPrint] = useState(false);
 
   const loadedVisitId =
     useRef<string | null>(null);
@@ -175,6 +179,38 @@ export default function PrescriptionSection() {
     removePrescriptionMedication(index);
   };
 
+  const openPrintPreview = async () => {
+    if (!visitId || isOpeningPrint) return;
+    setIsOpeningPrint(true);
+    try {
+      const savedVisit = await getVisit(visitId);
+      await assertClinicPrintAccess(savedVisit.clinicId);
+      const template = await getClinicPrescriptionPrintTemplate(savedVisit.clinicId);
+      if (!template) {
+        Alert.alert("Prescription template needed", "Set up the clinic's print template before printing.", [
+          { text: "Cancel", style: "cancel" },
+          { text: "Set up", onPress: () => router.push({ pathname: "/prescription-print-template", params: { clinicId: savedVisit.clinicId } }) },
+        ]);
+        return;
+      }
+      router.push({ pathname: "/prescription-print-preview", params: { visitId } });
+    } catch (error) {
+      Alert.alert("Cannot print prescription", error instanceof Error ? error.message : "Could not load saved visit data.");
+    } finally {
+      setIsOpeningPrint(false);
+    }
+  };
+
+  const openPrintTemplate = async () => {
+    if (!visitId) return;
+    try {
+      const savedVisit = await getVisit(visitId);
+      router.push({ pathname: "/prescription-print-template", params: { clinicId: savedVisit.clinicId } });
+    } catch (error) {
+      Alert.alert("Cannot open template", error instanceof Error ? error.message : "Could not load visit clinic.");
+    }
+  };
+
   return (
     <AppView style={styles.container}>
       {/* ==================================================
@@ -250,10 +286,8 @@ export default function PrescriptionSection() {
       ================================================== */}
       <AppPressable
         style={styles.printButton}
-        onPress={() => {
-          // TODO:
-          // Open prescription preview / print
-        }}
+        disabled={isOpeningPrint}
+        onPress={openPrintPreview}
       >
         <Ionicons
           name="print-outline"
@@ -266,8 +300,16 @@ export default function PrescriptionSection() {
             styles.printButtonText
           }
         >
-          Print Prescription
+          {isOpeningPrint ? "Loading saved prescription…" : "Print Prescription"}
         </AppText>
+      </AppPressable>
+
+      <AppPressable
+        style={styles.templateButton}
+        onPress={openPrintTemplate}
+      >
+        <Ionicons name="settings-outline" size={18} color={COLORS.primary} />
+        <AppText style={styles.templateText}>Manage Clinic Print Template</AppText>
       </AppPressable>
     </AppView>
   );
